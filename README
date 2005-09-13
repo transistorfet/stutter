@@ -1,0 +1,16 @@
+
+Stutter 0.1
+
+See changelog.txt for details of changes.
+
+Compiling:
+	cd src
+	make
+
+	There is no install.  Only one file (bin/stutter) is produced.
+	Copy this to somewhere in your path.
+
+This package is copyrighted 2005 Sarina McFarland and licensed
+under the Artistic Licence (see LICENSE)
+
+

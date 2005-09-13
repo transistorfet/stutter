@@ -1,0 +1,58 @@
+
+	* add redefinition support to add_variable
+	* add erase variable command
+	* finish implementing namespace and incorperate changes into variable and command
+	* what name do we use for the main core file?
+	* how will information such as links be handling in both irc and http?
+
+	* what should be passed to get_current, next, last, etc in order to determine which "group" of
+	  widgets it is in reference to?  Should it be based on a widget, a widget's parent, a named
+	  group, a type of widget, or maybe even a combination of these?
+	* should fe_refresh have the ability to refresh part of the screen (a widget) as well as the
+	  whole screen (by passing NULL) or is refresh not even necessary>
+	* how will main_idle and the frontend interact?  should main be able to not return if it wishes?
+	  should there be a way to make a new thread through the frontend (or through nit)?  should
+	  timedelays be normally done through the frontend (a call to net_wait) and main_idle being
+	  intended to just check if the socket has info (requires modification to irc_check_msgs)?
+	  Is there anything except keyboard and sockets that would need blocking checks (in other
+	  words, can the frontend make the assumption that it need only block on all sockets for the
+	  current process?  (how will this work for gtk?  win32 can have 2 threads; one blocking on
+	  windows messages and the other on net sockets (even if there are no net sockets?))?
+	* do we need more functions for widget type? (create, destroy, clear, print, move, resize, refresh)
+
+	* backspace doesn't work for some people (displays ^? instead)
+	* when history is scrolled through, the parameters to commands are not saved (I think this is because
+	  the buffer is not saved until after the command parser has mangled the buffer) 
+	* there is a bug such that if you try to say something in the status, the server says no such nick
+	* the quit command is irc-specific but can it be made independant?
+	* rewrite msg.c using the new nit/string module
+
+	* add handling for CTCP commands
+	* logging plugin
+	* winamp control and display plugin
+	* variable dispatch that reads a list maintained by irc.c as well as a list of dispatch callbacks
+	  replacing the existing single callback in irc.c for dispatch by irc_check_msgs.
+	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
+	  addresses)
+	* pass realname to server when connecting
+
+	* scripting support
+	* multiserver
+	* add support such that libnit can be automagically distributed and built alongside (awaiting
+	  builder support for this)
+
+	* decide on how attributes will work.  frontend will keep track of most of it but will the program
+	  be able to override them and will it be on a global or local (to widget) basis?  will there be
+	  an attribute stack for each widget?
+	* can variables be "watched" such that when the value changes, a function is called? (is this needed)
+	* how would something like channel change be monitored so that a function can be called to
+	  update a variable value?  (eg. to update the value of a variable that is used as the input prompt)
+	* add support to frontend for prompt?  would this be a widget type?
+
+DONE:
+	* add widget param to fe_refresh (NOT NOW)
+	* change name of _widget functions (NO)
+	* add param to bind_key to specify context (string of some sorts, key is a string too)
+	* what about some kind of callback when a socket has data to be read?  what about this also
+	  for keyboard input?  what about a timed alarm (of which main_idle, if needed, would use)?
+
