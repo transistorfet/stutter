@@ -15,7 +15,7 @@
 #define IRC_MAX_NICK			20
 #define IRC_MAX_STRING			512
 
-#define IRC_STATUS_BAR			" %H %n on %c %t"
+#define IRC_STATUS_BAR			" %H %n on %c (%t)"
 #define IRC_STATUS_COLOUR		SC_INVERSE
 
 #define IRC_TIMESTAMP			"%d-%b:%H:%M"
@@ -44,13 +44,13 @@
 /** Name of function to callback when a msg is received or NULL to disable irc (default: base_msg_dispatch) */
 #define DISPATCH_CALLBACK		irc_msg_dispatch
 
-#define UNKNOWN_COMMAND			"%B Unknown Command"
+#define UNKNOWN_COMMAND			"*** Unknown Command"
 #define COMMAND_PREFIX			"/"
 #define COMMAND_PARSER			base_parse_command
 	
-#define GREET_MSG			"Welcome to the show!"
+//#define GREET_MSG			"Welcome to the show!"
 
-#define DOTFILE_DIR			"coolnessifier"
+#define DOTFILE_DIR			".stutter"
 #define DEFAULT_DOTFILE_DIR		"/usr/local/etc"
 
 #endif
