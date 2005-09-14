@@ -10,6 +10,7 @@
 #include CONFIG_H
 #include <nit/net.h>
 #include <nit/list.h>
+#include <nit/callback.h>
 #include <modules/irc/msg.h>
 #include <modules/irc/channel.h>
 
@@ -29,6 +30,9 @@ struct irc_server {
 	struct list_s *channels;
 };
 
+extern struct callback_s *irc_server_dispatch;
+
+#define irc_dispatch_callback(callback)		{ if (irc_server_dispatch) destroy_callback(irc_server_dispatch); irc_server_dispatch = callback; }
 #define irc_create_server_list()		create_list(0, NULL, (destroy_t) irc_server_disconnect)
 #define irc_get_channel(server, name)		((struct irc_channel *) list_find(server->channels, name, 0))
 

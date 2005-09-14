@@ -17,6 +17,8 @@
 #include <modules/irc/server.h>
 #include <modules/irc/channel.h>
 
+struct callback_s *irc_server_dispatch;
+
 static int irc_server_receive(struct irc_server *, network_t);
 static int server_init_connection(struct irc_server *);
 
@@ -129,7 +131,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 int irc_dispatch_msg(struct irc_server *server, struct irc_msg *msg)
 {
-	return(irc_msg_dispatch(NULL, msg));
+	return(execute_callback(irc_server_dispatch, msg));
 }
 
 
@@ -218,9 +220,8 @@ static int irc_server_receive(struct irc_server *server, network_t net)
 {
 	struct irc_msg *msg;
 
-	// TODO should irc_msg_dispatch be called directly like this?  should we make this a callback
 	if (msg = irc_receive_msg(server))
-		irc_msg_dispatch(NULL, msg);
+		execute_callback(irc_server_dispatch, msg);
 	irc_destroy_msg(msg);
 	return(0);
 }

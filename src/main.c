@@ -32,13 +32,14 @@ int init_system(void)
 	add_command("set", (callback_t) base_cmd_set, NULL);
 
 	/* Setup IRC Module */
-	fe_register_widget("irc/statusbar", create_callback(0, 0, NULL, (callback_t) irc_status_bar, NULL));
+	fe_register_widget("irc:statusbar", create_callback(0, 0, NULL, (callback_t) irc_status_bar, NULL));
 	// TODO should this be completely replaced by the autodispatcher and if so, should load msgs here.
-//	irc_dispatch_callback(create_callback(0, 0, NULL, (callback_t) DISPATCH_CALLBACK, NULL));
+	irc_dispatch_callback(create_callback(0, 0, NULL, (callback_t) DISPATCH_CALLBACK, NULL));
 
 	//fe_bind_key(']', base_key_cmd, "next");
 
 	add_command("join", (callback_t) irc_cmd_join, NULL);
+	add_command("leave", (callback_t) irc_cmd_leave, NULL);
 	add_command("quit", (callback_t) irc_cmd_quit, NULL);
 	add_command("msg", (callback_t) irc_cmd_msg, NULL);
 	add_command("me", (callback_t) irc_cmd_me, NULL);
@@ -50,7 +51,7 @@ int init_system(void)
 	/* Setup HTTP Module */
 
 
-	if (!(window = fe_create_widget("irc/window", fe_get_parent(ge_current_widget()))))
+	if (!(window = fe_create_widget("irc:window", fe_get_parent(ge_current_widget()))))
 		return(-1);
 
 	#ifdef GREET_MSG
