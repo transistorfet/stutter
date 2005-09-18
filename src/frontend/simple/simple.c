@@ -141,7 +141,7 @@ int fe_check_input(void)
 
 int fe_register_widget(char *name, struct callback_s *refresh)
 {
-	if (!strcmp(name, "irc/statusbar"))
+	if (!strcmp(name, "irc:statusbar"))
 		status_bar = refresh;
 	return(0);
 }
@@ -164,7 +164,7 @@ main(int argc, char **argv)
 	while (exit_flag) {
 		fe_refresh();
 		// TODO replace main_idle with a set of alarms/timers set by init_system
-		main_idle();
+	//	main_idle();
 		net_wait(1);
 		fe_check_input();
 	}
