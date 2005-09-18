@@ -13,6 +13,7 @@
  */
 int irc_msg_kick(char *env, struct irc_msg *msg)
 {
+	void *window;
 	char *str, *format;
 	struct irc_server *server;
 	struct irc_channel *channel;
@@ -25,7 +26,9 @@ int irc_msg_kick(char *env, struct irc_msg *msg)
 	if (!strcmp(server->nick, msg->params[1])) {
 		format = IRC_FMT_KICK_SELF;
 		if (channel->bitflags & IRC_CBF_AUTO_REJOIN) {
-			// TODO rejoin (by issuing a JOIN msg on its own)
+			window = channel->window;
+			list_delete(server->channels, msg->params[0]);
+			irc_join_channel(server, msg->params[0], window);
 		}
 		else {
 			fe_destroy_widget(channel->window);
