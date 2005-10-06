@@ -2,7 +2,7 @@
  * Module Name:		namespace.c
  * Version:		0.1
  * Module Requirements:	list ; string ; memory
- * Description:		Namespace Manager
+ * Description:		Type Manager
  */
 
 
@@ -12,101 +12,140 @@
 #include <nit/list.h>
 #include <nit/string.h>
 #include <nit/memory.h>
+#include <nit/callback.h>
 
-struct namespace_s {
-	char *name;
-	string_t value;
-};
+static struct namespace_s *current = NULL;
+static struct list_s *namespace_list = NULL;
 
-//struct list_s *var_list = NULL;
-
-//static int compare_variable(struct variable_s *, char *);
-//static void destroy_variable(struct variable_s *);
+static int compare_namespace(struct namespace_s *, char *);
+static void destroy_namespace(struct namespace_s *);
 
 int init_namespace(void)
 {
-//	if (!(var_list = create_list(0, (compare_t) compare_variable, (destroy_t) destroy_variable)))
-//		return(-1);
+	if (namespace_list)
+		return(1);
+	if (!(namespace_list = create_list(0, (compare_t) compare_namespace, (destroy_t) destroy_namespace)))
+		return(-1);
 	return(0);
 }
 
 int release_namespace(void)
 {
-//	destroy_list(var_list);
+	if (namespace_list)
+		destroy_list(namespace_list);
 	return(0);
 }
 
 /**
- * Add a variable to the list with the given name and associated with
- * the given string_t (the exact string_t given will be used by the
- * variable and destroyed when the variable is destroyed).  If the
- * variable already exists, its value will be destroyed and replaced
- * with the given string_t value.  A 0 is returned on success or -1
- * on error.
+ * Add a namespace to the list with the given name and with the given
+ * list (Note: the exact list given is used.  A 0 is returned on
+ * success or -1 on error.
  */
-int add_namespace(char *name, int bitflags)
+struct namespace_s *add_namespace(char *name, struct list_s *list)
 {
-/*	struct variable_s *var;
+	struct namespace_s *namespace;
 
-	// TODO check for replacing
-	if (!(var = memory_alloc(sizeof(struct variable_s) + strlen(name) + 1)))
-		return(-1);
-	var->name = (char *) (((unsigned int) var) + sizeof(struct variable_s));
-	strcpy(var->name, name);
-	var->value = value;
+	if (!name || !(namespace = memory_alloc(sizeof(struct namespace_s) + strlen(name) + 1)))
+		return(NULL);
+	namespace->name = (char *) (((unsigned int) namespace) + sizeof(struct namespace_s));
+	strcpy(namespace->name, name);
+	namespace->list = list;
 
-	return(list_add(var_list, var));
-*/
+	if (list_add(namespace_list, namespace)) {
+		destroy_namespace(namespace);
+		return(NULL);
+	}
+	return(namespace);
 }
 
 /**
- * The variable with the given name is removed from the variable list
- * and its string_t value is destroyed.  If the removal is successful,
+ * The namespace with the given name is removed from the namespace list
+ * and its callbacks are destroyed.  If the removal is successful,
  * a 0 is returned, otherwise -1.
  */
 int remove_namespace(char *name)
 {
-//	return(list_delete(var_list, name));
+	return(list_delete(namespace_list, name));
 }
 
 /**
- * Look up the variable with the given name and return the string_t
- * value associated with it or return NULL if the variable has not
- * been defined.
+ * Select the namespace with the given name as the current namespace to
+ * be used as the default namespace for lookups that do not include a
+ * namespace reference.  If the given namespace cannot be found, -1 is
+ * returned and the current namespace is not changed otherwise 0 is returned.
  */
-/*
-string_t find_variable(char *name)
+int select_namespace(char *name)
 {
-	struct variable_s *var;
+	struct namespace_s *namespace;
 
-	if (!(var = list_find(var_list, name, 0)))
-		return(NULL);
-	return(var->value);
+	if (!(namespace = list_find(namespace_list, name, 0)))
+		return(-1);
+	current = namespace;
+	return(0);
 }
-*/
+
+/**
+ * Return a pointer to the currently selected or return NULL if no namespace
+ * is currently selected.
+ */
+struct namespace_s *current_namespace(void)
+{
+	return(current);
+}
+
+/**
+ * Look up the namespace with the given name and return a pointer to the
+ * namespace or return NULL if the namespace has not been defined.
+ */
+struct namespace_s *find_namespace(char *name)
+{
+	return(list_find(namespace_list, name, 0));
+}
+
+/**
+ * Look up the namespace using the give name interpreted as a
+ * variable name with the namespace encoded in it (the
+ * namespace:variable format).  If no namespace is present then
+ * the default namespace is returned.
+ */
+struct namespace_s *resolve_namespace(char *name)
+{
+	if (!strchr(name, ':'))
+		// TODO return the current namesapce
+		return(NULL);
+	return(list_find(namespace_list, name, 0));
+}
 
 /*** Local Functions ***/
 
 /**
- * Compare the name of the given variable with the given name
+ * Compare the name of the given namespace with the given name
  * and return 0 if they match or nonzero otherwise.
  */
-/*
-static int compare_variable(struct variable_s *var, char *name)
+static int compare_namespace(struct namespace_s *namespace, char *name)
 {
-	return(strcmp(var->name, name));
-}
+	return(strcmp(namespace->name, name));
+/*
+	int i = 0;
+
+	while (1) {
+		if ((namespace->name[i] == '\0') && ((name[i] == ':') || name[i] == '\0'))
+			return(0);
+		else if ((name[i] == '\0') || (namespace->name[i] != name[i]))
+			return(1);
+		i++;
+	}
+	return(1);
 */
+}
 
 /**
- * Free all resources used by the given variable.
+ * Free all resources used by the given namespace.
  */
-/*
-static void destroy_variable(struct variable_s *var)
+static void destroy_namespace(struct namespace_s *namespace)
 {
-	destroy_string(var->value);
-	memory_free(var);
+	destroy_list(namespace->list);
+	memory_free(namespace);
 }
-*/
 
 
