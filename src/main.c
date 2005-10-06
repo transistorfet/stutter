@@ -51,7 +51,7 @@ int init_system(void)
 	/* Setup HTTP Module */
 
 
-	if (!(window = fe_create_widget("irc:window", fe_get_parent(ge_current_widget()))))
+	if (!(window = fe_create_widget("irc:window", fe_get_parent(fe_current_widget()))))
 		return(-1);
 
 	#ifdef GREET_MSG
@@ -77,12 +77,5 @@ int release_system(void)
 	return(0);
 }
 
-/**
- * 
- */
-int main_idle(void)
-{
-	return(0);
-}
 
 
