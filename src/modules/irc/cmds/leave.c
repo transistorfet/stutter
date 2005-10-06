@@ -5,7 +5,7 @@
  * Description:		Leave Channel Command
  */
 
-#include FRONTEND_H
+#include <frontend.h>
 #include <modules/irc.h>
 
 int irc_cmd_leave(char *env, char *str)

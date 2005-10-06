@@ -5,7 +5,7 @@
  * Description:		Join Channel Notification Message
  */
 
-#include FRONTEND_H
+#include <frontend.h>
 #include <modules/irc.h>
 
 /**

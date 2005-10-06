@@ -27,6 +27,9 @@ struct irc_channel *irc_create_channel(char *name, void *window, struct irc_serv
 	channel->name = (char *) (((size_t) channel) + sizeof(struct irc_channel));
 	strcpy(channel->name, name);
 
+	#ifdef IRC_CHANNEL_BITFLAGS
+	channel->bitflags = IRC_CHANNEL_BITFLAGS;
+	#endif
 	channel->window = window;
 	channel->server = server;
 

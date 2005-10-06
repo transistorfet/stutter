@@ -8,17 +8,17 @@
 #include <string.h>
 
 #include CONFIG_H
-#include FRONTEND_H
 #include <error.h>
 #include <macros.h>
 #include <command.h>
+#include <frontend.h>
 #include <nit/string.h>
 
 int base_parse_command(char *env, int ch)
 {
 	char *str, *cmd;
 
-	str = fe_get_input_buffer();
+	str = fe_get_input();
 	if (*str == '\0')
 		return(-1);
 

@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 
-#include FRONTEND_H
 #include <macros.h>
+#include <frontend.h>
 #include <modules/base.h>
 
 int base_cmd_scroll(char *env, char *str)

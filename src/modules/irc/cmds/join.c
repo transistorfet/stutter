@@ -5,7 +5,7 @@
  * Description:		Join Channel Command
  */
 
-#include FRONTEND_H
+#include <frontend.h>
 #include <modules/irc.h>
 
 int irc_cmd_join(char *env, char *str)

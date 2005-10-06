@@ -6,8 +6,8 @@
  */
 
 #include CONFIG_H
-#include FRONTEND_H
 #include <command.h>
+#include <frontend.h>
 #include <variable.h>
 #include <modules/irc.h>
 #include <modules/base.h>

@@ -5,7 +5,7 @@
  * Description:		Quit Command
  */
 
-#include FRONTEND_H
+#include <frontend.h>
 #include <modules/irc.h>
 
 int irc_cmd_quit(char *env, char *str)

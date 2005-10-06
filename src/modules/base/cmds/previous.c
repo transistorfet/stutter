@@ -5,7 +5,7 @@
  * Description:		Previous Window Command
  */
 
-#include FRONTEND_H
+#include <frontend.h>
 #include <modules/base.h>
 
 int base_cmd_previous(char *env, char *str)

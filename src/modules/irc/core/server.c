@@ -89,7 +89,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 	int size;
 	char buffer[IRC_MAX_MSG];
 
-	if (!msg || !(size = irc_collapse_msg(msg, buffer, IRC_MAX_MSG)))
+	if (!server || !msg || !(size = irc_collapse_msg(msg, buffer, IRC_MAX_MSG)))
 		return(-1);
 	if (net_send(server->net, buffer, size) != size)
 		return(-1);
@@ -105,7 +105,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 	int size;
 	char buffer[IRC_MAX_MSG + 1];
 
-	if (!server->net)
+	if (!server || !server->net)
 		return(NULL);
 
 	while (1) {
@@ -139,13 +139,25 @@ int irc_dispatch_msg(struct irc_server *server, struct irc_msg *msg)
  * Send the join command to the given server in order to join the channel
  * on the server with the given name, create a channel structure for the
  * channel and add it to the server channel list.  A -1 is returned if
- * the send fails or a 0 on success.
+ * the send fails or a 0 on success.  If the channel already exits, the
+ * join command will still be sent but a new channel structure will not
+ * be created.
  */
 struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void *ptr)
 {
 	struct irc_msg *msg;
 	struct irc_channel *channel;
 
+	if (msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)) {
+		if (!irc_send_msg(server, msg)) {
+			if ((channel = irc_get_channel(server, name)) || ((channel = irc_create_channel(name, ptr, server)) && !list_add(server->channels, channel)))
+				return(channel);
+			irc_destroy_channel(channel);
+		}
+		irc_destroy_msg(msg);
+	}
+	return(NULL);
+/*
 	if (irc_get_channel(server, name))
 		return(NULL);
 	if (!(msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)))
@@ -157,6 +169,7 @@ struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void
 	irc_destroy_msg(msg);
 	list_add(server->channels, channel);
 	return(channel);
+*/
 }
 
 /**

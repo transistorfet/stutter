@@ -5,7 +5,7 @@
  * Description:		Quit Notification Message
  */
 
-#include FRONTEND_H
+#include <frontend.h>
 #include <nit/string.h>
 #include <modules/irc.h>
 

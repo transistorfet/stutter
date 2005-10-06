@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-#include FRONTEND_H
+#include <frontend.h>
 #include <nit/list.h>
 #include <nit/memory.h>
 #include <nit/callback.h>

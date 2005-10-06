@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include CONFIG_H
-#include FRONTEND_H
 #include <error.h>
 #include <command.h>
 #include <nit/list.h>
