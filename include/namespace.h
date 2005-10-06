@@ -7,11 +7,25 @@
 #ifndef _NAMESPACE_H
 #define _NAMESPACE_H
 
+#include <nit/list.h>
+#include <nit/string.h>
+
+#define BASE_NAMESPACE			""
+
+struct namespace_s {
+	char *name;
+	struct list_s *list;
+};
+
 int init_namespace(void);
 int release_namespace(void);
 
-int add_namespace(char *, int);
+struct namespace_s *add_namespace(char *, struct list_s *);
 int remove_namespace(char *);
+int select_namespace(char *);
+struct namespace_s *current_namespace(void);
+struct namespace_s *find_namespace(char *);
+struct namespace_s *resolve_namespace(char *);
 
 #endif
 
