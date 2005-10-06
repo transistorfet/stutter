@@ -9,12 +9,14 @@
 
 #include <nit/string.h>
 
+#include <type.h>
+
 int init_variable(void);
 int release_variable(void);
 
-int add_variable(char *, string_t);
-int remove_variable(char *);
-string_t find_variable(char *);
+int add_variable(struct type_s *, char *, char *, void *);
+int remove_variable(char *, char *);
+void *find_variable(struct type_s *, char *, char *);
 
 #endif
 
