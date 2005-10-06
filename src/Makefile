@@ -7,6 +7,7 @@ ROOT = ..
 
 TARGET = $(ROOT)/bin/stutter
 OBJS =	main.o \
+	type.o \
 	command.o \
 	variable.o \
 	namespace.o \
