@@ -117,12 +117,24 @@ int clear_input(struct input_s *input)
  */
 int input_save_buffer(struct input_s *input)
 {
-	char *str;
+//	char *str;
 
 	input->buffer[input->end] = '\0';
+//	if (str = create_string(input->buffer))
+//		queue_append(input->history, str);
+//	return(0);
+}
+
+/**
+ * Return the current input buffer.
+ */
+char *input_get_buffer(struct input_s *input)
+{
+	char *str;
+
 	if (str = create_string(input->buffer))
 		queue_append(input->history, str);
-	return(0);
+	return(input->buffer);
 }
 
 /**

@@ -31,6 +31,7 @@ int input_insert_char(struct input_s *, char);
 int input_delete_char(struct input_s *);
 int clear_input(struct input_s *);
 int input_save_buffer(struct input_s *);
+char *input_get_buffer(struct input_s *);
 int input_set_buffer(struct input_s *, char *);
 
 int input_default(struct input_s *, int);
