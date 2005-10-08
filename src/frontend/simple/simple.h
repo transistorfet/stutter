@@ -48,7 +48,7 @@ void fe_move(void *, short, short);
 int fe_scroll(void *, int);
 #define fe_refresh()				refresh_screen(screen)	//() -> void
 
-#define fe_get_input_buffer()			input_buffer_m(input)	//() -> char *
+#define fe_get_input_buffer()			input_get_buffer(input)	//input_buffer_m(input)	//() -> char *
 #define fe_set_input_buffer(str)		input_set_buffer(input, str)	//(char *) -> int
 #define fe_clear_input()			clear_input(input)	//() -> void
 
@@ -56,7 +56,8 @@ int fe_scroll(void *, int);
 int fe_register_widget(char *, struct callback_s *);
 #define fe_unregister_widget(name)		//(char *) -> int
 
-#define fe_bind_key(context, key, func, ptr)	list_add(key_list, create_callback(0, 0, (void *) key, (callback_t) func, (void *) ptr));
+//#define fe_bind_key(context, key, func, ptr)	list_add(key_list, create_callback(0, 0, (void *) key, (callback_t) func, (void *) ptr));
+int fe_bind_key(char *, char *, callback_t, void *);
 
 #define fe_terminate()				exit_flag = 0	//() -> void
 

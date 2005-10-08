@@ -6,6 +6,8 @@
  */
 
 
+#include <stdlib.h>
+
 #include CONFIG_H
 #include <nit/net.h>
 #include <nit/list.h>
@@ -14,7 +16,8 @@
 #include <nit/screen.h>
 #include <nit/callback.h>
 #include <nit/keyboard.h>
-#include "simple.h"
+#include <frontend.h>
+//#include "simple.h"
 #include "window.h"
 #include "input.h"
 
@@ -75,6 +78,10 @@ int fe_destroy_widget(void *window)
 	return(queue_delete(window_list, window));
 }
 
+void *fe_get_parent(void *widget)
+{
+	return(NULL);
+}
 
 short fe_get_width(void *widget)
 {
@@ -87,6 +94,40 @@ short fe_get_height(void *widget)
 		return(1);
 	return(screen_height(screen) - 2);
 }
+
+
+void *fe_current_widget(void)
+{
+	return(queue_current(window_list));
+}
+
+int fe_set_current_widget(void *widget)
+{
+	if (queue_find(window_list, widget))
+		return(0);
+	return(-1);
+}
+
+void *fe_next_widget(void)
+{
+	return(queue_next(window_list));
+}
+
+void *fe_previous_widget(void)
+{
+	return(queue_previous(window_list));
+}
+
+void *fe_first_widget(void)
+{
+	return(queue_first(window_list));
+}
+
+void *fe_last_widget(void)
+{
+	return(queue_last(window_list));
+}
+
 
 int fe_print(void *widget, string_t str)
 {
@@ -122,6 +163,28 @@ int fe_scroll(void *widget, int amount)
 		return(window_scroll(widget, amount));
 }
 
+void fe_refresh(void)
+{
+	refresh_screen(screen);
+}
+
+
+char *fe_get_input(void)
+{
+	return(input_get_buffer(input));
+}
+
+int fe_set_input(char *str)
+{
+	return(input_set_buffer(input, str));
+}
+
+void fe_clear_input(void)
+{
+	clear_input(input);
+}
+
+
 int fe_check_input(void)
 {
 	int ch;
@@ -144,6 +207,21 @@ int fe_register_widget(char *name, struct callback_s *refresh)
 	if (!strcmp(name, "irc:statusbar"))
 		status_bar = refresh;
 	return(0);
+}
+
+int fe_unregister_widget(char *name)
+{
+	return(-1);
+}
+
+int fe_bind_key(char *context, char *key, callback_t func, void *ptr)
+{
+	return(list_add(key_list, create_callback(0, 0, (void *) key, (callback_t) func, (void *) ptr)));
+}
+
+void fe_terminate(void)
+{
+	exit_flag = 0;
 }
 
 /**
