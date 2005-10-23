@@ -11,12 +11,18 @@
 
 #include <type.h>
 
+struct variable_s {
+	struct type_s *type;
+	char *name;
+	void *value;
+};
+
 int init_variable(void);
 int release_variable(void);
 
-int add_variable(struct type_s *, char *, char *, void *);
-int remove_variable(char *, char *);
-void *find_variable(struct type_s *, char *, char *);
+struct variable_s *add_variable(struct type_s *, char *, char *, void *);
+int remove_variable(struct type_s *, char *, char *);
+struct variable_s *find_variable(struct type_s *, char *, char *);
 
 #endif
 
