@@ -12,7 +12,6 @@
 #include <nit/list.h>
 #include <nit/types.h>
 #include <nit/memory.h>
-#include <nit/callback.h>
 
 static struct list_s *type_list = NULL;
 
@@ -37,29 +36,30 @@ int release_type(void)
 
 /**
  * Add a type to the list with the given name and with the given
- * callbacks.  A 0 is returned on success or -1 on error.
+ * function pointers.  A 0 is returned on success or -1 on error.
  */
-int add_type(char *name, destroy_t destroy)
+struct type_s *add_type(char *name, create_t create, evaluate_t evaluate, destroy_t destroy)
 {
 	struct type_s *type;
 
 	if (!(type = memory_alloc(sizeof(struct type_s) + strlen(name) + 1)))
-		return(-1);
+		return(NULL);
 	type->name = (char *) (((unsigned int) type) + sizeof(struct type_s));
 	strcpy(type->name, name);
+	type->create = create;
+	type->evaluate = evaluate;
 	type->destroy = destroy;
 
 	if (list_add(type_list, type)) {
 		destroy_type(type);
-		return(-1);
+		return(NULL);
 	}
-	return(0);
+	return(type);
 }
 
 /**
- * The type with the given name is removed from the type list
- * and its callbacks are destroyed.  If the removal is successful,
- * a 0 is returned, otherwise -1.
+ * The type with the given name is removed from the type list.  If
+ * the removal is successful, a 0 is returned, otherwise -1.
  */
 int remove_type(char *name)
 {
