@@ -18,6 +18,17 @@
 	else				\
 		str = "";
 
+#define get_prefix_m(str, prefix, ch)	\
+	prefix = str;			\
+	if (str = strchr(str, ch)) {	\
+		*str = '\0';		\
+		str = &str[1];		\
+	}				\
+	else {				\
+		str = prefix;		\
+		prefix = NULL;		\
+	}
+
 #endif
 
 
