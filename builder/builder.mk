@@ -37,10 +37,10 @@ $(LIB_TARGET): $(DIRS) $(OBJS)
 	$(CC) $(INCPATH) $(CFLAGS) -c -o $@ $<
 
 %.a: FORCE
-	$(MAKE) $(MAKEFLAGS) -C $(dir $*)
+	$(MAKE) -C $(dir $*)
 
 $(DIRS): FORCE
-	$(MAKE) $(MAKEFLAGS) -C $@
+	$(MAKE) -C $@
 FORCE:
 
 depend:
