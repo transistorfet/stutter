@@ -8,18 +8,21 @@
 #define _TYPE_H
 
 #include <nit/types.h>
-#include <nit/string.h>
-#include <nit/callback.h>
+
+typedef int (*create_t)(char *, ...);
+typedef int (*evaluate_t)(void *, void *);
 
 struct type_s {
 	char *name;
+	create_t create;
+	evaluate_t evaluate;
 	destroy_t destroy;
 };
 
 int init_type(void);
 int release_type(void);
 
-int add_type(char *, destroy_t);
+struct type_s *add_type(char *, create_t, evaluate_t, destroy_t);
 int remove_type(char *);
 struct type_s *find_type(char *);
 
