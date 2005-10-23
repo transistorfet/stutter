@@ -1,10 +1,14 @@
 
 DIRS = libnit/src src
+CVSROOT = :pserver:anonymous@jabberwocky.hn.org:/home/cvs/cvsroot
 
-.PHONY: all $(DIRS)
+.PHONY: all update $(DIRS)
 
 all: $(DIRS)
 
 $(DIRS):
-	make -C $@
+	$(MAKE) -C $@
+
+update:
+	cvs -d$(CVSROOT) update -d
 
