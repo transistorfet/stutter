@@ -6,30 +6,40 @@
  */
 
 #include CONFIG_H
-#include <command.h>
+//#include <command.h>
+#include <type.h>
 #include <frontend.h>
 #include <variable.h>
 #include <modules/irc.h>
 #include <modules/base.h>
+
+#include <nit/callback.h>
 
 int init_system(void)
 {
 	void *window;
 
 	init_variable();
-	init_command();
+	//init_command();
+
+	/* Types */
+	base_load_command();
 
 	/* Load Modules */
+	// TODO init_base();
 	init_irc();
 
 	/* Setup Base Module */
-	fe_bind_key(NULL, '\n', COMMAND_PARSER, NULL);
+	fe_bind_key(NULL, '\n', (callback_t) COMMAND_PARSER, (void *) NULL);
+	//bind_key(NULL, "\n", create_callback(0, 0, NULL, (callback_t) COMMAND_PARSER, NULL), create_string(""));
 
-	add_command("next", (callback_t) base_cmd_next, NULL);
-	add_command("previous", (callback_t) base_cmd_previous, NULL);
-	add_command("scroll", (callback_t) base_cmd_scroll, NULL);
-	add_command("get", (callback_t) base_cmd_get, NULL);
-	add_command("set", (callback_t) base_cmd_set, NULL);
+	//add_variable(find_type("command"), "base", "next", create_callback(0, 0, NULL, base_cmd_next, NULL));
+	base_add_command(BASE_NAMESPACE, "next", (callback_t) base_cmd_next, NULL);
+	base_add_command(BASE_NAMESPACE, "previous", (callback_t) base_cmd_previous, NULL);
+	base_add_command(BASE_NAMESPACE, "scroll", (callback_t) base_cmd_scroll, NULL);
+	base_add_command(BASE_NAMESPACE, "get", (callback_t) base_cmd_get, NULL);
+	base_add_command(BASE_NAMESPACE, "set", (callback_t) base_cmd_set, NULL);
+	base_add_command(BASE_NAMESPACE, "remove", (callback_t) base_cmd_remove, NULL);
 
 	/* Setup IRC Module */
 	fe_register_widget("irc:statusbar", create_callback(0, 0, NULL, (callback_t) irc_status_bar, NULL));
@@ -38,15 +48,16 @@ int init_system(void)
 
 	//fe_bind_key(']', base_key_cmd, "next");
 
-	add_command("join", (callback_t) irc_cmd_join, NULL);
-	add_command("leave", (callback_t) irc_cmd_leave, NULL);
-	add_command("quit", (callback_t) irc_cmd_quit, NULL);
-	add_command("msg", (callback_t) irc_cmd_msg, NULL);
-	add_command("me", (callback_t) irc_cmd_me, NULL);
-	add_command("nick", (callback_t) irc_cmd_nick, NULL);
-	add_command("notice", (callback_t) irc_cmd_notice, NULL);
-	add_command("say", (callback_t) irc_cmd_say, NULL);
-	add_command("", (callback_t) irc_cmd_say, NULL);
+	base_add_command(IRC_NAMESPACE, "join", (callback_t) irc_cmd_join, NULL);
+	base_add_command(IRC_NAMESPACE, "leave", (callback_t) irc_cmd_leave, NULL);
+	base_add_command(IRC_NAMESPACE, "quit", (callback_t) irc_cmd_quit, NULL);
+	base_add_command(IRC_NAMESPACE, "msg", (callback_t) irc_cmd_msg, NULL);
+	base_add_command(IRC_NAMESPACE, "me", (callback_t) irc_cmd_me, NULL);
+	base_add_command(IRC_NAMESPACE, "nick", (callback_t) irc_cmd_nick, NULL);
+	base_add_command(IRC_NAMESPACE, "notice", (callback_t) irc_cmd_notice, NULL);
+	base_add_command(IRC_NAMESPACE, "say", (callback_t) irc_cmd_say, NULL);
+	base_add_command(IRC_NAMESPACE, "", (callback_t) irc_cmd_say, NULL);
+	select_namespace(IRC_NAMESPACE);
 
 	/* Setup HTTP Module */
 
@@ -72,7 +83,7 @@ int release_system(void)
 	/* Release Modules */
 	release_irc();
 
-	release_command();
+	//release_command();
 	release_variable();
 	return(0);
 }
