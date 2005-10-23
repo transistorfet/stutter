@@ -6,6 +6,10 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define BASE_NAMESPACE			"base"
+
+#define IRC_NAMESPACE			"irc"
+
 #define IRC_DEFAULT_SERVER		"euro.othersideirc.net"
 //#define IRC_DEFAULT_SERVER		"clarke.freenode.net"
 #define IRC_DEFAULT_PORT		6667
@@ -14,6 +18,8 @@
 #define IRC_LOG_SIZE			100
 #define IRC_MAX_NICK			20
 #define IRC_MAX_STRING			512
+
+#define IRC_CHANNEL_BITFLAGS		0x01
 
 #define IRC_STATUS_BAR			" %H %n on %c (%t)"
 #define IRC_STATUS_COLOUR		SC_INVERSE
@@ -46,7 +52,8 @@
 
 #define UNKNOWN_COMMAND			"*** Unknown Command"
 #define COMMAND_PREFIX			"/"
-#define COMMAND_PARSER			base_parse_command
+#define DEFAULT_COMMAND			""
+#define COMMAND_PARSER			base_cmd_parse
 	
 //#define GREET_MSG			"Welcome to the show!"
 
