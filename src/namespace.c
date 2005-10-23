@@ -1,7 +1,7 @@
 /*
  * Module Name:		namespace.c
  * Version:		0.1
- * Module Requirements:	list ; string ; memory
+ * Module Requirements:	list ; memory
  * Description:		Type Manager
  */
 
@@ -10,9 +10,7 @@
 
 #include <namespace.h>
 #include <nit/list.h>
-#include <nit/string.h>
 #include <nit/memory.h>
-#include <nit/callback.h>
 
 static struct namespace_s *current = NULL;
 static struct list_s *namespace_list = NULL;
@@ -38,7 +36,7 @@ int release_namespace(void)
 
 /**
  * Add a namespace to the list with the given name and with the given
- * list (Note: the exact list given is used.  A 0 is returned on
+ * list (Note: the exact list given is used).  A 0 is returned on
  * success or -1 on error.
  */
 struct namespace_s *add_namespace(char *name, struct list_s *list)
@@ -60,7 +58,7 @@ struct namespace_s *add_namespace(char *name, struct list_s *list)
 
 /**
  * The namespace with the given name is removed from the namespace list
- * and its callbacks are destroyed.  If the removal is successful,
+ * and its list is destroyed.  If the removal is successful,
  * a 0 is returned, otherwise -1.
  */
 int remove_namespace(char *name)
@@ -85,8 +83,8 @@ int select_namespace(char *name)
 }
 
 /**
- * Return a pointer to the currently selected or return NULL if no namespace
- * is currently selected.
+ * Return a pointer to the currently selected namespace or return NULL
+ * if no namespace is currently selected.
  */
 struct namespace_s *current_namespace(void)
 {
@@ -102,20 +100,6 @@ struct namespace_s *find_namespace(char *name)
 	return(list_find(namespace_list, name, 0));
 }
 
-/**
- * Look up the namespace using the give name interpreted as a
- * variable name with the namespace encoded in it (the
- * namespace:variable format).  If no namespace is present then
- * the default namespace is returned.
- */
-struct namespace_s *resolve_namespace(char *name)
-{
-	if (!strchr(name, ':'))
-		// TODO return the current namesapce
-		return(NULL);
-	return(list_find(namespace_list, name, 0));
-}
-
 /*** Local Functions ***/
 
 /**
@@ -125,18 +109,6 @@ struct namespace_s *resolve_namespace(char *name)
 static int compare_namespace(struct namespace_s *namespace, char *name)
 {
 	return(strcmp(namespace->name, name));
-/*
-	int i = 0;
-
-	while (1) {
-		if ((namespace->name[i] == '\0') && ((name[i] == ':') || name[i] == '\0'))
-			return(0);
-		else if ((name[i] == '\0') || (namespace->name[i] != name[i]))
-			return(1);
-		i++;
-	}
-	return(1);
-*/
 }
 
 /**
@@ -144,7 +116,8 @@ static int compare_namespace(struct namespace_s *namespace, char *name)
  */
 static void destroy_namespace(struct namespace_s *namespace)
 {
-	destroy_list(namespace->list);
+	if (namespace->list)
+		destroy_list(namespace->list);
 	memory_free(namespace);
 }
 

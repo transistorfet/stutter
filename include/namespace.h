@@ -8,9 +8,6 @@
 #define _NAMESPACE_H
 
 #include <nit/list.h>
-#include <nit/string.h>
-
-#define BASE_NAMESPACE			""
 
 struct namespace_s {
 	char *name;
@@ -25,7 +22,6 @@ int remove_namespace(char *);
 int select_namespace(char *);
 struct namespace_s *current_namespace(void);
 struct namespace_s *find_namespace(char *);
-struct namespace_s *resolve_namespace(char *);
 
 #endif
 
