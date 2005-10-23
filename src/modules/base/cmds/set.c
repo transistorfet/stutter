@@ -28,9 +28,9 @@ int base_cmd_set(char *env, char *str)
 		get_param_m(name, ns_name, ':');
 	}
 	if (add_variable(find_type("string"), ns_name, name, create_string(str)))
-		fe_print(window, create_string("Error setting variable."));
-	else
 		fe_print(window, create_string("Variable: %s:%s <= %s", ns_name ? ns_name : "", name, str));
+	else
+		fe_print(window, create_string("Error setting variable."));
 	return(0);
 }
 
