@@ -8,7 +8,9 @@ OBJS =	cmds/next.o \
 	cmds/scroll.o \
 	cmds/get.o \
 	cmds/set.o \
-	utils/parse.o
+	cmds/parse.o \
+	cmds/remove.o \
+	types/command.o
 
 ARFLAGS = rc
 CFLAGS = -g -I$(ROOT)/include
