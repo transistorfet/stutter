@@ -13,11 +13,14 @@ int base_cmd_previous(char *, char *);
 int base_cmd_scroll(char *, char *);
 int base_cmd_get(char *, char *);
 int base_cmd_set(char *, char *);
+int base_cmd_remove(char *, char *);
+int base_cmd_parse(char *, char *);
 
-/* Keys */
+/* Types */
+int base_load_command(void);
+int base_add_command(char *, char *, int (*)(void *, void *), void *);
 
 /* Utils */
-int base_parse_command(char *env, int ch);
 
 #endif
 
