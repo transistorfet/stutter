@@ -2,16 +2,12 @@
 
 ROOT = ..
 
-#DIRS = $(FEDIR)
-# $(LIBNIT_A)
-
 TARGET = $(ROOT)/bin/stutter
 OBJS =	main.o \
 	type.o \
-	command.o \
 	variable.o \
 	namespace.o \
-	$(FEDIR)/$(FRONTEND).a \
+	frontend/$(FRONTEND)/$(FRONTEND).a \
 	modules/base/modbase.a \
 	modules/irc/modirc.a
 
