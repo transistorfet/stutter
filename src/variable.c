@@ -27,20 +27,26 @@ struct variable_node_s {
 	create_list(0, (compare_t) compare_variable, (destroy_t) destroy_variable)
 
 static int variable_initialized = 0;
+static char **variable_path = NULL;
+static int variable_path_entries = 0;
 
 static int compare_variable(struct variable_s *, char *);
 static void destroy_variable(struct variable_s *);
 
 int init_variable(void)
 {
+	struct type_s *type;
+
 	if (variable_initialized)
 		return(1);
 	init_type();
 	init_namespace();
 
+	// TODO why is this need again??? was it related to the seperate command module?
 	add_namespace(BASE_NAMESPACE, create_variable_list());
-	add_type("string", NULL, NULL, (destroy_t) destroy_string);
 
+	if (!(type = add_type("string", NULL, NULL, (destroy_t) destroy_string)))
+		return(-1);
 	variable_initialized = 1;
 	return(0);
 }
@@ -59,7 +65,10 @@ int release_variable(void)
  * given value (the exact pointer given will be used by the variable
  * and manipulated by the functions in the given type).  If the
  * variable already exists, its value will be destroyed and replaced
- * with the given value.  A 0 is returned on success or -1 on error.
+ * with the given value.  A pointer to the newly created variable is
+ * returned on success or NULL is returned on error.  If the type
+ * given is NULL, the function just returns NULL.  In all other error
+ * conditions, the value is destroyed using the type's destroy function.
  */
 struct variable_s *add_variable(struct type_s *type, char *ns_name, char *var_name, void *value)
 {
@@ -75,11 +84,12 @@ struct variable_s *add_variable(struct type_s *type, char *ns_name, char *var_na
 		return(var);
 	}
 	else {
-		if ((!ns_name && !(namespace = current_namespace()) && !(namespace = find_namespace(BASE_NAMESPACE)))
-		   || (ns_name && !(namespace = find_namespace(ns_name)) && !(namespace = add_namespace(ns_name, create_variable_list())))) {
-			type->destroy(value);
-			return(NULL);
+		if (ns_name) {
+			if (!(namespace = find_namespace(ns_name)) && !(namespace = add_namespace(ns_name, create_variable_list())))
+				return(NULL);
 		}
+		else if (!ns_name && (!variable_path_entries || !(namespace = find_namespace(variable_path[0]))))
+			return(NULL);
         
 		if (!(var = memory_alloc(sizeof(struct variable_s) + strlen(var_name) + 1))) {
 			type->destroy(value);
@@ -108,8 +118,13 @@ int remove_variable(struct type_s *type, char *ns_name, char *var_name)
 {
 	struct namespace_s *namespace;
 
-	if ((!ns_name && !(namespace = current_namespace()) && !(namespace = find_namespace(BASE_NAMESPACE))) || (ns_name && !(namespace = find_namespace(ns_name))))
+	if (ns_name) {
+		if (!(namespace = find_namespace(ns_name)))
+			return(-1);
+	}
+	else if (!variable_path_entries || !(namespace = find_namespace(variable_path[0])))
 		return(-1);
+
 	// TODO check the type of the variable before deleting
 	return(list_delete(namespace->list, var_name));
 }
@@ -121,15 +136,62 @@ int remove_variable(struct type_s *type, char *ns_name, char *var_name)
  */
 struct variable_s *find_variable(struct type_s *type, char *ns_name, char *var_name)
 {
+	int i = 0;
 	struct variable_s *var;
 	struct namespace_s *namespace;
 
-	if ((!ns_name && !(namespace = current_namespace()) && !(namespace = find_namespace(BASE_NAMESPACE)))
-	   || (ns_name && !(namespace = find_namespace(ns_name))))
-		return(NULL);
-	if ((var = list_find(namespace->list, var_name, 0)) && (!type || (type == var->type)))
-		return(var);
+	if (ns_name) {
+		if (!(namespace = find_namespace(ns_name)))
+			return(NULL);
+		if ((var = list_find(namespace->list, var_name, 0)) && (!type || (type == var->type)))
+			return(var);
+	}
+	else {
+		for (;i < variable_path_entries;i++) {
+			if ((namespace = find_namespace(variable_path[i])) && (var = list_find(namespace->list, var_name, 0)) && (!type || (type == var->type)))
+				return(var);
+		}
+	}
+
 	return(NULL);
+}
+
+/**
+ * Set the current path lookup table to names in the given string
+ * where the string is of the format "name;name;...".  If the new
+ * table cannot be created, -1 is returned and the original path
+ * remains unmodified otherwise a 0 is returned.
+ */
+int select_variable_path(char *str)
+{
+	char *tmp, **path;
+	int i = 0, j = 0, entries = 1;
+
+	for (;str[i] != '\0';i++) {
+		if (str[i] == ';')
+			entries++;
+	}
+
+	if (!(path = memory_alloc(i + 1 + (entries * sizeof(char *)))))
+		return(-1);
+	tmp = (char *) (((size_t) path) + (entries * sizeof(char *)));
+
+	path[j++] = tmp;
+	for (i = 0;str[i] != '\0';i++) {
+		if (str[i] == ';') {
+			tmp[i] = '\0';
+			path[j++] = &tmp[i + 1];
+		}
+		else
+			tmp[i] = str[i];
+	}
+	tmp[i] = '\0';
+
+	if (variable_path)
+		free(variable_path);
+	variable_path = path;
+	variable_path_entries = entries;
+	return(0);
 }
 
 /*** Local Functions ***/
