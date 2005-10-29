@@ -11,7 +11,8 @@
 #include <nit/string.h>
 #include <nit/callback.h>
 
-#define KEY_INITIAL_ROOT	50
+#define KEY_INITIAL_BASE_ROOT	50
+#define KEY_INITIAL_ROOT	20
 #define KEY_INITIAL_SUBMAP	10
 
 #define MAX_KEYS		256
@@ -39,10 +40,9 @@ struct key_map_s {
 	struct key_s **table;
 };
 
-static char *cur_context;
 static struct list_s *context_list;
 
-static struct key_map_s *current_map;
+static struct key_map_s *current_root, *current_map;
 
 static struct key_s *create_key(short, short, union key_data_u, string_t);
 static void destroy_key(struct key_s *);
@@ -56,14 +56,15 @@ int init_key(void)
 
 	if (context_list)
 		return(1);
-	if (!(root = create_key_map("", KEY_INITIAL_ROOT)))
-		return(-1);
 	if (!(context_list = create_list(0, (compare_t) compare_key_map_context, (destroy_t) destroy_key_map))) {
-		destroy_key_map(root);
+		return(-1);
+	if (!(root = create_key_map("", KEY_INITIAL_BASE_ROOT)))
+		destroy_list(context_list);
+		context_list = NULL;
 		return(-1);
 	}
 	list_add(context_list, root);
-	cur_context = root->context;
+	current_root = root;
 	current_map = root;
 	return(0);
 }
@@ -91,8 +92,11 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 
 	if (*str == '\0')
 		return(-1);
-	if (!(cur_map = list_find(context_list, cur_context, 0)))
-		;// TODO make a new one or fail?
+	if (!(cur_map = list_find(context_list, context, 0))) {
+		if (!(cur_map = create_key_map(context, KEY_INITIAL_ROOT)))
+			return(-1);
+		list_add(context_list, cur_map);
+	}
 	for (i = 0;str[i] != '\0';i++) {
 		hash = key_hash(cur_map, str[i]);
 		cur_key = cur_map->table[hash];
@@ -121,9 +125,9 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 					return(-1);
 			}
 			else {
-				if (!(map = create_key_map(context, KEY_INITIAL_SUBMAP)))
+				if (!(map = create_key_map(NULL, KEY_INITIAL_SUBMAP)))
 					return(-1);
-				if (!(key = create_key(str[i], KEY_KBF_SUBMAP, (union key_data_u) map, args))) {
+				if (!(key = create_key(str[i], KEY_KBF_SUBMAP, (union key_data_u) map, NULL))) {
 					destroy_key_map(map);
 					return(-1);
 				}
@@ -148,7 +152,7 @@ int unbind_key(char *context, char *str)
 	struct key_s *cur_key, *prev_key;
 	struct key_map_s *cur_map;
 
-	if (!(cur_map = list_find(context_list, cur_context, 0)))
+	if (!(cur_map = list_find(context_list, context, 0)))
 		return(-1);
 	for (i = 0;str[i] != '\0';i++) {
 		hash = key_hash(cur_map, str[i]);
@@ -181,7 +185,12 @@ int unbind_key(char *context, char *str)
 }
 
 /**
- *
+ * Perform a key lookup on one character of a key sequence.  If the
+ * key found is a terminal key (not a submap) then the callback for
+ * that key is called using the store string specified in the
+ * bind_key function; otherwise the submap is made current and is
+ * used to look up the key passed during the next call to process_key.
+ * If the key is not found, -1 is returned, otherwise 0 is returned.
  */
 int process_key(int ch)
 {
@@ -189,6 +198,7 @@ int process_key(int ch)
 
 	if (ch >= MAX_KEYS) {
 		// TODO process some other way (these are funny keys like resize)
+		return(-1);
 	}
 
 	cur = current_map->table[key_hash(current_map, ch)];
@@ -198,15 +208,32 @@ int process_key(int ch)
 				current_map = cur->data.submap;
 			else {
 				execute_callback(cur->data.callback, cur->args);
-				if (!(current_map = list_find(context_list, cur_context, 0)))
-					current_map = list_find(context_list, "", 0);
+				current_map = current_root;
 			}
 			return(0);
 		}
 		cur = cur->next;
 	}
-	// TODO default action (or else return -1 causing the caller to execute default action)
 	return(-1);
+}
+
+/**
+ * Select the given context to be used when processing key sequences.
+ * If the given context does not exist, a new context with the given
+ * name will be created and made current.  A 0 is returned on success
+ * or -1 on failure.  If a failure occurs, the context will not change.
+ */
+int select_key_context(char *context)
+{
+	struct key_map_s *root;
+
+	if (!(root = list_find(context_list, context, 0))) {
+		if (!(root = create_key_map(context, KEY_INITIAL_ROOT)))
+			return(-1);
+		list_add(context_list, root);
+	}
+	current_root = root;
+	return(0);
 }
 
 /*** Local Functions ***/
@@ -259,7 +286,7 @@ static struct key_map_s *create_key_map(char *context, int size)
 		memory_free(map);
 		return(NULL);
 	}
-	map->context = create_string(context);
+	map->context = context ? create_string(context) : NULL;
 	map->size = size;
 	map->entries = 0;
 	return(map);
