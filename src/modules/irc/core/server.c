@@ -60,6 +60,7 @@ int irc_server_reconnect(struct irc_server *server)
 {
 	net_disconnect(server->net);
 	server->net = net_connect(server->address, server->port);
+	// TODO register network callback
 	if (server_init_connection(server)) {
 		irc_server_disconnect(server);
 		return(-1);
@@ -138,10 +139,10 @@ int irc_dispatch_msg(struct irc_server *server, struct irc_msg *msg)
 /**
  * Send the join command to the given server in order to join the channel
  * on the server with the given name, create a channel structure for the
- * channel and add it to the server channel list.  A -1 is returned if
- * the send fails or a 0 on success.  If the channel already exits, the
- * join command will still be sent but a new channel structure will not
- * be created.
+ * channel and add it to the server channel list.  NULL is returned if
+ * the send fails or a pointer to the channel struct on success.  If the
+ * channel already exits, the join command will still be sent but a new
+ * channel structure will not be created.
  */
 struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void *ptr)
 {
@@ -149,49 +150,41 @@ struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void
 	struct irc_channel *channel;
 
 	if (msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)) {
-		if (!irc_send_msg(server, msg)) {
-			if ((channel = irc_get_channel(server, name)) || ((channel = irc_create_channel(name, ptr, server)) && !list_add(server->channels, channel)))
-				return(channel);
-			irc_destroy_channel(channel);
+		if (channel = irc_get_channel(server, name))
+			irc_send_msg(server, msg);
+		else if (channel = irc_create_channel(name, ptr, server)) {
+			if (irc_send_msg(server, msg)) {
+				irc_destroy_channel(channel);
+				return(NULL);
+			}
+			else
+				list_add(server->channels, channel);
 		}
 		irc_destroy_msg(msg);
+		return(channel);
 	}
 	return(NULL);
-/*
-	if (irc_get_channel(server, name))
-		return(NULL);
-	if (!(msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)))
-		return(NULL);
-	if (!(channel = irc_create_channel(name, ptr, server)))
-		return(NULL);
-	if (irc_send_msg(server, msg))
-		return(NULL);
-	irc_destroy_msg(msg);
-	list_add(server->channels, channel);
-	return(channel);
-*/
 }
 
 /**
  * Leave the channel with the given name on the given server, remove the
  * appropriate channel structure from the server channel list and destroy
- * that structure.  A -1 is returned if the connection fails or a 0 on
- * success or if the channel does not exist in the list.
+ * that structure.  A -1 is returned if the message cannot be created or a
+ * 0 otherwise.
  */
 int irc_leave_channel(struct irc_server *server, char *name)
 {
 	struct irc_msg *msg;
 	struct irc_channel *channel;
 
-	if (!(msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, name)))
-		return(-1);
-	if (!(channel = list_find(server->channels, name, 0)))
-		return(-2);
-	if (irc_send_msg(server, msg))
-		return(-3);
-	irc_destroy_msg(msg);
-	list_delete(server->channels, name);
-	return(0);
+	if (msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, name)) {
+		irc_send_msg(server, msg);
+		if (channel = list_find(server->channels, name, 0))
+			list_delete(server->channels, name);
+		irc_destroy_msg(msg);
+		return(0);
+	}
+	return(-1);
 }
 
 /**
@@ -201,25 +194,13 @@ int irc_leave_channel(struct irc_server *server, char *name)
 int irc_change_nick(struct irc_server *server, char *nick)
 {
 	struct irc_msg *msg;
-	struct irc_user *user;
 	struct irc_channel *channel;
 
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, nick)))
 		return(-1);
-	if (irc_send_msg(server, msg))
-		return(-1);
+	if (!irc_send_msg(server, msg))
+		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
 	irc_destroy_msg(msg);
-
-// TODO this changes the nick of everyone but a message should be sent back to us in which
-//	case our message receiver will do this for us (as if it was the nickchange of
-//	someone else.
-
-//	list_clear_current(server->channels);
-//	while (channel = list_next(server->channels)) {
-//		if (user = irc_get_user(channel, server->nick))
-//			irc_change_user_nick(user, nick);
-//	}
-	strncpy(server->nick, nick, IRC_MAX_NICK - 1);
 	return(0);
 }
 
@@ -255,7 +236,7 @@ static int server_init_connection(struct irc_server *server)
 	if (ret)
 		return(-1);
 
-	if (!(msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "IRCer")))
+	if (!(msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")))
 		return(-1);
 	ret = irc_send_msg(server, msg);
 	irc_destroy_msg(msg);
