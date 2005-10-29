@@ -10,7 +10,6 @@
 #include <nit/string.h>
 #include <nit/callback.h>
 
-// TODO are we going to leave the 'widget' in all of these function names?
 void *fe_create_widget(char *, void *);
 int fe_destroy_widget(void *);
 void *fe_get_parent(void *);
@@ -40,10 +39,6 @@ void fe_clear_input(void);
 // TODO should there be more callbacks or something passed to fe_register_widget
 int fe_register_widget(char *, struct callback_s *);
 int fe_unregister_widget(char *);
-int fe_bind_key(char *, char *, callback_t, void *);
-int fe_select_context(char *);
-int fe_current_context(void);
-// TODO do we need more advanced functions for selecting the context?  (push and pop context? context cascading?)
 
 // TODO is this good or should it *really* be fe_exit()?
 void fe_terminate(void);
