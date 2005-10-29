@@ -6,6 +6,7 @@
  */
 
 #include <key.h>
+#include <nit/list.h>
 #include <nit/memory.h>
 #include <nit/string.h>
 #include <nit/callback.h>
@@ -20,12 +21,9 @@
 
 #define key_hash(list, key)	( key % list->size )
 
-typedef char *context_t;
-
 struct key_s {
 	short ch;
 	short bitflags;
-	context_t context;
 	union key_data_u {
 		struct callback_s *callback;
 		struct key_map_s *submap;
@@ -35,35 +33,44 @@ struct key_s {
 };
 
 struct key_map_s {
+	string_t context;
 	int size;
 	int entries;
 	struct key_s **table;
 };
 
-static context_t cur_context;
-static struct list_s *context;
+static char *cur_context;
+static struct list_s *context_list;
 
-// TODO have a table of table roots, one for each context and a current context variable
-static struct key_map_s *root, *current_map;
+static struct key_map_s *current_map;
 
-static struct key_s *create_key(short, short, context_t, union key_data_u, string_t);
+static struct key_s *create_key(short, short, union key_data_u, string_t);
 static void destroy_key(struct key_s *);
-static struct key_map_s *create_key_map(int);
+static struct key_map_s *create_key_map(char *, int);
+static int compare_key_map_context(struct key_map_s *, char *);
 static void destroy_key_map(struct key_map_s *);
 
 int init_key(void)
 {
-	if (root)
+	struct key_map_s *root;
+
+	if (context_list)
 		return(1);
-	if (!(root = create_key_map(KEY_INITIAL_ROOT)))
+	if (!(root = create_key_map("", KEY_INITIAL_ROOT)))
 		return(-1);
+	if (!(context_list = create_list(0, (compare_t) compare_key_map_context, (destroy_t) destroy_key_map))) {
+		destroy_key_map(root);
+		return(-1);
+	}
+	list_add(context_list, root);
+	cur_context = root->context;
 	current_map = root;
 	return(0);
 }
 
 int release_key(void)
 {
-	destroy_key_map(root);
+	destroy_list(context_list);
 	return(0);
 }
 
@@ -84,7 +91,8 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 
 	if (*str == '\0')
 		return(-1);
-	cur_map = root;
+	if (!(cur_map = list_find(context_list, cur_context, 0)))
+		;// TODO make a new one or fail?
 	for (i = 0;str[i] != '\0';i++) {
 		hash = key_hash(cur_map, str[i]);
 		cur_key = cur_map->table[hash];
@@ -109,13 +117,13 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 		}
 		else {
 			if (str[i + 1] == '\0') {
-				if (!(key = create_key(str[i], 0, context, (union key_data_u) callback, args)))
+				if (!(key = create_key(str[i], 0, (union key_data_u) callback, args)))
 					return(-1);
 			}
 			else {
-				if (!(map = create_key_map(KEY_INITIAL_SUBMAP)))
+				if (!(map = create_key_map(context, KEY_INITIAL_SUBMAP)))
 					return(-1);
-				if (!(key = create_key(str[i], KEY_KBF_SUBMAP, context, (union key_data_u) map, args))) {
+				if (!(key = create_key(str[i], KEY_KBF_SUBMAP, (union key_data_u) map, args))) {
 					destroy_key_map(map);
 					return(-1);
 				}
@@ -129,11 +137,47 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 }
 
 /**
- *
+ * Find the given key in the given context and remove it from the list
+ * of bindings.  If the given key sequence refers to a submap then -1
+ * will be returned otherwise 0 is returned.  If the given key is the
+ * last key in a given submap then the submap is removed as well.
  */
-int unbind_key(char *context, char *key)
+int unbind_key(char *context, char *str)
 {
+	int i, hash;
+	struct key_s *cur_key, *prev_key;
+	struct key_map_s *cur_map;
 
+	if (!(cur_map = list_find(context_list, cur_context, 0)))
+		return(-1);
+	for (i = 0;str[i] != '\0';i++) {
+		hash = key_hash(cur_map, str[i]);
+		prev_key = NULL;
+		cur_key = cur_map->table[hash];
+		while (cur_key) {
+			if (cur_key->ch == str[i]) {
+				if (cur_key->bitflags & KEY_KBF_SUBMAP) {
+					cur_map = cur_key->data.submap;
+					break;
+				}
+				else if (str[i + 1] == '\0') {
+					if (prev_key)
+						prev_key->next = cur_key->next;
+					else
+						cur_map->table[hash] = cur_key->next;
+					cur_map->entries--;
+					destroy_key(cur_key);
+				}
+				else
+					return(-1);
+			}
+			prev_key = cur_key;
+			cur_key = cur_key->next;
+		}
+		if (!cur_key)
+			return(-1);
+	}
+	return(-1);
 }
 
 /**
@@ -154,7 +198,8 @@ int process_key(int ch)
 				current_map = cur->data.submap;
 			else {
 				execute_callback(cur->data.callback, cur->args);
-				current_map = root;
+				if (!(current_map = list_find(context_list, cur_context, 0)))
+					current_map = list_find(context_list, "", 0);
 			}
 			return(0);
 		}
@@ -169,7 +214,7 @@ int process_key(int ch)
 /**
  * Create a new key struct with all the given parameters.
  */
-static struct key_s *create_key(short ch, short bitflags, context_t context, union key_data_u data, string_t args)
+static struct key_s *create_key(short ch, short bitflags, union key_data_u data, string_t args)
 {
 	struct key_s *key;
 
@@ -177,7 +222,6 @@ static struct key_s *create_key(short ch, short bitflags, context_t context, uni
 		return(NULL);
 	key->ch = ch;
 	key->bitflags = bitflags;
-	key->context = context;
 	key->data = data;
 	key->args = args;
 	key->next = NULL;
@@ -205,7 +249,7 @@ static void destroy_key(struct key_s *key)
  * Create a new key map of the given initial size and return a
  * pointer to it or return NULL on error.
  */
-static struct key_map_s *create_key_map(int size)
+static struct key_map_s *create_key_map(char *context, int size)
 {
 	struct key_map_s *map;
 
@@ -215,9 +259,18 @@ static struct key_map_s *create_key_map(int size)
 		memory_free(map);
 		return(NULL);
 	}
+	map->context = create_string(context);
 	map->size = size;
 	map->entries = 0;
 	return(map);
+}
+
+/**
+ *
+ */
+static int compare_key_map_context(struct key_map_s *map, char *context)
+{
+	return(strcmp(map->context, context));
 }
 
 /**
