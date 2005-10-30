@@ -17,13 +17,11 @@
 #include <nit/callback.h>
 #include <nit/keyboard.h>
 #include <frontend.h>
-//#include "simple.h"
 #include "window.h"
 #include "input.h"
 
 int exit_flag = 1;
 struct input_s *input;
-struct list_s *key_list;
 struct screen_s *screen;
 struct queue_s *window_list;
 struct callback_s *status_bar = NULL;
@@ -44,16 +42,11 @@ int init_frontend(void)
 	if (!(input = create_input(0, 0)))
 		return(-1);
 
-	if (!(key_list = create_list(0, (compare_t) compare_callback_key, (destroy_t) destroy_callback)))
-		return(-1);
-
 	return(0);
 }
 
 int release_frontend(void)
 {
-	destroy_list(key_list);
-
 	destroy_input(input);
 	destroy_queue(window_list);
 	destroy_screen(screen);
@@ -188,17 +181,9 @@ void fe_clear_input(void)
 int fe_check_input(void)
 {
 	int ch;
-	struct callback_s *callback;
 
-	if (ch = keyboard_read_char()) {
-		list_clear_current(key_list);
-		if (callback = list_find(key_list, (void *) ch, 0)) {
-			if (!execute_callback(callback, (void *) ch))
-				return(0);
-		}
-		else
-			input_default(input, ch);
-	}
+	if ((ch = keyboard_read_char()) && (process_key(ch)))
+		input_default(input, ch);
 	return(0);
 }
 
@@ -212,11 +197,6 @@ int fe_register_widget(char *name, struct callback_s *refresh)
 int fe_unregister_widget(char *name)
 {
 	return(-1);
-}
-
-int fe_bind_key(char *context, char *key, callback_t func, void *ptr)
-{
-	return(list_add(key_list, create_callback(0, 0, (void *) key, (callback_t) func, (void *) ptr)));
 }
 
 void fe_terminate(void)
