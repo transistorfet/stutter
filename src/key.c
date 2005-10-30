@@ -14,6 +14,7 @@
 #define KEY_INITIAL_BASE_ROOT	50
 #define KEY_INITIAL_ROOT	20
 #define KEY_INITIAL_SUBMAP	10
+#define KEY_LOAD_FACTOR		0.75
 
 #define MAX_KEYS		256
 #define MAX_BUFFER		20
@@ -41,7 +42,6 @@ struct key_map_s {
 };
 
 static struct list_s *context_list;
-
 static struct key_map_s *current_root, *current_map;
 
 static struct key_s *create_key(short, short, union key_data_u, string_t);
@@ -49,6 +49,7 @@ static void destroy_key(struct key_s *);
 static struct key_map_s *create_key_map(char *, int);
 static int compare_key_map_context(struct key_map_s *, char *);
 static void destroy_key_map(struct key_map_s *);
+static void rehash_key_map(struct key_map_s *, int);
 
 int init_key(void)
 {
@@ -56,9 +57,9 @@ int init_key(void)
 
 	if (context_list)
 		return(1);
-	if (!(context_list = create_list(0, (compare_t) compare_key_map_context, (destroy_t) destroy_key_map))) {
+	if (!(context_list = create_list(0, (compare_t) compare_key_map_context, (destroy_t) destroy_key_map)))
 		return(-1);
-	if (!(root = create_key_map("", KEY_INITIAL_BASE_ROOT)))
+	if (!(root = create_key_map("", KEY_INITIAL_BASE_ROOT))) {
 		destroy_list(context_list);
 		context_list = NULL;
 		return(-1);
@@ -92,7 +93,7 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 
 	if (*str == '\0')
 		return(-1);
-	if (!(cur_map = list_find(context_list, context, 0))) {
+	if (!(cur_map = context ? list_find(context_list, context, 0) : current_root)) {
 		if (!(cur_map = create_key_map(context, KEY_INITIAL_ROOT)))
 			return(-1);
 		list_add(context_list, cur_map);
@@ -135,6 +136,8 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 			key->next = cur_map->table[hash];
 			cur_map->table[hash] = key;
 			cur_map->entries++;
+			if ((cur_map->entries / cur_map->size) > KEY_LOAD_FACTOR)
+				rehash_key_map(cur_map, cur_map->entries + (cur_map->entries * 0.75));
 		}
 	}
 	return(0);
@@ -152,7 +155,7 @@ int unbind_key(char *context, char *str)
 	struct key_s *cur_key, *prev_key;
 	struct key_map_s *cur_map;
 
-	if (!(cur_map = list_find(context_list, context, 0)))
+	if (!(cur_map = context ? list_find(context_list, context, 0) : current_root))
 		return(-1);
 	for (i = 0;str[i] != '\0';i++) {
 		hash = key_hash(cur_map, str[i]);
@@ -293,11 +296,14 @@ static struct key_map_s *create_key_map(char *context, int size)
 }
 
 /**
- *
+ * Compare the given context name and the name of the context in the
+ * given map and if they are equal then return 0 otherwise return non-zero.
  */
 static int compare_key_map_context(struct key_map_s *map, char *context)
 {
-	return(strcmp(map->context, context));
+	if (map->context && context)
+		return(strcmp(map->context, context));
+	return(-1);
 }
 
 /**
@@ -317,5 +323,14 @@ static void destroy_key_map(struct key_map_s *map)
 			cur = tmp;
 		}
 	}
+}
+
+/**
+ * Resize the given key map to the given newsize and rehash the
+ * elements into it the new hashtable.
+ */
+static void rehash_key_map(struct key_map_s *map, int newsize)
+{
+	
 }
 
