@@ -11,13 +11,10 @@
 #include <nit/string.h>
 #include <nit/callback.h>
 
-#define KEY_INITIAL_BASE_ROOT	50
+#define KEY_INITIAL_BASE_ROOT	2 //50
 #define KEY_INITIAL_ROOT	20
 #define KEY_INITIAL_SUBMAP	10
 #define KEY_LOAD_FACTOR		0.75
-
-#define MAX_KEYS		256
-#define MAX_BUFFER		20
 
 #define KEY_KBF_SUBMAP		0x01
 
@@ -49,7 +46,7 @@ static void destroy_key(struct key_s *);
 static struct key_map_s *create_key_map(char *, int);
 static int compare_key_map_context(struct key_map_s *, char *);
 static void destroy_key_map(struct key_map_s *);
-static void rehash_key_map(struct key_map_s *, int);
+static int rehash_key_map(struct key_map_s *, int);
 
 int init_key(void)
 {
@@ -199,11 +196,6 @@ int process_key(int ch)
 {
 	struct key_s *cur;
 
-	if (ch >= MAX_KEYS) {
-		// TODO process some other way (these are funny keys like resize)
-		return(-1);
-	}
-
 	cur = current_map->table[key_hash(current_map, ch)];
 	while (cur) {
 		if (cur->ch == ch) {
@@ -329,8 +321,27 @@ static void destroy_key_map(struct key_map_s *map)
  * Resize the given key map to the given newsize and rehash the
  * elements into it the new hashtable.
  */
-static void rehash_key_map(struct key_map_s *map, int newsize)
+static int rehash_key_map(struct key_map_s *map, int newsize)
 {
-	
+	int i, hash, oldsize;
+	struct key_s **table, *cur, *tmp;
+
+	if (!(table = (struct key_s **) memory_alloc(newsize * sizeof(struct key_s *))))
+		return(-1);
+	oldsize = map->size;
+	map->size = newsize;
+	for (i = 0;i < oldsize;i++) {
+		cur = map->table[i];
+		while (cur) {
+			tmp = cur->next;
+			hash = key_hash(map, cur->ch);
+			cur->next = table[hash];
+			table[hash] = cur;
+			cur = tmp;
+		}
+	}
+	memory_free(map->table);
+	map->table = table;
+	return(0);
 }
 
