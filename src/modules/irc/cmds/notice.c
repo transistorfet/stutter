@@ -8,15 +8,15 @@
 #include <macros.h>
 #include <modules/irc.h>
 
-int irc_cmd_notice(char *env, char *str)
+int irc_cmd_notice(char *env, char *args)
 {
 	char *nick;
 	struct irc_server *server;
 
-	if (*str == '\0' || !(server = irc_current_server()))
+	if (*args == '\0' || !(server = irc_current_server()))
 		return(-1);
-	get_param_m(str, nick, ' ');
-	irc_notice(server, nick, str);
+	get_param_m(args, nick, ' ');
+	irc_notice(server, nick, args);
 	return(0);
 }
 

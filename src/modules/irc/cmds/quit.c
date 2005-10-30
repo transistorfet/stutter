@@ -8,11 +8,11 @@
 #include <frontend.h>
 #include <modules/irc.h>
 
-int irc_cmd_quit(char *env, char *str)
+int irc_cmd_quit(char *env, char *args)
 {
 	struct irc_msg *msg;
 
-	if (!(msg = irc_create_msg(IRC_MSG_QUIT, NULL, NULL, 1, (*str != '\0') ? str : IRC_QUIT_MSG)))
+	if (!(msg = irc_create_msg(IRC_MSG_QUIT, NULL, NULL, 1, (*args != '\0') ? args : IRC_QUIT_MSG)))
 		return(-1);
 	irc_broadcast_msg(msg);
 	irc_destroy_msg(msg);

@@ -9,14 +9,14 @@
 #include <nit/string.h>
 #include <modules/irc.h>
 
-int irc_cmd_me(char *env, char *str)
+int irc_cmd_me(char *env, char *args)
 {
 	char *action;
 	struct irc_channel *channel;
 
-	if (*str == '\0' || !(channel = irc_current_channel()))
+	if (*args == '\0' || !(channel = irc_current_channel()))
 		return(-1);
-	if (!(action = create_string("\x01\x41\x43TION %s\x01", str)))
+	if (!(action = create_string("\x01\x41\x43TION %s\x01", args)))
 		return(-1);
 	irc_private_msg(channel->server, channel->name, action);
 	destroy_string(action);
