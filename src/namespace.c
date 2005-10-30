@@ -12,7 +12,6 @@
 #include <nit/list.h>
 #include <nit/memory.h>
 
-static struct namespace_s *current = NULL;
 static struct list_s *namespace_list = NULL;
 
 static int compare_namespace(struct namespace_s *, char *);
@@ -43,7 +42,7 @@ struct namespace_s *add_namespace(char *name, struct list_s *list)
 {
 	struct namespace_s *namespace;
 
-	if (!name || !(namespace = memory_alloc(sizeof(struct namespace_s) + strlen(name) + 1)))
+	if (!name || !list || !(namespace = memory_alloc(sizeof(struct namespace_s) + strlen(name) + 1)))
 		return(NULL);
 	namespace->name = (char *) (((unsigned int) namespace) + sizeof(struct namespace_s));
 	strcpy(namespace->name, name);
@@ -64,31 +63,6 @@ struct namespace_s *add_namespace(char *name, struct list_s *list)
 int remove_namespace(char *name)
 {
 	return(list_delete(namespace_list, name));
-}
-
-/**
- * Select the namespace with the given name as the current namespace to
- * be used as the default namespace for lookups that do not include a
- * namespace reference.  If the given namespace cannot be found, -1 is
- * returned and the current namespace is not changed otherwise 0 is returned.
- */
-int select_namespace(char *name)
-{
-	struct namespace_s *namespace;
-
-	if (!(namespace = list_find(namespace_list, name, 0)))
-		return(-1);
-	current = namespace;
-	return(0);
-}
-
-/**
- * Return a pointer to the currently selected namespace or return NULL
- * if no namespace is currently selected.
- */
-struct namespace_s *current_namespace(void)
-{
-	return(current);
 }
 
 /**

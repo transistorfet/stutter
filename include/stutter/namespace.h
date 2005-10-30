@@ -19,8 +19,6 @@ int release_namespace(void);
 
 struct namespace_s *add_namespace(char *, struct list_s *);
 int remove_namespace(char *);
-int select_namespace(char *);
-struct namespace_s *current_namespace(void);
 struct namespace_s *find_namespace(char *);
 
 #endif
