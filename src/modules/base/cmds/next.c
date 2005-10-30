@@ -8,7 +8,7 @@
 #include <frontend.h>
 #include <modules/base.h>
 
-int base_cmd_next(char *env, char *str)
+int base_cmd_next(char *env, char *args)
 {
 	void *window;
 

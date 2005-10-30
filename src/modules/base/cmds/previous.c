@@ -8,7 +8,7 @@
 #include <frontend.h>
 #include <modules/base.h>
 
-int base_cmd_previous(char *env, char *str)
+int base_cmd_previous(char *env, char *args)
 {
 	void *window;
 

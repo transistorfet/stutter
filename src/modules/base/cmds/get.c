@@ -14,14 +14,14 @@
 #include <nit/string.h>
 #include <modules/base.h>
 
-int base_cmd_get(char *env, char *str)
+int base_cmd_get(char *env, char *args)
 {
 	char *name;
 	void *window;
 	char *ns_name = NULL;
 	struct variable_s *var;
 
-	get_param_m(str, name, ' ');
+	get_param_m(args, name, ' ');
 	if (!(window = fe_next_widget()) && !(window = fe_first_widget()))
 		return(-1);
 	if (strchr(name, ':')) {

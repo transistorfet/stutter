@@ -11,14 +11,14 @@
 #include <frontend.h>
 #include <modules/base.h>
 
-int base_cmd_scroll(char *env, char *str)
+int base_cmd_scroll(char *env, char *args)
 {
 	char *num;
 	void *window;
 
 	if (!(window = fe_current_widget()) && !(window = fe_first_widget()))
 		return(-1);
-	get_param_m(str, num, ' ');
+	get_param_m(args, num, ' ');
 	fe_scroll(window, atoi(num));
 	return(0);
 }
