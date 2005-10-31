@@ -21,15 +21,11 @@ struct irc_channel {
 	string_t topic;
 	
 	void *window;
-	struct list_s *users;
+	struct irc_user_list *users;
 	struct irc_server *server;
 };
 
 #define irc_create_channel_list()		create_list(0, (compare_t) irc_compare_channel, (destroy_t) irc_destroy_channel)
-
-#define irc_add_user(channel, name, bitflags)	list_add(channel->users, irc_create_user(name, bitflags))
-#define irc_remove_user(channel, name)		list_delete(channel->users, name)
-#define irc_get_user(channel, name)		list_find(channel->users, name, 0)
 
 struct irc_channel *irc_create_channel(char *, void *, struct irc_server *);
 int irc_destroy_channel(struct irc_channel *);

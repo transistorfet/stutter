@@ -50,7 +50,7 @@ int irc_destroy_channel(struct irc_channel *channel)
 		return(1);
 	destroy_string(channel->topic);
 	if (channel->users)
-		destroy_list(channel->users);
+		irc_destroy_user_list(channel->users);
 	free(channel);
 	return(0);
 }
