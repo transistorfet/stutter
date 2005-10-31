@@ -13,16 +13,18 @@
 #define IRC_UBF_VOICE		0x40
 
 struct irc_user {
-	string_t name;
+	string_t nick;
 	int bitflags;
 };
 
-#define irc_create_user_list()		create_list(0, (compare_t) irc_compare_user, (destroy_t) irc_destroy_user)
+struct irc_user_list;
 
-struct irc_user *irc_create_user(char *, int);
-int irc_destroy_user(struct irc_user *);
-int irc_compare_user(struct irc_user *, char *);
-int irc_change_user_nick(struct irc_user *, char *);
+struct irc_user_list *irc_create_user_list(void);
+void irc_destroy_user_list(struct irc_user_list *);
+struct irc_user *irc_add_user(struct irc_user_list *, char *, int);
+int irc_remove_user(struct irc_user_list *, char *);
+struct irc_user *irc_find_user(struct irc_user_list *, char *);
+int irc_change_user_nick(struct irc_user_list *, char *, char *);
 
 #endif
 
