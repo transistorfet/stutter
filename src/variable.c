@@ -45,7 +45,7 @@ int init_variable(void)
 	// TODO why is this need again??? was it related to the seperate command module?
 	add_namespace(BASE_NAMESPACE, create_variable_list());
 
-	if (!(type = add_type("string", NULL, NULL, (destroy_t) destroy_string)))
+	if (!(type = add_type("string", (create_t) create_string, NULL, (destroy_t) destroy_string)))
 		return(-1);
 	variable_initialized = 1;
 	return(0);
