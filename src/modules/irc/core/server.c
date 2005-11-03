@@ -17,8 +17,6 @@
 #include <modules/irc/server.h>
 #include <modules/irc/channel.h>
 
-struct callback_s *irc_server_dispatch;
-
 static int irc_server_receive(struct irc_server *, network_t);
 static int server_init_connection(struct irc_server *);
 
@@ -26,7 +24,7 @@ static int server_init_connection(struct irc_server *);
  * Create a new server structure and connect/initialize it to the
  * address:port given.
  */
-struct irc_server *irc_server_connect(char *address, int port, char *nick)
+struct irc_server *irc_server_connect(char *address, int port, char *nick, void *window)
 {
 	struct irc_server *server;
 
@@ -42,8 +40,8 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick)
 	server->port = port;
 	strncpy(server->nick, nick, IRC_MAX_NICK);
 
-	server->status = irc_create_channel(IRC_SERVER_STATUS_CHANNEL, NULL, server);
 	server->channels = irc_create_channel_list();
+	server->status = irc_add_channel(server->channels, IRC_SERVER_STATUS_CHANNEL, window, server);
 	net_receive_callback(server->net, create_callback(0, 0, NULL, (callback_t) irc_server_receive, server));
 
 	if (server_init_connection(server)) {
@@ -74,8 +72,7 @@ int irc_server_reconnect(struct irc_server *server)
  */
 int irc_server_disconnect(struct irc_server *server)
 {
-	destroy_list(server->channels);
-	irc_destroy_channel(server->status);
+	irc_destroy_channel_list(server->channels);
 	net_disconnect(server->net);
 	free(server);
 	return(0);
@@ -130,12 +127,6 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 	return(irc_parse_msg(buffer));
 }
 
-int irc_dispatch_msg(struct irc_server *server, struct irc_msg *msg)
-{
-	return(execute_callback(irc_server_dispatch, msg));
-}
-
-
 /**
  * Send the join command to the given server in order to join the channel
  * on the server with the given name, create a channel structure for the
@@ -144,21 +135,22 @@ int irc_dispatch_msg(struct irc_server *server, struct irc_msg *msg)
  * channel already exits, the join command will still be sent but a new
  * channel structure will not be created.
  */
-struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void *ptr)
+struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void *window)
 {
 	struct irc_msg *msg;
 	struct irc_channel *channel;
 
 	if (msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)) {
-		if (channel = irc_get_channel(server, name))
+		// TODO can we put this find_channel call into the add_channel call and avoid this indirection
+		// 	the join command already checks for the channel so that it doesn't create an unused window
+		//	but not all functions calling join will do this
+		if (channel = irc_find_channel(server->channels, name))
 			irc_send_msg(server, msg);
-		else if (channel = irc_create_channel(name, ptr, server)) {
+		else if (channel = irc_add_channel(server->channels, name, window, server)) {
 			if (irc_send_msg(server, msg)) {
-				irc_destroy_channel(channel);
-				return(NULL);
+				irc_remove_channel(server->channels, name);
+				channel = NULL;
 			}
-			else
-				list_add(server->channels, channel);
 		}
 		irc_destroy_msg(msg);
 		return(channel);
@@ -175,12 +167,10 @@ struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void
 int irc_leave_channel(struct irc_server *server, char *name)
 {
 	struct irc_msg *msg;
-	struct irc_channel *channel;
 
 	if (msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, name)) {
-		irc_send_msg(server, msg);
-		if (channel = list_find(server->channels, name, 0))
-			list_delete(server->channels, name);
+		if (!irc_send_msg(server, msg))
+			irc_remove_channel(server->channels, name);
 		irc_destroy_msg(msg);
 		return(0);
 	}
@@ -194,7 +184,6 @@ int irc_leave_channel(struct irc_server *server, char *name)
 int irc_change_nick(struct irc_server *server, char *nick)
 {
 	struct irc_msg *msg;
-	struct irc_channel *channel;
 
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, nick)))
 		return(-1);
@@ -202,6 +191,41 @@ int irc_change_nick(struct irc_server *server, char *nick)
 		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
 	irc_destroy_msg(msg);
 	return(0);
+}
+
+/**
+ * Send the given string to the given channel or nick on the given
+ * server and return -1 if the send fail and 0 on success.
+ */
+int irc_private_msg(struct irc_server *server, char *name, char *text)
+{
+	int ret;
+	struct irc_msg *msg;
+
+	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, text)))
+		return(-1);
+	if (!(ret = irc_send_msg(server, msg)))
+		irc_dispatch_msg(server, msg);
+	irc_destroy_msg(msg);
+	return(ret);
+}
+
+/**
+ * Send the given string to the given channel or nick on the given
+ * server as a notice message and return -1 if the send fail and 0 on
+ * success.
+ */
+int irc_notice(struct irc_server *server, char *name, char *text)
+{
+	int ret;
+	struct irc_msg *msg;
+
+	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, text)))
+		return(-1);
+	if (!(ret = irc_send_msg(server, msg)))
+		irc_dispatch_msg(server, msg);
+	irc_destroy_msg(msg);
+	return(ret);
 }
 
 /*** Local Functions ***/
@@ -215,7 +239,7 @@ static int irc_server_receive(struct irc_server *server, network_t net)
 	struct irc_msg *msg;
 
 	if (msg = irc_receive_msg(server))
-		execute_callback(irc_server_dispatch, msg);
+		irc_dispatch_msg(server, msg);
 	irc_destroy_msg(msg);
 	return(0);
 }

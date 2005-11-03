@@ -27,25 +27,22 @@ struct irc_server {
 	time_t last_ping;
 	char nick[IRC_MAX_NICK];
 	struct irc_channel *status;
-	struct list_s *channels;
+	struct irc_channel_list *channels;
 };
 
-extern struct callback_s *irc_server_dispatch;
-
-#define irc_dispatch_callback(callback)		{ if (irc_server_dispatch) destroy_callback(irc_server_dispatch); irc_server_dispatch = callback; }
 #define irc_create_server_list()		create_list(0, NULL, (destroy_t) irc_server_disconnect)
-#define irc_get_channel(server, name)		((struct irc_channel *) list_find(server->channels, name, 0))
 
-struct irc_server *irc_server_connect(char *, int, char *);
+struct irc_server *irc_server_connect(char *, int, char *, void *);
 int irc_server_reconnect(struct irc_server *);
 int irc_server_disconnect(struct irc_server *);
 int irc_send_msg(struct irc_server *, struct irc_msg *);
 struct irc_msg *irc_receive_msg(struct irc_server *);
-int irc_dispatch_msg(struct irc_server *, struct irc_msg *);
 
 struct irc_channel *irc_join_channel(struct irc_server *, char *, void *);
 int irc_leave_channel(struct irc_server *, char *);
 int irc_change_nick(struct irc_server *, char *);
+int irc_private_msg(struct irc_server *, char *, char *);
+int irc_notice(struct irc_server *, char *, char *);
 
 #endif
 
