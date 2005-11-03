@@ -7,7 +7,6 @@
 #ifndef _CHANNEL_H
 #define _CHANNEL_H
 
-#include <nit/list.h>
 #include <nit/string.h>
 #include <modules/irc/user.h>
 
@@ -25,12 +24,15 @@ struct irc_channel {
 	struct irc_server *server;
 };
 
-#define irc_create_channel_list()		create_list(0, (compare_t) irc_compare_channel, (destroy_t) irc_destroy_channel)
+struct irc_channel_list;
 
-struct irc_channel *irc_create_channel(char *, void *, struct irc_server *);
-int irc_destroy_channel(struct irc_channel *);
-int irc_compare_channel(struct irc_channel *, char *);
-struct irc_channel *irc_match_channel_window(struct irc_channel *, void *);
+struct irc_channel_list *irc_create_channel_list(void);
+void irc_destroy_channel_list(struct irc_channel_list *);
+struct irc_channel *irc_add_channel(struct irc_channel_list *, char *, void *, struct irc_server *);
+int irc_remove_channel(struct irc_channel_list *, char *);
+struct irc_channel *irc_find_channel(struct irc_channel_list *, char *);
+struct irc_channel *irc_channel_find_window(struct irc_channel_list *, void *);
+int irc_traverse_channel_list(struct irc_channel_list *, traverse_t, void *);
 
 #endif
 
