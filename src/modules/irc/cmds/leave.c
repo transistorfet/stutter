@@ -10,9 +10,10 @@
 
 int irc_cmd_leave(char *env, char *args)
 {
+	struct irc_server *server;
 	struct irc_channel *channel;
 
-	if (!(channel = irc_find_channel(args)))
+	if (!(server = irc_current_server()) || !(channel = irc_find_channel(server->channels, args)))
 		return(-1);
 	fe_destroy_widget(channel->window);
 	irc_leave_channel(channel->server, args);
