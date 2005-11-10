@@ -19,8 +19,8 @@ int init_system(void)
 {
 	void *window;
 
+	init_key();
 	init_variable();
-	//init_command();
 
 	/* Types */
 	base_load_command();
@@ -30,8 +30,9 @@ int init_system(void)
 	init_irc();
 
 	/* Setup Base Module */
-	fe_bind_key(NULL, '\n', (callback_t) COMMAND_PARSER, (void *) NULL);
-	//bind_key(NULL, "\n", create_callback(0, 0, NULL, (callback_t) COMMAND_PARSER, NULL), create_string(""));
+	//fe_bind_key(NULL, '\n', (callback_t) COMMAND_PARSER, (void *) NULL);
+	bind_key(NULL, "\n", create_callback(0, 0, NULL, (callback_t) COMMAND_PARSER, NULL), create_string(""));
+	bind_key(NULL, "\x18", create_callback(0, 0, NULL, (callback_t) base_cmd_next, NULL), create_string(""));
 
 	//add_variable(find_type("command"), "base", "next", create_callback(0, 0, NULL, base_cmd_next, NULL));
 	base_add_command(BASE_NAMESPACE, "next", (callback_t) base_cmd_next, NULL);
@@ -57,7 +58,8 @@ int init_system(void)
 	base_add_command(IRC_NAMESPACE, "notice", (callback_t) irc_cmd_notice, NULL);
 	base_add_command(IRC_NAMESPACE, "say", (callback_t) irc_cmd_say, NULL);
 	base_add_command(IRC_NAMESPACE, "", (callback_t) irc_cmd_say, NULL);
-	select_namespace(IRC_NAMESPACE);
+	//select_namespace(IRC_NAMESPACE);
+	select_variable_path("irc;base");
 
 	/* Setup HTTP Module */
 
@@ -83,8 +85,8 @@ int release_system(void)
 	/* Release Modules */
 	release_irc();
 
-	//release_command();
 	release_variable();
+	release_key();
 	return(0);
 }
 
