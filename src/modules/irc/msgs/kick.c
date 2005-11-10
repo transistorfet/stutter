@@ -20,24 +20,21 @@ int irc_msg_kick(char *env, struct irc_msg *msg)
 
 	if (!(server = irc_current_server()))
 		return(-1);
-	if (!(channel = irc_get_channel(server, msg->params[0])))
+	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
 		return(-1);
 
 	if (!strcmp(server->nick, msg->params[1])) {
 		format = IRC_FMT_KICK_SELF;
-		if (channel->bitflags & IRC_CBF_AUTO_REJOIN) {
-			window = channel->window;
-			list_delete(server->channels, msg->params[0]);
-			irc_join_channel(server, msg->params[0], window);
-		}
+		if (channel->bitflags & IRC_CBF_AUTO_REJOIN)
+			irc_join_channel(server, msg->params[0], channel->window);
 		else {
 			fe_destroy_widget(channel->window);
-			list_delete(server->channels, msg->params[0]);
+			irc_remove_channel(server->channels, msg->params[0]);
 			channel = server->status;
 		}
 	}
 	else {
-		irc_remove_user(channel, msg->params[1]);
+		irc_remove_user(channel->users, msg->params[1]);
 		format = IRC_FMT_KICK;
 	}
 

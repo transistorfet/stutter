@@ -20,7 +20,7 @@ int irc_msg_topic(char *env, struct irc_msg *msg)
 
 	if (!(server = irc_current_server()))
 		return(-1);
-	if (!(channel = irc_get_channel(server, ((msg->cmd == IRC_MSG_TOPIC) ? msg->params[0] : msg->params[1]))))
+	if (!(channel = irc_find_channel(server->channels, ((msg->cmd == IRC_MSG_TOPIC) ? msg->params[0] : msg->params[1]))))
 		return(-1);
 
 	if (channel->topic)

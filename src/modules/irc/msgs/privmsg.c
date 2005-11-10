@@ -21,7 +21,7 @@ int irc_msg_privmsg(char *env, struct irc_msg *msg)
 
 	if (!(server = irc_current_server()))
 		return(-1);
-	if (!(channel = irc_get_channel(server, msg->params[0])))
+	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
 		return(-1);
 
 	if ((msg->text[0] == 0x01) && !strncmp(&msg->text[1], "ACTION", 6)) {

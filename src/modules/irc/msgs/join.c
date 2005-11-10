@@ -19,10 +19,10 @@ int irc_msg_join(char *env, struct irc_msg *msg)
 
 	if (!(server = irc_current_server()))
 		return(-1);
-	if (!(channel = irc_get_channel(server, msg->params[0])))
+	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
 		return(-1);
 
-	irc_add_user(channel, msg->nick, 0);
+	irc_add_user(channel->users, msg->nick, 0);
 
 	if (!(str = irc_format_msg(msg, IRC_FMT_JOIN)))
 		return(-1);

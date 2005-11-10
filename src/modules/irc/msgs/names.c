@@ -21,7 +21,7 @@ int irc_msg_names(char *env, struct irc_msg *msg)
 
 	if (!(server = irc_current_server()))
 		return(-1);
-	if (!(channel = irc_get_channel(server, msg->params[2])))
+	if (!(channel = irc_find_channel(server->channels, msg->params[2])))
 		return(-1);
 
 	if (!(str = irc_format_msg(msg, IRC_FMT_NAMES)))
@@ -36,8 +36,8 @@ int irc_msg_names(char *env, struct irc_msg *msg)
 			bitflags = (name[0] == '@') ? IRC_UBF_OP : IRC_UBF_VOICE ;
 			name = &name[1];
 		}
-		if (!irc_get_user(channel, name))
-			irc_add_user(channel, name, bitflags);
+		if (!irc_find_user(channel->users, name))
+			irc_add_user(channel->users, name, bitflags);
 	}
 	return(0);
 }
