@@ -23,6 +23,7 @@ int release_variable(void);
 struct variable_s *add_variable(struct type_s *, char *, char *, void *);
 int remove_variable(struct type_s *, char *, char *);
 struct variable_s *find_variable(struct type_s *, char *, char *);
+int select_variable_path(char *);
 
 #endif
 
