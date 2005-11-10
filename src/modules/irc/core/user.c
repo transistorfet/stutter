@@ -16,7 +16,7 @@
 #define user_mangle(name)		user_##name
 #define user_list_field(name)		name
 #define user_node_field(name)		name
-#define user_access(list, name)		list->user_list_field(name)
+#define user_access(list, name)		list->user_node_field(name)
 #define user_compare(node, key)		strcmp(node->user.nick, key)
 
 struct irc_user_node {
@@ -82,11 +82,11 @@ struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitfla
  */
 int irc_remove_user(struct irc_user_list *list, char *nick)
 {
-	struct irc_user_node *cur;
+	struct irc_user_node *cur, *prev;
 
 	if (!list)
 		return(-1);
-	linear_find_node_v(userlist, list, nick);
+	linear_remove_node_v(userlist, list, nick);
 	if (!cur)
 		return(1);
 	destroy_string(cur->user.nick);

@@ -19,7 +19,7 @@
 #define channel_mangle(name)		channel_##name
 #define channel_list_field(name)	name
 #define channel_node_field(name)	name
-#define channel_access(list, name)	list->channel_list_field(name)
+#define channel_access(list, name)	list->channel_node_field(name)
 #define channel_compare(node, key)	strcmp(node->channel.name, key)
 
 struct irc_channel_node {
@@ -52,11 +52,11 @@ void irc_destroy_channel_list(struct irc_channel_list *list)
 	struct irc_channel_node *tmp, *cur;
 
 	linear_destroy_list_v(chanlist, list,
-		linear_release_node_v(chanlist, cur);
 		if (cur->channel.topic)
 			destroy_string(cur->channel.topic);
 		if (cur->channel.users)
 			irc_destroy_user_list(cur->channel.users);
+		linear_release_node_v(chanlist, cur);
 		memory_free(cur);
 	);
 	linear_release_list_v(chanlist, list);
