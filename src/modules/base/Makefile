@@ -3,7 +3,8 @@
 ROOT = ../../..
 
 LIB_TARGET = modbase.a
-OBJS =	cmds/next.o \
+OBJS =	init.o \
+	cmds/next.o \
 	cmds/previous.o \
 	cmds/scroll.o \
 	cmds/get.o \
