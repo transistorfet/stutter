@@ -1,45 +1,44 @@
 
+	* make sure you can specify a certian window (by number for example)
+	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
+	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
+	* add a names command
+	* make a new more dynamic dispatcher (at least compile-time customizable)
+	* make variables and namespaces case-insensitive
+	* possiblity of using create along with a new string-output function to supply get/set behaviour
+	  to complex types (allowing for a simple interface to the manipulation of those types)
+	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
 	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
 	  specific or will it be through the variable system in which case a widget would be a variable
 	  of the "widget" type.
 	* unify the naming patterns for namespace/variables, frontend widgets, etc.
-	* there is no way to fall back on a namespace if a command name is not found.  Have some kind of
-	  namespace inheritance (perhaps selecting a namespace passes a string of namespace names which
-	  are checked in the order they appear when searching for a variable.
+	* can we remove the namespace module and have the namespace list included in variable?
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
-	* the functions can be added as variables of a command type but if this is the case, how will we
+	* the functions can be keybound as variables of a command type but if this is the case, how will we
 	  handle parameters?  Either both parameters will have to be stored in the binding or else we pass
 	  it the string of the binding but how will we know which to do?  If we assume that we always store
 	  the second parameter to the callback then how do we allocate that parameter?  Do we always assume
 	  it is a string or perhaps a buffer?
 
-	* move base_parse_command to cmds
 	* add a cmd that takes a string in env and a string in args, merges them, and parses/evaluates it
 	  as a command without the leading /
 	* add an alias command which creates a new command with the given name using the above command as
 	  the function and the args string as the string parameter (to become env)
 	* add and unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
-	* how can things in config.h be configured dynamically (either through config files or through
-	  the variable system) and still have a speed at least close to a constant?
+	* can we use macros to implement the ability to set at compile time which parameters are compiled
+	  in and which are modifiable variables?  how will we handle this for all the things in config.h
 	* how do we handle the case where a pointer is stored with a callback and then the callback is
 	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
 	  it will never be needed again so even if we can access it, we have no way to know that we can
 	  get rid of it.  This also applies to a second parameter supply to bind_key.  How will we destroy
 	  it when a key binding is lost?  (Can typed values be used here?)
-	* we will almost certainly have memory leaks if add_variable fails
 	* how will errors be handled on a global scale?
-	* some lists are not working very effectively (channel list searching is not reset each call to
-	  irc_get_channel().  This *seems* to be causing the status window to be selected when join'ing
-	  a channel that has already been joined.
-	* finish the key binding module
 	* a string function in base that replaces $var with the value of that var
-	* what name do we use for the main core files?
 	* rewrite namespace to use the new list thing
 	* rewrite variable (?) to use new list thing
 	* rewrite type to use the new list thing
 	* rewrite key to use the new list thing
-	* change all command parameter char *str to char *args
 
 	* what should be passed to get_current, next, last, etc in order to determine which "group" of
 	  widgets it is in reference to?  Should it be based on a widget, a widget's parent, a named
@@ -49,10 +48,10 @@
 	  function like print with escape codes as well as meta data (somewhat like how you control a
 	  terminal)
 
+	* rewrite msg.c using the new nit/string module and use va_args instead of making an array
 	* make sure on disconnect/ping timeout, we don't get a segfault when executing things like quit
 	* there is a bug such that if you try to say something in the status, the server says no such nick
 	* the quit command is irc-specific but can it be made independant?
-	* rewrite msg.c using the new nit/string module
 
 	* add channel and user mode bits
 	* add handling for CTCP commands
@@ -70,8 +69,6 @@
 	* can have xml/javascript/flash displayed from a script somewhat like firefox extensions (except
 	  hopefully in less files?)
 	* multiserver
-	* add support such that libnit can be automagically distributed and built alongside (awaiting
-	  builder support for this)
 
 	* decide on how attributes will work.  frontend will keep track of most of it but will the program
 	  be able to override them and will it be on a global or local (to widget) basis?  will there be
@@ -82,7 +79,6 @@
 	* can variables be "watched" such that when the value changes, a function is called? (is this needed)
 	* how would something like channel change be monitored so that a function can be called to
 	  update a variable value?  (eg. to update the value of a variable that is used as the input prompt)
-	* add support to frontend for prompt?  would this be a widget type?
 	* how will main_idle and the frontend interact?  should main be able to not return if it wishes?
 	  should there be a way to make a new thread through the frontend (or through nit)?  should
 	  timedelays be normally done through the frontend (a call to net_wait) and main_idle being
