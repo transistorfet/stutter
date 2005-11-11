@@ -11,14 +11,59 @@
 
 #include CONFIG_H
 #include <nit/net.h>
-#include <nit/list.h>
+#include <nit/types.h>
+#include <nit/memory.h>
+#include <nit/linear.h>
 #include <nit/callback.h>
 #include <modules/irc/msg.h>
 #include <modules/irc/server.h>
 #include <modules/irc/channel.h>
 
+#define serverlist			server_mangle
+#define server_mangle(name)		server_##name
+#define server_list_field(name)		name
+#define server_node_field(name)		name
+#define server_access(list, name)	list.server_node_field(name)
+#define server_compare(node, key)	!(&node->server == key)
+
+struct irc_server_node {
+	struct irc_server server;
+	linear_node_fields_v(serverlist, struct irc_server_node);
+};
+
+struct irc_server_list {
+	linear_list_fields_v(serverlist, struct irc_server_node);
+};
+
+static int server_initialized = 0;
+static struct irc_server_list server_list;
+
 static int irc_server_receive(struct irc_server *, network_t);
 static int server_init_connection(struct irc_server *);
+
+int init_irc_server(void)
+{
+	if (server_initialized)
+		return(1);
+	linear_init_list_v(serverlist, server_list);
+	server_initialized = 1;
+	return(0);
+}
+
+int release_irc_server(void)
+{
+	struct irc_server_node *tmp, *cur;
+
+	linear_destroy_list_v(serverlist, server_list,
+		if (cur->server.channels)
+			irc_destroy_channel_list(cur->server.channels);
+		linear_release_node_v(serverlist, cur);
+		memory_free(cur);
+	);
+	linear_release_list_v(chanlist, server_list);
+	server_initialized = 0;
+	return(0);
+}
 
 /**
  * Create a new server structure and connect/initialize it to the
@@ -26,29 +71,31 @@ static int server_init_connection(struct irc_server *);
  */
 struct irc_server *irc_server_connect(char *address, int port, char *nick, void *window)
 {
-	struct irc_server *server;
+	struct irc_server_node *node;
 
-	if (!(server = (struct irc_server *) malloc(sizeof(struct irc_server) + strlen(address) + 1)))
+	if (!(node = (struct irc_server_node *) memory_alloc(sizeof(struct irc_server_node) + strlen(address) + 1)))
 		return(NULL);
-	memset(server, '\0', sizeof(struct irc_server));
-	if (!(server->net = net_connect(address, port))) {
-		free(server);
-		return(NULL);
-	}
-	server->address = (char *) (((size_t) server) + sizeof(struct irc_server));
-	strcpy(server->address, address);
-	server->port = port;
-	strncpy(server->nick, nick, IRC_MAX_NICK);
-
-	server->channels = irc_create_channel_list();
-	server->status = irc_add_channel(server->channels, IRC_SERVER_STATUS_CHANNEL, window, server);
-	net_receive_callback(server->net, create_callback(0, 0, NULL, (callback_t) irc_server_receive, server));
-
-	if (server_init_connection(server)) {
-		irc_server_disconnect(server);
+	memset(node, '\0', sizeof(struct irc_server_node));
+	if (!(node->server.net = net_connect(address, port))) {
+		free(node);
 		return(NULL);
 	}
-	return(server);
+
+	node->server.address = (char *) (((size_t) node) + sizeof(struct irc_server_node));
+	strcpy(node->server.address, address);
+	node->server.port = port;
+	strncpy(node->server.nick, nick, IRC_MAX_NICK);
+
+	node->server.channels = irc_create_channel_list();
+	node->server.status = irc_add_channel(node->server.channels, IRC_SERVER_STATUS_CHANNEL, window, &node->server);
+	net_receive_callback(node->server.net, create_callback(0, 0, NULL, (callback_t) irc_server_receive, &node->server));
+
+	if (server_init_connection(&node->server)) {
+		irc_server_disconnect(&node->server);
+		return(NULL);
+	}
+	linear_add_node_v(serverlist, server_list, node);
+	return(&node->server);
 }
 
 /**
@@ -72,10 +119,32 @@ int irc_server_reconnect(struct irc_server *server)
  */
 int irc_server_disconnect(struct irc_server *server)
 {
-	irc_destroy_channel_list(server->channels);
-	net_disconnect(server->net);
-	free(server);
+	struct irc_server_node *cur, *prev;
+
+	linear_remove_node_v(serverlist, server_list, server);
+	if (!cur)
+		return(1);
+	irc_destroy_channel_list(cur->server.channels);
+	net_disconnect(cur->server.net);
+	memory_free(cur);
 	return(0);
+}
+
+/**
+ * Return the channel that has the given window handle out of all the channels
+ * on all the servers.  If no channel is associated with the given window
+ * then NULL is returned.
+ */
+struct irc_channel *irc_server_find_window(void * window)
+{
+	struct irc_channel *channel;
+	struct irc_server_node *cur;
+
+	linear_traverse_list_v(serverlist, server_list,
+		if (channel = irc_channel_find_window(cur->server.channels, window))
+			return(channel);
+	);
+	return(NULL);
 }
 
 /**
@@ -126,6 +195,23 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	return(irc_parse_msg(buffer));
 }
+
+/**
+ * Send the given message to every server in the server list and return 0
+ * on success or -1 if any particular send fails.  If a send fails, the
+ * function will continue attempting to send messages.
+ */
+int irc_broadcast_msg(struct irc_msg *msg)
+{
+	int ret = 0;
+	struct irc_server_node *cur;
+
+	linear_traverse_list_v(serverlist, server_list,
+		ret = irc_send_msg(&cur->server, msg);
+	);
+	return(ret);
+}
+
 
 /**
  * Send the join command to the given server in order to join the channel
