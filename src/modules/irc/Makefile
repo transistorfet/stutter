@@ -3,7 +3,8 @@
 ROOT = ../../..
 
 LIB_TARGET = modirc.a
-OBJS =	cmds/join.o \
+OBJS =	init.o \
+	cmds/join.o \
 	cmds/quit.o \
 	cmds/leave.o \
 	cmds/msg.o \
@@ -11,7 +12,6 @@ OBJS =	cmds/join.o \
 	cmds/nick.o \
 	cmds/notice.o \
 	cmds/say.o \
-	core/irccore.o \
 	core/msg.o \
 	core/user.o \
 	core/channel.o \
@@ -26,6 +26,7 @@ OBJS =	cmds/join.o \
 	msgs/quit.o \
 	msgs/topic.o \
 	msgs/default.o \
+	utils/current.o \
 	utils/status.o \
 	utils/dispatch.o \
 	utils/format.o
