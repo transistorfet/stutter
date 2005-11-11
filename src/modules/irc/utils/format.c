@@ -38,8 +38,9 @@ char *irc_format_msg(struct irc_msg *msg, char *str, ...)
 	struct irc_channel *channel;
 
 	va_start(va, str);
-	server = irc_current_server();
 	channel = irc_current_channel();
+	if (channel)
+		server = channel->server;
 	for (i = 0;(str[i] != '\0') && (j < MAX_BUFFER - 1);i++) {
 		if (str[i] == '%') {
 			switch (str[++i]) {
