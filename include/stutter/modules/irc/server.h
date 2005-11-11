@@ -9,8 +9,7 @@
 
 #include CONFIG_H
 #include <nit/net.h>
-#include <nit/list.h>
-#include <nit/callback.h>
+#include <nit/types.h>
 #include <modules/irc/msg.h>
 #include <modules/irc/channel.h>
 
@@ -30,13 +29,16 @@ struct irc_server {
 	struct irc_channel_list *channels;
 };
 
-#define irc_create_server_list()		create_list(0, NULL, (destroy_t) irc_server_disconnect)
-
+int init_irc_server(void);
+int release_irc_server(void);
 struct irc_server *irc_server_connect(char *, int, char *, void *);
 int irc_server_reconnect(struct irc_server *);
 int irc_server_disconnect(struct irc_server *);
+struct irc_channel *irc_server_find_window(void *);
+
 int irc_send_msg(struct irc_server *, struct irc_msg *);
 struct irc_msg *irc_receive_msg(struct irc_server *);
+int irc_broadcast_msg(struct irc_msg *);
 
 struct irc_channel *irc_join_channel(struct irc_server *, char *, void *);
 int irc_leave_channel(struct irc_server *, char *);
