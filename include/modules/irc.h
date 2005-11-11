@@ -12,7 +12,9 @@
 #include <modules/irc/user.h>
 #include <modules/irc/server.h>
 #include <modules/irc/channel.h>
-#include <modules/irc/irccore.h>
+
+int init_irc(void);
+int release_irc(void);
 
 /* Commands */
 int irc_cmd_join(char *, char *);
@@ -25,21 +27,24 @@ int irc_cmd_notice(char *, char *);
 int irc_cmd_say(char *, char *);
 
 /* Messages */
-int irc_msg_topic(char *, struct irc_msg *);
-int irc_msg_nick(char *, struct irc_msg *);
-int irc_msg_join(char *, struct irc_msg *);
-int irc_msg_kick(char *, struct irc_msg *);
-int irc_msg_names(char *, struct irc_msg *);
-int irc_msg_notice(char *, struct irc_msg *);
-int irc_msg_part(char *, struct irc_msg *);
-int irc_msg_privmsg(char *, struct irc_msg *);
-int irc_msg_quit(char *, struct irc_msg *);
-int irc_msg_default(char *, struct irc_msg *);
+int irc_msg_topic(struct irc_server *, struct irc_msg *);
+int irc_msg_nick(struct irc_server *, struct irc_msg *);
+int irc_msg_join(struct irc_server *, struct irc_msg *);
+int irc_msg_kick(struct irc_server *, struct irc_msg *);
+int irc_msg_names(struct irc_server *, struct irc_msg *);
+int irc_msg_notice(struct irc_server *, struct irc_msg *);
+int irc_msg_part(struct irc_server *, struct irc_msg *);
+int irc_msg_privmsg(struct irc_server *, struct irc_msg *);
+int irc_msg_quit(struct irc_server *, struct irc_msg *);
+int irc_msg_default(struct irc_server *, struct irc_msg *);
 
 /* Utils */
 int irc_status_bar(char *, void *);
-int irc_msg_dispatch(char *, struct irc_msg *);
+int irc_dispatch_msg(struct irc_server *, struct irc_msg *);
 string_t irc_format_msg(struct irc_msg *, char *, ...);
+
+struct irc_server *irc_current_server(void);
+struct irc_channel *irc_current_channel(void);
 
 #endif
 
