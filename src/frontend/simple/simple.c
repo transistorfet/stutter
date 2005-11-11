@@ -221,8 +221,7 @@ main(int argc, char **argv)
 
 	while (exit_flag) {
 		fe_refresh();
-		// TODO replace main_idle with a set of alarms/timers set by init_system
-	//	main_idle();
+		// TODO rename net_wait (can it be moved somewhere outside the net module?)
 		net_wait(1);
 		fe_check_input();
 	}
