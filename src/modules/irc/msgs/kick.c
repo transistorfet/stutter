@@ -11,15 +11,12 @@
 /**
  * Print kick message to channel.
  */
-int irc_msg_kick(char *env, struct irc_msg *msg)
+int irc_msg_kick(struct irc_server *server, struct irc_msg *msg)
 {
 	void *window;
 	char *str, *format;
-	struct irc_server *server;
 	struct irc_channel *channel;
 
-	if (!(server = irc_current_server()))
-		return(-1);
 	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
 		return(-1);
 

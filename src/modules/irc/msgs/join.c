@@ -11,14 +11,11 @@
 /**
  * Update the user information and print message to channel.
  */
-int irc_msg_join(char *env, struct irc_msg *msg)
+int irc_msg_join(struct irc_server *server, struct irc_msg *msg)
 {
 	char *str;
-	struct irc_server *server;
 	struct irc_channel *channel;
 
-	if (!(server = irc_current_server()))
-		return(-1);
 	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
 		return(-1);
 

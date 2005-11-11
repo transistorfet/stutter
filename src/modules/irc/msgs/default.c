@@ -8,13 +8,10 @@
 #include <frontend.h>
 #include <modules/irc.h>
 
-int irc_msg_default(char *env, struct irc_msg *msg)
+int irc_msg_default(struct irc_server *server, struct irc_msg *msg)
 {
 	char *str;
-	struct irc_server *server;
 
-	if (!(server = irc_current_server()))
-		return(-1);
 	if (!(str = irc_format_msg(msg, IRC_FMT_DEFAULT)))
 		return(-1);
 	fe_print(server->status->window, str);

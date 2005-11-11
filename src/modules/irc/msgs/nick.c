@@ -14,12 +14,8 @@ static int irc_msg_nick_traverse(struct irc_channel *, struct irc_msg *);
 /**
  * Update a user's nick and prints message to channel.
  */
-int irc_msg_nick(char *env, struct irc_msg *msg)
+int irc_msg_nick(struct irc_server *server, struct irc_msg *msg)
 {
-	struct irc_server *server;
-
-	if (!(server = irc_current_server()))
-		return(-1);
 	irc_traverse_channel_list(server->channels, (traverse_t) irc_msg_nick_traverse, msg);
 	fe_print(server->status->window, irc_format_msg(msg, IRC_FMT_NICK));
 	return(0);

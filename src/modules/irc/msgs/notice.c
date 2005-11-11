@@ -12,14 +12,11 @@
 /**
  * Prints message to current channel and status channel.
  */
-int irc_msg_notice(char *env, struct irc_msg *msg)
+int irc_msg_notice(struct irc_server *server, struct irc_msg *msg)
 {
 	char *str;
-	struct irc_server *server;
 	struct irc_channel *channel;
 
-	if (!(server = irc_current_server()))
-		return(-1);
 	if (!(channel = irc_current_channel()))
 		return(-1);
 
