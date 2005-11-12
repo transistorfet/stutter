@@ -21,6 +21,7 @@ struct command_prototype_s {
 };
 
 static struct command_prototype_s base_commands[] = {
+	{ "bind", (callback_t) base_cmd_bind, NULL },
 	{ "next", (callback_t) base_cmd_next, NULL },
 	{ "previous", (callback_t) base_cmd_previous, NULL },
 	{ "scroll", (callback_t) base_cmd_scroll, NULL },
