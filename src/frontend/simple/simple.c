@@ -94,7 +94,7 @@ void *fe_current_widget(void)
 	return(queue_current(window_list));
 }
 
-int fe_set_current_widget(void *widget)
+int fe_select_widget(void *widget)
 {
 	if (queue_find(window_list, widget))
 		return(0);
