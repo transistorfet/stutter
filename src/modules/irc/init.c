@@ -27,8 +27,11 @@ static struct command_prototype_s irc_commands[] = {
 	{ "msg", (callback_t) irc_cmd_msg, NULL },
 	{ "me", (callback_t) irc_cmd_me, NULL },
 	{ "nick", (callback_t) irc_cmd_nick, NULL },
+	{ "names", (callback_t) irc_cmd_names, NULL },
 	{ "notice", (callback_t) irc_cmd_notice, NULL },
 	{ "say", (callback_t) irc_cmd_say, NULL },
+	{ "server", (callback_t) irc_cmd_server, NULL },
+	{ "disconnect", (callback_t) irc_cmd_disconnect, NULL },
 	{ "", (callback_t) irc_cmd_say, NULL },
 	{ NULL, NULL, NULL }
 };

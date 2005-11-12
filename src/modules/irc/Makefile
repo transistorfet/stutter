@@ -10,8 +10,11 @@ OBJS =	init.o \
 	cmds/msg.o \
 	cmds/me.o \
 	cmds/nick.o \
+	cmds/names.o \
 	cmds/notice.o \
 	cmds/say.o \
+	cmds/server.o \
+	cmds/disconnect.o \
 	core/msg.o \
 	core/user.o \
 	core/channel.o \
