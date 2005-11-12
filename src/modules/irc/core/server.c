@@ -76,10 +76,6 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 	if (!(node = (struct irc_server_node *) memory_alloc(sizeof(struct irc_server_node) + strlen(address) + 1)))
 		return(NULL);
 	memset(node, '\0', sizeof(struct irc_server_node));
-	if (!(node->server.net = net_connect(address, port))) {
-		free(node);
-		return(NULL);
-	}
 
 	node->server.address = (char *) (((size_t) node) + sizeof(struct irc_server_node));
 	strcpy(node->server.address, address);
@@ -88,13 +84,12 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 
 	node->server.channels = irc_create_channel_list();
 	node->server.status = irc_add_channel(node->server.channels, IRC_SERVER_STATUS_CHANNEL, window, &node->server);
-	net_receive_callback(node->server.net, create_callback(0, 0, NULL, (callback_t) irc_server_receive, &node->server));
+	linear_add_node_v(serverlist, server_list, node);
 
-	if (server_init_connection(&node->server)) {
+	if (server_init_connection(&node->server) < 0) {
 		irc_server_disconnect(&node->server);
 		return(NULL);
 	}
-	linear_add_node_v(serverlist, server_list, node);
 	return(&node->server);
 }
 
@@ -104,8 +99,6 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 int irc_server_reconnect(struct irc_server *server)
 {
 	net_disconnect(server->net);
-	server->net = net_connect(server->address, server->port);
-	// TODO register network callback
 	if (server_init_connection(server)) {
 		irc_server_disconnect(server);
 		return(-1);
@@ -128,6 +121,21 @@ int irc_server_disconnect(struct irc_server *server)
 	net_disconnect(cur->server.net);
 	memory_free(cur);
 	return(0);
+}
+
+/**
+ * Return the server struct for the given address or return NULL
+ * if not connected to that address.
+ */
+struct irc_server *irc_find_server(char *address)
+{
+	struct irc_server_node *cur;
+
+	linear_traverse_list_v(serverlist, server_list,
+		if (!strcmp(cur->server.address, address))
+			return(&cur->server);
+	);
+	return(NULL);
 }
 
 /**
@@ -339,20 +347,28 @@ static int server_init_connection(struct irc_server *server)
 	int ret = 0;
 	struct irc_msg *msg;
 
+	if (server->net)
+		return(1);
+	if (!(server->net = net_connect(server->address, server->port)))
+		return(-1);
+	net_receive_callback(server->net, create_callback(0, 0, NULL, (callback_t) irc_server_receive, server));
+
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)))
 		return(-1);
 	ret = irc_send_msg(server, msg);
 	irc_destroy_msg(msg);
-	if (ret)
-		return(-1);
 
-	if (!(msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")))
-		return(-1);
-	ret = irc_send_msg(server, msg);
-	irc_destroy_msg(msg);
-	if (ret)
-		return(-1);
-	return(0);
+	if (!ret) {
+		if (!(msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")))
+			return(-1);
+		ret = irc_send_msg(server, msg);
+		irc_destroy_msg(msg);
+		if (!ret)
+			return(0);
+	}
+	net_disconnect(server->net);
+	server->net = NULL;
+	return(-1);
 }
 
 
