@@ -5,25 +5,28 @@
  * Description:		Join Channel Command
  */
 
+#include <macros.h>
 #include <frontend.h>
 #include <modules/irc.h>
 
 int irc_cmd_join(char *env, char *args)
 {
+	char *name;
 	void *window;
 	struct irc_server *server;
 	struct irc_channel *channel;
 
-	if ((*args == '\0') || !(server = irc_current_server()))
+	get_param_m(args, name, ' ');
+	if ((*name == '\0') || !(server = irc_current_server()))
 		return(-1);
-	if (channel = irc_find_channel(server->channels, args))
-		fe_set_current_widget(channel->window);
+	if (channel = irc_find_channel(server->channels, name))
+		fe_select_widget(channel->window);
 	else if (window = fe_create_widget("irc:window", fe_get_parent(fe_current_widget()))) {
-		if (!irc_join_channel(server, args, window)) {
+		if (!irc_join_channel(server, name, window)) {
 			fe_destroy_widget(window);
 			return(-1);
 		}
-		fe_set_current_widget(window);
+		fe_select_widget(window);
 	}
 	return(0);
 }
