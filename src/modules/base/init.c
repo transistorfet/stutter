@@ -24,6 +24,7 @@ static struct command_prototype_s base_commands[] = {
 	{ "next", (callback_t) base_cmd_next, NULL },
 	{ "previous", (callback_t) base_cmd_previous, NULL },
 	{ "scroll", (callback_t) base_cmd_scroll, NULL },
+	{ "parse", (callback_t) base_cmd_parse, NULL },
 	{ "get", (callback_t) base_cmd_get, NULL },
 	{ "set", (callback_t) base_cmd_set, NULL },
 	{ "remove", (callback_t) base_cmd_remove, NULL },
