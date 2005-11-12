@@ -10,7 +10,7 @@
 #include <nit/types.h>
 
 typedef void *(*create_t)(char *, ...);
-typedef int (*evaluate_t)(void *, void *);
+typedef int (*evaluate_t)(void *, char *);
 
 struct type_s {
 	char *name;
