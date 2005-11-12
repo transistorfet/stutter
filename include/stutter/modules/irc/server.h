@@ -34,6 +34,7 @@ int release_irc_server(void);
 struct irc_server *irc_server_connect(char *, int, char *, void *);
 int irc_server_reconnect(struct irc_server *);
 int irc_server_disconnect(struct irc_server *);
+struct irc_server *irc_find_server(char *);
 struct irc_channel *irc_server_find_window(void *);
 
 int irc_send_msg(struct irc_server *, struct irc_msg *);
