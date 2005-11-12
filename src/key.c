@@ -1,17 +1,19 @@
 /*
  * Module Name:		key.c
  * Version:		0.1
- * Module Requirements:	memory ; string ; callback
+ * Module Requirements:	variable ; list ; memory ; string
  * Description:		Key Manager
  */
 
+#include <string.h>
+
 #include <key.h>
+#include <variable.h>
 #include <nit/list.h>
 #include <nit/memory.h>
 #include <nit/string.h>
-#include <nit/callback.h>
 
-#define KEY_INITIAL_BASE_ROOT	2 //50
+#define KEY_INITIAL_BASE_ROOT	50
 #define KEY_INITIAL_ROOT	20
 #define KEY_INITIAL_SUBMAP	10
 #define KEY_LOAD_FACTOR		0.75
@@ -24,7 +26,7 @@ struct key_s {
 	short ch;
 	short bitflags;
 	union key_data_u {
-		struct callback_s *callback;
+		struct variable_s *variable;
 		struct key_map_s *submap;
 	} data;
 	string_t args;
@@ -74,13 +76,13 @@ int release_key(void)
 }
 
 /**
- * Associate the given function and pointer callback with the given
+ * Associate the given variable and arguments  with the given
  * key sequence under the given context.  If the key cannot be bound,
  * -1 will be returned.  If the key sequence is already bound, the
- * old binding will be destroyed and replace with the given callback.
- * A 0 is returned on success.
+ * old binding will be destroyed and replace with the given variable
+ * and arguments.  A 0 is returned on success.
  */
-int bind_key(char *context, char *str, struct callback_s *callback, string_t args)
+int bind_key(char *context, char *str, struct variable_s *variable, string_t args)
 {
 	int i, hash;
 	struct key_s *key, *cur_key;
@@ -88,7 +90,7 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 
 	// TODO is the given key sequence the acutal sequence or a human-writable representation?
 
-	if (*str == '\0')
+	if ((*str == '\0') || !variable)
 		return(-1);
 	if (!(cur_map = context ? list_find(context_list, context, 0) : current_root)) {
 		if (!(cur_map = create_key_map(context, KEY_INITIAL_ROOT)))
@@ -119,7 +121,7 @@ int bind_key(char *context, char *str, struct callback_s *callback, string_t arg
 		}
 		else {
 			if (str[i + 1] == '\0') {
-				if (!(key = create_key(str[i], 0, (union key_data_u) callback, args)))
+				if (!(key = create_key(str[i], 0, (union key_data_u) variable, args)))
 					return(-1);
 			}
 			else {
@@ -186,8 +188,8 @@ int unbind_key(char *context, char *str)
 
 /**
  * Perform a key lookup on one character of a key sequence.  If the
- * key found is a terminal key (not a submap) then the callback for
- * that key is called using the store string specified in the
+ * key found is a terminal key (not a submap) then the variable's evaluate
+ * function for that key is called using the store string specified in the
  * bind_key function; otherwise the submap is made current and is
  * used to look up the key passed during the next call to process_key.
  * If the key is not found, -1 is returned, otherwise 0 is returned.
@@ -202,7 +204,7 @@ int process_key(int ch)
 			if (cur->bitflags & KEY_KBF_SUBMAP)
 				current_map = cur->data.submap;
 			else {
-				execute_callback(cur->data.callback, cur->args);
+				cur->data.variable->type->evaluate(cur->data.variable->value, cur->args);
 				current_map = current_root;
 			}
 			return(0);
@@ -259,8 +261,6 @@ static void destroy_key(struct key_s *key)
 	if (key) {
 		if (key->bitflags & KEY_KBF_SUBMAP)
 			destroy_key_map(key->data.submap);
-		else
-			destroy_callback(key->data.callback);
 		if (key->args)
 			destroy_string(key->args);
 		memory_free(key);
@@ -281,6 +281,7 @@ static struct key_map_s *create_key_map(char *context, int size)
 		memory_free(map);
 		return(NULL);
 	}
+	memset(map->table, '\0', size * sizeof(struct key_s *));
 	map->context = context ? create_string(context) : NULL;
 	map->size = size;
 	map->entries = 0;
@@ -328,6 +329,7 @@ static int rehash_key_map(struct key_map_s *map, int newsize)
 
 	if (!(table = (struct key_s **) memory_alloc(newsize * sizeof(struct key_s *))))
 		return(-1);
+	memset(table, '\0', newsize * sizeof(struct key_s *));
 	oldsize = map->size;
 	map->size = newsize;
 	for (i = 0;i < oldsize;i++) {

@@ -25,14 +25,15 @@ int init_system(void)
 	init_base();
 	init_irc();
 
+	select_variable_path("irc;base");
+
 	/* Setup Base Module */
-	bind_key(NULL, "\n", create_callback(0, 0, NULL, (callback_t) COMMAND_PARSER, NULL), create_string(""));
-	bind_key(NULL, "\x18", create_callback(0, 0, NULL, (callback_t) base_cmd_next, NULL), create_string(""));
+	bind_key(NULL, "\n", find_variable(NULL, NULL, "parse"), create_string(""));
+	bind_key(NULL, "\x18", find_variable(NULL, NULL, "next"), create_string(""));
 
 	/* Setup IRC Module */
 	fe_register_widget("irc:statusbar", create_callback(0, 0, NULL, (callback_t) irc_status_bar, NULL));
 
-	select_variable_path("irc;base");
 	if (!(window = fe_create_widget("irc:window", fe_get_parent(fe_current_widget()))))
 		return(-1);
 
