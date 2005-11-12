@@ -16,19 +16,16 @@
 
 int base_cmd_remove(char *env, char *args)
 {
-	char *name;
 	void *window;
-	char *ns_name = NULL;
+	char *ns, *name;
 	struct variable_s *var;
 
 	get_param_m(args, name, ' ');
 	if (!(window = fe_next_widget()) && !(window = fe_first_widget()))
 		return(-1);
-	if (strchr(name, ':')) {
-		get_param_m(name, ns_name, ':');
-	}
-	if (!remove_variable(find_type("string"), ns_name, name))
-		fe_print(window, create_string("Variable %s:%s removed.", ns_name ? ns_name : "", name));
+	get_prefix_m(name, ns, ':');
+	if (!remove_variable(find_type("string"), ns, name))
+		fe_print(window, create_string("Variable %s:%s removed.", ns ? ns : "", name));
 	else
 		fe_print(window, create_string("Error removing variable."));
 	return(0);
