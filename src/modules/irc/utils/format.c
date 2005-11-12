@@ -39,8 +39,7 @@ char *irc_format_msg(struct irc_msg *msg, char *str, ...)
 
 	va_start(va, str);
 	channel = irc_current_channel();
-	if (channel)
-		server = channel->server;
+	server = channel ? channel->server : NULL;
 	for (i = 0;(str[i] != '\0') && (j < MAX_BUFFER - 1);i++) {
 		if (str[i] == '%') {
 			switch (str[++i]) {
@@ -59,34 +58,42 @@ char *irc_format_msg(struct irc_msg *msg, char *str, ...)
 					#endif
 					break;
 				case 'n':
-					if (server)
+					if (server) {
 						msg_copy_str_m(buffer, server->nick, j);
+					}
 					break;
 				case 'c':
-					if (channel)
+					if (channel) {
 						msg_copy_str_m(buffer, channel->name, j);
+					}
 					break;
 				case 't':
-					if (channel)
+					if (channel) {
 						msg_copy_str_m(buffer, channel->topic, j);
+					}
 					break;
 				case 'C':
 					if (tmp = irc_command_name(msg->cmd))
 						msg_copy_str_m(buffer, tmp, j);
 					break;
 				case 'N':
-					msg_copy_str_m(buffer, msg->nick, j);
+					if (msg)
+						msg_copy_str_m(buffer, msg->nick, j);
 					break;
 				case 'S':
-					msg_copy_str_m(buffer, msg->server, j);
+					if (msg)
+						msg_copy_str_m(buffer, msg->server, j);
 					break;
 				case 'M':
-					msg_copy_str_m(buffer, msg->text, j);
+					if (msg)
+						msg_copy_str_m(buffer, msg->text, j);
 					break;
 				case 'P':
-					k = str[++i] - 0x31;
-					if ((k >= 0) && (k < msg->num_params))
-						msg_copy_str_m(buffer, msg->params[k], j);
+					if (msg) {
+						k = str[++i] - 0x31;
+						if ((k >= 0) && (k < msg->num_params))
+							msg_copy_str_m(buffer, msg->params[k], j);
+					}
 					break;
 				case '%':
 					buffer[j++] = '%';
