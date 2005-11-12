@@ -18,7 +18,8 @@ short fe_get_height(void *);
 
 // TODO what argument will we pass to all of these functions in order to specify a "context" (a string? a widget?)
 void *fe_current_widget(void);
-int fe_set_current_widget(void *);
+// TODO add an fe_find_widget function to find a widget based on a name or number (or both?)
+int fe_select_widget(void *);
 void *fe_next_widget(void);
 void *fe_previous_widget(void);
 void *fe_first_widget(void);
