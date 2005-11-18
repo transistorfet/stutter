@@ -7,6 +7,7 @@ OBJS =	init.o \
 	cmds/bind.o \
 	cmds/next.o \
 	cmds/previous.o \
+	cmds/clear.o \
 	cmds/scroll.o \
 	cmds/get.o \
 	cmds/set.o \
