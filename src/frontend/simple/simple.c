@@ -142,6 +142,8 @@ void fe_clear(void *widget)
 		screen_clear(screen, 0, screen_height(screen) - 2, screen_width(screen), 1);
 		screen_set_attrib(screen, 0);
 	}
+	else
+		window_clear(widget);
 }
 
 void fe_move(void *widget, short x, short y)

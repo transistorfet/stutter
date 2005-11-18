@@ -101,6 +101,21 @@ int window_print(struct window_s *window, string_t str)
 }
 
 /**
+ * Flush the buffer of stored lines from the given window and return
+ * 0 on success or -1 on failure.
+ */
+int window_clear(struct window_s *window)
+{
+	struct queue_s *log;
+
+	if (!window || !(log = create_queue(queue_max(window->log), NULL, (destroy_t) destroy_string)))
+		return(-1);
+	destroy_queue(window->log);
+	window->log = log;
+	return(0);
+}
+
+/**
  * Scroll the given window by the given amount.  A positive number will
  * scroll up and a negative number will scroll down.  If the end of the
  * window has been reached, -1 will be returned, otherwise 0.
