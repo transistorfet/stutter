@@ -38,9 +38,9 @@ int init_base(void)
 	int i = 0;
 	struct type_s *type;
 
-	base_load_command();
+	base_load_format();
 
-	if (!(type = find_type("command")) || !type->create)
+	if (!(type = base_load_command()) || !type->create)
 		return(-1);
 
 	for (;base_commands[i].name;i++)

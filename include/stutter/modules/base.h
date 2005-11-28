@@ -7,6 +7,9 @@
 #ifndef _BASE_H
 #define _BASE_H
 
+#include <type.h>
+#include <nit/string.h>
+
 int init_base(void);
 int release_base(void);
 
@@ -22,7 +25,11 @@ int base_cmd_remove(char *, char *);
 int base_cmd_parse(char *, char *);
 
 /* Types */
-int base_load_command(void);
+struct type_s *base_load_format(void);
+struct type_s *base_load_command(void);
+
+/* Utils */
+string_t base_expand_str(char *);
 
 #endif
 
