@@ -13,7 +13,9 @@ OBJS =	init.o \
 	cmds/set.o \
 	cmds/parse.o \
 	cmds/remove.o \
-	types/command.o
+	types/format.o \
+	types/command.o \
+	utils/expand.o
 
 ARFLAGS = rc
 CFLAGS = -g -I$(ROOT)/include
