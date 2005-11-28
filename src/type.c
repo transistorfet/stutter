@@ -38,7 +38,7 @@ int release_type(void)
  * Add a type to the list with the given name and with the given
  * function pointers.  A 0 is returned on success or -1 on error.
  */
-struct type_s *add_type(char *name, create_t create, evaluate_t evaluate, destroy_t destroy)
+struct type_s *add_type(char *name, create_t create, stringify_t stringify, evaluate_t evaluate, destroy_t destroy)
 {
 	struct type_s *type;
 
@@ -47,6 +47,7 @@ struct type_s *add_type(char *name, create_t create, evaluate_t evaluate, destro
 	type->name = (char *) (((unsigned int) type) + sizeof(struct type_s));
 	strcpy(type->name, name);
 	type->create = create;
+	type->stringify = stringify;
 	type->evaluate = evaluate;
 	type->destroy = destroy;
 
