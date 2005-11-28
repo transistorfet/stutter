@@ -196,6 +196,7 @@ int unbind_key(char *context, char *str)
  */
 int process_key(int ch)
 {
+	string_t args;
 	struct key_s *cur;
 
 	cur = current_map->table[key_hash(current_map, ch)];
@@ -204,7 +205,10 @@ int process_key(int ch)
 			if (cur->bitflags & KEY_KBF_SUBMAP)
 				current_map = cur->data.submap;
 			else {
-				cur->data.variable->type->evaluate(cur->data.variable->value, cur->args);
+				if (!(args = duplicate_string(cur->args)))
+					return(-1);
+				cur->data.variable->type->evaluate(cur->data.variable->value, args);
+				destroy_string(args);
 				current_map = current_root;
 			}
 			return(0);
