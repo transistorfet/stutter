@@ -15,11 +15,9 @@
 
 static void *base_command_create(char *, ...);
 
-int base_load_command(void)
+struct type_s *base_load_command(void)
 {
-	if (!(add_type("command", (create_t) base_command_create, (evaluate_t) execute_callback, (destroy_t) destroy_callback)))
-		return(-1);
-	return(0);
+	return(add_type("command", (create_t) base_command_create, NULL, (evaluate_t) execute_callback, (destroy_t) destroy_callback));
 }
 
 static void *base_command_create(char *str, ...)
