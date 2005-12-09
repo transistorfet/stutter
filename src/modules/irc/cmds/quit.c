@@ -16,7 +16,7 @@ int irc_cmd_quit(char *env, char *args)
 		return(-1);
 	irc_broadcast_msg(msg);
 	irc_destroy_msg(msg);
-	fe_terminate();
+	fe_terminate(0);
 	return(0);
 }
 
