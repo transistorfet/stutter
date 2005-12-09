@@ -16,10 +16,13 @@
 
 int base_cmd_parse(char *env, char *args)
 {
+	void *input;
 	char *str, *cmd, *ns;
 	struct variable_s *var;
 
-	str = fe_get_input();
+	if (!(input = fe_current_widget("input", NULL)))
+		return(-1);
+	str = fe_read(input);
 	if (*str == '\0')
 		return(-1);
 
@@ -30,11 +33,11 @@ int base_cmd_parse(char *env, char *args)
 		if ((var = find_variable(NULL, ns, cmd)) && var->type->evaluate)
 			var->type->evaluate(var->value, str);
 		else
-			fe_print(fe_current_widget(), create_string(UNKNOWN_COMMAND));
+			fe_print(fe_current_widget("window", NULL), create_string(UNKNOWN_COMMAND));
 	}
 	else if ((var = find_variable(NULL, NULL, DEFAULT_COMMAND)) && var->type->evaluate)
 		var->type->evaluate(var->value, str);
-	fe_clear_input();
+	fe_clear(input);
 
 	return(0);
 }
