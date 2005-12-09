@@ -26,13 +26,13 @@ int irc_cmd_server(char *env, char *args)
 	portnum = (*port == '\0') ? IRC_DEFAULT_PORT : atoi(port);
 
 	if (server = irc_find_server(address))
-		fe_select_widget(server->status->window);
-	else if (window = fe_create_widget("irc:window", fe_get_parent(fe_current_widget()))) {
+		fe_select_widget("window", NULL, server->status->window);
+	else if (window = fe_create_widget("irc", "window", NULL, NULL)) {
 		if (!irc_server_connect(address, portnum, IRC_DEFAULT_NICK, window)) {
 			fe_destroy_widget(window);
 			return(-1);
 		}
-		fe_select_widget(window);
+		fe_select_widget("window", NULL, window);
 	}
 	return(0);
 }

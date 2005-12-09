@@ -20,13 +20,13 @@ int irc_cmd_join(char *env, char *args)
 	if ((*name == '\0') || !(server = irc_current_server()))
 		return(-1);
 	if (channel = irc_find_channel(server->channels, name))
-		fe_select_widget(channel->window);
-	else if (window = fe_create_widget("irc:window", fe_get_parent(fe_current_widget()))) {
+		fe_select_widget("window", NULL, channel->window);
+	else if (window = fe_create_widget("irc", "window", NULL, NULL)) {
 		if (!irc_join_channel(server, name, window)) {
 			fe_destroy_widget(window);
 			return(-1);
 		}
-		fe_select_widget(window);
+		fe_select_widget("window", NULL, window);
 	}
 	return(0);
 }
