@@ -24,7 +24,7 @@ int base_cmd_bind(char *env, char *args)
 	get_param_m(args, name, ' ');
 	get_prefix_m(name, ns, ':');
 
-	if (!(window = fe_next_widget()) && !(window = fe_first_widget()))
+	if (!(window = fe_next_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 	if (!(var = find_variable(NULL, ns, name))) {
 		fe_print(window, create_string("Error: %s:%s variable not found.", ns ? ns : "", name));

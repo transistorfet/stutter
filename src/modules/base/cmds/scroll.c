@@ -16,7 +16,7 @@ int base_cmd_scroll(char *env, char *args)
 	char *num;
 	void *window;
 
-	if (!(window = fe_current_widget()) && !(window = fe_first_widget()))
+	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 	get_param_m(args, num, ' ');
 	fe_scroll(window, atoi(num));

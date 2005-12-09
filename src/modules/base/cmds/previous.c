@@ -12,7 +12,7 @@ int base_cmd_previous(char *env, char *args)
 {
 	void *window;
 
-	if (!(window = fe_previous_widget()) && !(window = fe_last_widget()))
+	if (!(window = fe_previous_widget("window", NULL)) && !(window = fe_last_widget("window", NULL)))
 		return(-1);
 	return(0);
 }

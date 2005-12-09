@@ -12,7 +12,7 @@ int base_cmd_next(char *env, char *args)
 {
 	void *window;
 
-	if (!(window = fe_next_widget()) && !(window = fe_first_widget()))
+	if (!(window = fe_next_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 	return(0);
 }
