@@ -38,7 +38,13 @@ int init_base(void)
 	int i = 0;
 	struct type_s *type;
 
-	base_load_format();
+	base_load_status();
+
+	if ((type = base_load_time()) && type->create) {
+		add_variable(type, BASE_NAMESPACE, "time", type->create("%s", BASE_TIME));
+		add_variable(type, BASE_NAMESPACE, "date", type->create("%s", BASE_DATE));
+		add_variable(type, BASE_NAMESPACE, "timestamp", type->create("%s", BASE_TIMESTAMP));
+	}
 
 	if (!(type = base_load_command()) || !type->create)
 		return(-1);
