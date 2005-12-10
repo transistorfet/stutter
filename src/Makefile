@@ -6,6 +6,7 @@ TARGET = $(ROOT)/bin/stutter
 OBJS =	main.o \
 	key.o \
 	type.o \
+	utils.o \
 	variable.o \
 	namespace.o \
 	frontend/$(FRONTEND)/$(FRONTEND).a \
