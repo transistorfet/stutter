@@ -5,7 +5,8 @@ ROOT = ../../..
 LIB_TARGET = simple.a
 OBJS =	simple.o \
 	input.o \
-	window.o
+	window.o \
+	statusbar.o
 
 ARFLAGS = rc
 #LIBS = -lnit
