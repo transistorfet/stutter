@@ -1,7 +1,7 @@
 /*
  * Module Name:		simple.c
  * Version:		0.1
- * Module Requirements:	string ; screen ; keyboard
+ * Module Requirements:	string ; screen ; keyboard ; type ; variable
  * Description:		Simple Frontend
  */
 
@@ -17,17 +17,21 @@
 #include <nit/callback.h>
 #include <nit/keyboard.h>
 #include <frontend.h>
-#include "window.h"
+#include <type.h>
+#include <variable.h>
 #include "input.h"
+#include "window.h"
+#include "statusbar.h"
 
 int exit_flag = 1;
 struct input_s *input;
 struct screen_s *screen;
 struct queue_s *window_list;
-struct callback_s *status_bar = NULL;
+struct statusbar_s *status_bar;
 
 extern int main_idle(void);
 
+static int check_input(void);
 static int refresh(char *, struct screen_s *);
 
 int init_frontend(void)
@@ -39,6 +43,8 @@ int init_frontend(void)
 	screen_add_refresh(screen, create_callback(0, 0, NULL, (callback_t) refresh, NULL));
 	if (!(window_list = create_queue(0, NULL, (destroy_t) destroy_window)))
 		return(-1);
+	if (!(status_bar = create_statusbar(FE_STATUS_BAR_HEIGHT, FE_NAMESPACE, FE_STATUS)))
+		return(-1);
 	if (!(input = create_input(0, 0)))
 		return(-1);
 
@@ -48,6 +54,7 @@ int init_frontend(void)
 int release_frontend(void)
 {
 	destroy_input(input);
+	destroy_statusbar(status_bar);
 	destroy_queue(window_list);
 	destroy_screen(screen);
 
@@ -56,19 +63,21 @@ int release_frontend(void)
 	return(0);
 }
 
-void *fe_create_widget(char *type, void *parent)
+void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 {
 	struct window_s *window;
 
-	if (!(window = create_window(100)))
+	if (strcmp(type, "window") || !(window = create_window(100)))
 		return(NULL);
 	queue_append(window_list, window);
 	return(window);
 }
 
-int fe_destroy_widget(void *window)
+int fe_destroy_widget(void *widget)
 {
-	return(queue_delete(window_list, window));
+	if ((widget == status_bar) || (widget == input))
+		return(-1);
+	return(queue_delete(window_list, widget));
 }
 
 void *fe_get_parent(void *widget)
@@ -84,50 +93,72 @@ short fe_get_width(void *widget)
 short fe_get_height(void *widget)
 {
 	if (widget == status_bar)
+		return(status_bar->height);
+	else if (widget == input)
 		return(1);
 	return(screen_height(screen) - 2);
 }
 
-
-void *fe_current_widget(void)
+void *fe_find_widget(char *id)
 {
+	return(NULL);
+}
+
+int fe_resize_widget(void *widget, int diffx, int diffy)
+{
+	return(-1);
+}
+
+
+void *fe_current_widget(char *context, void *ref)
+{
+	if (!strcmp(context, "input"))
+		return(input);
 	return(queue_current(window_list));
 }
 
-int fe_select_widget(void *widget)
+int fe_select_widget(char *context, void *ref, void *widget)
 {
+	if (!strcmp(context, "input"))
+		return(-1);
 	if (queue_find(window_list, widget))
 		return(0);
 	return(-1);
 }
 
-void *fe_next_widget(void)
+void *fe_next_widget(char *context, void *ref)
 {
+	if (!strcmp(context, "input"))
+		return(input);
 	return(queue_next(window_list));
 }
 
-void *fe_previous_widget(void)
+void *fe_previous_widget(char *context, void *ref)
 {
+	if (!strcmp(context, "input"))
+		return(input);
 	return(queue_previous(window_list));
 }
 
-void *fe_first_widget(void)
+void *fe_first_widget(char *context, void *ref)
 {
+	if (!strcmp(context, "input"))
+		return(input);
 	return(queue_first(window_list));
 }
 
-void *fe_last_widget(void)
+void *fe_last_widget(char *context, void *ref)
 {
+	if (!strcmp(context, "input"))
+		return(input);
 	return(queue_last(window_list));
 }
 
 
 int fe_print(void *widget, string_t str)
 {
-	if (widget == status_bar) {
-		screen_set_attrib(screen, SC_INVERSE);
-		screen_print(screen, str, 0);
-		screen_set_attrib(screen, 0);
+	if (widget == input) {
+		input_set_buffer(input, str);
 		destroy_string(str);
 	}
 	else
@@ -135,13 +166,22 @@ int fe_print(void *widget, string_t str)
 	return(0);
 }
 
+char *fe_read(void *widget)
+{
+	if (widget == input)
+		return(input_get_buffer(input));
+	return(NULL);
+}
+
 void fe_clear(void *widget)
 {
 	if (widget == status_bar) {
 		screen_set_attrib(screen, SC_INVERSE);
-		screen_clear(screen, 0, screen_height(screen) - 2, screen_width(screen), 1);
+		screen_clear(screen, 0, screen_height(screen) - status_bar->height - 1, screen_width(screen), status_bar->height);
 		screen_set_attrib(screen, 0);
 	}
+	else if (widget == input)
+		clear_input(input);
 	else
 		window_clear(widget);
 }
@@ -149,59 +189,28 @@ void fe_clear(void *widget)
 void fe_move(void *widget, short x, short y)
 {
 	if (widget == status_bar)
-		screen_move(screen, x, screen_height(screen) - 2);
+		screen_move(screen, x, screen_height(screen) - status_bar->height - 1);
 }
 
-int fe_scroll(void *widget, int amount)
+int fe_scroll(void *widget, int diff)
 {
 	if (widget != status_bar)
-		return(window_scroll(widget, amount));
+		return(window_scroll(widget, diff));
 }
 
-void fe_refresh(void)
+void fe_refresh(void *widget)
 {
-	refresh_screen(screen);
+	if (!widget)
+		refresh_screen(screen);
+	else if (widget == input)
+		refresh_input(input, screen);
+	else if (widget == status_bar)
+		refresh_statusbar(status_bar, screen);
+	else
+		refresh_window(widget, screen);
 }
 
-
-char *fe_get_input(void)
-{
-	return(input_get_buffer(input));
-}
-
-int fe_set_input(char *str)
-{
-	return(input_set_buffer(input, str));
-}
-
-void fe_clear_input(void)
-{
-	clear_input(input);
-}
-
-
-int fe_check_input(void)
-{
-	int ch;
-
-	if ((ch = keyboard_read_char()) && (process_key(ch)))
-		input_default(input, ch);
-	return(0);
-}
-
-int fe_register_widget(char *name, struct callback_s *refresh)
-{
-	if (!strcmp(name, "irc:statusbar"))
-		status_bar = refresh;
-	return(0);
-}
-
-int fe_unregister_widget(char *name)
-{
-	return(-1);
-}
-
-void fe_terminate(void)
+void fe_terminate(int status)
 {
 	exit_flag = 0;
 }
@@ -211,38 +220,59 @@ void fe_terminate(void)
  */
 main(int argc, char **argv)
 {
-	if (init_frontend()) {
-		printf("Failed to initialize frontend\n");
-		return(0);
-	}
+	struct type_s *type;
+
+
 	if (init_system()) {
 		printf("Failed to initialize system\n");
 		release_system();
 		return(0);
 	}
 
-	while (exit_flag) {
-		fe_refresh();
-		// TODO rename net_wait (can it be moved somewhere outside the net module?)
-		net_wait(1);
-		fe_check_input();
+	if (type = find_type("format"))
+		add_variable(type, FE_NAMESPACE, FE_STATUS, type->create("%s", FE_STATUS_BAR));
+
+	if (init_frontend()) {
+		printf("Failed to initialize frontend\n");
+		return(0);
 	}
 
-	release_system();
+	fe_refresh(NULL);
+	load_modules();
+
+	while (exit_flag) {
+		fe_refresh(NULL);
+		// TODO rename net_wait (can it be moved somewhere outside the net module?)
+		net_wait(1);
+		check_input();
+	}
+
+	unload_modules();
 	release_frontend();
+	release_system();
 }
 
 /*** Local Functions ***/
+
+
+static int check_input(void)
+{
+	int ch;
+
+	if ((ch = keyboard_read_char()) && (process_key(ch)))
+		input_default(input, ch);
+	return(0);
+}
 
 static int refresh(char *env, struct screen_s *screen)
 {
 	struct window_s *current;
 
 	if (!(current = queue_current(window_list)) && !(current = queue_first(window_list)))
-		screen_clear(screen, 0, 0, screen_width(screen), screen_height(screen) - 2);
+		screen_clear(screen, 0, 0, screen_width(screen), screen_height(screen) - status_bar->height - 1);
 	else
 		refresh_window(current, screen);
-	execute_callback(status_bar, status_bar);
+	refresh_statusbar(status_bar, screen);
 	refresh_input(input, screen);
 	return(0);
 }
