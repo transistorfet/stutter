@@ -40,7 +40,6 @@ int base_cmd_set(char *env, char *args)
 	else if (!add_variable(type, ns, name, type->create("%s", args)))
 		fe_print(window, create_string("Error setting variable."));
 	else
-		// TODO should the variable be stringified and then printed instead of printing args directly?
 		fe_print(window, create_string("Variable: %s:%s <= %s", ns ? ns : "", name, args));
 	return(0);
 }
