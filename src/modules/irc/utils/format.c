@@ -1,7 +1,7 @@
 /*
  * Module Name:		format.c
  * Version:		0.1
- * Module Requirements:	modirc
+ * Module Requirements:	utils ; modirc ; modbase
  * Description:		IRC Message Formatter
  */
 
@@ -10,8 +10,10 @@
 #include <stdarg.h>
 
 #include CONFIG_H
+#include <utils.h>
 #include <nit/string.h>
 #include <modules/irc.h>
+#include <modules/base.h>
 
 #define MAX_BUFFER		1024
 
@@ -26,7 +28,7 @@
  * variable parameters) using the given format string.  If successful,
  * a pointer to the malloc'd string is returned; otherwise NULL is returned
  */
-char *irc_format_msg(struct irc_msg *msg, char *str, ...)
+string_t irc_format_msg(struct irc_msg *msg, char *str, ...)
 {
 	char *tmp;
 	va_list va;
@@ -47,30 +49,22 @@ char *irc_format_msg(struct irc_msg *msg, char *str, ...)
 					timestamp = localtime(&msg->time);
 					j += strftime(&buffer[j], MAX_BUFFER - j, IRC_TIMESTAMP, timestamp);
 					break;
-				case 'H':
-					current_time = time(NULL);
-					timestamp = localtime(&current_time);
-					j += strftime(&buffer[j], MAX_BUFFER - j, "%H:%M", timestamp);
-					break;
 				case 'B':
 					#ifdef IRC_BANNER
 					msg_copy_str_m(buffer, IRC_BANNER, j);
 					#endif
 					break;
 				case 'n':
-					if (server) {
+					if (server)
 						msg_copy_str_m(buffer, server->nick, j);
-					}
 					break;
 				case 'c':
-					if (channel) {
+					if (channel)
 						msg_copy_str_m(buffer, channel->name, j);
-					}
 					break;
 				case 't':
-					if (channel) {
+					if (channel)
 						msg_copy_str_m(buffer, channel->topic, j);
-					}
 					break;
 				case 'C':
 					if (tmp = irc_command_name(msg->cmd))
@@ -108,12 +102,7 @@ char *irc_format_msg(struct irc_msg *msg, char *str, ...)
 	buffer[j++] = '\0';
 	va_end(va);
 
-	return(create_string(buffer));
-
-//	if (!(ret = (char *) malloc(j)))
-//		return(NULL);
-//	strcpy(ret, buffer);
-//	return(ret);
+	return(util_expand_str(buffer));
 }
 
 
