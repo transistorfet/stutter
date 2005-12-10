@@ -30,7 +30,6 @@ OBJS =	init.o \
 	msgs/topic.o \
 	msgs/default.o \
 	utils/current.o \
-	utils/status.o \
 	utils/dispatch.o \
 	utils/format.o
 

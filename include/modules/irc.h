@@ -42,7 +42,6 @@ int irc_msg_quit(struct irc_server *, struct irc_msg *);
 int irc_msg_default(struct irc_server *, struct irc_msg *);
 
 /* Utils */
-int irc_status_bar(char *, void *);
 int irc_dispatch_msg(struct irc_server *, struct irc_msg *);
 string_t irc_format_msg(struct irc_msg *, char *, ...);
 
