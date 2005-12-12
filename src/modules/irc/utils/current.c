@@ -1,11 +1,12 @@
 /*
  * Module Name:		current.c
  * Version:		0.1
- * Module Requirements:	frontend ; modirc
+ * Module Requirements:	frontend ; string ; modirc
  * Description:		Current Server\Channel Manager
  */
 
 #include <frontend.h>
+#include <nit/string.h>
 #include <modules/irc.h>
 
 static void *last_window = NULL;
@@ -48,4 +49,23 @@ struct irc_channel *irc_current_channel(void)
 	}
 	return(last_channel);
 }
+
+string_t irc_stringify_nick(void *ptr)
+{
+	struct irc_server *server;
+
+	if (!(server = irc_current_server()))
+		return(NULL);
+	return(create_string(server->nick));
+}
+
+string_t irc_stringify_channel(void *ptr)
+{
+	struct irc_channel *channel;
+
+	if (!(channel = irc_current_channel()))
+		return(NULL);
+	return(create_string(channel->name));
+}
+
 

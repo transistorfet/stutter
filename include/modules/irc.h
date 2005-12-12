@@ -43,10 +43,12 @@ int irc_msg_default(struct irc_server *, struct irc_msg *);
 
 /* Utils */
 int irc_dispatch_msg(struct irc_server *, struct irc_msg *);
-string_t irc_format_msg(struct irc_msg *, char *, ...);
+string_t irc_format_msg(struct irc_msg *, char *);
 
 struct irc_server *irc_current_server(void);
 struct irc_channel *irc_current_channel(void);
+string_t irc_stringify_nick(void *);
+string_t irc_stringify_channel(void *);
 
 #endif
 

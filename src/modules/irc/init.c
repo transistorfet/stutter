@@ -43,9 +43,13 @@ int init_irc(void)
 
 	init_irc_server();
 
+	if (!(type = find_type("status")) || !type->create)
+		return(-1);
+	add_variable(type, IRC_NAMESPACE, "current_nick", type->create("%r%p", irc_stringify_nick, NULL));
+	add_variable(type, IRC_NAMESPACE, "current_channel", type->create("%r%p", irc_stringify_channel, NULL));
+
 	if (!(type = find_type("command")) || !type->create)
 		return(-1);
-
 	for (;irc_commands[i].name;i++)
 		add_variable(type, IRC_NAMESPACE, irc_commands[i].name, type->create("%r%p", irc_commands[i].func, irc_commands[i].ptr));
 
