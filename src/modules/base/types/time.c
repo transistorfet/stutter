@@ -5,6 +5,7 @@
  * Description:		Time Stamp Type
  */
 
+#include <time.h>
 #include <stdlib.h>
 
 #include <type.h>
