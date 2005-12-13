@@ -10,9 +10,11 @@
 #include <nit/string.h>
 
 #include <type.h>
+#include <namespace.h>
 
 struct variable_s {
 	struct type_s *type;
+	struct namespace_s *ns;
 	char *name;
 	void *value;
 };

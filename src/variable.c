@@ -26,7 +26,6 @@ struct variable_node_s {
 #define create_variable_list()		\
 	create_list(0, (compare_t) compare_variable, (destroy_t) destroy_variable)
 
-static int variable_initialized = 0;
 static char **variable_path = NULL;
 static int variable_path_entries = 0;
 
@@ -35,19 +34,8 @@ static void destroy_variable(struct variable_s *);
 
 int init_variable(void)
 {
-	struct type_s *type;
-
-	if (variable_initialized)
-		return(1);
 	init_type();
 	init_namespace();
-
-	// TODO why is this need again??? was it related to the seperate command module?
-	add_namespace(BASE_NAMESPACE, create_variable_list());
-
-	if (!(type = add_type("string", (create_t) create_string, (stringify_t) duplicate_string, NULL, (destroy_t) destroy_string)))
-		return(-1);
-	variable_initialized = 1;
 	return(0);
 }
 
@@ -98,6 +86,7 @@ struct variable_s *add_variable(struct type_s *type, char *ns_name, char *var_na
 		var->name = (char *) (((unsigned int) var) + sizeof(struct variable_s));
 		strcpy(var->name, var_name);
 		var->type = type;
+		var->ns = namespace;
 		var->value = value;
         
 		if (list_add(namespace->list, var)) {
