@@ -28,9 +28,9 @@ int base_cmd_get(char *env, char *args)
 	if (!(var = find_variable(NULL, ns, name)) || !var->type->stringify)
 		fe_print(window, create_string("Variable is undefined."));
 	else if (!(value = var->type->stringify(var->value)))
-		fe_print(window, create_string("Error stringifying variable, %s:%s.", ns ? ns : "", name));
+		fe_print(window, create_string("Error stringifying variable, %s:%s.", var->ns->name, name));
 	else {
-		fe_print(window, create_string("Variable: %s:%s = %s", ns ? ns : "", name, value));
+		fe_print(window, create_string("Variable: %s:%s = %s", var->ns->name, name, value));
 		destroy_string(value);
 	}
 
