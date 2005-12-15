@@ -19,9 +19,13 @@ int base_cmd_bind(char *env, char *args)
 {
 	void *window;
 	string_t sequence;
-	char *key, *name, *ns;
+	char *context = NULL;
+	char *key, *ns, *name;
 	struct variable_s *var;
 
+	trim_whitespace_m(args);
+	if (*args == '-')
+		split_string_m(&args[1], context, args, ' ');
 	get_param_m(args, key, ' ');
 	get_param_m(args, name, ' ');
 	get_prefix_m(name, ns, ':');
@@ -33,7 +37,7 @@ int base_cmd_bind(char *env, char *args)
 		return(-1);
 	}
 
-	if (!(sequence = util_expand_str(key)) || bind_key(NULL, sequence, var, create_string(args)))
+	if (!(sequence = util_convert_key(key)) || bind_key(context, sequence, var, create_string(args)))
 		fe_print(window, create_string("Error binding key"));
 	else
 		fe_print(window, create_string("Key %s bound to %s:%s %s", key, ns ? ns : "", name, args));
