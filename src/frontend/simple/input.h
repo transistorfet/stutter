@@ -7,18 +7,26 @@
 #ifndef _SIMPLE_INPUT_H
 #define _SIMPLE_INPUT_H
 
-#include <nit/queue.h>
+#include <queue.h>
+#include <stringt.h>
+#include "../common/curses/screen.h"
 
 #ifndef INPUT_MAX_BUFFER
 #define INPUT_MAX_BUFFER		1024
 #endif
+
+struct input_history_s {
+	string_t cmd;
+	queue_node_v(input_history_s) history;
+};
 
 struct input_s {
 	int i;
 	int end;
 	int max;
 	char *buffer;
-	struct queue_s *history;
+	int max_history;
+	queue_list_v(input_history_s) history;
 };
 
 #define input_buffer_m(input)		input->buffer

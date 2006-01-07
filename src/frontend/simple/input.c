@@ -1,18 +1,18 @@
 /*
  * Module Name:		input.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; string ; screen
+ * Module Requirements:	queue ; memory ; stringt ; screen
  * Description:		Input Buffer
  */
 
 #include <string.h>
 
-#include <nit/queue.h>
-#include <nit/memory.h>
-#include <nit/string.h>
-#include <nit/screen.h>
-#include <nit/keycodes.h>
+#include <queue.h>
+#include <memory.h>
+#include <stringt.h>
 #include "input.h"
+#include "../common/curses/screen.h"
+#include "../common/keycodes.h"
 
 /**
  * Allocate and initialize a input structure given the intialization values.
@@ -31,10 +31,8 @@ struct input_s *create_input(int size, int history)
 	input->max = size;
 	input->buffer = (char *) (((size_t) input) + sizeof(struct input_s));
 
-	if (!(input->history = create_queue(history, NULL, (destroy_t) destroy_string))) {
-		destroy_input(input);
-		return(NULL);
-	}
+	input->max_history = history;
+	queue_init_v(input->history);
 
 	return(input);
 }
@@ -44,8 +42,11 @@ struct input_s *create_input(int size, int history)
  */
 int destroy_input(struct input_s *input)
 {
-	if (input->history)
-		destroy_queue(input->history);
+	queue_destroy_v(input->history, history,
+		if (cur->cmd)
+			destroy_string(cur->cmd);
+		memory_free(cur);
+	);
 	memory_free(input);
 	return(0);
  }
@@ -122,7 +123,7 @@ int input_save_buffer(struct input_s *input)
 	input->buffer[input->end] = '\0';
 //	if (str = create_string(input->buffer))
 //		queue_append(input->history, str);
-//	return(0);
+	return(0);
 }
 
 /**
@@ -131,9 +132,20 @@ int input_save_buffer(struct input_s *input)
 char *input_get_buffer(struct input_s *input)
 {
 	char *str;
+	struct input_history_s *node;
 
-	if (str = create_string(input->buffer))
-		queue_append(input->history, str);
+	if ((str = create_string(input->buffer)) && (node = (struct input_history_s *) memory_alloc(sizeof(struct input_history_s)))) {
+		node->cmd = str;
+		queue_append_node_v(input->history, node, history);
+		if (queue_size_v(input->history) > input->max_history) {
+			queue_pop_node_v(input->history, node, history);
+			if (node) {
+				if (node->cmd)
+					destroy_string(node->cmd);
+				memory_free(node);
+			}
+		}
+	}
 	return(input->buffer);
 }
 
@@ -162,12 +174,14 @@ int input_default(struct input_s *input, int ch)
 			input_delete_char(input);
 			break;
 		case KC_UP:
-			if (str = queue_previous(input->history))
-				input_set_buffer(input, str);
+			// TODO fix for new queue
+			//if (str = queue_previous(input->history))
+			//	input_set_buffer(input, str);
 			break;
 		case KC_DOWN:
-			if (str = queue_next(input->history))
-				input_set_buffer(input, str);
+			// TODO fix for new queue
+			//if (str = queue_next(input->history))
+			//	input_set_buffer(input, str);
 			break;
 		case KC_RIGHT:
 			if (input->i < input->end)
