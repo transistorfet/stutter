@@ -1,7 +1,7 @@
 /*
  * Module Name:		simple.c
  * Version:		0.1
- * Module Requirements:	string ; screen ; keyboard ; type ; variable
+ * Module Requirements:	type ; queue ; stringt ; variable ; net ; screen ; keyboard
  * Description:		Simple Frontend
  */
 
@@ -9,25 +9,24 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <nit/net.h>
-#include <nit/list.h>
-#include <nit/queue.h>
-#include <nit/string.h>
-#include <nit/screen.h>
-#include <nit/callback.h>
-#include <nit/keyboard.h>
-#include <frontend.h>
 #include <type.h>
+#include <queue.h>
+#include <globals.h>
+#include <stringt.h>
 #include <variable.h>
 #include "input.h"
 #include "window.h"
 #include "statusbar.h"
+#include "../common/unix/net.h"
+#include "../common/curses/screen.h"
+#include "../common/keyboard.h"
 
 int exit_flag = 1;
 struct input_s *input;
 struct screen_s *screen;
 struct queue_s *window_list;
 struct statusbar_s *status_bar;
+struct queue_node_s *current_window;
 
 extern int main_idle(void);
 
@@ -40,14 +39,14 @@ int init_frontend(void)
 
 	if (!(screen = create_screen()))
 		return(-1);
-	screen_add_refresh(screen, create_callback(0, 0, NULL, (callback_t) refresh, NULL));
-	if (!(window_list = create_queue(0, NULL, (destroy_t) destroy_window)))
+	screen_add_refresh(screen, (callback_t) refresh);
+	if (!(window_list = create_queue(0, (destroy_t) destroy_window)))
 		return(-1);
 	if (!(status_bar = create_statusbar(FE_STATUS_BAR_HEIGHT, FE_NAMESPACE, FE_STATUS)))
 		return(-1);
 	if (!(input = create_input(0, 0)))
 		return(-1);
-
+	current_window = NULL;
 	return(0);
 }
 
@@ -77,7 +76,10 @@ int fe_destroy_widget(void *widget)
 {
 	if ((widget == status_bar) || (widget == input))
 		return(-1);
-	return(queue_delete(window_list, widget));
+	if (current_window->ptr == widget)
+		current_window = NULL;
+	queue_delete(window_list, widget);
+	return(0);
 }
 
 void *fe_get_parent(void *widget)
@@ -114,14 +116,14 @@ void *fe_current_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	return(queue_current(window_list));
+	return(current_window);
 }
 
 int fe_select_widget(char *context, void *ref, void *widget)
 {
 	if (!strcmp(context, "input"))
 		return(-1);
-	if (queue_find(window_list, widget))
+	if (current_window = queue_find(window_list, widget))
 		return(0);
 	return(-1);
 }
@@ -130,28 +132,36 @@ void *fe_next_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	return(queue_next(window_list));
+	if (current_window = queue_next_node(current_window))
+		return((struct window_s *) current_window->ptr);
+	return(NULL);
 }
 
 void *fe_previous_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	return(queue_previous(window_list));
+	if (current_window = queue_previous_node(current_window))
+		return((struct window_s *) current_window->ptr);
+	return(NULL);
 }
 
 void *fe_first_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	return(queue_first(window_list));
+	if (current_window = queue_first_node(window_list))
+		return((struct window_s *) current_window->ptr);
+	return(NULL);
 }
 
 void *fe_last_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	return(queue_last(window_list));
+	if (current_window = queue_last_node(window_list))
+		return((struct window_s *) current_window->ptr);
+	return(NULL);
 }
 
 
@@ -250,6 +260,7 @@ main(int argc, char **argv)
 	unload_modules();
 	release_frontend();
 	release_system();
+	return(0);
 }
 
 /*** Local Functions ***/
@@ -266,12 +277,10 @@ static int check_input(void)
 
 static int refresh(char *env, struct screen_s *screen)
 {
-	struct window_s *current;
-
-	if (!(current = queue_current(window_list)) && !(current = queue_first(window_list)))
+	if (!current_window && !(current_window = queue_first_node(window_list)))
 		screen_clear(screen, 0, 0, screen_width(screen), screen_height(screen) - status_bar->height - 1);
 	else
-		refresh_window(current, screen);
+		refresh_window((struct window_s *) current_window->ptr, screen);
 	refresh_statusbar(status_bar, screen);
 	refresh_input(input, screen);
 	return(0);
