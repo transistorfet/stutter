@@ -1,17 +1,17 @@
 /*
  * Module Name:		statusbar.c
  * Version:		0.1
- * Module Requirements: type ; variable ; screen ; string
+ * Module Requirements: type ; memory ; stringt ; variable ; screen
  * Description:		Status Bar Widget
  */
 
 #include CONFIG_H
 #include <type.h>
+#include <memory.h>
+#include <stringt.h>
 #include <variable.h>
-#include <nit/string.h>
-#include <nit/memory.h>
-#include <nit/screen.h>
 #include "statusbar.h"
+#include "../common/curses/screen.h"
 
 /**
  * Allocate and initialize a statusbar structure given the intialization values.

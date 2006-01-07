@@ -7,7 +7,7 @@
 #ifndef _SIMPLE_STATUSBAR_H
 #define _SIMPLE_STATUSBAR_H
 
-#include <nit/screen.h>
+#include "../common/curses/screen.h"
 
 struct statusbar_s {
 	int height;
