@@ -1,18 +1,17 @@
 /*
  * Module Name:		window.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; string ; screen
+ * Module Requirements:	queue ; memory ; stringt ; screen
  * Description:		Window Manager
  */
 
 #include <string.h>
 
-#include <nit/debug.h>
-#include <nit/queue.h>
-#include <nit/memory.h>
-#include <nit/string.h>
-#include <nit/screen.h>
+#include <queue.h>
+#include <memory.h>
+#include <stringt.h>
 #include "window.h"
+#include "../common/curses/screen.h"
 
 static int window_wrap_string(char *, int);
 
@@ -26,12 +25,8 @@ struct window_s *create_window(int size)
 	if (!(window = (struct window_s *) memory_alloc(sizeof(struct window_s))))
 		return(NULL);
 	memset(window, '\0', sizeof(struct window_s));
-
-	if (!(window->log = create_queue(size, NULL, (destroy_t) destroy_string))) {
-		destroy_window(window);
-		return(NULL);
-	}
-
+	window->max_lines = size;
+	queue_init_v(window->log);
 	return(window);
 }
 
@@ -40,8 +35,11 @@ struct window_s *create_window(int size)
  */
 int destroy_window(struct window_s *window)
 {
-	if (window->log)
-		destroy_queue(window->log);
+	queue_destroy_v(window->log, log,
+		if (cur->line)
+			destroy_string(cur->line);
+		memory_free(cur);
+	);
 	memory_free(window);
 	return(0);
  }
@@ -53,20 +51,22 @@ int refresh_window(struct window_s *window, struct screen_s *screen)
 {
 	char *str;
 	int i, j, lines = 0;
+	struct window_entry_s *cur;
 	int breaks[WINDOW_MAX_WRAP];
 
 	lines = screen_height(screen) - 3;
 	screen_clear(screen, 0, 0, screen_width(screen), screen_height(screen) - 2);
 	screen_move(screen, 0, lines);
 
-	queue_clear_current(window->log);
+	cur = queue_first_v(window->log);
 	for (j = 0;j < window->cur_line;j++) {
-		if (!queue_next(window->log))
+		if (!queue_next_v(cur, log))
 			return(0);
 	}
 	while (lines >= 0) {
-		if (!(str = queue_next(window->log)))
+		if (!(cur = queue_next_v(cur, log)))
 			break;
+		str = cur->line;
 
 		j = 0;
 		for (i = 0;i < WINDOW_MAX_WRAP;i++) {
@@ -91,12 +91,17 @@ int refresh_window(struct window_s *window, struct screen_s *screen)
  */
 int window_print(struct window_s *window, string_t str)
 {
+	struct window_entry_s *node;
+
 	if (!window || !str)
 		return(-1);
 	/** If the window is not at the bottom then make sure the screen doesn't move */
-	if (window->cur_line && (window->cur_line < queue_max(window->log)))
+	if (window->cur_line && (window->cur_line < window->max_lines))
 		window->cur_line++;
-	queue_prepend(window->log, str);
+	if (!(node = (struct window_entry_s *) memory_alloc(sizeof(struct window_entry_s))))
+		return(-1);
+	node->line = str;
+	queue_prepend_node_v(window->log, node, log);
 	return(0);
 }
 
@@ -108,10 +113,13 @@ int window_clear(struct window_s *window)
 {
 	struct queue_s *log;
 
-	if (!window || !(log = create_queue(queue_max(window->log), NULL, (destroy_t) destroy_string)))
+	if (!window)
 		return(-1);
-	destroy_queue(window->log);
-	window->log = log;
+	queue_destroy_v(window->log, log,
+		if (cur->line)
+			destroy_string(cur->line);
+		memory_free(cur);
+	);
 	return(0);
 }
 
@@ -127,8 +135,8 @@ int window_scroll(struct window_s *window, short scroll)
 		window->cur_line = 0;
 		return(-1);
 	}
-	else if (window->cur_line > queue_size(window->log)) {
-		window->cur_line = queue_size(window->log);
+	else if (window->cur_line > queue_size_v(window->log)) {
+		window->cur_line = queue_size_v(window->log);
 		return(-1);
 	}
 	return(0);

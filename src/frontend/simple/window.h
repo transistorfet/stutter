@@ -7,18 +7,24 @@
 #ifndef _SIMPLE_WINDOW_H
 #define _SIMPLE_WINDOW_H
 
-#include <nit/queue.h>
-#include <nit/string.h>
-#include <nit/screen.h>
+#include <queue.h>
+#include <stringt.h>
+#include "../common/curses/screen.h"
 
 #ifndef WINDOW_MAX_WRAP
 #define WINDOW_MAX_WRAP		20
 #endif
 
+struct window_entry_s {
+	string_t line;
+	queue_node_v(window_entry_s) log;
+};
+
 struct window_s {
 	short bitflags;
 	short cur_line;
-	struct queue_s *log;
+	int max_lines;
+	queue_list_v(window_entry_s) log;
 };
 
 struct window_s *create_window(int);
