@@ -15,6 +15,7 @@ OBJS =	init.o \
 	cmds/say.o \
 	cmds/server.o \
 	cmds/disconnect.o \
+	cmds/whois.o \
 	core/msg.o \
 	core/user.o \
 	core/channel.o \
@@ -36,5 +37,5 @@ OBJS =	init.o \
 ARFLAGS = rc
 CFLAGS = -g -I$(ROOT)/include
 
-include $(ROOT)/builder/builder.mk
+include $(ROOT)/rules.mk
 
