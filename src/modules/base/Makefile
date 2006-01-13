@@ -7,6 +7,7 @@ OBJS =	init.o \
 	cmds/bind.o \
 	cmds/next.o \
 	cmds/previous.o \
+	cmds/echo.o \
 	cmds/clear.o \
 	cmds/scroll.o \
 	cmds/get.o \
@@ -20,5 +21,5 @@ OBJS =	init.o \
 ARFLAGS = rc
 CFLAGS = -g -I$(ROOT)/include
 
-include $(ROOT)/builder/builder.mk
+include $(ROOT)/rules.mk
 
