@@ -9,8 +9,8 @@
 #include <stdarg.h>
 
 #include <type.h>
-#include <nit/memory.h>
-#include <nit/string.h>
+#include <lib/memory.h>
+#include <lib/string.h>
 #include <modules/base.h>
 
 #define MAX_BUFFER		64

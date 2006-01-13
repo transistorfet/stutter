@@ -10,9 +10,7 @@
 
 #include <type.h>
 #include <variable.h>
-#include <nit/memory.h>
-
-typedef int (*callback_t)(void *, void *);
+#include <lib/memory.h>
 
 struct base_command_s {
 	callback_t func;
