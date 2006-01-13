@@ -9,10 +9,10 @@
 
 #include CONFIG_H
 #include <type.h>
-#include <macros.h>
 #include <variable.h>
 #include <frontend.h>
-#include <nit/string.h>
+#include <lib/macros.h>
+#include <lib/string.h>
 
 int base_cmd_parse(char *env, char *args)
 {

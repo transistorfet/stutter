@@ -8,10 +8,10 @@
 #include <string.h>
 
 #include <type.h>
-#include <macros.h>
 #include <variable.h>
 #include <frontend.h>
-#include <nit/string.h>
+#include <lib/macros.h>
+#include <lib/string.h>
 #include <modules/base.h>
 
 int base_cmd_get(char *env, char *args)

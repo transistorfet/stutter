@@ -10,10 +10,10 @@
 #include CONFIG_H
 #include <type.h>
 #include <utils.h>
-#include <macros.h>
 #include <variable.h>
 #include <frontend.h>
-#include <nit/string.h>
+#include <lib/macros.h>
+#include <lib/string.h>
 #include <modules/base.h>
 
 int base_cmd_set(char *env, char *args)
