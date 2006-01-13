@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #include <type.h>
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/base.h>
 
 #define MAX_BUFFER		64
@@ -26,7 +26,7 @@ struct type_s *base_load_time(void)
 static string_t base_time_stringify(void *ptr)
 {
 	time_t current_time;
-	char *buffer[MAX_BUFFER];
+	char buffer[MAX_BUFFER];
 
 	current_time = time(NULL);
 	strftime(buffer, MAX_BUFFER, (char *) ptr, localtime(&current_time));
