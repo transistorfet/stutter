@@ -5,8 +5,7 @@
  * Description:		Action Message Command
  */
 
-
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/irc.h>
 
 int irc_cmd_me(char *env, char *args)

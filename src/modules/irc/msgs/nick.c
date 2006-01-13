@@ -6,7 +6,7 @@
  */
 
 #include <frontend.h>
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/irc.h>
 
 static int irc_msg_nick_traverse(struct irc_channel *, struct irc_msg *);

@@ -5,7 +5,7 @@
  * Description:		Private Message Command
  */
 
-#include <macros.h>
+#include <lib/macros.h>
 #include <modules/irc.h>
 
 int irc_cmd_msg(char *env, char *args)

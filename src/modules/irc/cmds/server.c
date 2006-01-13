@@ -8,8 +8,8 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <macros.h>
 #include <frontend.h>
+#include <lib/macros.h>
 #include <modules/irc.h>
 
 int irc_cmd_server(char *env, char *args)

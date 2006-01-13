@@ -5,8 +5,8 @@
  * Description:		Join Channel Command
  */
 
-#include <macros.h>
 #include <frontend.h>
+#include <lib/macros.h>
 #include <modules/irc.h>
 
 int irc_cmd_join(char *env, char *args)

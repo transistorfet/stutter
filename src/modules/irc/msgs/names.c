@@ -5,8 +5,8 @@
  * Description:		Name Notification Message
  */
 
-#include <macros.h>
 #include <frontend.h>
+#include <lib/macros.h>
 #include <modules/irc.h>
 
 /**

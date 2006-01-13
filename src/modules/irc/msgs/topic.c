@@ -6,7 +6,7 @@
  */
 
 #include <frontend.h>
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/irc.h>
 
 /**
