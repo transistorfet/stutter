@@ -1,7 +1,7 @@
 /*
  * Module Name:		load.c
  * Version:		0.1
- * Module Requirements:	type ; variable ; string ; modbase
+ * Module Requirements:	type ; string ; variable ; modbase
  * Description:		Command Parser
  */
 
@@ -10,8 +10,8 @@
 #include CONFIG_H
 #include <type.h>
 #include <variable.h>
-#include <nit/string.h>
-#include <nit/callback.h>
+#include <lib/string.h>
+#include <lib/globals.h>
 #include <modules/base.h>
 
 struct command_prototype_s {
@@ -24,6 +24,7 @@ static struct command_prototype_s base_commands[] = {
 	{ "bind", (callback_t) base_cmd_bind, NULL },
 	{ "next", (callback_t) base_cmd_next, NULL },
 	{ "previous", (callback_t) base_cmd_previous, NULL },
+	{ "echo", (callback_t) base_cmd_echo, NULL },
 	{ "clear", (callback_t) base_cmd_clear, NULL },
 	{ "scroll", (callback_t) base_cmd_scroll, NULL },
 	{ "parse", (callback_t) base_cmd_parse, NULL },
