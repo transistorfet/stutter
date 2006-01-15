@@ -8,7 +8,7 @@
 #define _KEY_H
 
 #include <variable.h>
-#include <nit/string.h>
+#include <lib/string.h>
 
 int init_key(void);
 int release_key(void);

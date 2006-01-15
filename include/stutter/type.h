@@ -7,8 +7,8 @@
 #ifndef _TYPE_H
 #define _TYPE_H
 
-#include <nit/types.h>
-#include <nit/string.h>
+#include <lib/string.h>
+#include <lib/globals.h>
 
 typedef void *(*create_t)(char *, ...);
 typedef string_t (*stringify_t)(void *);

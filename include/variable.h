@@ -7,10 +7,9 @@
 #ifndef _VARIABLE_H
 #define _VARIABLE_H
 
-#include <nit/string.h>
-
 #include <type.h>
 #include <namespace.h>
+#include <lib/string.h>
 
 struct variable_s {
 	struct type_s *type;

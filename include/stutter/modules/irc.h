@@ -7,7 +7,7 @@
 #ifndef _MODULES_IRC_H
 #define _MODULES_IRC_H
 
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/irc/msg.h>
 #include <modules/irc/user.h>
 #include <modules/irc/server.h>
@@ -28,6 +28,7 @@ int irc_cmd_notice(char *, char *);
 int irc_cmd_say(char *, char *);
 int irc_cmd_server(char *, char *);
 int irc_cmd_disconnect(char *, char *);
+int irc_cmd_whois(char *, char *);
 
 /* Messages */
 int irc_msg_topic(struct irc_server *, struct irc_msg *);

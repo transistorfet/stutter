@@ -7,7 +7,7 @@
 #ifndef _NAMESPACE_H
 #define _NAMESPACE_H
 
-#include <nit/list.h>
+#include <lib/list.h>
 
 struct namespace_s {
 	char *name;

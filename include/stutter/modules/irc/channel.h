@@ -7,7 +7,7 @@
 #ifndef _CHANNEL_H
 #define _CHANNEL_H
 
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/irc/user.h>
 
 #define IRC_CBF_AUTO_REJOIN		0x01

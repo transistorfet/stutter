@@ -7,7 +7,7 @@
 #ifndef _USER_H
 #define _USER_H
 
-#include <nit/string.h>
+#include <lib/string.h>
 
 #define IRC_UBF_OP		0x80
 #define IRC_UBF_VOICE		0x40

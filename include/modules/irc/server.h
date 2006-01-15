@@ -8,8 +8,7 @@
 #define _SERVER_H
 
 #include CONFIG_H
-#include <nit/net.h>
-#include <nit/types.h>
+#include <frontend/net.h>
 #include <modules/irc/msg.h>
 #include <modules/irc/channel.h>
 
