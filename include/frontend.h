@@ -7,8 +7,8 @@
 #ifndef _FRONTEND_H
 #define _FRONTEND_H
 
-#include <nit/string.h>
-#include <nit/callback.h>
+#include <lib/string.h>
+#include <lib/globals.h>
 
 void *fe_create_widget(char *ns, char *type, char *id, void *parent);
 int fe_destroy_widget(void *widget);
