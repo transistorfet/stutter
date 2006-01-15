@@ -1,7 +1,7 @@
 /*
  * Module Name:		type.c
  * Version:		0.1
- * Module Requirements:	list ; memory
+ * Module Requirements:	memory ; linear
  * Description:		Type Manager
  */
 
@@ -9,28 +9,39 @@
 #include <string.h>
 
 #include <type.h>
-#include <nit/list.h>
-#include <nit/types.h>
-#include <nit/memory.h>
+#include <lib/memory.h>
+#include <lib/linear.h>
+#include <lib/globals.h>
 
-static struct list_s *type_list = NULL;
+struct type_node_s {
+	struct type_s type;
+	linear_node_v(type_node_s) tl;
+};
+
+//static struct list_s *type_list = NULL;
+static linear_list_v(type_node_s) type_list;
 
 static int compare_type(struct type_s *, char *);
 static void destroy_type(struct type_s *);
 
 int init_type(void)
 {
-	if (type_list)
-		return(1);
-	if (!(type_list = create_list(0, (compare_t) compare_type, (destroy_t) destroy_type)))
-		return(-1);
+//	if (type_list)
+//		return(1);
+//	if (!(type_list = create_list(0, (compare_t) compare_type, (destroy_t) destroy_type)))
+//		return(-1);
+	// TODO you need a new initialization test
+	linear_init_v(type_list);
 	return(0);
 }
 
 int release_type(void)
 {
-	if (type_list)
-		destroy_list(type_list);
+//	if (type_list)
+//		destroy_list(type_list);
+	linear_destroy_list_v(type_list, tl,
+		memory_free(cur);
+	);
 	return(0);
 }
 
@@ -40,22 +51,24 @@ int release_type(void)
  */
 struct type_s *add_type(char *name, create_t create, stringify_t stringify, evaluate_t evaluate, destroy_t destroy)
 {
-	struct type_s *type;
+	struct type_node_s *node;
 
-	if (!(type = memory_alloc(sizeof(struct type_s) + strlen(name) + 1)))
+	if (!(node = memory_alloc(sizeof(struct type_node_s) + strlen(name) + 1)))
 		return(NULL);
-	type->name = (char *) (((unsigned int) type) + sizeof(struct type_s));
-	strcpy(type->name, name);
-	type->create = create;
-	type->stringify = stringify;
-	type->evaluate = evaluate;
-	type->destroy = destroy;
+	node->type.name = (char *) (((unsigned int) node) + sizeof(struct type_node_s));
+	strcpy(node->type.name, name);
+	node->type.create = create;
+	node->type.stringify = stringify;
+	node->type.evaluate = evaluate;
+	node->type.destroy = destroy;
+	linear_add_node_v(type_list, node, tl);
 
-	if (list_add(type_list, type)) {
-		destroy_type(type);
-		return(NULL);
-	}
-	return(type);
+//	if (list_add(type_list, type)) {
+//		destroy_type(type);
+//		return(NULL);
+//	}
+
+	return(&node->type);
 }
 
 /**
@@ -64,16 +77,31 @@ struct type_s *add_type(char *name, create_t create, stringify_t stringify, eval
  */
 int remove_type(char *name)
 {
-	return(list_delete(type_list, name));
+	struct type_node_s *node;
+
+	linear_find_node_v(type_list, node, tl, !(strcmp(cur->type.name, name)));
+	if (!node)
+		return(-1);
+	linear_remove_node_v(type_list, node, tl);
+	memory_free(node);
+	return(0);
+
+//	return(list_delete(type_list, name));
 }
 
 /**
  * Look up the type with the given name and return a pointer to the
  * type or return NULL if the type has not been defined.
  */
-struct type_s *find_type(char *n4me)
+struct type_s *find_type(char *name)
 {
-	return(list_find(type_list, n4me, 0));
+	struct type_node_s *node;
+
+	linear_find_node_v(type_list, node, tl, !(strcmp(cur->type.name, name)));
+	if (!node)
+		return(NULL);
+	return(&node->type);
+//	return(list_find(type_list, name, 0));
 }
 
 /*** Local Functions ***/
