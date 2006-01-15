@@ -1,5 +1,5 @@
 
-DIRS = libnit/src src
+DIRS = src
 CVSROOT = :pserver:anonymous@jabberwocky.hn.org:/home/cvs/cvsroot
 
 .PHONY: all update $(DIRS)
