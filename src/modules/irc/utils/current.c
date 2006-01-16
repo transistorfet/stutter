@@ -6,7 +6,7 @@
  */
 
 #include <frontend.h>
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/irc.h>
 
 static void *last_window = NULL;
@@ -24,8 +24,8 @@ struct irc_server *irc_current_server(void)
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(NULL);
 	if (!last_window || (last_window != window)) {
-		last_channel = irc_server_find_window(window);
-		last_window = window;
+		if (last_channel = irc_server_find_window(window))
+			last_window = window;
 	}
 	if (last_channel)
 		return(last_channel->server);
@@ -44,8 +44,8 @@ struct irc_channel *irc_current_channel(void)
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(NULL);
 	if (!last_window || (last_window != window)) {
-		last_channel = irc_server_find_window(window);
-		last_window = window;
+		if (last_channel = irc_server_find_window(window))
+			last_window = window;
 	}
 	return(last_channel);
 }
