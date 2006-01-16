@@ -1,7 +1,7 @@
 /*
  * Module Name:		variable.c
  * Version:		0.1
- * Module Requirements:	type ; namespace ; list ; string ; memory
+ * Module Requirements:	type ; memory ; string ; namespace
  * Description:		Variable Manager
  */
 
@@ -10,13 +10,13 @@
 
 #include CONFIG_H
 #include <type.h>
-#include <macros.h>
 #include <variable.h>
 #include <namespace.h>
-#include <nit/list.h>
-#include <nit/string.h>
-#include <nit/memory.h>
+#include <lib/macros.h>
+#include <lib/memory.h>
+#include <lib/string.h>
 
+#include <lib/list.h>
 
 struct variable_node_s {
 	struct variable_s data;
