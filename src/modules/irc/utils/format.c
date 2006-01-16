@@ -1,17 +1,16 @@
 /*
  * Module Name:		format.c
  * Version:		0.1
- * Module Requirements:	utils ; modirc ; modbase
+ * Module Requirements:	utils ; string ; modirc ; modbase
  * Description:		IRC Message Formatter
  */
 
 #include <time.h>
 #include <stdlib.h>
-#include <stdarg.h>
 
 #include CONFIG_H
 #include <utils.h>
-#include <nit/string.h>
+#include <lib/string.h>
 #include <modules/irc.h>
 #include <modules/base.h>
 
@@ -19,30 +18,44 @@
 
 #define msg_copy_str_m(buffer, str, count)				\
 	if (str) {							\
-		strncpy(&buffer[count], str, (MAX_BUFFER - j - 1));	\
+		strncpy(&buffer[count], str, (MAX_BUFFER - count - 1));	\
 		count += strlen(str);					\
 	}
+
+static int irc_format_buffer(struct irc_msg *, char *, char *, int);
 
 /**
  * Allocate a string and format the data in the given message (and any
  * variable parameters) using the given format string.  If successful,
  * a pointer to the malloc'd string is returned; otherwise NULL is returned
  */
-string_t irc_format_msg(struct irc_msg *msg, char *str, ...)
+string_t irc_format_msg(struct irc_msg *msg, char *str)
 {
+	int j = 0;
+	char buffer[MAX_BUFFER];
+
+	j += irc_format_buffer(msg, str, buffer, MAX_BUFFER - 1);
+	buffer[j++] = '\0';
+
+	return(create_string("%s", buffer));
+}
+
+/*** Local Functions ***/
+
+static int irc_format_buffer(struct irc_msg *msg, char *str, char *buffer, int max)
+{
+	int i, k;
+	int j = 0;
 	char *tmp;
-	va_list va;
-	int i, j = 0, k;
+	string_t value;
 	time_t current_time;
 	struct tm *timestamp;
-	char buffer[MAX_BUFFER];
 	struct irc_server *server;
 	struct irc_channel *channel;
 
-	va_start(va, str);
 	channel = irc_current_channel();
 	server = channel ? channel->server : NULL;
-	for (i = 0;(str[i] != '\0') && (j < MAX_BUFFER - 1);i++) {
+	for (i = 0;(str[i] != '\0') && (j < max);i++) {
 		if (str[i] == '%') {
 			switch (str[++i]) {
 				case '@':
@@ -96,13 +109,15 @@ string_t irc_format_msg(struct irc_msg *msg, char *str, ...)
 					break;
 			}
 		}
+		else if (str[i] == '$') {
+			if (value = util_expand_variable(&str[i], &i)) {
+				j += irc_format_buffer(msg, value, &buffer[j], max - j);
+				destroy_string(value);
+			}
+		}
 		else
 			buffer[j++] = str[i];
 	}
-	buffer[j++] = '\0';
-	va_end(va);
-
-	return(util_expand_str(buffer));
+	return(j);
 }
-
 
