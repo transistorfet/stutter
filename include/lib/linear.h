@@ -26,14 +26,14 @@
 #define linear_init_v(list)				\
 	(list).head = NULL;
 
-#define linear_add_node_v(list, node, field) {		\
+#define linear_add_node_v(list, field, node) {		\
 	(node)->field.next = (list).head;		\
 	if ((list).head)				\
 		(list).head->field.prev = (node);	\
 	(list).head = (node);				\
 }
 
-#define linear_remove_node_v(list, node, field) {			\
+#define linear_remove_node_v(list, field, node) {			\
 	if ((node)->field.prev)						\
 		(node)->field.prev->field.next = (node)->field.next;	\
 	else								\
@@ -42,7 +42,7 @@
 		(node)->field.next->field.prev = (node)->field.prev;	\
 }
 
-#define linear_find_node_v(list, ptr, field, compare) {	\
+#define linear_find_node_v(list, field, ptr, compare) {	\
 	typeof((list).head) cur;			\
 	ptr = NULL;					\
 	cur = (list).head;				\
@@ -116,7 +116,7 @@ static inline int linear_add_node(struct linear_list_s *list, void *ptr)
 	if (!(node = (struct linear_node_s *) memory_alloc(sizeof(struct linear_node_s))))
 		return(-1);
 	node->ptr = ptr;
-	linear_add_node_v(list->list, node, list);
+	linear_add_node_v(list->list, list, node);
 	return(0);
 }
 
@@ -124,10 +124,10 @@ static inline int linear_remove_node(struct linear_list_s *list, void *ptr)
 {
 	struct linear_node_s *node;
 
-	linear_find_node_v(list->list, node, list, (cur->ptr == ptr));
+	linear_find_node_v(list->list, list, node, (cur->ptr == ptr));
 	if (!node)
 		return(1);
-	linear_remove_node_v(list->list, node, list);
+	linear_remove_node_v(list->list, list, node);
 	memory_free(node);
 	return(0);
 }
@@ -136,7 +136,7 @@ static inline void *linear_find_node(struct linear_list_s *list, compare_t compa
 {
 	struct linear_node_s *node;
 
-	linear_find_node_v(list->list, node, list, (!compare(cur->ptr, ptr)));
+	linear_find_node_v(list->list, list, node, (!compare(cur->ptr, ptr)));
 	if (!node)
 		return(NULL);
 	return(node->ptr);
