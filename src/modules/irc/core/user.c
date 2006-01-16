@@ -1,31 +1,24 @@
 /*
  * Module Name:		user.c
  * Version:		0.1
- * Module Requirements:	string ; memory
+ * Module Requirements:	memory ; linear ; string
  * Description:		User Interface Manager
  */
 
 #include <string.h>
 
-#include <nit/string.h>
-#include <nit/memory.h>
-#include <nit/linear.h>
+#include <lib/memory.h>
+#include <lib/linear.h>
+#include <lib/string.h>
 #include <modules/irc/user.h>
-
-#define userlist			user_mangle
-#define user_mangle(name)		user_##name
-#define user_list_field(name)		name
-#define user_node_field(name)		name
-#define user_access(list, name)		list->user_node_field(name)
-#define user_compare(node, key)		strcmp(node->user.nick, key)
 
 struct irc_user_node {
 	struct irc_user user;
-	linear_node_fields_v(userlist, struct irc_user_node);
+	linear_node_v(irc_user_node) ul;
 };
 
 struct irc_user_list {
-	linear_list_fields_v(userlist, struct irc_user_node);
+	linear_list_v(irc_user_node) ul;
 };
 
 /**
@@ -37,7 +30,7 @@ struct irc_user_list *irc_create_user_list(void)
 
 	if (!(list = (struct irc_user_list *) memory_alloc(sizeof(struct irc_user_list))))
 		return(NULL);
-	linear_init_list_v(userlist, list);
+	linear_init_v(list->ul);
 	return(list);
 }
 
@@ -46,15 +39,11 @@ struct irc_user_list *irc_create_user_list(void)
  */
 void irc_destroy_user_list(struct irc_user_list *list)
 {
-	struct irc_user_node *tmp, *cur;
-
-	linear_destroy_list_v(userlist, list,
-		linear_release_node_v(userlist, cur);
+	linear_destroy_list_v(list->ul, ul,
 		if (cur->user.nick)
 			destroy_string(cur->user.nick);
 		memory_free(cur);
 	);
-	linear_release_list_v(userlist, list);
 	memory_free(list);
 }
 
@@ -71,7 +60,7 @@ struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitfla
 		return(NULL);
 	node->user.nick = create_string(nick);
 	node->user.bitflags = bitflags;
-	linear_add_node_v(userlist, list, node);
+	linear_add_node_v(list->ul, ul, node);
 
 	return(&node->user);
 }
@@ -82,15 +71,16 @@ struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitfla
  */
 int irc_remove_user(struct irc_user_list *list, char *nick)
 {
-	struct irc_user_node *cur, *prev;
+	struct irc_user_node *node;
 
 	if (!list)
 		return(-1);
-	linear_remove_node_v(userlist, list, nick);
-	if (!cur)
+	linear_find_node_v(list->ul, ul, node, !strcmp(cur->user.nick, nick));
+	if (!node)
 		return(1);
-	destroy_string(cur->user.nick);
-	memory_free(cur);
+	linear_remove_node_v(list->ul, ul, node);
+	destroy_string(node->user.nick);
+	memory_free(node);
 	return(0);
 }
 
@@ -100,14 +90,14 @@ int irc_remove_user(struct irc_user_list *list, char *nick)
  */
 struct irc_user *irc_find_user(struct irc_user_list *list, char *nick)
 {
-	struct irc_user_node *cur;
+	struct irc_user_node *node;
 
 	if (!list)
 		return(NULL);
-	linear_find_node_v(userlist, list, nick);
-	if (!cur)
+	linear_find_node_v(list->ul, ul, node, !strcmp(cur->user.nick, nick));
+	if (!node)
 		return(NULL);
-	return(&cur->user);
+	return(&node->user);
 }
 
 /**
@@ -116,15 +106,15 @@ struct irc_user *irc_find_user(struct irc_user_list *list, char *nick)
  */
 int irc_change_user_nick(struct irc_user_list *list, char *oldnick, char *newnick)
 {
-	struct irc_user_node *cur;
+	struct irc_user_node *node;
 
 	if (!list)
 		return(-1);
-	linear_find_node_v(userlist, list, oldnick);
-	if (!cur)
+	linear_find_node_v(list->ul, ul, node, !strcmp(cur->user.nick, oldnick));
+	if (!node)
 		return(1);
-	destroy_string(cur->user.nick);
-	cur->user.nick = create_string(newnick);
+	destroy_string(node->user.nick);
+	node->user.nick = create_string(newnick);
 	return(0);
 }
 

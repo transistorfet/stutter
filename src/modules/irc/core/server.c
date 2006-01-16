@@ -1,7 +1,7 @@
 /*
  * Module Name:		server.c
  * Version:		0.1
- * Module Requirements:	msg ; channel ; net ; list
+ * Module Requirements:	frontend ; memory ; linear ; msg ; channel
  * Description:		Server Interface Manager
  */
 
@@ -10,33 +10,21 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <nit/net.h>
-#include <nit/types.h>
-#include <nit/memory.h>
-#include <nit/linear.h>
-#include <nit/callback.h>
+#include <lib/memory.h>
+#include <lib/linear.h>
+#include <lib/globals.h>
+#include <frontend/net.h>
 #include <modules/irc/msg.h>
 #include <modules/irc/server.h>
 #include <modules/irc/channel.h>
 
-#define serverlist			server_mangle
-#define server_mangle(name)		server_##name
-#define server_list_field(name)		name
-#define server_node_field(name)		name
-#define server_access(list, name)	list.server_node_field(name)
-#define server_compare(node, key)	!(&node->server == key)
-
 struct irc_server_node {
 	struct irc_server server;
-	linear_node_fields_v(serverlist, struct irc_server_node);
-};
-
-struct irc_server_list {
-	linear_list_fields_v(serverlist, struct irc_server_node);
+	linear_node_v(irc_server_node) sl;
 };
 
 static int server_initialized = 0;
-static struct irc_server_list server_list;
+static linear_list_v(irc_server_node) server_list;
 
 static int irc_server_receive(struct irc_server *, network_t);
 static int server_init_connection(struct irc_server *);
@@ -45,7 +33,7 @@ int init_irc_server(void)
 {
 	if (server_initialized)
 		return(1);
-	linear_init_list_v(serverlist, server_list);
+	linear_init_v(server_list);
 	server_initialized = 1;
 	return(0);
 }
@@ -54,13 +42,11 @@ int release_irc_server(void)
 {
 	struct irc_server_node *tmp, *cur;
 
-	linear_destroy_list_v(serverlist, server_list,
+	linear_destroy_list_v(server_list, sl,
 		if (cur->server.channels)
 			irc_destroy_channel_list(cur->server.channels);
-		linear_release_node_v(serverlist, cur);
 		memory_free(cur);
 	);
-	linear_release_list_v(chanlist, server_list);
 	server_initialized = 0;
 	return(0);
 }
@@ -84,7 +70,7 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 
 	node->server.channels = irc_create_channel_list();
 	node->server.status = irc_add_channel(node->server.channels, IRC_SERVER_STATUS_CHANNEL, window, &node->server);
-	linear_add_node_v(serverlist, server_list, node);
+	linear_add_node_v(server_list, sl, node);
 
 	if (server_init_connection(&node->server) < 0) {
 		irc_server_disconnect(&node->server);
@@ -98,7 +84,7 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
  */
 int irc_server_reconnect(struct irc_server *server)
 {
-	net_disconnect(server->net);
+	fe_net_disconnect(server->net);
 	if (server_init_connection(server)) {
 		irc_server_disconnect(server);
 		return(-1);
@@ -112,14 +98,10 @@ int irc_server_reconnect(struct irc_server *server)
  */
 int irc_server_disconnect(struct irc_server *server)
 {
-	struct irc_server_node *cur, *prev;
-
-	linear_remove_node_v(serverlist, server_list, server);
-	if (!cur)
-		return(1);
-	irc_destroy_channel_list(cur->server.channels);
-	net_disconnect(cur->server.net);
-	memory_free(cur);
+	linear_remove_node_v(server_list, sl, (struct irc_server_node *) server);
+	irc_destroy_channel_list(server->channels);
+	fe_net_disconnect(server->net);
+	memory_free(server);
 	return(0);
 }
 
@@ -129,9 +111,7 @@ int irc_server_disconnect(struct irc_server *server)
  */
 struct irc_server *irc_find_server(char *address)
 {
-	struct irc_server_node *cur;
-
-	linear_traverse_list_v(serverlist, server_list,
+	linear_traverse_list_v(server_list, sl,
 		if (!strcmp(cur->server.address, address))
 			return(&cur->server);
 	);
@@ -146,9 +126,8 @@ struct irc_server *irc_find_server(char *address)
 struct irc_channel *irc_server_find_window(void * window)
 {
 	struct irc_channel *channel;
-	struct irc_server_node *cur;
 
-	linear_traverse_list_v(serverlist, server_list,
+	linear_traverse_list_v(server_list, sl,
 		if (channel = irc_channel_find_window(cur->server.channels, window))
 			return(channel);
 	);
@@ -166,7 +145,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 
 	if (!server || !msg || !(size = irc_collapse_msg(msg, buffer, IRC_MAX_MSG)))
 		return(-1);
-	if (net_send(server->net, buffer, size) != size)
+	if (fe_net_send(server->net, buffer, size) != size)
 		return(-1);
 	return(0);
 }
@@ -184,16 +163,16 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 		return(NULL);
 
 	while (1) {
-		if ((size = net_receive(server->net, buffer, IRC_MAX_MSG + 1)) < 0) {
-			net_disconnect(server->net);
-			server->net = 0;
+		if ((size = fe_net_receive(server->net, buffer, IRC_MAX_MSG + 1)) < 0) {
+			fe_net_disconnect(server->net);
+			server->net = NULL;
 			return(NULL);
 		}
 		else if (size == 0)
 			return(NULL);
 		else if (!strncmp(buffer, "PING", 4)) {
 			buffer[1] = 'O';
-			if (net_send(server->net, buffer, size) != size)
+			if (fe_net_send(server->net, buffer, size) != size)
 				return(NULL);
 			server->last_ping = time(NULL);
 		}
@@ -212,9 +191,8 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 int irc_broadcast_msg(struct irc_msg *msg)
 {
 	int ret = 0;
-	struct irc_server_node *cur;
 
-	linear_traverse_list_v(serverlist, server_list,
+	linear_traverse_list_v(server_list, sl,
 		ret = irc_send_msg(&cur->server, msg);
 	);
 	return(ret);
@@ -349,9 +327,8 @@ static int server_init_connection(struct irc_server *server)
 
 	if (server->net)
 		return(1);
-	if (!(server->net = net_connect(server->address, server->port)))
+	if (!(server->net = fe_net_connect(server->address, server->port, (callback_t) irc_server_receive, server)))
 		return(-1);
-	net_receive_callback(server->net, create_callback(0, 0, NULL, (callback_t) irc_server_receive, server));
 
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)))
 		return(-1);
@@ -366,7 +343,7 @@ static int server_init_connection(struct irc_server *server)
 		if (!ret)
 			return(0);
 	}
-	net_disconnect(server->net);
+	fe_net_disconnect(server->net);
 	server->net = NULL;
 	return(-1);
 }
