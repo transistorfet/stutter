@@ -1,7 +1,7 @@
 /*
  * Module Name:		main.c
  * Version:		0.1
- * Module Requirements:	type ; utils ; variable ; frontend ; modirc ; modbase
+ * Module Requirements:	type ; utils ; variable ; frontend ; string ; modirc ; modbase
  * Description:		IRC Client
  */
 
@@ -10,10 +10,10 @@
 #include <utils.h>
 #include <variable.h>
 #include <frontend.h>
+#include <lib/string.h>
 #include <modules/irc.h>
 #include <modules/base.h>
 
-#include <nit/string.h>
 
 int init_system(void)
 {
