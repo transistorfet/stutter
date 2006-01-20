@@ -6,13 +6,13 @@ LIB_TARGET = simple.a
 OBJS =	simple.o \
 	input.o \
 	window.o \
-	statusbar.o
+	statusbar.o \
+	screen.o \
+	../common/unix/net.o \
 
 ARFLAGS = rc
-#LIBS = -lnit
-CFLAGS = -g -I$(ROOT)/include
+CFLAGS = -g -I$(ROOT)/include -DNET_DIRECT
 
-include $(ROOT)/builder/builder.mk
-
+include $(ROOT)/rules.mk
 
 
