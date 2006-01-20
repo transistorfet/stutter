@@ -7,11 +7,11 @@
 
 #include CONFIG_H
 #include <type.h>
-#include <memory.h>
-#include <stringt.h>
 #include <variable.h>
+#include <lib/memory.h>
+#include <lib/string.h>
+#include "screen.h"
 #include "statusbar.h"
-#include "../common/curses/screen.h"
 
 /**
  * Allocate and initialize a statusbar structure given the intialization values.
@@ -45,22 +45,25 @@ int destroy_statusbar(struct statusbar_s *statusbar)
  * Status Bar Refresh Function.  Redraw the status bar in the given frame
  * using the information from the given statusbar structure.
  */
-int refresh_statusbar(struct statusbar_s *statusbar, struct screen_s *screen)
+int refresh_statusbar(struct statusbar_s *statusbar)
 {
-	int width;
+	int i;
 	string_t str;
+	short width, height;
 
-	width = screen_width(screen);
-	screen_set_attrib(screen, SC_INVERSE);
-	screen_clear(screen, 0, screen_height(screen) - statusbar->height - 1, width, statusbar->height);
+	width = screen_width();
+	height = screen_height();
+
+	screen_set_attribs(SC_INVERSE, 0, 0);
+	screen_clear(0, height - statusbar->height - 1, width, statusbar->height);
 	if (str = statusbar->status->type->stringify(statusbar->status->value)) {
 		if (strlen(str) > width)
 			str[width] = '\0';
-		screen_move(screen, 0, screen_height(screen) - statusbar->height - 1);
-		screen_print(screen, str, 0);
+		screen_move(0, height - statusbar->height - 1);
+		screen_print(str, 0);
 		destroy_string(str);
 	}
-	screen_set_attrib(screen, 0);
+	screen_set_attribs(SC_NORMAL, 0, 0);
 	return(0);
 }
 

@@ -7,9 +7,8 @@
 #ifndef _SIMPLE_WINDOW_H
 #define _SIMPLE_WINDOW_H
 
-#include <queue.h>
-#include <stringt.h>
-#include "../common/curses/screen.h"
+#include <lib/queue.h>
+#include <lib/string.h>
 
 #ifndef WINDOW_MAX_WRAP
 #define WINDOW_MAX_WRAP		20
@@ -29,7 +28,7 @@ struct window_s {
 
 struct window_s *create_window(int);
 int destroy_window(struct window_s *);
-int refresh_window(struct window_s *, struct screen_s *);
+int refresh_window(struct window_s *);
 
 int window_print(struct window_s *, string_t);
 int window_clear(struct window_s *);

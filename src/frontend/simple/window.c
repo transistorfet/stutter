@@ -1,17 +1,17 @@
 /*
  * Module Name:		window.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; stringt ; screen
+ * Module Requirements:	queue ; memory ; string ; screen
  * Description:		Window Manager
  */
 
 #include <string.h>
 
-#include <queue.h>
-#include <memory.h>
-#include <stringt.h>
+#include <lib/queue.h>
+#include <lib/memory.h>
+#include <lib/string.h>
+#include "screen.h"
 #include "window.h"
-#include "../common/curses/screen.h"
 
 static int window_wrap_string(char *, int);
 
@@ -47,41 +47,46 @@ int destroy_window(struct window_s *window)
 /**
  * Redraw the given window on the screen if it is not hidden.
  */
-int refresh_window(struct window_s *window, struct screen_s *screen)
+int refresh_window(struct window_s *window)
 {
 	char *str;
+	short width, height;
 	int i, j, lines = 0;
 	struct window_entry_s *cur;
 	int breaks[WINDOW_MAX_WRAP];
 
-	lines = screen_height(screen) - 3;
-	screen_clear(screen, 0, 0, screen_width(screen), screen_height(screen) - 2);
-	screen_move(screen, 0, lines);
+	width = screen_width();
+	height = screen_height();
 
-	cur = queue_first_v(window->log);
+	// TODO how do you get the statusbar height?
+	lines = height - 3;
+	screen_clear(0, 0, width, height - 2);
+	screen_move(0, lines);
+
+	if (!(cur = queue_first_v(window->log)))
+		return(0);
 	for (j = 0;j < window->cur_line;j++) {
-		if (!queue_next_v(cur, log))
+		if (!(cur = queue_next_v(cur, log)))
 			return(0);
 	}
 	while (lines >= 0) {
-		if (!(cur = queue_next_v(cur, log)))
-			break;
 		str = cur->line;
-
 		j = 0;
 		for (i = 0;i < WINDOW_MAX_WRAP;i++) {
-			breaks[i] = window_wrap_string(&str[j], screen_width(screen));
+			breaks[i] = window_wrap_string(&str[j], width);
 			if (breaks[i] == 0)
 				break;
 			j += breaks[i];
 		}
 
 		for (;i >= 0;i--) {
-			screen_move(screen, 0, lines);
-			screen_print(screen, &str[j], breaks[i]);
+			screen_move(0, lines);
+			screen_print(&str[j], breaks[i]);
 			lines--;
 			j -= breaks[i - 1];
 		}
+		if (!(cur = queue_next_v(cur, log)))
+			break;
 	}
 	return(0);
 }

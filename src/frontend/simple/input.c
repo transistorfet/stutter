@@ -1,17 +1,17 @@
 /*
  * Module Name:		input.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; stringt ; screen
+ * Module Requirements:	queue ; memory ; string ; screen
  * Description:		Input Buffer
  */
 
 #include <string.h>
 
-#include <queue.h>
-#include <memory.h>
-#include <stringt.h>
+#include <lib/queue.h>
+#include <lib/memory.h>
+#include <lib/string.h>
+#include "screen.h"
 #include "input.h"
-#include "../common/curses/screen.h"
 #include "../common/keycodes.h"
 
 /**
@@ -54,16 +54,20 @@ int destroy_input(struct input_s *input)
 /**
  * Redraw the given input buffer on the screen.
  */
-int refresh_input(struct input_s *input, struct screen_s *screen)
+int refresh_input(struct input_s *input)
 {
 	int i;
+	short width, height;
+
+	width = screen_width();
+	height = screen_height();
 
 	input->buffer[input->end] = '\0';
-	screen_clear(screen, 0, screen_height(screen) - 1, screen_width(screen), 1);
-	screen_move(screen, 0, screen_height(screen) - 1);
-	i = input->i - screen_width(screen) + 1;
-	screen_print(screen, &input->buffer[(i >= 0) ? i : 0], 0);
-	screen_move(screen, ( input->i >= screen_width(screen) ? screen_width(screen) - 1 : input->i ), screen_height(screen) - 1);
+	screen_clear(0, height - 1, width, 1);
+	screen_move(0, height - 1);
+	i = input->i - width + 1;
+	screen_print(&input->buffer[(i >= 0) ? i : 0], 0);
+	screen_move(( input->i >= width ? width - 1 : input->i ), height - 1);
 	return(0);
 }
 

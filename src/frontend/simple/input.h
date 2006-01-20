@@ -7,9 +7,9 @@
 #ifndef _SIMPLE_INPUT_H
 #define _SIMPLE_INPUT_H
 
-#include <queue.h>
-#include <stringt.h>
-#include "../common/curses/screen.h"
+#include <lib/queue.h>
+#include <lib/string.h>
+#include <frontend/widget.h>
 
 #ifndef INPUT_MAX_BUFFER
 #define INPUT_MAX_BUFFER		1024
@@ -33,7 +33,7 @@ struct input_s {
 
 struct input_s *create_input(int, int);
 int destroy_input(struct input_s *);
-int refresh_input(struct input_s *, struct screen_s *);
+int refresh_input(struct input_s *);
 
 int input_insert_char(struct input_s *, char);
 int input_delete_char(struct input_s *);
