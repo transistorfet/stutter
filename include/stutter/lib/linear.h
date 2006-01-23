@@ -103,7 +103,7 @@ static inline void linear_destroy_list(struct linear_list_s *list, destroy_t des
 	if (!list)
 		return;
 	linear_destroy_list_v(list->list, list,
-		destroy(cur);
+		destroy(cur->ptr);
 		memory_free(cur);
 	);
 	memory_free(list);
@@ -120,16 +120,18 @@ static inline int linear_add_node(struct linear_list_s *list, void *ptr)
 	return(0);
 }
 
-static inline int linear_remove_node(struct linear_list_s *list, void *ptr)
+static inline void *linear_remove_node(struct linear_list_s *list, void *ptr)
 {
+	void *ret;
 	struct linear_node_s *node;
 
 	linear_find_node_v(list->list, list, node, (cur->ptr == ptr));
 	if (!node)
-		return(1);
+		return(NULL);
+	ret = node->ptr;
 	linear_remove_node_v(list->list, list, node);
 	memory_free(node);
-	return(0);
+	return(ret);
 }
 
 static inline void *linear_find_node(struct linear_list_s *list, compare_t compare, void *ptr)
