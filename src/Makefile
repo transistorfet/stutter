@@ -9,15 +9,18 @@ OBJS =	main.o \
 	utils.o \
 	variable.o \
 	namespace.o \
-	frontend/$(FRONTEND)/$(FRONTEND).a \
+	lib/list.o \
+	lib/memory.o \
+	lib/string.o \
 	modules/base/modbase.a \
-	modules/irc/modirc.a
+	modules/irc/modirc.a \
+	frontend/$(FRONTEND)/$(FRONTEND).a
 
 LDFLAGS = 
-LIBS = -lnit -lncurses
+LIBS = -lncurses
 CFLAGS = -g -I$(ROOT)/include
 
-include $(ROOT)/builder/builder.mk
+include $(ROOT)/rules.mk
 
 
 
