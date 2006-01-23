@@ -1,7 +1,7 @@
 /*
  * Module Name:		variable.c
  * Version:		0.1
- * Module Requirements:	type ; memory ; string ; namespace
+ * Module Requirements:	type ; hash ; memory
  * Description:		Variable Manager
  */
 
@@ -11,39 +11,69 @@
 #include CONFIG_H
 #include <type.h>
 #include <variable.h>
-#include <namespace.h>
-#include <lib/macros.h>
+#include <lib/hash.h>
 #include <lib/memory.h>
-#include <lib/string.h>
 
-#include <lib/list.h>
+#ifndef NAMESPACE_INIT_SIZE
+#define NAMESPACE_INIT_SIZE		10
+#endif
+
+#ifndef NAMESPACE_LOAD_FACTOR
+#define NAMESPACE_LOAD_FACTOR		HASH_LOAD_FACTOR
+#endif
+
+#ifndef VARIABLE_INIT_SIZE
+#define VARIABLE_INIT_SIZE		20
+#endif
+
+#ifndef VARIABLE_LOAD_FACTOR
+#define VARIABLE_LOAD_FACTOR		HASH_LOAD_FACTOR
+#endif
+
+#define namespace_hash_m(list, str)		(sdbm_hash(str) % hash_size_v(list))
+#define namespace_compare_m(str)		(!strcmp(cur->data.name, str))
+
+#define variable_hash_m(list, str)		(sdbm_hash(str) % hash_size_v(list))
+#define variable_compare_m(str)			(!strcmp(cur->data.name, str))
 
 struct variable_node_s {
 	struct variable_s data;
-	//linear_node_fields_v();
+	hash_node_v(variable_node_s) vl;
 };
 
-#define create_variable_list()		\
-	create_list(0, (compare_t) compare_variable, (destroy_t) destroy_variable)
+struct namespace_node_s {
+	struct namespace_s data;
+	hash_list_v(variable_node_s) vl;
+	hash_node_v(namespace_node_s) nl;
+};
+
+static hash_list_v(namespace_node_s) namespace_list;
 
 static char **variable_path = NULL;
 static int variable_path_entries = 0;
 
-static int compare_variable(struct variable_s *, char *);
-static void destroy_variable(struct variable_s *);
-
 int init_variable(void)
 {
 	init_type();
-	init_namespace();
+	hash_init_v(namespace_list, NAMESPACE_INIT_SIZE);
 	return(0);
 }
 
 int release_variable(void)
 {
-	release_namespace();
-	release_type();
+	struct namespace_node_s *node;
 
+	hash_destroy_list_v(namespace_list, nl,
+		node = cur;
+		hash_destroy_list_v(node->vl, vl,
+			cur->data.type->destroy(cur->data.value);
+			memory_free(cur);
+		);
+		hash_release_v(node->vl);
+		memory_free(node);
+	);
+	hash_release_v(namespace_list);
+	release_type();
 	return(0);
 }
 
@@ -61,7 +91,8 @@ int release_variable(void)
 struct variable_s *add_variable(struct type_s *type, char *ns_name, char *var_name, void *value)
 {
 	struct variable_s *var;
-	struct namespace_s *namespace;
+	struct namespace_node_s *ns;
+	struct variable_node_s *node;
 
 	if (!type)
 		return(NULL);
@@ -73,27 +104,26 @@ struct variable_s *add_variable(struct type_s *type, char *ns_name, char *var_na
 	}
 	else {
 		if (ns_name) {
-			if (!(namespace = find_namespace(ns_name)) && !(namespace = add_namespace(ns_name, create_variable_list())))
+			if (!(ns = (struct namespace_node_s *) find_variable_namespace(ns_name)) && !(ns = (struct namespace_node_s *) add_variable_namespace(ns_name, 0)))
 				return(NULL);
 		}
-		else if (!ns_name && (!variable_path_entries || !(namespace = find_namespace(variable_path[0]))))
+		else if (!variable_path_entries || !(ns = (struct namespace_node_s *) find_variable_namespace(variable_path[0])))
 			return(NULL);
-        
-		if (!(var = memory_alloc(sizeof(struct variable_s) + strlen(var_name) + 1))) {
+
+		if (!(node = memory_alloc(sizeof(struct variable_node_s) + strlen(var_name) + 1))) {
 			type->destroy(value);
 			return(NULL);
 		}
-		var->name = (char *) (((unsigned int) var) + sizeof(struct variable_s));
-		strcpy(var->name, var_name);
-		var->type = type;
-		var->ns = namespace;
-		var->value = value;
+		node->data.name = (char *) (((unsigned int) node) + sizeof(struct variable_node_s));
+		strcpy(node->data.name, var_name);
+		node->data.type = type;
+		node->data.ns = &ns->data;
+		node->data.value = value;
         
-		if (list_add(namespace->list, var)) {
-			type->destroy(value);
-			return(NULL);
-		}
-		return(var);
+		hash_add_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name));
+		if (hash_load_v(ns->vl) > VARIABLE_LOAD_FACTOR)
+			hash_rehash_v(ns->vl, vl, (hash_size_v(ns->vl) * 1.75), variable_hash_m(ns->vl, cur->data.name));
+		return(&node->data);
 	}
 }
 
@@ -105,17 +135,23 @@ struct variable_s *add_variable(struct type_s *type, char *ns_name, char *var_na
  */
 int remove_variable(struct type_s *type, char *ns_name, char *var_name)
 {
-	struct namespace_s *namespace;
+	struct namespace_node_s *ns;
+	struct variable_node_s *node;
 
 	if (ns_name) {
-		if (!(namespace = find_namespace(ns_name)))
+		if (!(ns = (struct namespace_node_s *) find_variable_namespace(ns_name)))
 			return(-1);
 	}
-	else if (!variable_path_entries || !(namespace = find_namespace(variable_path[0])))
+	else if (!variable_path_entries || !(ns = (struct namespace_node_s *) find_variable_namespace(variable_path[0])))
 		return(-1);
 
 	// TODO check the type of the variable before deleting
-	return(list_delete(namespace->list, var_name));
+	hash_remove_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name), variable_compare_m(var_name));
+	if (!node)
+		return(-1);
+	node->data.type->destroy(node->data.value);
+	memory_free(node);
+	return(0);
 }
 
 /**
@@ -127,22 +163,80 @@ struct variable_s *find_variable(struct type_s *type, char *ns_name, char *var_n
 {
 	int i = 0;
 	struct variable_s *var;
-	struct namespace_s *namespace;
+	struct namespace_node_s *ns;
+	struct variable_node_s *node;
 
 	if (ns_name) {
-		if (!(namespace = find_namespace(ns_name)))
+		if (!(ns = (struct namespace_node_s *) find_variable_namespace(ns_name)))
 			return(NULL);
-		if ((var = list_find(namespace->list, var_name, 0)) && (!type || (type == var->type)))
-			return(var);
+		hash_find_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name), variable_compare_m(var_name));
+		if (node && (!type || (node->data.type == type)))
+			return(&node->data);
 	}
 	else {
 		for (;i < variable_path_entries;i++) {
-			if ((namespace = find_namespace(variable_path[i])) && (var = list_find(namespace->list, var_name, 0)) && (!type || (type == var->type)))
-				return(var);
+			if ((ns = (struct namespace_node_s *) find_variable_namespace(variable_path[i]))) {
+				hash_find_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name), variable_compare_m(var_name));
+				if (node && (!type || (node->data.type == type)))
+					return(&node->data);
+			}
 		}
 	}
 
 	return(NULL);
+}
+
+/*
+ * Create a new namespace with the given name and the given bitflags and return
+ * a pointer to it on success or NULL on failure.
+ */
+struct namespace_s *add_variable_namespace(char *name, int bitflags)
+{
+	struct namespace_node_s *node;
+
+	if (!(node = memory_alloc(sizeof(struct namespace_node_s) + strlen(name) + 1)))
+		return(NULL);
+	node->data.name = (char *) (((unsigned int) node) + sizeof(struct namespace_node_s));
+	strcpy(node->data.name, name);
+	node->data.bitflags = bitflags;
+	hash_init_v(node->vl, VARIABLE_INIT_SIZE);
+
+	hash_add_node_v(namespace_list, nl, node, namespace_hash_m(namespace_list, name));
+	if (hash_load_v(namespace_list) > NAMESPACE_LOAD_FACTOR)
+		hash_rehash_v(namespace_list, nl, (hash_size_v(namespace_list) * 1.75), namespace_hash_m(namespace_list, cur->data.name));
+	return(&node->data);
+}
+
+/**
+ * Remove the namespace with the given name and destroy all of the variables
+ * associated with it.  A 0 is returned on success or -1 on failure.
+ */
+int remove_variable_namespace(char *name)
+{
+	struct namespace_node_s *node;
+
+	hash_remove_node_v(namespace_list, nl, node, namespace_hash_m(namespace_list, name), namespace_compare_m(name));
+	if (!node)
+		return(-1);
+	hash_destroy_list_v(node->vl, vl,
+		cur->data.type->destroy(cur->data.value);
+		memory_free(cur);
+	);
+	hash_release_v(node->vl);
+	memory_free(node);	
+	return(0);
+}
+
+/*
+ * Find the namespace with the given name and return a pointer to it or
+ * return NULL if the namespace cannot be found.
+ */
+struct namespace_s *find_variable_namespace(char *name)
+{
+	struct namespace_node_s *node;
+
+	hash_find_node_v(namespace_list, nl, node, namespace_hash_m(namespace_list, name), namespace_compare_m(name));
+	return(&node->data);
 }
 
 /**
@@ -177,30 +271,10 @@ int select_variable_path(char *str)
 	tmp[i] = '\0';
 
 	if (variable_path)
-		free(variable_path);
+		memory_free(variable_path);
 	variable_path = path;
 	variable_path_entries = entries;
 	return(0);
-}
-
-/*** Local Functions ***/
-
-/**
- * Compare the name of the given variable with the given name
- * and return 0 if they match or nonzero otherwise.
- */
-static int compare_variable(struct variable_s *var, char *name)
-{
-	return(strcmp(var->name, name));
-}
-
-/**
- * Free all resources used by the given variable.
- */
-static void destroy_variable(struct variable_s *var)
-{
-	var->type->destroy(var->value);
-	memory_free(var);
 }
 
 
