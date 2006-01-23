@@ -8,40 +8,49 @@
 
 #include <string.h>
 
+#include CONFIG_H
 #include <type.h>
+#include <lib/hash.h>
 #include <lib/memory.h>
-#include <lib/linear.h>
 #include <lib/globals.h>
+
+#ifndef TYPE_INIT_SIZE
+#define TYPE_INIT_SIZE		10
+#endif
+
+#ifndef TYPE_LOAD_FACTOR
+#define TYPE_LOAD_FACTOR	0.75
+#endif
+
+#define type_hash_m(list, str)			(sdbm_hash(str) % hash_size_v(list))
+#define type_compare_m(str)			(!strcmp(cur->type.name, name))
 
 struct type_node_s {
 	struct type_s type;
-	linear_node_v(type_node_s) tl;
+	hash_node_v(type_node_s) tl;
 };
 
-//static struct list_s *type_list = NULL;
-static linear_list_v(type_node_s) type_list;
-
-static int compare_type(struct type_s *, char *);
-static void destroy_type(struct type_s *);
+static int type_initialized = 0;
+static hash_list_v(type_node_s) type_list;
 
 int init_type(void)
 {
-//	if (type_list)
-//		return(1);
-//	if (!(type_list = create_list(0, (compare_t) compare_type, (destroy_t) destroy_type)))
-//		return(-1);
-	// TODO you need a new initialization test
-	linear_init_v(type_list);
+	if (type_initialized)
+		return(1);
+	hash_init_v(type_list, TYPE_INIT_SIZE);
+	type_initialized = 1;
 	return(0);
 }
 
 int release_type(void)
 {
-//	if (type_list)
-//		destroy_list(type_list);
-	linear_destroy_list_v(type_list, tl,
+	if (!type_initialized)
+		return(1);
+	type_initialized = 0;
+	hash_destroy_list_v(type_list, tl,
 		memory_free(cur);
 	);
+	hash_release_v(type_list);
 	return(0);
 }
 
@@ -61,13 +70,9 @@ struct type_s *add_type(char *name, create_t create, stringify_t stringify, eval
 	node->type.stringify = stringify;
 	node->type.evaluate = evaluate;
 	node->type.destroy = destroy;
-	linear_add_node_v(type_list, node, tl);
-
-//	if (list_add(type_list, type)) {
-//		destroy_type(type);
-//		return(NULL);
-//	}
-
+	hash_add_node_v(type_list, tl, node, type_hash_m(type_list, name));
+	if (hash_load_v(type_list) > TYPE_LOAD_FACTOR)
+		hash_rehash_v(type_list, tl, (hash_size_v(type_list) * 1.75), type_hash_m(type_list, node->type.name));
 	return(&node->type);
 }
 
@@ -79,14 +84,11 @@ int remove_type(char *name)
 {
 	struct type_node_s *node;
 
-	linear_find_node_v(type_list, node, tl, !(strcmp(cur->type.name, name)));
+	hash_remove_node_v(type_list, tl, node, type_hash_m(type_list, name), type_compare_m(name));
 	if (!node)
 		return(-1);
-	linear_remove_node_v(type_list, node, tl);
 	memory_free(node);
 	return(0);
-
-//	return(list_delete(type_list, name));
 }
 
 /**
@@ -97,30 +99,10 @@ struct type_s *find_type(char *name)
 {
 	struct type_node_s *node;
 
-	linear_find_node_v(type_list, node, tl, !(strcmp(cur->type.name, name)));
+	hash_find_node_v(type_list, tl, node, type_hash_m(type_list, name), type_compare_m(name));
 	if (!node)
 		return(NULL);
 	return(&node->type);
-//	return(list_find(type_list, name, 0));
-}
-
-/*** Local Functions ***/
-
-/**
- * Compare the name of the given variable with the given name
- * and return 0 if they match or nonzero otherwise.
- */
-static int compare_type(struct type_s *type, char *name)
-{
-	return(strcmp(type->name, name));
-}
-
-/**
- * Free all resources used by the given variable.
- */
-static void destroy_type(struct type_s *type)
-{
-	memory_free(type);
 }
 
 
