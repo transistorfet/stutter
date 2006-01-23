@@ -1,7 +1,7 @@
 /*
  * Module Name:		key.c
  * Version:		0.1
- * Module Requirements:	variable ; list ; memory ; string
+ * Module Requirements:	variable ; memory ; string
  * Description:		Key Manager
  */
 
@@ -9,9 +9,10 @@
 
 #include <key.h>
 #include <variable.h>
-#include <nit/list.h>
-#include <nit/memory.h>
-#include <nit/string.h>
+#include <lib/memory.h>
+#include <lib/string.h>
+
+#include <lib/list.h>
 
 #define KEY_INITIAL_BASE_ROOT	50
 #define KEY_INITIAL_ROOT	20
@@ -20,7 +21,7 @@
 
 #define KEY_KBF_SUBMAP		0x01
 
-#define key_hash(list, key)	( key % list->size )
+#define key_hash(list, key)	( ((unsigned char) (key)) % list->size )
 
 struct key_s {
 	short ch;
@@ -88,8 +89,6 @@ int bind_key(char *context, char *str, struct variable_s *variable, string_t arg
 	struct key_s *key, *cur_key;
 	struct key_map_s *map, *cur_map;
 
-	// TODO is the given key sequence the acutal sequence or a human-writable representation?
-
 	if ((*str == '\0') || !variable)
 		return(-1);
 	if (!(cur_map = context ? list_find(context_list, context, 0) : current_root)) {
@@ -116,8 +115,22 @@ int bind_key(char *context, char *str, struct variable_s *variable, string_t arg
 				cur_map = cur_key->data.submap;
 				continue;
 			}
-			else
-				return(-1);
+			else {
+				if (cur_key->args)
+					destroy_string(cur_key->args);
+				if (str[i + 1] == '\0') {
+					cur_key->bitflags = 0;
+					cur_key->data.variable = variable;
+				}
+				else {
+					if (!(map = create_key_map(NULL, KEY_INITIAL_SUBMAP)))
+						return(-1);
+					cur_key->bitflags = KEY_KBF_SUBMAP;
+					cur_key->data.submap = map;
+				}
+				cur_key->ch = str[i];
+				cur_key->args = args;
+			}
 		}
 		else {
 			if (str[i + 1] == '\0') {
