@@ -9,8 +9,8 @@
 #include <string.h>
 
 #include <namespace.h>
-#include <nit/list.h>
-#include <nit/memory.h>
+#include <lib/list.h>
+#include <lib/memory.h>
 
 static struct list_s *namespace_list = NULL;
 
