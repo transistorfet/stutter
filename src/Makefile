@@ -8,8 +8,6 @@ OBJS =	main.o \
 	type.o \
 	utils.o \
 	variable.o \
-	namespace.o \
-	lib/list.o \
 	lib/memory.o \
 	lib/string.o \
 	modules/base/modbase.a \
