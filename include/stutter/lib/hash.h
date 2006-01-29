@@ -42,8 +42,10 @@ typedef unsigned int (*hash_t)(void *);
 }
 
 #define hash_release_v(list) {					\
-	if ((list).table)					\
+	if ((list).table) {					\
 		memory_free((list).table);			\
+		(list).table = NULL;				\
+	}							\
 }
 
 #define hash_add_node_v(list, field, node, hashnum) {		\
