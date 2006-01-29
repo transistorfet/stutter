@@ -13,13 +13,21 @@
 #include <lib/memory.h>
 #include <lib/string.h>
 
-#include <lib/list.h>
-
+#ifndef KEY_INITIAL_CONTEXTS
 #define KEY_INITIAL_CONTEXTS	10
-#define KEY_INITIAL_BASE_ROOT	50
+#endif
+
+#ifndef KEY_INITIAL_ROOT
 #define KEY_INITIAL_ROOT	20
+#endif
+
+#ifndef KEY_INITIAL_SUBMAP
 #define KEY_INITIAL_SUBMAP	10
+#endif
+
+#ifndef KEY_LOAD_FACTOR
 #define KEY_LOAD_FACTOR		0.75
+#endif
 
 #define KEY_KBF_SUBMAP		0x01
 
