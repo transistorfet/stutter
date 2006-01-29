@@ -1,7 +1,7 @@
 /*
  * Module Name:		load.c
  * Version:		0.1
- * Module Requirements:	type ; variable ; string ; modirc
+ * Module Requirements:	type ; string ; variable ; modirc
  * Description:		IRC Module Initializer
  */
 
@@ -10,9 +10,9 @@
 #include CONFIG_H
 #include <type.h>
 #include <variable.h>
-#include <nit/string.h>
+#include <lib/string.h>
+#include <lib/globals.h>
 #include <modules/irc.h>
-#include <nit/callback.h>
 
 struct command_prototype_s {
 	char *name;
@@ -20,18 +20,22 @@ struct command_prototype_s {
 	void *ptr;
 };
 
+#define DECLARE_COMMAND(name)	\
+	{ #name, (callback_t) irc_cmd_##name, NULL }
+
 static struct command_prototype_s irc_commands[] = {
-	{ "join", (callback_t) irc_cmd_join, NULL },
-	{ "leave", (callback_t) irc_cmd_leave, NULL },
-	{ "quit", (callback_t) irc_cmd_quit, NULL },
-	{ "msg", (callback_t) irc_cmd_msg, NULL },
-	{ "me", (callback_t) irc_cmd_me, NULL },
-	{ "nick", (callback_t) irc_cmd_nick, NULL },
-	{ "names", (callback_t) irc_cmd_names, NULL },
-	{ "notice", (callback_t) irc_cmd_notice, NULL },
-	{ "say", (callback_t) irc_cmd_say, NULL },
-	{ "server", (callback_t) irc_cmd_server, NULL },
-	{ "disconnect", (callback_t) irc_cmd_disconnect, NULL },
+	DECLARE_COMMAND(join),
+	DECLARE_COMMAND(leave),
+	DECLARE_COMMAND(quit),
+	DECLARE_COMMAND(msg),
+	DECLARE_COMMAND(me),
+	DECLARE_COMMAND(nick),
+	DECLARE_COMMAND(names),
+	DECLARE_COMMAND(notice),
+	DECLARE_COMMAND(say),
+	DECLARE_COMMAND(server),
+	DECLARE_COMMAND(disconnect),
+	DECLARE_COMMAND(whois),
 	{ "", (callback_t) irc_cmd_say, NULL },
 	{ NULL, NULL, NULL }
 };
