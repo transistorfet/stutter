@@ -1,7 +1,7 @@
 /*
  * Module Name:		key.c
  * Version:		0.1
- * Module Requirements:	variable ; memory ; string
+ * Module Requirements:	variable ; hash ; memory ; string
  * Description:		Key Manager
  */
 
@@ -9,11 +9,13 @@
 
 #include <key.h>
 #include <variable.h>
+#include <lib/hash.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 
 #include <lib/list.h>
 
+#define KEY_INITIAL_CONTEXTS	10
 #define KEY_INITIAL_BASE_ROOT	50
 #define KEY_INITIAL_ROOT	20
 #define KEY_INITIAL_SUBMAP	10
@@ -21,7 +23,17 @@
 
 #define KEY_KBF_SUBMAP		0x01
 
-#define key_hash(list, key)	( ((unsigned char) (key)) % list->size )
+#define context_hash_m(list, key)	( sdbm_hash(key) % hash_size_v(list) )
+#define context_compare_m(key)		( !strcmp(cur->context, key) )
+
+#define key_hash_m(list, key)		( ((unsigned int) (key)) % hash_size_v(list) )
+#define key_compare_m(key)		( cur->ch == key )
+
+struct key_map_s {
+	string_t context;
+	hash_list_v(key_s) kl;
+	hash_node_v(key_map_s) cl;
+};
 
 struct key_s {
 	short ch;
@@ -31,40 +43,31 @@ struct key_s {
 		struct key_map_s *submap;
 	} data;
 	string_t args;
-	struct key_s *next;
+	hash_node_v(key_s) kl;
 };
 
-struct key_map_s {
-	string_t context;
-	int size;
-	int entries;
-	struct key_s **table;
-};
-
-static struct list_s *context_list;
+static hash_list_v(key_map_s) context_list;
 static struct key_map_s *current_root, *current_map;
 
+static struct key_map_s *key_add_context(char *);
+static struct key_map_s *key_find_context(char *);
 static struct key_s *create_key(short, short, union key_data_u, string_t);
 static void destroy_key(struct key_s *);
+static void keymap_add_key(struct key_map_s *, char, struct key_s *);
 static struct key_map_s *create_key_map(char *, int);
-static int compare_key_map_context(struct key_map_s *, char *);
 static void destroy_key_map(struct key_map_s *);
-static int rehash_key_map(struct key_map_s *, int);
 
 int init_key(void)
 {
 	struct key_map_s *root;
 
-	if (context_list)
+	if (current_root)
 		return(1);
-	if (!(context_list = create_list(0, (compare_t) compare_key_map_context, (destroy_t) destroy_key_map)))
-		return(-1);
-	if (!(root = create_key_map("", KEY_INITIAL_BASE_ROOT))) {
-		destroy_list(context_list);
-		context_list = NULL;
+	hash_init_v(context_list, KEY_INITIAL_CONTEXTS);
+	if (!(root = key_add_context(""))) {
+		release_key();
 		return(-1);
 	}
-	list_add(context_list, root);
 	current_root = root;
 	current_map = root;
 	return(0);
@@ -72,7 +75,10 @@ int init_key(void)
 
 int release_key(void)
 {
-	destroy_list(context_list);
+	hash_destroy_list_v(context_list, cl,
+		destroy_key_map(cur);
+	);
+	hash_release_v(context_list);
 	return(0);
 }
 
@@ -85,71 +91,61 @@ int release_key(void)
  */
 int bind_key(char *context, char *str, struct variable_s *variable, string_t args)
 {
-	int i, hash;
+	int i;
 	struct key_s *key, *cur_key;
 	struct key_map_s *map, *cur_map;
 
 	if ((*str == '\0') || !variable)
 		return(-1);
-	if (!(cur_map = context ? list_find(context_list, context, 0) : current_root)) {
-		if (!(cur_map = create_key_map(context, KEY_INITIAL_ROOT)))
-			return(-1);
-		list_add(context_list, cur_map);
-	}
+	if (!(cur_map = context ? key_find_context(context) : current_root) && !(cur_map = key_add_context(context)))
+		return(-1);
 	for (i = 0;str[i] != '\0';i++) {
-		hash = key_hash(cur_map, str[i]);
-		cur_key = cur_map->table[hash];
-		while (cur_key) {
-			if (cur_key->ch == str[i])
-				break;
-			cur_key = cur_key->next;
-		}
-		if (cur_key) {
-			if (cur_key->bitflags & KEY_KBF_SUBMAP) {
-				/** If the key already exists as a submap and we are at the
-				    terminating character of the sequence then we cannot map
-				    this key and fail; otherwise we use this keymap and avoid
-				    creating a new one */
-				if (str[i + 1] == '\0')
+		hash_find_node_v(cur_map->kl, kl, cur_key, key_hash_m(cur_map->kl, str[i]), key_compare_m(str[i]));
+		if (str[i + 1] == '\0') {
+			if (!cur_key) {
+				/* Create a new terminating key entry */
+				if (!(key = create_key(str[i], 0, (union key_data_u) variable, args)))
 					return(-1);
-				cur_map = cur_key->data.submap;
-				continue;
+				keymap_add_key(cur_map, str[i], key);
+			}
+			else if (cur_key->bitflags & KEY_KBF_SUBMAP) {
+				/* Fail (Don't overwrite a submap with a single key) */
+				return(-1);
 			}
 			else {
+				/* Overwrite this key with our new key information (Rebind) */
 				if (cur_key->args)
 					destroy_string(cur_key->args);
-				if (str[i + 1] == '\0') {
-					cur_key->bitflags = 0;
-					cur_key->data.variable = variable;
-				}
-				else {
-					if (!(map = create_key_map(NULL, KEY_INITIAL_SUBMAP)))
-						return(-1);
-					cur_key->bitflags = KEY_KBF_SUBMAP;
-					cur_key->data.submap = map;
-				}
+				cur_key->bitflags = 0;
+				cur_key->data.variable = variable;
 				cur_key->ch = str[i];
 				cur_key->args = args;
 			}
 		}
 		else {
-			if (str[i + 1] == '\0') {
-				if (!(key = create_key(str[i], 0, (union key_data_u) variable, args)))
-					return(-1);
-			}
-			else {
+			if (!cur_key) {
+				/* Create a new submap */
 				if (!(map = create_key_map(NULL, KEY_INITIAL_SUBMAP)))
 					return(-1);
 				if (!(key = create_key(str[i], KEY_KBF_SUBMAP, (union key_data_u) map, NULL))) {
 					destroy_key_map(map);
 					return(-1);
 				}
+				keymap_add_key(cur_map, str[i], key);
 			}
-			key->next = cur_map->table[hash];
-			cur_map->table[hash] = key;
-			cur_map->entries++;
-			if ((cur_map->entries / cur_map->size) > KEY_LOAD_FACTOR)
-				rehash_key_map(cur_map, cur_map->entries + (cur_map->entries * 0.75));
+			else if (!(cur_key->bitflags & KEY_KBF_SUBMAP)) {
+				/* Overwrite this key with a new submap */
+				if (!(map = create_key_map(NULL, KEY_INITIAL_SUBMAP)))
+					return(-1);
+				if (cur_key->args)
+					destroy_string(cur_key->args);
+				cur_key->data.submap = map;
+				cur_key->bitflags = KEY_KBF_SUBMAP;
+				cur_key->ch = str[i];
+				cur_key->args = args;
+			}
+			/* Recurse on the submap */
+			cur_map = cur_key->data.submap;
 		}
 	}
 	return(0);
@@ -163,40 +159,31 @@ int bind_key(char *context, char *str, struct variable_s *variable, string_t arg
  */
 int unbind_key(char *context, char *str)
 {
-	int i, hash;
-	struct key_s *cur_key, *prev_key;
+	int i;
+	struct key_s *cur_key;
 	struct key_map_s *cur_map;
 
-	if (!(cur_map = context ? list_find(context_list, context, 0) : current_root))
+	if (!(cur_map = context ? key_find_context(context) : current_root))
 		return(-1);
 	for (i = 0;str[i] != '\0';i++) {
-		hash = key_hash(cur_map, str[i]);
-		prev_key = NULL;
-		cur_key = cur_map->table[hash];
-		while (cur_key) {
-			if (cur_key->ch == str[i]) {
-				if (cur_key->bitflags & KEY_KBF_SUBMAP) {
-					cur_map = cur_key->data.submap;
-					break;
-				}
-				else if (str[i + 1] == '\0') {
-					if (prev_key)
-						prev_key->next = cur_key->next;
-					else
-						cur_map->table[hash] = cur_key->next;
-					cur_map->entries--;
-					destroy_key(cur_key);
-				}
-				else
-					return(-1);
-			}
-			prev_key = cur_key;
-			cur_key = cur_key->next;
-		}
+		hash_find_node_v(cur_map->kl, kl, cur_key, key_hash_m(cur_map->kl, str[i]), key_compare_m(str[i]));
 		if (!cur_key)
+			return(1);
+		else if (str[i + 1] == '\0') {
+			/* Remove the entry (whether a submap or terminating key entry) */
+			hash_remove_node_v(cur_map->kl, kl, cur_key, key_hash_m(cur_map->kl, str[i]), key_compare_m(str[i]));
+			destroy_key(cur_key);
+		}
+		else if (cur_key->bitflags & KEY_KBF_SUBMAP) {
+			/* Recurse on the submap */
+			cur_map = cur_key->data.submap;
+			continue;
+		}
+		else
+			/* We were expecting a submap but found a terminating key entry */
 			return(-1);
 	}
-	return(-1);
+	return(0);
 }
 
 /**
@@ -210,25 +197,21 @@ int unbind_key(char *context, char *str)
 int process_key(int ch)
 {
 	string_t args;
-	struct key_s *cur;
+	struct key_s *node;
 
-	cur = current_map->table[key_hash(current_map, ch)];
-	while (cur) {
-		if (cur->ch == ch) {
-			if (cur->bitflags & KEY_KBF_SUBMAP)
-				current_map = cur->data.submap;
-			else {
-				if (!(args = duplicate_string(cur->args)))
-					return(-1);
-				cur->data.variable->type->evaluate(cur->data.variable->value, args);
-				destroy_string(args);
-				current_map = current_root;
-			}
-			return(0);
-		}
-		cur = cur->next;
+	hash_find_node_v(current_map->kl, kl, node, key_hash_m(current_map->kl, ch), key_compare_m(ch));
+	if (!node)
+		return(-1);
+	if (node->bitflags & KEY_KBF_SUBMAP)
+		current_map = node->data.submap;
+	else {
+		if (!(args = duplicate_string(node->args)))
+			return(-1);
+		node->data.variable->type->evaluate(node->data.variable->value, args);
+		destroy_string(args);
+		current_map = current_root;
 	}
-	return(-1);
+	return(0);
 }
 
 /**
@@ -241,16 +224,33 @@ int select_key_context(char *context)
 {
 	struct key_map_s *root;
 
-	if (!(root = list_find(context_list, context, 0))) {
-		if (!(root = create_key_map(context, KEY_INITIAL_ROOT)))
-			return(-1);
-		list_add(context_list, root);
-	}
+	if (!(root = key_find_context(context)) && !(root = key_add_context(context)))
+		return(-1);
 	current_root = root;
 	return(0);
 }
 
 /*** Local Functions ***/
+
+static struct key_map_s *key_add_context(char *context)
+{
+	struct key_map_s *node;
+
+	if (!(node = create_key_map(context, KEY_INITIAL_ROOT)))
+		return(NULL);
+	hash_add_node_v(context_list, cl, node, context_hash_m(context_list, context));
+	if (hash_load_v(context_list) > KEY_LOAD_FACTOR)
+		hash_rehash_v(context_list, cl, (hash_size_v(context_list) * 1.75), key_hash_m(context_list, cur->context));
+	return(node);
+}
+
+static struct key_map_s *key_find_context(char *context)
+{
+	struct key_map_s *node;
+
+	hash_find_node_v(context_list, cl, node, context_hash_m(context_list, context), context_compare_m(context));
+	return(node);
+}
 
 /**
  * Create a new key struct with all the given parameters.
@@ -265,7 +265,6 @@ static struct key_s *create_key(short ch, short bitflags, union key_data_u data,
 	key->bitflags = bitflags;
 	key->data = data;
 	key->args = args;
-	key->next = NULL;
 
 	return(key);
 }
@@ -284,6 +283,14 @@ static void destroy_key(struct key_s *key)
 	}
 }
 
+
+static void keymap_add_key(struct key_map_s *map, char key, struct key_s *node)
+{
+	hash_add_node_v(map->kl, kl, node, key_hash_m(map->kl, key));
+	if (hash_load_v(map->kl) > KEY_LOAD_FACTOR)
+		hash_rehash_v(map->kl, kl, (hash_size_v(map->kl) * 1.75), key_hash_m(map->kl, cur->ch));
+}
+
 /**
  * Create a new key map of the given initial size and return a
  * pointer to it or return NULL on error.
@@ -294,26 +301,9 @@ static struct key_map_s *create_key_map(char *context, int size)
 
 	if (!(map = (struct key_map_s *) memory_alloc(sizeof(struct key_map_s))))
 		return(NULL);
-	if (!(map->table = (struct key_s **) memory_alloc(size * sizeof(struct key_s *)))) {
-		memory_free(map);
-		return(NULL);
-	}
-	memset(map->table, '\0', size * sizeof(struct key_s *));
 	map->context = context ? create_string(context) : NULL;
-	map->size = size;
-	map->entries = 0;
+	hash_init_v(map->kl, size);
 	return(map);
-}
-
-/**
- * Compare the given context name and the name of the context in the
- * given map and if they are equal then return 0 otherwise return non-zero.
- */
-static int compare_key_map_context(struct key_map_s *map, char *context)
-{
-	if (map->context && context)
-		return(strcmp(map->context, context));
-	return(-1);
 }
 
 /**
@@ -322,45 +312,11 @@ static int compare_key_map_context(struct key_map_s *map, char *context)
  */
 static void destroy_key_map(struct key_map_s *map)
 {
-	int i;
-	struct key_s *cur, *tmp;
-
-	for (i = 0;i < map->size;i++) {
-		cur = map->table[i];
-		while (cur) {
-			tmp = cur->next;
-			destroy_key(cur);
-			cur = tmp;
-		}
-	}
+	hash_destroy_list_v(map->kl, kl,
+		destroy_key(cur);
+	);
+	hash_release_v(map->kl);
 }
 
-/**
- * Resize the given key map to the given newsize and rehash the
- * elements into it the new hashtable.
- */
-static int rehash_key_map(struct key_map_s *map, int newsize)
-{
-	int i, hash, oldsize;
-	struct key_s **table, *cur, *tmp;
 
-	if (!(table = (struct key_s **) memory_alloc(newsize * sizeof(struct key_s *))))
-		return(-1);
-	memset(table, '\0', newsize * sizeof(struct key_s *));
-	oldsize = map->size;
-	map->size = newsize;
-	for (i = 0;i < oldsize;i++) {
-		cur = map->table[i];
-		while (cur) {
-			tmp = cur->next;
-			hash = key_hash(map, cur->ch);
-			cur->next = table[hash];
-			table[hash] = cur;
-			cur = tmp;
-		}
-	}
-	memory_free(map->table);
-	map->table = table;
-	return(0);
-}
 
