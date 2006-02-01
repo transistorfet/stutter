@@ -8,11 +8,12 @@ OBJS =	simple.o \
 	window.o \
 	statusbar.o \
 	screen.o \
-	../common/unix/net.o \
+	net.o \
 
 ARFLAGS = rc
 CFLAGS = -g -I$(ROOT)/include -DNET_DIRECT
 
 include $(ROOT)/rules.mk
+
 
 
