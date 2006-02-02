@@ -26,7 +26,7 @@ int base_cmd_set(char *env, char *args)
 	char *type_name = BASE_DEFAULT_SET_TYPE;
 
 
-	if (!(window = fe_next_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
+	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 
 	trim_whitespace_m(args);

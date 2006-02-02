@@ -21,7 +21,7 @@ int base_cmd_remove(char *env, char *args)
 	struct variable_s *var;
 
 	get_param_m(args, name, ' ');
-	if (!(window = fe_next_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
+	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 	get_prefix_m(name, ns, ':');
 	if (!remove_variable(find_type("string"), ns, name))

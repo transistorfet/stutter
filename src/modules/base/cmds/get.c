@@ -21,7 +21,7 @@ int base_cmd_get(char *env, char *args)
 	char *ns, *name;
 	struct variable_s *var;
 
-	if (!(window = fe_next_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
+	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 	get_param_m(args, name, ' ');
 	get_prefix_m(name, ns, ':');
