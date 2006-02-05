@@ -9,7 +9,6 @@
 
 #include <lib/queue.h>
 #include <lib/string.h>
-#include <frontend/widget.h>
 
 #ifndef INPUT_MAX_BUFFER
 #define INPUT_MAX_BUFFER		1024
