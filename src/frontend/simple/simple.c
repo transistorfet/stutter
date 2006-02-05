@@ -18,7 +18,7 @@
 #include "window.h"
 #include "statusbar.h"
 #include "screen.h"
-#include "../common/unix/net.h"
+#include "net.h"
 
 int exit_flag = 1;
 struct input_s *input;
@@ -227,7 +227,6 @@ main(int argc, char **argv)
 {
 	char ch;
 	struct type_s *type;
-
 
 	if (init_system()) {
 		printf("Failed to initialize system\n");
