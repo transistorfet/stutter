@@ -174,7 +174,7 @@ int input_default(struct input_s *input, int ch)
 	char *str;
 
 	switch (ch) {
-		case KRY_BACKSPACE:
+		case KEY_BACKSPACE:
 			input_delete_char(input);
 			break;
 		case KEY_UP:
