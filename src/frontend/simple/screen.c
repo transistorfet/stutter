@@ -106,10 +106,10 @@ char screen_read_char(void)
 	int ch;
 
 	ch = getch();
-	switch (ch) {
-		case 0x7f:
-		case KEY_BACKSPACE:
-			return(0x08);
+//	switch (ch) {
+//		case 0x7f:
+//		case KEY_BACKSPACE:
+//			return(0x08);
 //		case KEY_UP:
 //			return(KC_UP);
 //		case KEY_DOWN:
@@ -126,11 +126,11 @@ char screen_read_char(void)
 //			return(KC_PAGEUP);
 //		case KEY_PPAGE:
 //			return(KC_PAGEDOWN);
-		case KEY_ENTER:
-			return('\n');
-		default:
+//		case KEY_ENTER:
+//			return('\n');
+//		default:
 			return(ch);
-	}
+//	}
 }
 
 /**
