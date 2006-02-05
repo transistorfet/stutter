@@ -6,13 +6,13 @@
  */
 
 #include <string.h>
+#include <curses.h>
 
 #include <lib/queue.h>
 #include <lib/memory.h>
 #include <lib/string.h>
 #include "screen.h"
 #include "input.h"
-#include "../common/keycodes.h"
 
 /**
  * Allocate and initialize a input structure given the intialization values.
@@ -174,24 +174,24 @@ int input_default(struct input_s *input, int ch)
 	char *str;
 
 	switch (ch) {
-		case KC_BACKSPACE:
+		case KRY_BACKSPACE:
 			input_delete_char(input);
 			break;
-		case KC_UP:
+		case KEY_UP:
 			// TODO fix for new queue
-			//if (str = queue_previous(input->history))
-			//	input_set_buffer(input, str);
+			if (str = queue_previous(input->history))
+				input_set_buffer(input, str);
 			break;
-		case KC_DOWN:
+		case KEY_DOWN:
 			// TODO fix for new queue
-			//if (str = queue_next(input->history))
-			//	input_set_buffer(input, str);
+			if (str = queue_next(input->history))
+				input_set_buffer(input, str);
 			break;
-		case KC_RIGHT:
+		case KEY_RIGHT:
 			if (input->i < input->end)
 				input->i++;
 			break;
-		case KC_LEFT:
+		case KEY_LEFT:
 			if (input->i > 0)
 				input->i--;
 			break;
