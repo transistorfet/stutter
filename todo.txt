@@ -1,49 +1,5 @@
 
-	* think about putting libnit code directly into stutter
-	* where will the functions to stringify nick and current channel go? and where/how will they
-	  be added to the variable database?
-	* standardize the interpretation of the create type function parameters (the format string should
-	  only ever contain a description of the arguments and should never be an argument itself)
-	* the frontend initialization problem is not solved because the command and format types are
-	  not available until after base_module is initialized
-	* what will be the first parameter to the input function to be added in the frontend?  can we make
-	  it work as a command type?  What do we send as the first parameter?
-	* should variables have a reference to the namespace they are in?
-
-	* can we use macros to implement the ability to set at compile time which parameters are compiled
-	  in and which are modifiable variables?  how will we handle this for all the things in config.h
-
-	* add ping/whois commands
-	* add a function that interpretes just string escapes for non-interpolated strings
-	* catch the ^C signal and cancel a connect
-	* make variables and namespaces case-insensitive
-	* fix parse so that /parse something command doesn't cause a segfault
-	* add channel and user mode bits
-	* add handling for CTCP commands
-
-	* add a function to key.c to get the current binding of a key sequence (without processing)
-	* document the required frontend things widgets (like window, input), things that can be passed
-	  to fe_current...
-
-	* should i maintain a seperate changelog for each module, frontend, and the main program?
-	* should i make a frontend/common directory?
-	* how will xml be handled?
-	* how will widgets be stored? as a variable with a special widget type? 
-	* add home/end/erase-line functions to be keybound
-	* make sure you can specify a certian window (by number for example)
-	* add reconnect command
-	* add error message handling
-	* test multiserver functionality (more thuroughly?)
-	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
-	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
-	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
-	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
-	  specific or will it be through the variable system in which case a widget would be a variable
-	  of the "widget" type.
-	* unify the naming patterns for namespace/variables, frontend widgets, etc.
-	* can we remove the namespace module and have the namespace list included in variable?
-	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
-
+	* pass realname to server when connecting
 	* add a cmd that takes a string in env and a string in args, merges them, and parses/evaluates it
 	  as a command without the leading /
 	* add an alias command which creates a new command with the given name using the above command as
@@ -51,14 +7,78 @@
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
 
-	* can we remove libnit and put the code directly in stutter
-	* rewrite namespace to use the new list thing or remove module
-	* rewrite variable (?) to use new list thing
-	* rewrite type to use the new list thing
-	* rewrite key to use the new list thing
+	* fix parse so that /parse something command doesn't cause a segfault
+	* Hydro's incredibly long quit message seems to have caused a segfault
+	* try to fix up code that finds the namespace to use in find_variable and add_variable
 
-	* make a new more dynamic dispatcher (at least compile-time customizable)
+	* how do you get the statusbar height in window.c
+	* how are you going to deal with keys and screen size in the simple/screen.c module
+
 	* do we need more functions for widget type? (create, destroy, clear, print, move, resize, refresh)
+	* add home/end/erase-line functions to be keybound
+	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
+	* figure out how to do a complext text frontend (no common/ to start with)
+	* convert frame.c back into a screen "widget"
+	* add multiframe (using multiple curses windows) to screen.c
+	* is there a generic way to get a character?  perhaps using read?
+	* is there a way to set the statusbar colour across the screen that is appropriately general without
+	  using multiple frames and if not, use multiple frames in frontend/simple.
+	* decide on a widget interface to use in order to implement the advanced text frontend
+	* what are the disadvantages of frame storing just the refresh callback?
+	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
+	  specific or will it be through the variable system in which case a widget would be a variable
+	  of the "widget" type.
+
+	* fix all hash_init and hash_rehash instances to check for memory allocation failure
+
+	* rewrite net.c to use less recv calls and to be less irc-specific (not require a \n to receive)
+
+	* should you have a create tmp string feature so that you can store the string in a static buffer
+	  but destroy_string will check for it and not try to free it (would threads kill this idea?)
+	* BIGBUG: when a server doesn't respond after connection (the ircserver i set up), you can still
+	  issue joins and such tbut they don't actually work.  MAKE SURE TO CLEAN UP AFTER A SERVER FAILURE
+
+	* think about xml (possibly using a special char for <>) and what would acutally be done
+	  (particularily with respect to irc_format_msg)
+	* add a get_variable_path() function (can we change the names) and add a type in base for dealing
+	  with it (?) and do a similar thing for key context
+	* should namespaces (and contexts) form a heirarchy so that when something is not found in one,
+	  its parent is checked?
+
+	* use expand to buffer or something in irc_format_msg to convert variables *before* substituting
+	  %% arguments
+	* standardize the interpretation of the create type function parameters (the format string should
+	  only ever contain a description of the arguments and should never be an argument itself)
+
+	* can we add partial variable (command) name matching?
+	* should we limit possible variable names (to not include things like " and ')
+	* can we use macros to implement the ability to set at compile time which parameters are compiled
+	  in and which are modifiable variables?  how will we handle this for all the things in config.h
+	* add a function to key.c to get the current binding of a key sequence (without processing)
+
+	* add mode command
+	* add topic commnd (<channel> [<topic>])
+	* add list command
+	* add ping/whowas commands
+	* catch the ^C signal and cancel a connect
+	* make variables and namespaces case-insensitive
+	* add channel and user mode bits
+	* add handling for CTCP commands
+
+	* document the required frontend things widgets (like window, input), things that can be passed
+	  to fe_current...
+
+	* should i maintain a seperate changelog for each module, frontend, and the main program?
+	* how will xml be handled?
+	* add reconnect command
+	* add error message handling
+	* test multiserver functionality (more thuroughly?)
+	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
+	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
+	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
+	* unify the naming patterns for namespace/variables, frontend widgets, etc.
+
+	* make a new more dynamic dispatcher (at least compile-time customizable) (with signals?)
 	* can we eliminate the need for lots of extra functions by using a byte encoded stream input to a
 	  function like print with escape codes as well as meta data (somewhat like how you control a
 	  terminal)
@@ -70,14 +90,16 @@
 	  it when a key binding is lost?  (Can typed values be used here?)
 	* rewrite msg.c using the new nit/string module and use va_args instead of making an array
 	* there is a bug such that if you try to say something in the status window, the server says no such nick
-	* the quit command is irc-specific but can it be made independant?
+	* the quit command is irc-specific but can it be made independant? (make a quit command that just
+	  quits by calling fe_terminate() and then have fe_terminate() send a quit signal that is caught
+	  by an irc specific quit command (that can also catch the disconnect signal) which displays a
+	  quit message in irc)
 
 	* logging plugin
 	* tab complete
 	* winamp control and display plugin
 	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
 	  addresses)
-	* pass realname to server when connecting
 	* get realname, nick from current user's info (on unix)
 
 	* scripting support (possible scripts/applets could be random picture displayer, system monitor,
@@ -88,16 +110,7 @@
 	  group-of-windows window that is stored in the channel struct and a call to print to this window
 	  will call print on each window in its group?
 
-	* is it faster to alloc a large string, copy data into it, and then realloc down (with only a slight
-	  change of allocing up)?  or to alloc only a single string and copy a static buffer to it?
-	* can variables be "watched" such that when the value changes, a function is called? (is this needed)
-	* how would something like channel change be monitored so that a function can be called to
-	  update a variable value?  (eg. to update the value of a variable that is used as the input prompt)
 	* make an aspects toolkit that allows you to make joinpoints in the code easily and so on (using macros)
-
-Possible Future Issues:
-	* add widget param to fe_refresh so that single widgets can be refreshed instead of the whole screen
-	* change name of _widget functions
 	* possibly change variable names to be passed as a single string with the namespace and variable
 	  name (seperated by a colon or something else) instead of being passed as 2 seperate strings.
 
