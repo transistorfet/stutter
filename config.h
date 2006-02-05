@@ -20,7 +20,7 @@
 
 /* Frontend Values */
 #define FE_STATUS			"status"
-#define FE_STATUS_BAR			" $time $irc:nick on $irc:current_channel"
+#define FE_STATUS_BAR			" $time $irc:current_nick on $irc:current_channel"
 #define FE_STATUS_BAR_HEIGHT		1
 
 /* Base Module Values */
@@ -30,8 +30,10 @@
 #define BASE_DEFAULT_SET_TYPE		"string"
 
 /* IRC Module Values */
-#define IRC_DEFAULT_SERVER		"irc.othersideirc.net"
-//#define IRC_DEFAULT_SERVER		"backdraft.othersideirc.net"
+//#define IRC_DEFAULT_SERVER		"irc.othersideirc.net"
+//#define IRC_DEFAULT_SERVER		"192.168.1.101"
+//#define IRC_DEFAULT_SERVER		"euro.othersideirc.net"
+#define IRC_DEFAULT_SERVER		"irc.neovanglist.net"
 //#define IRC_DEFAULT_SERVER		"clarke.freenode.net"
 #define IRC_DEFAULT_PORT		6667
 #define IRC_DEFAULT_NICK		"ted"
