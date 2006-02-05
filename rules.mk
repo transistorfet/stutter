@@ -8,6 +8,7 @@
 .PHONY: $(DIRS)
 
 CC	= gcc
+CXX	= g++
 LD	= gcc
 AS	= as
 AR	= ar
@@ -29,11 +30,16 @@ $(LIB_TARGET): $(DIRS) $(OBJS)
 .c.o:
 	$(CC) $(INCPATH) $(CFLAGS) -c -o $@ $<
 
-%.a:
+.cpp.o:
+	$(CXX) $(INCPATH) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+%.a: FORCE
 	$(MAKE) -C $(dir $*)
 
-$(DIRS):
+$(DIRS): FORCE
 	$(MAKE) -C $@
+
+FORCE:
 
 depend:
 	$(DEPEND) $(SRCS) > .depend
