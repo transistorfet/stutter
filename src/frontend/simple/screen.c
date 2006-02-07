@@ -101,7 +101,7 @@ int screen_print(char *str, int length)
 	return(0);
 }
 
-char screen_read_char(void)
+int screen_read_char(void)
 {
 	int ch;
 

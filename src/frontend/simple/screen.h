@@ -35,7 +35,7 @@ void screen_refresh(void);
 void screen_clear(short, short, short, short);
 void screen_move(short, short);
 int screen_print(char *, int);
-char screen_read_char(void);
+int screen_read_char(void);
 void screen_set_attribs(int, int, int);
 
 #endif
