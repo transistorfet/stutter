@@ -159,7 +159,7 @@ int net_receive(network_t net, char *msg, int size)
 
 	//if ((size = recv(net->socket, msg, size, 0)) <= 0)
 	//	return(-1);
-	//msg[size] = '\0';
+	msg[++i] = '\0';
 	DEBUG_LOG("raw.in", msg);
 	return(i);
 }
