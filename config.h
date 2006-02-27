@@ -6,13 +6,6 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-#ifdef BUILTIN_CONFIG
-	#define DECLARE_CONFIG(name, value)	// save value?!??
-	#define CONFIG_VALUE(name)		name
-#else
-
-#endif
-
 #define FE_NAMESPACE			"fe"
 #define BASE_NAMESPACE			"base"
 #define IRC_NAMESPACE			"irc"
@@ -35,6 +28,7 @@
 //#define IRC_DEFAULT_SERVER		"euro.othersideirc.net"
 #define IRC_DEFAULT_SERVER		"irc.neovanglist.net"
 //#define IRC_DEFAULT_SERVER		"clarke.freenode.net"
+//#define IRC_DEFAULT_SERVER		"irc.newnet.net"
 #define IRC_DEFAULT_PORT		6667
 #define IRC_DEFAULT_NICK		"ted"
 
@@ -76,14 +70,32 @@
 #define DOTFILE_DIR			".stutter"
 #define DEFAULT_DOTFILE_DIR		"/usr/local/etc"
 
+#define BASE_COMMANDS()			\
+	DECLARE_COMMAND(bind)		\
+	DECLARE_COMMAND(next)		\
+	DECLARE_COMMAND(previous)	\
+	DECLARE_COMMAND(echo)		\
+	DECLARE_COMMAND(clear)		\
+	DECLARE_COMMAND(scroll)		\
+	DECLARE_COMMAND(parse)		\
+	DECLARE_COMMAND(get)		\
+	DECLARE_COMMAND(set)		\
+	DECLARE_COMMAND(remove)
 
-
-//#define IRC_CONFIG()						\
-//	DECLARE_CONFIG(IRC_FMT_DEFAULT, "%N!%S %C %M")		\
-
-
-// GET_CONFIG(IRC_FMT_DEFAULT)
-// TODO the problem with this is that we either make all configs vars or all compiled in
+#define IRC_COMMANDS()			\
+	DECLARE_COMMAND(join)		\
+	DECLARE_COMMAND(leave)		\
+	DECLARE_COMMAND(quit)		\
+	DECLARE_COMMAND(msg)		\
+	DECLARE_COMMAND(me)		\
+	DECLARE_COMMAND(nick)		\
+	DECLARE_COMMAND(names)		\
+	DECLARE_COMMAND(notice)		\
+	DECLARE_COMMAND(say)		\
+	DECLARE_COMMAND(server)		\
+	DECLARE_COMMAND(disconnect)	\
+	DECLARE_COMMAND(whois)		\
+	ADD_COMMAND("", say, NULL)
 
 #endif
 
