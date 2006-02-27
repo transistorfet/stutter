@@ -20,17 +20,14 @@ struct command_prototype_s {
 	void *ptr;
 };
 
+#define ADD_COMMAND(name, func, env)	\
+	{ name, (callback_t) irc_cmd_##func, env },
+
+#define DECLARE_COMMAND(name)	\
+	{ #name, (callback_t) irc_cmd_##name, NULL },
+
 static struct command_prototype_s base_commands[] = {
-	{ "bind", (callback_t) base_cmd_bind, NULL },
-	{ "next", (callback_t) base_cmd_next, NULL },
-	{ "previous", (callback_t) base_cmd_previous, NULL },
-	{ "echo", (callback_t) base_cmd_echo, NULL },
-	{ "clear", (callback_t) base_cmd_clear, NULL },
-	{ "scroll", (callback_t) base_cmd_scroll, NULL },
-	{ "parse", (callback_t) base_cmd_parse, NULL },
-	{ "get", (callback_t) base_cmd_get, NULL },
-	{ "set", (callback_t) base_cmd_set, NULL },
-	{ "remove", (callback_t) base_cmd_remove, NULL },
+	BASE_COMMANDS()
 	{ NULL, NULL, NULL }
 };
 
@@ -39,17 +36,20 @@ int init_base(void)
 	int i = 0;
 	struct type_s *type;
 
-	base_load_status();
-
-	if ((type = base_load_time()) && type->create) {
-		add_variable(type, BASE_NAMESPACE, "time", type->create("%s", BASE_TIME));
-		add_variable(type, BASE_NAMESPACE, "date", type->create("%s", BASE_DATE));
-		add_variable(type, BASE_NAMESPACE, "timestamp", type->create("%s", BASE_TIMESTAMP));
-	}
-
-	if (!(type = base_load_command()) || !type->create)
+	/* Load Status Type */
+	if (!(type = base_load_status()) || !type->create) {
 		return(-1);
 
+	/* Load Time Type */
+	if (!(type = base_load_time()) || !type->create) {
+		return(-1);
+	add_variable(type, BASE_NAMESPACE, "time", type->create("%s", BASE_TIME));
+	add_variable(type, BASE_NAMESPACE, "date", type->create("%s", BASE_DATE));
+	add_variable(type, BASE_NAMESPACE, "timestamp", type->create("%s", BASE_TIMESTAMP));
+
+	/* Load Command Type */
+	if (!(type = base_load_command()) || !type->create)
+		return(-1);
 	for (;base_commands[i].name;i++)
 		add_variable(type, BASE_NAMESPACE, base_commands[i].name, type->create("%r%p", base_commands[i].func, base_commands[i].ptr));
 

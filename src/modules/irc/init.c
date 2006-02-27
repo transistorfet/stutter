@@ -20,23 +20,14 @@ struct command_prototype_s {
 	void *ptr;
 };
 
+#define ADD_COMMAND(name, func, env)	\
+	{ name, (callback_t) irc_cmd_##func, env },
+
 #define DECLARE_COMMAND(name)	\
-	{ #name, (callback_t) irc_cmd_##name, NULL }
+	{ #name, (callback_t) irc_cmd_##name, NULL },
 
 static struct command_prototype_s irc_commands[] = {
-	DECLARE_COMMAND(join),
-	DECLARE_COMMAND(leave),
-	DECLARE_COMMAND(quit),
-	DECLARE_COMMAND(msg),
-	DECLARE_COMMAND(me),
-	DECLARE_COMMAND(nick),
-	DECLARE_COMMAND(names),
-	DECLARE_COMMAND(notice),
-	DECLARE_COMMAND(say),
-	DECLARE_COMMAND(server),
-	DECLARE_COMMAND(disconnect),
-	DECLARE_COMMAND(whois),
-	{ "", (callback_t) irc_cmd_say, NULL },
+	IRC_COMMANDS()
 	{ NULL, NULL, NULL }
 };
 
@@ -46,6 +37,7 @@ int init_irc(void)
 	struct type_s *type;
 
 	init_irc_server();
+	signal_connect("irc_msg_dispatch", irc_dispatch_msg, NULL);
 
 	if (!(type = find_type("status")) || !type->create)
 		return(-1);
