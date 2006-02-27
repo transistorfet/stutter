@@ -21,10 +21,10 @@ struct command_prototype_s {
 };
 
 #define ADD_COMMAND(name, func, env)	\
-	{ name, (callback_t) irc_cmd_##func, env },
+	{ name, (callback_t) base_cmd_##func, env },
 
 #define DECLARE_COMMAND(name)	\
-	{ #name, (callback_t) irc_cmd_##name, NULL },
+	{ #name, (callback_t) base_cmd_##name, NULL },
 
 static struct command_prototype_s base_commands[] = {
 	BASE_COMMANDS()
@@ -37,11 +37,11 @@ int init_base(void)
 	struct type_s *type;
 
 	/* Load Status Type */
-	if (!(type = base_load_status()) || !type->create) {
+	if (!(type = base_load_status()) || !type->create)
 		return(-1);
 
 	/* Load Time Type */
-	if (!(type = base_load_time()) || !type->create) {
+	if (!(type = base_load_time()) || !type->create)
 		return(-1);
 	add_variable(type, BASE_NAMESPACE, "time", type->create("%s", BASE_TIME));
 	add_variable(type, BASE_NAMESPACE, "date", type->create("%s", BASE_DATE));
