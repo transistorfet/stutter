@@ -1,5 +1,7 @@
 
-DIRS = src
+include config.mk
+
+DIRS = src/frontend/$(FRONTEND)
 CVSROOT = :pserver:anonymous@jabberwocky.hn.org:/home/cvs/cvsroot
 
 .PHONY: all update $(DIRS)
