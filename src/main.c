@@ -17,8 +17,10 @@
 
 int init_system(void)
 {
-	init_key();
+	init_signal();
+	init_type();
 	init_variable();
+	init_key();
 
 	add_type("string", (create_t) create_string, (stringify_t) duplicate_string, NULL, (destroy_t) destroy_string);
 	add_type("format", (create_t) create_string, (stringify_t) util_expand_str, NULL, (destroy_t) destroy_string);
@@ -28,8 +30,10 @@ int init_system(void)
 
 int release_system(void)
 {
-	release_variable();
 	release_key();
+	release_variable();
+	release_type();
+	release_signal();
 	return(0);
 }
 
