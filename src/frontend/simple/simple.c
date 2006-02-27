@@ -104,7 +104,9 @@ void *fe_current_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	return(current_window->ptr);
+	else if (current_window)
+		return(current_window->ptr);
+	return(NULL);
 }
 
 int fe_select_widget(char *context, void *ref, void *widget)
@@ -225,7 +227,7 @@ void fe_terminate(int status)
  */
 main(int argc, char **argv)
 {
-	char ch;
+	int ch;
 	struct type_s *type;
 
 	if (init_system()) {
