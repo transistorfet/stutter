@@ -174,18 +174,20 @@ int input_default(struct input_s *input, int ch)
 	char *str;
 
 	switch (ch) {
+		case 0x08:
+		case 0x7f:
 		case KEY_BACKSPACE:
 			input_delete_char(input);
 			break;
 		case KEY_UP:
 			// TODO fix for new queue
-			if (str = queue_previous(input->history))
-				input_set_buffer(input, str);
+//			if (str = queue_previous(input->history))
+//				input_set_buffer(input, str);
 			break;
 		case KEY_DOWN:
 			// TODO fix for new queue
-			if (str = queue_next(input->history))
-				input_set_buffer(input, str);
+//			if (str = queue_next(input->history))
+//				input_set_buffer(input, str);
 			break;
 		case KEY_RIGHT:
 			if (input->i < input->end)
