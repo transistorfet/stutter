@@ -27,6 +27,7 @@
 	(list).head = NULL;
 
 #define linear_add_node_v(list, field, node) {		\
+	(node)->field.prev = NULL;			\
 	(node)->field.next = (list).head;		\
 	if ((list).head)				\
 		(list).head->field.prev = (node);	\
