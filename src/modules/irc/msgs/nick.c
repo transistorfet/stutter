@@ -16,6 +16,10 @@ static int irc_msg_nick_traverse(struct irc_channel *, struct irc_msg *);
  */
 int irc_msg_nick(struct irc_server *server, struct irc_msg *msg)
 {
+	if (!strcmp(server->nick, msg->nick)) {
+		strncpy(server->nick, msg->params[0], IRC_MAX_NICK - 1);
+		server->nick[IRC_MAX_NICK - 1] = '\0';
+	}
 	irc_traverse_channel_list(server->channels, (traverse_t) irc_msg_nick_traverse, msg);
 	fe_print(server->status->window, irc_format_msg(msg, IRC_FMT_NICK));
 	return(0);
