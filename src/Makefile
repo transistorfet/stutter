@@ -2,20 +2,17 @@
 
 ROOT = ..
 
-TARGET = $(ROOT)/bin/stutter
+LIB_TARGET = main.a
 OBJS =	main.o \
 	key.o \
 	type.o \
 	utils.o \
+	signal.o \
 	variable.o \
 	lib/memory.o \
-	lib/string.o \
-	modules/base/modbase.a \
-	modules/irc/modirc.a \
-	frontend/$(FRONTEND)/$(FRONTEND).a
+	lib/string.o
 
-LDFLAGS = 
-LIBS = -lncurses
+ARFLAGS = rc
 CFLAGS = -g -I$(ROOT)/include
 
 include $(ROOT)/rules.mk
