@@ -89,7 +89,7 @@ static int irc_format_buffer(struct irc_msg *msg, char *str, char *buffer, int m
 					break;
 				case 'S':
 					if (msg)
-						msg_copy_str_m(buffer, msg->server, j);
+						msg_copy_str_m(buffer, msg->host, j);
 					break;
 				case 'M':
 					if (msg)
