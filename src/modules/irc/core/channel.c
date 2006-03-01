@@ -61,7 +61,9 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, char *name, v
 {
 	struct irc_channel_node *node;
 
-	if (!list || !(node = (struct irc_channel_node *) memory_alloc(sizeof(struct irc_channel_node) + strlen(name) + 1)))
+	if (irc_find_channel(list, name))
+		return(1);
+	if (!(node = (struct irc_channel_node *) memory_alloc(sizeof(struct irc_channel_node) + strlen(name) + 1)))
 		return(NULL);
 	memset(node, '\0', sizeof(struct irc_channel_node));
 
@@ -91,8 +93,6 @@ int irc_remove_channel(struct irc_channel_list *list, char *name)
 {
 	struct irc_channel_node *node;
 
-	if (!list)
-		return(-1);
 	linear_find_node_v(list->cl, cl, node, !strcmp(cur->channel.name, name));
 	if (!node)
 		return(1);
@@ -113,8 +113,6 @@ struct irc_channel *irc_find_channel(struct irc_channel_list *list, char *name)
 {
 	struct irc_channel_node *node;
 
-	if (!list)
-		return(NULL);
 	linear_find_node_v(list->cl, cl, node, !strcmp(cur->channel.name, name));
 	if (!node)
 		return(NULL);
@@ -127,8 +125,6 @@ struct irc_channel *irc_find_channel(struct irc_channel_list *list, char *name)
  */
 struct irc_channel *irc_channel_find_window(struct irc_channel_list *list, void *window)
 {
-	if (!list)
-		return(NULL);
 	linear_traverse_list_v(list->cl, cl,
 		if (cur->channel.window == window)
 			return(&cur->channel);
@@ -143,8 +139,6 @@ struct irc_channel *irc_channel_find_window(struct irc_channel_list *list, void 
  */
 int irc_traverse_channel_list(struct irc_channel_list *list, traverse_t func, void *ptr)
 {
-	if (!list)
-		return(-1);
 	linear_traverse_list_v(list->cl, cl,
 		func(&cur->channel, ptr);
 	);
