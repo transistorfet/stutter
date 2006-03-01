@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <signal.h>
 #include <lib/memory.h>
 #include <lib/linear.h>
 #include <lib/globals.h>
@@ -34,6 +35,7 @@ int init_irc_server(void)
 	if (server_initialized)
 		return(1);
 	linear_init_v(server_list);
+	add_signal("irc_msg_dispatch");
 	server_initialized = 1;
 	return(0);
 }
@@ -42,6 +44,7 @@ int release_irc_server(void)
 {
 	struct irc_server_node *tmp, *cur;
 
+	remove_signal("irc_msg_dispatch");
 	linear_destroy_list_v(server_list, sl,
 		if (cur->server.channels)
 			irc_destroy_channel_list(cur->server.channels);
@@ -157,6 +160,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 struct irc_msg *irc_receive_msg(struct irc_server *server)
 {
 	int size;
+	struct irc_msg *msg;
 	char buffer[IRC_MAX_MSG + 1];
 
 	if (!server || !server->net)
@@ -180,7 +184,10 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 			break;
 	}
 
-	return(irc_parse_msg(buffer));
+	if (!(msg = irc_parse_msg(buffer)))
+		return(NULL);
+	msg->server = server;
+	return(msg);
 }
 
 /**
@@ -207,27 +214,16 @@ int irc_broadcast_msg(struct irc_msg *msg)
  * channel already exits, the join command will still be sent but a new
  * channel structure will not be created.
  */
-struct irc_channel *irc_join_channel(struct irc_server *server, char *name, void *window)
+int irc_join_channel(struct irc_server *server, char *name)
 {
 	struct irc_msg *msg;
 	struct irc_channel *channel;
 
-	if (msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)) {
-		// TODO can we put this find_channel call into the add_channel call and avoid this indirection
-		// 	the join command already checks for the channel so that it doesn't create an unused window
-		//	but not all functions calling join will do this
-		if (channel = irc_find_channel(server->channels, name))
-			irc_send_msg(server, msg);
-		else if (channel = irc_add_channel(server->channels, name, window, server)) {
-			if (irc_send_msg(server, msg)) {
-				irc_remove_channel(server->channels, name);
-				channel = NULL;
-			}
-		}
-		irc_destroy_msg(msg);
-		return(channel);
-	}
-	return(NULL);
+	if (!(msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)))
+		return(-1);
+	irc_send_msg(server, msg);
+	irc_destroy_msg(msg);
+	return(0);
 }
 
 /**
@@ -240,13 +236,11 @@ int irc_leave_channel(struct irc_server *server, char *name)
 {
 	struct irc_msg *msg;
 
-	if (msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, name)) {
-		if (!irc_send_msg(server, msg))
-			irc_remove_channel(server->channels, name);
-		irc_destroy_msg(msg);
-		return(0);
-	}
-	return(-1);
+	if (!(msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, name)))
+		return(-1);
+	irc_send_msg(server, msg);
+	irc_destroy_msg(msg);
+	return(0);
 }
 
 /**
@@ -259,8 +253,7 @@ int irc_change_nick(struct irc_server *server, char *nick)
 
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, nick)))
 		return(-1);
-	if (!irc_send_msg(server, msg))
-		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
+	irc_send_msg(server, msg);
 	irc_destroy_msg(msg);
 	return(0);
 }
@@ -276,8 +269,9 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 
 	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, text)))
 		return(-1);
+	msg->server = server;
 	if (!(ret = irc_send_msg(server, msg)))
-		irc_dispatch_msg(server, msg);
+		signal_emit("irc_msg_dispatch", msg);
 	irc_destroy_msg(msg);
 	return(ret);
 }
@@ -294,8 +288,9 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 
 	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, text)))
 		return(-1);
+	msg->server = server;
 	if (!(ret = irc_send_msg(server, msg)))
-		irc_dispatch_msg(server, msg);
+		signal_emit("irc_msg_dispatch", msg);
 	irc_destroy_msg(msg);
 	return(ret);
 }
@@ -311,7 +306,7 @@ static int irc_server_receive(struct irc_server *server, network_t net)
 	struct irc_msg *msg;
 
 	if (msg = irc_receive_msg(server))
-		irc_dispatch_msg(server, msg);
+		signal_emit("irc_msg_dispatch", msg);
 	irc_destroy_msg(msg);
 	return(0);
 }

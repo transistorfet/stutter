@@ -40,7 +40,7 @@ int irc_send_msg(struct irc_server *, struct irc_msg *);
 struct irc_msg *irc_receive_msg(struct irc_server *);
 int irc_broadcast_msg(struct irc_msg *);
 
-struct irc_channel *irc_join_channel(struct irc_server *, char *, void *);
+int irc_join_channel(struct irc_server *, char *);
 int irc_leave_channel(struct irc_server *, char *);
 int irc_change_nick(struct irc_server *, char *);
 int irc_private_msg(struct irc_server *, char *, char *);
