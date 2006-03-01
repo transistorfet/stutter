@@ -67,7 +67,7 @@ static char *msg_uppercase(char *);
  * Allocate and initialize an irc_msg structure using the values
  * given.  All strings are copied to newly allocated memory.
  */
-struct irc_msg *irc_create_msg(short cmd, char *nick, char *server, short num_params, ...)
+struct irc_msg *irc_create_msg(short cmd, char *nick, char *host, short num_params, ...)
 {
 	int j;
 	va_list va;
@@ -79,7 +79,7 @@ struct irc_msg *irc_create_msg(short cmd, char *nick, char *server, short num_pa
 	va_start(va, num_params);
 	for (j = 0;j < num_params;j++)
 		params[j] = va_arg(va, char *);
-	return(msg_create(msg_command_bitflags(cmd), cmd, nick, server, num_params, params));
+	return(msg_create(msg_command_bitflags(cmd), cmd, nick, host, num_params, params));
 }
 
 /**
@@ -90,7 +90,7 @@ struct irc_msg *irc_duplicate_msg(struct irc_msg *msg)
 {
 	struct irc_msg *dup;
 
-	if (!msg || !(dup = msg_create(msg->text ? 1 : 0, msg->cmd, msg->nick, msg->server, msg->num_params, msg->params)))
+	if (!msg || !(dup = msg_create(msg->text ? 1 : 0, msg->cmd, msg->nick, msg->host, msg->num_params, msg->params)))
 		return(NULL);
 	dup->time = msg->time;
 	return(dup);
@@ -117,21 +117,21 @@ struct irc_msg *irc_parse_msg(char *str)
 	char *tmp;
 	int bitflags = 0;
 	char *nick = NULL;
-	char *server = NULL;
+	char *host = NULL;
 	short num_params = 0;
 	char *params[IRC_MAX_PARAMS] = { NULL };
 
 	/* Parse the nick and server if it exists */
 	if (str[i] == ':') {
-		server = &str[++i];
+		host = &str[++i];
 		while ((str[i] != '!') && (str[i] != ' ') && (str[i] != '\0'))
 			i++;
 		if (str[i] == '\0')
 			return(NULL);
 		if (str[i] == '!') {
 			str[i] = '\0';
-			nick = server;
-			server = &str[++i];
+			nick = host;
+			host = &str[++i];
 			while ((str[i] != ' ') && (str[i] != '\0'))
 				i++;
 			if (str[i] == '\0')
@@ -168,7 +168,7 @@ struct irc_msg *irc_parse_msg(char *str)
 	}
 	str[i] = '\0';
 
-	return(msg_create(bitflags, cmd, nick, server, ++num_params, params));
+	return(msg_create(bitflags, cmd, nick, host, ++num_params, params));
 }
 
 /**
@@ -184,15 +184,15 @@ int irc_collapse_msg(struct irc_msg *msg, char *buffer, int size)
 
 	size -= 2;		/* Reserve room for line terminator */
 
-	if (msg->nick || msg->server) {
+	if (msg->nick || msg->host) {
 		buffer[i++] = ':';
 		if (msg->nick) {
 			strncpy(&buffer[i], msg->nick, size - i);
 			i += strlen(msg->nick);
 			buffer[i++] = '!';
 		}
-		strncpy(&buffer[i], msg->server, size - i);
-		i += strlen(msg->server);
+		strncpy(&buffer[i], msg->host, size - i);
+		i += strlen(msg->host);
 		buffer[i++] = ' ';
 	}
 
@@ -268,30 +268,39 @@ short irc_command_number(char *str)
 /**
  * Create a new message based on the given values.
  */
-static struct irc_msg *msg_create(short bitflags, short cmd, char *nick, char *server, short num_params, char **params)
+static struct irc_msg *msg_create(short bitflags, short cmd, char *nick, char *host, short num_params, char **params)
 {
 	char *buffer;
 	struct irc_msg *msg;
 	int i = 0, param_len = 0;
-	int j, size, nick_len, server_len;
+	int j, size, nick_len, host_len;
 
 	nick_len = nick ? strlen(nick) + 1 : 0;
-	server_len = server ? strlen(server) + 1 : 0;
+	host_len = host ? strlen(host) + 1 : 0;
 	for (j = 0;j < num_params;j++)
 		param_len += strlen(params[j]) + 1;
-	size = (sizeof(char *) * num_params) + nick_len + server_len + param_len;
+	size = sizeof(struct irc_msg) + (sizeof(char *) * num_params) + nick_len + host_len + param_len;
 
-	if (!(msg = (struct irc_msg *) malloc(sizeof(struct irc_msg) + size)))
+	if (!(msg = (struct irc_msg *) malloc(size)))
 		return(NULL);
-	memset(msg, '\0', sizeof(struct irc_msg) + size);
-	msg->size = sizeof(struct irc_msg) + size;
+	memset(msg, '\0', size);
+	msg->size = size;
 	msg->time = time(NULL);
 	msg->cmd = cmd;
 	msg->num_params = num_params;
 
 	buffer = (char *) (((size_t) msg) + sizeof(struct irc_msg));
-	msg_copy_addr_m(msg->nick, nick, nick_len);
-	msg_copy_addr_m(msg->server, server, server_len);
+
+	if (nick_len) {
+		msg->nick = &buffer[i];
+		i += nick_len;
+		strncpy(msg->nick, nick, nick_len);
+	}
+	if (host_len) {
+		msg->host = &buffer[i];
+		i += host_len;
+		strncpy(msg->host, host, host_len);
+	}
 
 	if (num_params) {
 		msg->params = (char **) &buffer[i];

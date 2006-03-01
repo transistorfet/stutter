@@ -13,12 +13,15 @@
 #define IRC_MAX_MSG		512
 #define IRC_MAX_PARAMS		30
 
+struct irc_server;
+
 struct irc_msg {
 	int size;
 	time_t time;
+	struct irc_server *server;
 	short cmd;
 	char *nick;
-	char *server;
+	char *host;
 	short num_params;
 	char **params;
 	char *text;
