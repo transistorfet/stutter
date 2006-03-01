@@ -1,7 +1,7 @@
 /*
  * Module Name:		type.c
  * Version:		0.1
- * Module Requirements:	memory ; linear
+ * Module Requirements:	memory ; hash
  * Description:		Type Manager
  */
 
