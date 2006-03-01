@@ -19,11 +19,17 @@ int irc_msg_part(struct irc_server *server, struct irc_msg *msg)
 	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
 		return(-1);
 
-	irc_remove_user(channel->users, msg->nick);
+	if (!strcmp(server->nick, msg->nick)) {
+		fe_destroy_widget(channel->window);
+		irc_remove_channel(server->channels, msg->params[0]);
+	}
+	else {
+		irc_remove_user(channel->users, msg->nick);
+		if (!(str = irc_format_msg(msg, IRC_FMT_PART)))
+			return(-1);
+		fe_print(channel->window, str);
+	}
 
-	if (!(str = irc_format_msg(msg, IRC_FMT_PART)))
-		return(-1);
-	fe_print(channel->window, str);
 	return(0);
 }
 
