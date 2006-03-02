@@ -5,8 +5,8 @@
  * Description:		Server Disconnect Command
  */
 
-#include <frontend.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/irc.h>
 
 static int irc_cmd_disconnect_destroy_window(struct irc_channel *, void *);
 

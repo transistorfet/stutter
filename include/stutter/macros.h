@@ -4,8 +4,8 @@
  * Description:		Macro Definitions
  */
 
-#ifndef _LIB_MACROS_H
-#define _LIB_MACROS_H
+#ifndef _STUTTER_LIB_MACROS_H
+#define _STUTTER_LIB_MACROS_H
 
 #include <string.h>
 

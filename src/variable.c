@@ -9,10 +9,10 @@
 #include <string.h>
 
 #include CONFIG_H
-#include <type.h>
-#include <variable.h>
-#include <lib/hash.h>
-#include <lib/memory.h>
+#include <stutter/type.h>
+#include <stutter/variable.h>
+#include <stutter/lib/hash.h>
+#include <stutter/lib/memory.h>
 
 #ifndef NAMESPACE_INIT_SIZE
 #define NAMESPACE_INIT_SIZE		10

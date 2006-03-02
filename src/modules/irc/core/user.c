@@ -7,10 +7,10 @@
 
 #include <string.h>
 
-#include <lib/memory.h>
-#include <lib/linear.h>
-#include <lib/string.h>
-#include <modules/irc/user.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/linear.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc/user.h>
 
 struct irc_user_node {
 	struct irc_user user;

@@ -4,8 +4,8 @@
  * Description:		String Type Header
  */
 
-#ifndef _LIB_STRING_H
-#define _LIB_STRING_H
+#ifndef _STUTTER_LIB_STRING_H
+#define _STUTTER_LIB_STRING_H
 
 typedef char * string_t;
 

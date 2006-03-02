@@ -7,8 +7,8 @@
 
 #include <string.h>
 
-#include <frontend.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/irc.h>
 
 /**
  * Prints private message to channel.

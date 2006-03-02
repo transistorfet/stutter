@@ -7,7 +7,7 @@
 #ifndef _SIMPLE_SCREEN_H
 #define _SIMPLE_SCREEN_H
 
-#include <lib/globals.h>
+#include <stutter/lib/globals.h>
 
 #define SC_NORMAL	0x00
 #define SC_BOLD		0x01

@@ -8,9 +8,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include <type.h>
-#include <lib/string.h>
-#include <modules/base.h>
+#include <stutter/type.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/base.h>
 
 #define MAX_BUFFER		64
 

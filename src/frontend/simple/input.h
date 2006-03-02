@@ -7,8 +7,8 @@
 #ifndef _SIMPLE_INPUT_H
 #define _SIMPLE_INPUT_H
 
-#include <lib/queue.h>
-#include <lib/string.h>
+#include <stutter/lib/queue.h>
+#include <stutter/lib/string.h>
 
 #ifndef INPUT_MAX_BUFFER
 #define INPUT_MAX_BUFFER		1024

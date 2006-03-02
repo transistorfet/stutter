@@ -5,8 +5,8 @@
  * Description:		Names Command
  */
 
-#include <frontend.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/irc.h>
 
 int irc_cmd_names(char *env, char *args)
 {

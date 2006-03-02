@@ -9,11 +9,11 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <type.h>
-#include <variable.h>
-#include <lib/queue.h>
-#include <lib/string.h>
-#include <lib/globals.h>
+#include <stutter/type.h>
+#include <stutter/variable.h>
+#include <stutter/lib/queue.h>
+#include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
 #include "input.h"
 #include "window.h"
 #include "statusbar.h"
@@ -251,7 +251,7 @@ main(int argc, char **argv)
 	while (exit_flag) {
 		fe_refresh(NULL);
 		// TODO rename net_wait (can it be moved somewhere outside the net module?)
-		net_wait(1);
+		fe_net_wait(1);
 		if ((ch = screen_read_char()) && (process_key(ch)))
 			input_default(input, ch);
 	}

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include <modules/irc/msg.h>
+#include <stutter/modules/irc/msg.h>
 
 #define msg_copy_addr_m(dest, src, size)	\
 	if (size) {				\

@@ -4,11 +4,11 @@
  * Description:		Hash Table Virtual Interface
  */
 
-#ifndef _LIB_HASH_H
-#define _LIB_HASH_H
+#ifndef _STUTTER_LIB_HASH_H
+#define _STUTTER_LIB_HASH_H
 
-#include <lib/memory.h>
-#include <lib/globals.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/globals.h>
 
 typedef unsigned int (*hash_t)(void *);
 

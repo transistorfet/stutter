@@ -5,7 +5,7 @@
  * Description:		Say Message Command
  */
 
-#include <modules/irc.h>
+#include <stutter/modules/irc.h>
 
 int irc_cmd_say(char *env, char *args)
 {

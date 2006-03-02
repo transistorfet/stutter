@@ -5,9 +5,9 @@
  * Description:		Quit Notification Message
  */
 
-#include <frontend.h>
-#include <lib/string.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc.h>
 
 static int irc_msg_quit_traverse(struct irc_channel *, struct irc_msg *);
 

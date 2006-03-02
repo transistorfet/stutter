@@ -4,11 +4,11 @@
  * Description:		Frontend Header
  */
 
-#ifndef _FRONTEND_H
-#define _FRONTEND_H
+#ifndef _STUTTER_FRONTEND_H
+#define _STUTTER_FRONTEND_H
 
-#include <lib/string.h>
-#include <lib/globals.h>
+#include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
 
 void *fe_create_widget(char *ns, char *type, char *id, void *parent);
 int fe_destroy_widget(void *widget);

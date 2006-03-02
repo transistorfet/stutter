@@ -4,13 +4,13 @@
  * Description:		Server Interface Manager Header
  */
 
-#ifndef _SERVER_H
-#define _SERVER_H
+#ifndef _STUTTER_MODULES_IRC_SERVER_H
+#define _STUTTER_MODULES_IRC_SERVER_H
 
 #include CONFIG_H
-#include <frontend/net.h>
-#include <modules/irc/msg.h>
-#include <modules/irc/channel.h>
+#include <stutter/frontend/net.h>
+#include <stutter/modules/irc/msg.h>
+#include <stutter/modules/irc/channel.h>
 
 #define IRC_SERVER_STATUS_CHANNEL	"status"
 

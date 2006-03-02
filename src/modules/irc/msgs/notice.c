@@ -5,9 +5,9 @@
  * Description:		Notice Notification Message
  */
 
-#include <frontend.h>
-#include <lib/string.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc.h>
 
 /**
  * Prints message to current channel and status channel.

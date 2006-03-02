@@ -4,14 +4,14 @@
  * Description:		IRC Module Header
  */
 
-#ifndef _MODULES_IRC_H
-#define _MODULES_IRC_H
+#ifndef _STUTTER_MODULES_IRC_H
+#define _STUTTER_MODULES_IRC_H
 
-#include <lib/string.h>
-#include <modules/irc/msg.h>
-#include <modules/irc/user.h>
-#include <modules/irc/server.h>
-#include <modules/irc/channel.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc/msg.h>
+#include <stutter/modules/irc/user.h>
+#include <stutter/modules/irc/server.h>
+#include <stutter/modules/irc/channel.h>
 
 int init_irc(void);
 int release_irc(void);

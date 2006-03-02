@@ -7,8 +7,8 @@
 #ifndef _SIMPLE_WINDOW_H
 #define _SIMPLE_WINDOW_H
 
-#include <lib/queue.h>
-#include <lib/string.h>
+#include <stutter/lib/queue.h>
+#include <stutter/lib/string.h>
 
 #ifndef WINDOW_MAX_WRAP
 #define WINDOW_MAX_WRAP		20

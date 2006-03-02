@@ -7,13 +7,13 @@
 
 #include <string.h>
 
-#include <type.h>
-#include <utils.h>
-#include <variable.h>
-#include <frontend.h>
-#include <lib/macros.h>
-#include <lib/string.h>
-#include <modules/base.h>
+#include <stutter/type.h>
+#include <stutter/utils.h>
+#include <stutter/variable.h>
+#include <stutter/frontend.h>
+#include <stutter/lib/macros.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/base.h>
 
 int base_cmd_bind(char *env, char *args)
 {

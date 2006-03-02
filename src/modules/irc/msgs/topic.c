@@ -5,9 +5,9 @@
  * Description:		Topic Change Notification Message
  */
 
-#include <frontend.h>
-#include <lib/string.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc.h>
 
 /**
  * Update the channel topic and print message to channel.

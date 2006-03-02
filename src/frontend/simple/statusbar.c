@@ -6,10 +6,10 @@
  */
 
 #include CONFIG_H
-#include <type.h>
-#include <variable.h>
-#include <lib/memory.h>
-#include <lib/string.h>
+#include <stutter/type.h>
+#include <stutter/variable.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/string.h>
 #include "screen.h"
 #include "statusbar.h"
 

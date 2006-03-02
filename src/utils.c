@@ -7,11 +7,11 @@
 
 #include <stdlib.h>
 
-#include <type.h>
-#include <variable.h>
-#include <lib/macros.h>
-#include <lib/string.h>
-#include <utils.h>
+#include <stutter/type.h>
+#include <stutter/variable.h>
+#include <stutter/lib/macros.h>
+#include <stutter/lib/string.h>
+#include <stutter/utils.h>
 
 #define MAX_NAME		64
 #define MAX_BUFFER		1024

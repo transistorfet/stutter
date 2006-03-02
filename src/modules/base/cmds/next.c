@@ -5,8 +5,8 @@
  * Description:		Next Window Command
  */
 
-#include <frontend.h>
-#include <modules/base.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/base.h>
 
 int base_cmd_next(char *env, char *args)
 {

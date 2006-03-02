@@ -4,12 +4,11 @@
  * Description:		Variable Manager Header
  */
 
-#ifndef _VARIABLE_H
-#define _VARIABLE_H
+#ifndef _STUTTER_VARIABLE_H
+#define _STUTTER_VARIABLE_H
 
-#include <type.h>
-//#include <namespace.h>
-#include <lib/string.h>
+#include <stutter/type.h>
+#include <stutter/lib/string.h>
 
 struct namespace_s {
 	char *name;

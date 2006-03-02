@@ -8,9 +8,9 @@
 #include <string.h>
 #include <curses.h>
 
-#include <lib/queue.h>
-#include <lib/memory.h>
-#include <lib/string.h>
+#include <stutter/lib/queue.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/string.h>
 #include "screen.h"
 #include "input.h"
 

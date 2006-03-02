@@ -5,9 +5,9 @@
  * Description:		Current Server\Channel Manager
  */
 
-#include <frontend.h>
-#include <lib/string.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc.h>
 
 static void *last_window = NULL;
 static struct irc_channel *last_channel = NULL;

@@ -8,9 +8,9 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <type.h>
-#include <variable.h>
-#include <lib/memory.h>
+#include <stutter/type.h>
+#include <stutter/variable.h>
+#include <stutter/lib/memory.h>
 
 struct base_command_s {
 	callback_t func;

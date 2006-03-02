@@ -10,14 +10,14 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <signal.h>
-#include <lib/memory.h>
-#include <lib/linear.h>
-#include <lib/globals.h>
-#include <frontend/net.h>
-#include <modules/irc/msg.h>
-#include <modules/irc/server.h>
-#include <modules/irc/channel.h>
+#include <stutter/signal.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/linear.h>
+#include <stutter/lib/globals.h>
+#include <stutter/frontend/net.h>
+#include <stutter/modules/irc/msg.h>
+#include <stutter/modules/irc/server.h>
+#include <stutter/modules/irc/channel.h>
 
 struct irc_server_node {
 	struct irc_server server;

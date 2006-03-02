@@ -4,8 +4,8 @@
  * Description:		Global Definitions
  */
 
-#ifndef _LIB_GLOBALS_H
-#define _LIB_GLOBALS_H
+#ifndef _STUTTER_LIB_GLOBALS_H
+#define _STUTTER_LIB_GLOBALS_H
 
 #define ERR_OUT_OF_MEMORY		-10
 #define ERR_COMMAND_NOT_FOUND		-11

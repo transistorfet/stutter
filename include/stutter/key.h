@@ -4,11 +4,11 @@
  * Description:		Key Manager Header
  */
 
-#ifndef _KEY_H
-#define _KEY_H
+#ifndef _STUTTER_KEY_H
+#define _STUTTER_KEY_H
 
-#include <variable.h>
-#include <lib/string.h>
+#include <stutter/variable.h>
+#include <stutter/lib/string.h>
 
 int init_key(void);
 int release_key(void);

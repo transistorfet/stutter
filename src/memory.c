@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 
-#include <lib/memory.h>
+#include <stutter/lib/memory.h>
 
 /**
  * Allocate a block of memory of the given size and return a pointer to it.

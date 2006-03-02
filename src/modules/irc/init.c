@@ -8,11 +8,11 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <type.h>
-#include <variable.h>
-#include <lib/string.h>
-#include <lib/globals.h>
-#include <modules/irc.h>
+#include <stutter/type.h>
+#include <stutter/variable.h>
+#include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
+#include <stutter/modules/irc.h>
 
 struct command_prototype_s {
 	char *name;

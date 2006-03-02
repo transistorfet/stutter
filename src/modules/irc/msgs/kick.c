@@ -5,8 +5,8 @@
  * Description:		Kick Notification Message
  */
 
-#include <frontend.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/irc.h>
 
 /**
  * Print kick message to channel.

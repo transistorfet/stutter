@@ -4,10 +4,10 @@
  * Description:		User Interface Manager Header
  */
 
-#ifndef _USER_H
-#define _USER_H
+#ifndef _STUTTER_MODULES_IRC_USER_H
+#define _STUTTER_MODULES_IRC_USER_H
 
-#include <lib/string.h>
+#include <stutter/lib/string.h>
 
 #define IRC_UBF_OP		0x80
 #define IRC_UBF_VOICE		0x40

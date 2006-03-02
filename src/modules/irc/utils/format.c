@@ -9,10 +9,10 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <utils.h>
-#include <lib/string.h>
-#include <modules/irc.h>
-#include <modules/base.h>
+#include <stutter/utils.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc.h>
+#include <stutter/modules/base.h>
 
 #define MAX_BUFFER		1024
 

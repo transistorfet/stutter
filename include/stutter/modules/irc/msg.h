@@ -4,11 +4,11 @@
  * Description:		Message Manager Header
  */
 
-#ifndef _MSG_H
-#define _MSG_H
+#ifndef _STUTTER_MODULES_IRC_MSG_H
+#define _STUTTER_MODULES_IRC_MSG_H
 
 #include <time.h>
-#include <modules/irc/commands.h>
+#include <stutter/modules/irc/commands.h>
 
 #define IRC_MAX_MSG		512
 #define IRC_MAX_PARAMS		30

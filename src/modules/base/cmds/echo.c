@@ -6,8 +6,8 @@
  */
 
 
-#include <frontend.h>
-#include <modules/base.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/base.h>
 
 int base_cmd_echo(char *env, char *args)
 {

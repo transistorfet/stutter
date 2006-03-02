@@ -5,8 +5,8 @@
  * Description:		Join Channel Notification Message
  */
 
-#include <frontend.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/irc.h>
 
 /**
  * Update the user information and print message to channel.

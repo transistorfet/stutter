@@ -5,8 +5,8 @@
  * Description:		Default Notification Message (for Unhandled Messages)
  */
 
-#include <frontend.h>
-#include <modules/irc.h>
+#include <stutter/frontend.h>
+#include <stutter/modules/irc.h>
 
 int irc_msg_default(struct irc_server *server, struct irc_msg *msg)
 {

@@ -4,11 +4,11 @@
  * Description:		Channel Interface Manager Header
  */
 
-#ifndef _CHANNEL_H
-#define _CHANNEL_H
+#ifndef _STUTTER_MODULES_IRC_CHANNEL_H
+#define _STUTTER_MODULES_IRC_CHANNEL_H
 
-#include <lib/string.h>
-#include <modules/irc/user.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc/user.h>
 
 #define IRC_CBF_AUTO_REJOIN		0x01
 

@@ -4,10 +4,10 @@
  * Description:		Utilities Header
  */
 
-#ifndef _UTILS_H
-#define _UTILS_H
+#ifndef _STUTTER_UTILS_H
+#define _STUTTER_UTILS_H
 
-#include <lib/string.h>
+#include <stutter/lib/string.h>
 
 int util_escape_char(char *, char *);
 string_t util_convert_key(char *);

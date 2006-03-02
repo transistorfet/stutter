@@ -9,10 +9,10 @@
 #include <string.h>
 
 #include CONFIG_H
-#include <type.h>
-#include <lib/hash.h>
-#include <lib/memory.h>
-#include <lib/globals.h>
+#include <stutter/type.h>
+#include <stutter/lib/hash.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/globals.h>
 
 #ifndef TYPE_INIT_SIZE
 #define TYPE_INIT_SIZE		10

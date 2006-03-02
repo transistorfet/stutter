@@ -8,12 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <lib/memory.h>
-#include <lib/linear.h>
-#include <lib/string.h>
-#include <lib/globals.h>
-#include <modules/irc/user.h>
-#include <modules/irc/channel.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/linear.h>
+#include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
+#include <stutter/modules/irc/user.h>
+#include <stutter/modules/irc/channel.h>
 
 struct irc_channel_node {
 	struct irc_channel channel;
@@ -62,7 +62,7 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, char *name, v
 	struct irc_channel_node *node;
 
 	if (irc_find_channel(list, name))
-		return(1);
+		return(NULL);
 	if (!(node = (struct irc_channel_node *) memory_alloc(sizeof(struct irc_channel_node) + strlen(name) + 1)))
 		return(NULL);
 	memset(node, '\0', sizeof(struct irc_channel_node));

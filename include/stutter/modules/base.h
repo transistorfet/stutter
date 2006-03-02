@@ -4,13 +4,13 @@
  * Description:		Base Module Header
  */
 
-#ifndef _BASE_H
-#define _BASE_H
+#ifndef _STUTTER_MODULES_BASE_H
+#define _STUTTER_MODULES_BASE_H
 
 #include <stdlib.h>
 
-#include <type.h>
-#include <lib/string.h>
+#include <stutter/type.h>
+#include <stutter/lib/string.h>
 
 int init_base(void);
 int release_base(void);

@@ -4,11 +4,11 @@
  * Description:		Type Manager Header
  */
 
-#ifndef _TYPE_H
-#define _TYPE_H
+#ifndef _STUTTER_TYPE_H
+#define _STUTTER_TYPE_H
 
-#include <lib/string.h>
-#include <lib/globals.h>
+#include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
 
 typedef void *(*create_t)(char *, ...);
 typedef string_t (*stringify_t)(void *);

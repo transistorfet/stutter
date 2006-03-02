@@ -8,11 +8,11 @@
 #include <string.h>
 
 #include CONFIG_H
-#include <type.h>
-#include <variable.h>
-#include <frontend.h>
-#include <lib/macros.h>
-#include <lib/string.h>
+#include <stutter/type.h>
+#include <stutter/variable.h>
+#include <stutter/frontend.h>
+#include <stutter/lib/macros.h>
+#include <stutter/lib/string.h>
 
 int base_cmd_parse(char *env, char *args)
 {

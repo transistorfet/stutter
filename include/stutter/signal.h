@@ -4,11 +4,11 @@
  * Description:		Signal Manager Header
  */
 
-#ifndef _SIGNAL_H
-#define _SIGNAL_H
+#ifndef _STUTTER_SIGNAL_H
+#define _STUTTER_SIGNAL_H
 
-#include <lib/string.h>
-#include <lib/globals.h>
+#include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
 
 typedef int (*signal_t)(void *, void *);
 

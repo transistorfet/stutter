@@ -5,7 +5,7 @@
  * Description:		Nick Change Command
  */
 
-#include <modules/irc.h>
+#include <stutter/modules/irc.h>
 
 int irc_cmd_nick(char *env, char *args)
 {

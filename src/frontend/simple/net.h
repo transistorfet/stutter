@@ -4,10 +4,10 @@
  * Description:		Network Interface Manager Header
  */
 
-#ifndef _COMMON_NET_H
-#define _COMMON_NET_H
+#ifndef _SIMPLE_NET_H
+#define _SIMPLE_NET_H
 
-#include <lib/globals.h>
+#include <stutter/lib/globals.h>
 
 #define NET_ATTEMPTS		3
 

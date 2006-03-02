@@ -4,8 +4,8 @@
  * Description:		Message Command Numbers
  */
 
-#ifndef _COMMANDS_H
-#define _COMMANDS_H
+#ifndef _STUTTER_MODULES_IRC_COMMANDS_H
+#define _STUTTER_MODULES_IRC_COMMANDS_H
 
 #define IRC_MSG_PASS			1001
 #define IRC_MSG_NICK			1002

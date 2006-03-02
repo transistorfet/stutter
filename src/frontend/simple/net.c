@@ -16,8 +16,8 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 
-#include <lib/debug.h>
-#include <lib/memory.h>
+#include <stutter/lib/debug.h>
+#include <stutter/lib/memory.h>
 #include "net.h"
 
 struct network_s {

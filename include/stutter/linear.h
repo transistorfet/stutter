@@ -4,11 +4,11 @@
  * Description:		Linked List Virtual Interface
  */
 
-#ifndef _LIB_LINEAR_H
-#define _LIB_LINEAR_H
+#ifndef _STUTTER_LIB_LINEAR_H
+#define _STUTTER_LIB_LINEAR_H
 
-#include <lib/memory.h>
-#include <lib/globals.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/globals.h>
 
 /*** Virtual Interface ***/
 

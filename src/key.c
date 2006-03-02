@@ -7,11 +7,11 @@
 
 #include <string.h>
 
-#include <key.h>
-#include <variable.h>
-#include <lib/hash.h>
-#include <lib/memory.h>
-#include <lib/string.h>
+#include <stutter/key.h>
+#include <stutter/variable.h>
+#include <stutter/lib/hash.h>
+#include <stutter/lib/memory.h>
+#include <stutter/lib/string.h>
 
 #ifndef KEY_INITIAL_CONTEXTS
 #define KEY_INITIAL_CONTEXTS	10

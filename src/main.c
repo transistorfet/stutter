@@ -6,13 +6,13 @@
  */
 
 #include CONFIG_H
-#include <type.h>
-#include <utils.h>
-#include <variable.h>
-#include <frontend.h>
-#include <lib/string.h>
-#include <modules/irc.h>
-#include <modules/base.h>
+#include <stutter/type.h>
+#include <stutter/utils.h>
+#include <stutter/variable.h>
+#include <stutter/frontend.h>
+#include <stutter/lib/string.h>
+#include <stutter/modules/irc.h>
+#include <stutter/modules/base.h>
 
 
 int init_system(void)

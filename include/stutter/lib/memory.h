@@ -4,8 +4,8 @@
  * Description:		Memory Allocator and Tracker Header
  */
 
-#ifndef _LIB_MEMORY_H
-#define _LIB_MEMORY_H
+#ifndef _STUTTER_LIB_MEMORY_H
+#define _STUTTER_LIB_MEMORY_H
 
 #include <stdlib.h>
 

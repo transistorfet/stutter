@@ -4,10 +4,10 @@
  * Description:		Frontend Networking Header
  */
 
-#ifndef _FRONTEND_NET_H
-#define _FRONTEND_NET_H
+#ifndef _STUTTER_FRONTEND_NET_H
+#define _STUTTER_FRONTEND_NET_H
 
-#include <lib/globals.h>
+#include <stutter/lib/globals.h>
 
 typedef void *network_t;
 

@@ -4,8 +4,8 @@
  * Description:		Debug Macros Header
  */
 
-#ifndef _NIT_DEBUG_H
-#define _NIT_DEBUG_H
+#ifndef _STUTTER_LIB_DEBUG_H
+#define _STUTTER_LIB_DEBUG_H
 
 #include <stdio.h>
 
