@@ -27,8 +27,8 @@ struct irc_server_node {
 static int server_initialized = 0;
 static linear_list_v(irc_server_node) server_list;
 
+static int irc_server_init_connection(struct irc_server *);
 static int irc_server_receive(struct irc_server *, network_t);
-static int server_init_connection(struct irc_server *);
 
 int init_irc_server(void)
 {
@@ -75,7 +75,7 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 	node->server.status = irc_add_channel(node->server.channels, IRC_SERVER_STATUS_CHANNEL, window, &node->server);
 	linear_add_node_v(server_list, sl, node);
 
-	if (server_init_connection(&node->server) < 0) {
+	if (irc_server_init_connection(&node->server) < 0) {
 		irc_server_disconnect(&node->server);
 		return(NULL);
 	}
@@ -88,7 +88,7 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 int irc_server_reconnect(struct irc_server *server)
 {
 	fe_net_disconnect(server->net);
-	if (server_init_connection(server)) {
+	if (irc_server_init_connection(server)) {
 		irc_server_disconnect(server);
 		return(-1);
 	}
@@ -298,30 +298,14 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 /*** Local Functions ***/
 
 /**
- * Called by network when data is available from the given socket for
- * the given server.
- */
-static int irc_server_receive(struct irc_server *server, network_t net)
-{
-	struct irc_msg *msg;
-
-	if (msg = irc_receive_msg(server))
-		signal_emit("irc_msg_dispatch", msg);
-	irc_destroy_msg(msg);
-	return(0);
-}
-
-/**
  * Initialize communications with the server and return 0 on success
  * or -1 on error.
  */
-static int server_init_connection(struct irc_server *server)
+static int irc_server_init_connection(struct irc_server *server)
 {
 	int ret = 0;
 	struct irc_msg *msg;
 
-	if (server->net)
-		return(1);
 	if (!(server->net = fe_net_connect(server->address, server->port, (callback_t) irc_server_receive, server)))
 		return(-1);
 
@@ -343,5 +327,18 @@ static int server_init_connection(struct irc_server *server)
 	return(-1);
 }
 
+/**
+ * Called by network when data is available from the given socket for
+ * the given server.
+ */
+static int irc_server_receive(struct irc_server *server, network_t net)
+{
+	struct irc_msg *msg;
+
+	if (msg = irc_receive_msg(server))
+		signal_emit("irc_msg_dispatch", msg);
+	irc_destroy_msg(msg);
+	return(0);
+}
 
 
