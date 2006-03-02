@@ -15,7 +15,7 @@ OBJS =	simple.o \
 
 LDFLAGS = 
 LIBS = -lncurses
-CFLAGS = -g -I$(ROOT)/include -DNET_DIRECT
+CFLAGS = -g -I$(ROOT)/include
 
 include $(ROOT)/rules.mk
 

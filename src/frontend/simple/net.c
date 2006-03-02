@@ -32,7 +32,7 @@ static network_t net_list = NULL;
 /**
  * Create a new network connection and connect to the server:port given.
  */
-network_t net_connect(char *server, int port, callback_t receiver, void *ptr)
+network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
 {
 	int i, j;
 	int sockfd;
@@ -71,7 +71,7 @@ network_t net_connect(char *server, int port, callback_t receiver, void *ptr)
  * with the network_t of the connection and the given ptr.  The network_t
  * associated with the server is returned or NULL on error.
  */
-network_t net_listen(int port, callback_t receiver, void *ptr)
+network_t fe_net_listen(int port, callback_t receiver, void *ptr)
 {
 
 }
@@ -81,7 +81,7 @@ network_t net_listen(int port, callback_t receiver, void *ptr)
  * callback and ptr.  If the given net is valid then 0 is returned
  * otherwise -1 is returned.
  */
-int net_set_receiver(network_t net, callback_t receiver, void *ptr)
+int fe_net_set_receiver(network_t net, callback_t receiver, void *ptr)
 {
 	if (!net)
 		return(-1);
@@ -93,7 +93,7 @@ int net_set_receiver(network_t net, callback_t receiver, void *ptr)
 /**
  * Disconnect the given network connection.
  */
-void net_disconnect(network_t net)
+void fe_net_disconnect(network_t net)
 {
 	int i;
 	network_t cur, prev;
@@ -124,7 +124,7 @@ void net_disconnect(network_t net)
  * Send the string of length size to the given network connection and
  * return the number of bytes written or -1 on error.
  */
-int net_send(network_t net, char *msg, int size)
+int fe_net_send(network_t net, char *msg, int size)
 {
 	if (!net)
 		return(0);
@@ -137,7 +137,7 @@ int net_send(network_t net, char *msg, int size)
  * size-1 (a null char is appended) and return the number of bytes
  * read or -1 on error.
  */ 
-int net_receive(network_t net, char *msg, int size)
+int fe_net_receive(network_t net, char *msg, int size)
 {
 	int i;
 	fd_set rd;
@@ -168,7 +168,7 @@ int net_receive(network_t net, char *msg, int size)
  * Wait for input on all sockets and STDIN for the time given in seconds and return
  * 0 if the time expires or the number of sockets with input.
  */
-int net_wait(float t)
+int fe_net_wait(float t)
 {
 	fd_set rd;
 	int max, ret;
