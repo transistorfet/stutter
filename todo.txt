@@ -1,5 +1,4 @@
 
-	* Bug in irc_remove_user when the first user (?) in the list is removed
 	* when server is down, there is no responsiveness and no way to break out; timeout is long
 	* pass realname to server when connecting
 
@@ -11,7 +10,7 @@
 	  the function twice above as the callback)
 
 	* fix parse so that /parse something command doesn't cause a segfault
-	* try to fix up code that finds the namespace to use in find_variable and add_variable
+	* try to pretty up code that finds the namespace to use in find_variable and add_variable
 
 	* how do you get the statusbar height in window.c
 	* how are you going to deal with keys and screen size in the simple/screen.c module
@@ -19,6 +18,7 @@
 	* fix all hash_init and hash_rehash instances to check for memory allocation failure
 	* BIGBUG: when a server doesn't respond after connection (the ircserver i set up), you can still
 	  issue joins and such tbut they don't actually work.  MAKE SURE TO CLEAN UP AFTER A SERVER FAILURE
+	  (is this fixed now?)
 
 	* fix history in input.c
 	* should we limit possible variable names (to not include things like " and ')
@@ -27,12 +27,11 @@
 	* add a function to key.c to get the current binding of a key sequence (without processing)
 
 	* make msgs/join.c print a message when it fails to create a window
-	* make a new more dynamic dispatcher (at least compile-time customizable) (with signals?)
+	* make a new more dynamic dispatcher??? (should all messages become individual signals?)
 	* add mode command
 	* add topic commnd (<channel> [<topic>])
 	* add list command
 	* add ping/whowas commands
-	* catch the ^C signal and cancel a connect
 	* make variables and namespaces case-insensitive
 	* add channel and user mode bits
 	* add handling for CTCP commands
@@ -60,6 +59,7 @@
 	* should you have a create tmp string feature so that you can store the string in a static buffer
 	  but destroy_string will check for it and not try to free it (would threads kill this idea?)
 
+	* catch the ^C signal and cancel a connect
 	* think about xml (possibly using a special char for <>) and what would acutally be done
 	  (particularily with respect to irc_format_msg)
 	* add a get_variable_path() function (can we change the names) and add a type in base for dealing
