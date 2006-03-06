@@ -167,7 +167,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 		return(NULL);
 
 	while (1) {
-		if ((size = fe_net_receive(server->net, buffer, IRC_MAX_MSG + 1)) < 0) {
+		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
 			fe_net_disconnect(server->net);
 			server->net = NULL;
 			return(NULL);
