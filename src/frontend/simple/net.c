@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <netdb.h>
+#include <fcntl.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -20,10 +21,17 @@
 #include <stutter/lib/memory.h>
 #include "net.h"
 
+#ifndef NET_READ_BUFFER
+#define NET_READ_BUFFER		512
+#endif
+
 struct network_s {
 	int socket;
 	callback_t receiver;
 	void *ptr;
+	int read;
+	int length;
+	char buffer[NET_READ_BUFFER];
 	struct network_s *next;
 };
 
@@ -42,6 +50,7 @@ network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
 
 	if (!(net = (network_t) memory_alloc(sizeof(struct network_s))))
 		return(NULL);
+	memset(net, '\0', sizeof(struct network_s));
 	net->receiver = receiver;
 	net->ptr = ptr;
 
@@ -126,10 +135,49 @@ void fe_net_disconnect(network_t net)
  */
 int fe_net_send(network_t net, char *msg, int size)
 {
+	int sent, count = 0;
+
 	if (!net)
 		return(0);
 	DEBUG_LOG("raw.out", msg);
-	return(send(net->socket, (void *) msg, size, 0));
+	do {
+		if ((sent = send(net->socket, (void *) msg, size, 0)) <= 0)
+			return(-1);
+		count += sent;
+	} while (count < size);
+	return(count);
+}
+
+/**
+ * Receive the given number of bytes, store them in the given msg buffer
+ * and return the number of bytes read or -1 on error.
+ */ 
+int fe_net_receive(network_t net, char *msg, int size)
+{
+	int i, j;
+	fd_set rd;
+	struct timeval timeout = { 0, 0 };
+
+	if (!net)
+		return(0);
+
+	size--;
+	for (i = 0;i < size;i++) {
+		if (net->read >= net->length)
+			break;
+		msg[i] = net->buffer[net->read++];
+	}
+
+	if (i < size) {
+		FD_ZERO(&rd);
+		FD_SET(net->socket, &rd);
+		if (select(net->socket + 1, &rd, NULL, NULL, &timeout) && ((j = recv(net->socket, &msg[i], size - i, 0)) > 0))
+			i += j;
+	}
+
+	msg[i] = '\0';
+	DEBUG_LOG("raw.in", msg);
+	return(i);
 }
 
 /**
@@ -137,7 +185,7 @@ int fe_net_send(network_t net, char *msg, int size)
  * size-1 (a null char is appended) and return the number of bytes
  * read or -1 on error.
  */ 
-int fe_net_receive(network_t net, char *msg, int size)
+int fe_net_receive_str(network_t net, char *msg, int size, char ch)
 {
 	int i;
 	fd_set rd;
@@ -145,20 +193,31 @@ int fe_net_receive(network_t net, char *msg, int size)
 
 	if (!net)
 		return(0);
-	FD_ZERO(&rd);
-	FD_SET(net->socket, &rd);
-	if (!select(net->socket + 1, &rd, NULL, NULL, &timeout))
-		return(0);
 
+	size--;
 	for (i = 0;i < size;i++) {
-		if ((recv(net->socket, (void *) &msg[i], 1, 0)) <= 0)
-			return(-1);
-		else if (msg[i] == '\n')
+		if (net->read >= net->length) {
+			FD_ZERO(&rd);
+			FD_SET(net->socket, &rd);
+			// TODO if either of these fail, we return a partial message which the server
+			//	doesn't check for and can't deal with so what we really need to do is
+			//	copy what we've read (in msg) to the buffer and return 0 but what
+			//	if the msg is bigger than the buffer?
+			// TODO what about a socket error of some sorts too.  That doesn't really count
+			//	as a msg that hasn't been fully recieved.  We could send a signal to report
+			//	the error somehow (which raises the question of should we do (and how would
+			//	we do) socket specific signals.
+			if (!select(net->socket + 1, &rd, NULL, NULL, &timeout))
+				return(i);
+			if ((net->length = recv(net->socket, net->buffer, NET_READ_BUFFER, 0)) <= 0)
+				return(net->length);
+			net->read = 0;
+		}
+		msg[i] = net->buffer[net->read++];
+		if (msg[i] == ch)
 			break;
 	}
 
-	//if ((size = recv(net->socket, msg, size, 0)) <= 0)
-	//	return(-1);
 	msg[++i] = '\0';
 	DEBUG_LOG("raw.in", msg);
 	return(i);
@@ -166,39 +225,49 @@ int fe_net_receive(network_t net, char *msg, int size)
 
 /**
  * Wait for input on all sockets and STDIN for the time given in seconds and return
- * 0 if the time expires or the number of sockets with input.
+ * 0 if the time expires or the number of sockets that had input.
  */
 int fe_net_wait(float t)
 {
 	fd_set rd;
-	int max, ret;
 	network_t cur;
+	int max, ret = 0;
 	struct timeval timeout;
 
+	/** Check the buffer of each connection to see if any messages are waiting
+	    and return when each connection gets a chance to read one message so that
+	    we can refresh the screen and check for keyboard input to remain responsive */
+	for (cur = net_list;cur;cur = cur->next) {
+		if (cur->read < cur->length) {
+			cur->receiver(cur->ptr, cur);
+			ret++;
+		}
+	}
+	if (ret)
+		return(ret);
+
+	/** Check each connection's socket for input using select */
 	timeout.tv_sec = (int) t;
 	timeout.tv_usec = (int) ((t - timeout.tv_sec) * 1000000);
 
 	FD_ZERO(&rd);
 	FD_SET(0, &rd);
 	max = 0;
-
 	for (cur = net_list;cur;cur = cur->next) {
 		FD_SET(cur->socket, &rd);
 		if (cur->socket > max)
 			max = cur->socket;
 	}
 
-	ret = select(max + 1, &rd, NULL, NULL, &timeout);
-	if (ret == -1) {
+	if ((ret = select(max + 1, &rd, NULL, NULL, &timeout)) == -1) {
 		// TODO what do we do in the case of a socket error?
-	}
-	else {
-		for (cur = net_list;cur;cur = cur->next) {
-			if (cur->receiver && FD_ISSET(cur->socket, &rd))
-				cur->receiver(cur->ptr, cur);
-		}
+		return(0);
 	}
 
+	for (cur = net_list;cur;cur = cur->next) {
+		if ((cur->read < cur->length) || (cur->receiver && FD_ISSET(cur->socket, &rd)))
+			cur->receiver(cur->ptr, cur);
+	}
 	return(ret);
 }
 
