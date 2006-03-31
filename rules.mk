@@ -7,21 +7,12 @@
 .SUFFIXES: .o .c .h .cpp .s .asm
 .PHONY: $(DIRS)
 
-CC	= gcc
-CXX	= g++
-LD	= gcc
-AS	= as
-AR	= ar
-RANLIB	= ranlib
-DEPEND	= $(CC) -MM
-
 include $(ROOT)/config.mk
-
 
 all: $(TARGET) $(LIB_TARGET)
 
 $(TARGET): $(DIRS) $(OBJS)
-	$(LD) $(LIBPATH) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
+	$(LD) $(LIBPATH) $(LDFLAGS) -o$(TARGET) $(OBJS) $(LIBS)
 
 $(LIB_TARGET): $(DIRS) $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
@@ -52,8 +43,5 @@ clean:
 
 distclean: clean
 	$(RM) .depend
-
-count:
-	cat `ls *.[ch]` | wc
 
 
