@@ -34,8 +34,5 @@ OBJS =	init.o \
 	utils/dispatch.o \
 	utils/format.o
 
-ARFLAGS = rc
-CFLAGS = -g -I$(ROOT)/include
-
 include $(ROOT)/rules.mk
 

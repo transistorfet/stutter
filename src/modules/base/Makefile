@@ -18,8 +18,5 @@ OBJS =	init.o \
 	types/status.o \
 	types/command.o
 
-ARFLAGS = rc
-CFLAGS = -g -I$(ROOT)/include
-
 include $(ROOT)/rules.mk
 

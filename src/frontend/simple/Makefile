@@ -13,9 +13,7 @@ OBJS =	simple.o \
 	$(ROOT)/src/modules/base/modbase.a \
 	$(ROOT)/src/modules/irc/modirc.a
 
-LDFLAGS = 
 LIBS = -lncurses
-CFLAGS = -g -I$(ROOT)/include
 
 include $(ROOT)/rules.mk
 
