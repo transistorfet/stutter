@@ -122,7 +122,7 @@ void *fe_next_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_next_node(current_window))
+	if (current_window = queue_next(current_window))
 		return((struct window_s *) current_window->ptr);
 	return(NULL);
 }
@@ -131,7 +131,7 @@ void *fe_previous_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_previous_node(current_window))
+	if (current_window = queue_previous(current_window))
 		return((struct window_s *) current_window->ptr);
 	return(NULL);
 }
@@ -140,7 +140,7 @@ void *fe_first_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_first_node(window_list))
+	if (current_window = queue_first(window_list))
 		return((struct window_s *) current_window->ptr);
 	return(NULL);
 }
@@ -149,7 +149,7 @@ void *fe_last_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_last_node(window_list))
+	if (current_window = queue_last(window_list))
 		return((struct window_s *) current_window->ptr);
 	return(NULL);
 }
@@ -201,7 +201,7 @@ int fe_scroll(void *widget, int diff)
 void fe_refresh(void *widget)
 {
 	if (!widget) {
-		if (!current_window && !(current_window = queue_first_node(window_list)))
+		if (!current_window && !(current_window = queue_first(window_list)))
 			screen_clear(0, 0, screen_width(), screen_height() - statusbar->height - 1);
 		else
 			refresh_window((struct window_s *) current_window->ptr);
@@ -250,7 +250,6 @@ main(int argc, char **argv)
 
 	while (exit_flag) {
 		fe_refresh(NULL);
-		// TODO rename net_wait (can it be moved somewhere outside the net module?)
 		fe_net_wait(1);
 		if ((ch = screen_read_char()) && (process_key(ch)))
 			input_default(input, ch);
