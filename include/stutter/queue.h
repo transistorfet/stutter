@@ -218,11 +218,11 @@ static inline struct queue_node_s *queue_find(struct queue_s *queue, void *ptr)
 	return(NULL);
 }
 
-#define queue_first_node(list)		(list)->q.head
-#define queue_last_node(list)		(list)->q.tail
-#define queue_next_node(node)		(node)->q.next
-#define queue_previous_node(node)	(node)->q.prev
-#define queue_size(list)		(list)->q.size
+#define queue_first(list)		(list) ? (list)->q.head : NULL
+#define queue_last(list)		(list) ? (list)->q.tail : NULL
+#define queue_next(node)		(node) ? (node)->q.next : NULL
+#define queue_previous(node)		(node) ? (node)->q.prev : NULL
+#define queue_size(list)		(node) ? (list)->q.size : NULL
 
 #endif
 
