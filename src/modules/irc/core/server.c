@@ -249,13 +249,18 @@ int irc_leave_channel(struct irc_server *server, char *name)
  */
 int irc_change_nick(struct irc_server *server, char *nick)
 {
+	int ret;
 	struct irc_msg *msg;
 
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, nick)))
 		return(-1);
-	irc_send_msg(server, msg);
+	ret = irc_send_msg(server, msg);
 	irc_destroy_msg(msg);
-	return(0);
+	if (!ret) {
+		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
+		server->nick[IRC_MAX_NICK - 1] = '\0';
+	}
+	return(ret);
 }
 
 /**
