@@ -18,7 +18,7 @@ int irc_msg_privmsg(struct irc_server *server, struct irc_msg *msg)
 	char *str, *format;
 	struct irc_channel *channel;
 
-	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
+	if (!(channel = irc_find_channel(server->channels, msg->params[0])) && ((msg->params[0][0] != '#') && !(channel = irc_current_channel())))
 		return(-1);
 
 	if ((msg->text[0] == 0x01) && !strncmp(&msg->text[1], "ACTION", 6)) {
