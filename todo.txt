@@ -1,6 +1,76 @@
 
+Signals:
+	* a way to call a signal handler when a parameter passed by the emitter matches (further
+	  specifying a signal) (think net callbacks with the parameter being the socket)
+	* error handling using signals?  at least a string describing the specific error
+
+Structural Issues:
+	* once again how will you do error handling (with signals?) do you need a signal heirarchy?  It
+	  would be nice to pass the specific error number/identifier and/or a string describing the error
+	  which can be printed when the signal is emitted.  Will a single str and a generic signal name
+	  such as "frontend_error" or "network_error" suffice?
+	* is there a fancy configurable way that the destination of printed messages is sent?  For example,
+	  a way to specify that the names printed by the msgs/names.c file are sent to the current window,
+	  the status window, and the appropriate channel window?
+	* can we use macros to implement the ability to set at compile time which parameters are compiled
+	  in and which are modifiable variables?  how will we handle this for all the things in config.h
+	* should we make a dynamic dispatcher such that every message is turned into an individual signal?
+	  should we use an added signal manager compare feature to dispatch all messages using a single
+	  signal and the numeric command parameter?
+	* think about xml (possibly using a special char for <>) and what would acutally be done
+	  (particularily with respect to irc_format_msg)
+	* should namespaces (and contexts) form a heirarchy so that when something is not found in one,
+	  its parent is checked?
+	* how do we handle the case where a pointer is stored with a callback and then the callback is
+	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
+	  it will never be needed again so even if we can access it, we have no way to know that we can
+	  get rid of it.  This also applies to a second parameter supply to bind_key.  How will we destroy
+	  it when a key binding is lost?  (Can typed values be used here?)
+	* the quit command is irc-specific but can it be made independant? (make a quit command that just
+	  quits by calling fe_terminate() and then have fe_terminate() send a quit signal that is caught
+	  by an irc specific quit command (that can also catch the disconnect signal) which displays a
+	  quit message in irc)
+	* standardize the interpretation of the create type function parameters (the format string should
+	  only ever contain a description of the arguments and should never be an argument itself)
+
+	* how will xml be handled?
+	* how do you get the statusbar height in window.c
+	* how are you going to deal with keys and screen size in the simple/screen.c module
+	* there needs to be a generic (cross-frontend) way to represent keys
+	* do we need more functions for widget type? (create, destroy, clear, print, move, resize, refresh)
+	* is there a generic way to get a character through the frontend interface?  perhaps using read?
+	* is there a way to set the statusbar colour across the screen that is appropriately general without
+	  using multiple frames and if not, use multiple frames in frontend/simple.
+	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
+	  specific or will it be through the variable system in which case a widget would be a variable
+	  of the "widget" type.
+	* can we eliminate the need for lots of extra frontend functions by using a byte encoded stream
+	  input to a function like print with escape codes as well as meta data (somewhat like how you
+	  control a terminal)
+
+Bugs:
+
+	* simple does not check for NULL current_window which causes a segfault when server deletes the
+	  window when the connection fails.
+	* there is a bug in stutter such that when there is a disconnect, stutter doesn't recognize it as
+	  such and continues to select on that socket which returns -1 (i assume) which causes it to hog
+	  all the bandwidth
+	* fix parse so that /parse something command doesn't cause a segfault
+	* in /names, if the channel doesn't have a window, the names aren't displayed anywhere
 	* when server is down, there is no responsiveness and no way to break out; timeout is long
+	* fix the long initial timeout (happens when network is disconnected)
+	* BIGBUG: when a server doesn't respond after connection (the ircserver i set up), you can still
+	  issue joins and such tbut they don't actually work.  MAKE SURE TO CLEAN UP AFTER A SERVER FAILURE
+	  (is this fixed now?)
+	* there is a bug such that if you try to say something in the status window, the server says no such nick
+
+General:
+	* fix up error handling in net.c and server.c
+	* change names of msg functions parse, collapse to marshall, unmarshall
 	* pass realname to server when connecting
+	* try to pretty up code that finds the namespace to use in find_variable and add_variable
+	* fix all hash_init and hash_rehash instances to check for memory allocation failure
+	* fix history in input.c
 
 	* add a cmd that takes a string in env and a string in args, merges them, and parses/evaluates it
 	  as a command without the leading /
@@ -9,115 +79,64 @@
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
 
-	* fix parse so that /parse something command doesn't cause a segfault
-	* try to pretty up code that finds the namespace to use in find_variable and add_variable
-
-	* how do you get the statusbar height in window.c
-	* how are you going to deal with keys and screen size in the simple/screen.c module
-
-	* fix all hash_init and hash_rehash instances to check for memory allocation failure
-	* BIGBUG: when a server doesn't respond after connection (the ircserver i set up), you can still
-	  issue joins and such tbut they don't actually work.  MAKE SURE TO CLEAN UP AFTER A SERVER FAILURE
-	  (is this fixed now?)
-
-	* fix history in input.c
 	* should we limit possible variable names (to not include things like " and ')
-	* can we use macros to implement the ability to set at compile time which parameters are compiled
-	  in and which are modifiable variables?  how will we handle this for all the things in config.h
+	* make variables and namespaces case-insensitive
+	* can we add partial variable (command) name matching?
+	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
+	* unify the naming patterns for namespace/variables, frontend widgets, etc.
+	* add a get_variable_path() function (can we change the names) and add a type in base for dealing
+	  with it (?) and do a similar thing for key context (basically so taht you can use it as a var)
 	* add a function to key.c to get the current binding of a key sequence (without processing)
 
 	* make msgs/join.c print a message when it fails to create a window
-	* make a new more dynamic dispatcher??? (should all messages become individual signals?)
+	* rewrite msg.c using the new nit/string module, use va_args instead of making an array, use sprintf
+	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
+	  addresses)
+	* get realname, nick from current user's info (on unix)
+	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
+	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
+	* test multiserver functionality (more thuroughly?)
+
 	* add mode command
 	* add topic commnd (<channel> [<topic>])
 	* add list command
 	* add ping/whowas commands
-	* make variables and namespaces case-insensitive
 	* add channel and user mode bits
 	* add handling for CTCP commands
-	* rewrite irc/core/msg.c
+	* add reconnect command
+	* add error message handling
 
---- Version 0.2
-
-	* do we need more functions for widget type? (create, destroy, clear, print, move, resize, refresh)
 	* add home/end/erase-line functions to be keybound
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
 	* figure out how to do a complext text frontend (no common/ to start with)
-	* convert frame.c back into a screen "widget"
 	* add multiframe (using multiple curses windows) to screen.c
-	* is there a generic way to get a character?  perhaps using read?
-	* is there a way to set the statusbar colour across the screen that is appropriately general without
-	  using multiple frames and if not, use multiple frames in frontend/simple.
 	* decide on a widget interface to use in order to implement the advanced text frontend
 	* what are the disadvantages of frame storing just the refresh callback?
-	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
-	  specific or will it be through the variable system in which case a widget would be a variable
-	  of the "widget" type.
-
-	* rewrite net.c to use less recv calls and to be less irc-specific (not require a \n to receive)
-
-	* should you have a create tmp string feature so that you can store the string in a static buffer
-	  but destroy_string will check for it and not try to free it (would threads kill this idea?)
-
 	* catch the ^C signal and cancel a connect
-	* think about xml (possibly using a special char for <>) and what would acutally be done
-	  (particularily with respect to irc_format_msg)
-	* add a get_variable_path() function (can we change the names) and add a type in base for dealing
-	  with it (?) and do a similar thing for key context
-	* should namespaces (and contexts) form a heirarchy so that when something is not found in one,
-	  its parent is checked?
-
-	* use expand to buffer or something in irc_format_msg to convert variables *before* substituting
-	  %% arguments
-	* standardize the interpretation of the create type function parameters (the format string should
-	  only ever contain a description of the arguments and should never be an argument itself)
-
-	* can we add partial variable (command) name matching?
 	* document the required frontend things widgets (like window, input), things that can be passed
 	  to fe_current...
 
+	* use expand to buffer or something in irc_format_msg to convert variables *before* substituting
+	  %% arguments
+
 	* should i maintain a seperate changelog for each module, frontend, and the main program?
-	* how will xml be handled?
-	* add reconnect command
-	* add error message handling
-	* test multiserver functionality (more thuroughly?)
-	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
-	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
-	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
-	* unify the naming patterns for namespace/variables, frontend widgets, etc.
 
-	* can we eliminate the need for lots of extra functions by using a byte encoded stream input to a
-	  function like print with escape codes as well as meta data (somewhat like how you control a
-	  terminal)
-
-	* how do we handle the case where a pointer is stored with a callback and then the callback is
-	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
-	  it will never be needed again so even if we can access it, we have no way to know that we can
-	  get rid of it.  This also applies to a second parameter supply to bind_key.  How will we destroy
-	  it when a key binding is lost?  (Can typed values be used here?)
-	* rewrite msg.c using the new nit/string module and use va_args instead of making an array
-	* there is a bug such that if you try to say something in the status window, the server says no such nick
-	* the quit command is irc-specific but can it be made independant? (make a quit command that just
-	  quits by calling fe_terminate() and then have fe_terminate() send a quit signal that is caught
-	  by an irc specific quit command (that can also catch the disconnect signal) which displays a
-	  quit message in irc)
-
-	* logging plugin
-	* tab complete
-	* winamp control and display plugin
-	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
-	  addresses)
-	* get realname, nick from current user's info (on unix)
-
-	* scripting support (possible scripts/applets could be random picture displayer, system monitor,
-	  RSS, etc) (google desktop)
-	* can have xml/javascript/flash displayed from a script somewhat like firefox extensions (except
-	  hopefully in less files?)
+	* should you have a create tmp string feature so that you can store the string in a static buffer
+	  but destroy_string will check for it and not try to free it (would threads kill this idea?)
+	* possibly change variable names to be passed as a single string with the namespace and variable
+	  name (seperated by a colon or something else) instead of being passed as 2 seperate strings.
 	* is it possible to display the output of a single channel on multiple windows by using a special
 	  group-of-windows window that is stored in the channel struct and a call to print to this window
 	  will call print on each window in its group?
+	* can have xml/javascript/flash displayed from a script somewhat like firefox extensions (except
+	  hopefully in less files?) ???????????????????????
 
-	* make an aspects toolkit that allows you to make joinpoints in the code easily and so on (using macros)
-	* possibly change variable names to be passed as a single string with the namespace and variable
-	  name (seperated by a colon or something else) instead of being passed as 2 seperate strings.
+Features:
+	* logging plugin
+	* tab complete
+	* winamp control and display plugin
+
+	* scripting support (possible scripts/applets could be random picture displayer, system monitor,
+	  RSS, etc) (google desktop)
+
 
