@@ -64,7 +64,7 @@ int fe_destroy_widget(void *widget)
 {
 	if ((widget == statusbar) || (widget == input))
 		return(-1);
-	if (current_window->ptr == widget)
+	if (current_window && (current_window->ptr == widget))
 		current_window = NULL;
 	queue_delete(window_list, widget);
 	return(0);
@@ -122,7 +122,7 @@ void *fe_next_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_next(current_window))
+	if (current_window && (current_window = queue_next(current_window)))
 		return((struct window_s *) current_window->ptr);
 	return(NULL);
 }
@@ -131,7 +131,7 @@ void *fe_previous_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_previous(current_window))
+	if (current_window && (current_window = queue_previous(current_window)))
 		return((struct window_s *) current_window->ptr);
 	return(NULL);
 }
