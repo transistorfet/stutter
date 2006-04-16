@@ -146,7 +146,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 	int size;
 	char buffer[IRC_MAX_MSG];
 
-	if (!server || !msg || !(size = irc_collapse_msg(msg, buffer, IRC_MAX_MSG)))
+	if (!server || !msg || !(size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
 		return(-1);
 	if (fe_net_send(server->net, buffer, size) != size)
 		return(-1);
@@ -184,7 +184,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 			break;
 	}
 
-	if (!(msg = irc_parse_msg(buffer)))
+	if (!(msg = irc_unmarshal_msg(buffer)))
 		return(NULL);
 	msg->server = server;
 	return(msg);

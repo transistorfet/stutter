@@ -110,7 +110,7 @@ int irc_destroy_msg(struct irc_msg *msg)
  * string will be clobbered but values will be copied into the returned msg.
  * If an error occurs, NULL is returned.
  */
-struct irc_msg *irc_parse_msg(char *str)
+struct irc_msg *irc_unmarshal_msg(char *str)
 {
 	int i = 0;
 	short cmd;
@@ -176,7 +176,7 @@ struct irc_msg *irc_parse_msg(char *str)
  * using the given buffer with the size given and return the length of the
  * message or 0 on error.
  */
-int irc_collapse_msg(struct irc_msg *msg, char *buffer, int size)
+int irc_marshal_msg(struct irc_msg *msg, char *buffer, int size)
 {
 	int j;
 	int i = 0;

@@ -30,8 +30,8 @@ struct irc_msg {
 struct irc_msg *irc_create_msg(short, char *, char *, short, ...);
 struct irc_msg *irc_duplicate_msg(struct irc_msg *);
 int irc_destroy_msg(struct irc_msg *);
-struct irc_msg *irc_parse_msg(char *);
-int irc_collapse_msg(struct irc_msg *, char *, int);
+struct irc_msg *irc_unmarshal_msg(char *);
+int irc_marshal_msg(struct irc_msg *, char *, int);
 
 char *irc_command_name(short);
 short irc_command_number(char *);
