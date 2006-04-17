@@ -3,8 +3,8 @@ FRONTEND = simple
 MODULES = base irc
 
 CONFIG_H = ../config.h
-ARFLAGS += rc
-CFLAGS += -g -DDEBUG -DCONFIG_H='<$(CONFIG_H)>' -I$(ROOT)/include
+ARFLAGS = rc
+CFLAGS = -g -DDEBUG -DCONFIG_H='<$(CONFIG_H)>' -I$(ROOT)/include
 
 CC	= gcc
 CXX	= g++
