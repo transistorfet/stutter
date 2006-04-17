@@ -26,11 +26,11 @@
 //#define IRC_DEFAULT_SERVER		"irc.othersideirc.net"
 //#define IRC_DEFAULT_SERVER		"192.168.1.101"
 //#define IRC_DEFAULT_SERVER		"euro.othersideirc.net"
-#define IRC_DEFAULT_SERVER		"irc.neovanglist.net"
-//#define IRC_DEFAULT_SERVER		"clarke.freenode.net"
+//#define IRC_DEFAULT_SERVER		"irc.neovanglist.net"
+#define IRC_DEFAULT_SERVER		"clarke.freenode.net"
 //#define IRC_DEFAULT_SERVER		"irc.newnet.net"
 #define IRC_DEFAULT_PORT		6667
-#define IRC_DEFAULT_NICK		"ted"
+#define IRC_DEFAULT_NICK		"CaptainPants"
 
 #define IRC_LOG_SIZE			100
 #define IRC_MAX_NICK			20
@@ -83,17 +83,18 @@
 	DECLARE_COMMAND(remove)
 
 #define IRC_COMMANDS()			\
+	DECLARE_COMMAND(disconnect)	\
 	DECLARE_COMMAND(join)		\
 	DECLARE_COMMAND(leave)		\
-	DECLARE_COMMAND(quit)		\
-	DECLARE_COMMAND(msg)		\
 	DECLARE_COMMAND(me)		\
-	DECLARE_COMMAND(nick)		\
+	DECLARE_COMMAND(msg)		\
 	DECLARE_COMMAND(names)		\
+	DECLARE_COMMAND(nick)		\
 	DECLARE_COMMAND(notice)		\
+	DECLARE_COMMAND(ping)		\
+	DECLARE_COMMAND(quit)		\
 	DECLARE_COMMAND(say)		\
 	DECLARE_COMMAND(server)		\
-	DECLARE_COMMAND(disconnect)	\
 	DECLARE_COMMAND(whois)		\
 	ADD_COMMAND("", say, NULL)
 

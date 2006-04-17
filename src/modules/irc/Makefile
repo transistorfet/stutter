@@ -4,17 +4,18 @@ ROOT = ../../..
 
 LIB_TARGET = modirc.a
 OBJS =	init.o \
+	cmds/disconnect.o \
 	cmds/join.o \
-	cmds/quit.o \
 	cmds/leave.o \
-	cmds/msg.o \
 	cmds/me.o \
-	cmds/nick.o \
+	cmds/msg.o \
 	cmds/names.o \
+	cmds/nick.o \
 	cmds/notice.o \
+	cmds/ping.o \
+	cmds/quit.o \
 	cmds/say.o \
 	cmds/server.o \
-	cmds/disconnect.o \
 	cmds/whois.o \
 	core/msg.o \
 	core/user.o \
