@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 void *memory_alloc(unsigned int);
+void *memory_realloc(void *, unsigned int);
 void memory_free(void *);
 
 #endif

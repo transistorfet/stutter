@@ -18,6 +18,14 @@ void *memory_alloc(unsigned int size)
 }
 
 /**
+ * Reallocate the given block of memory to the given size and return a pointer to it.
+ */
+void *memory_realloc(void *addr, unsigned int size)
+{
+	return(realloc(addr, size));
+}
+
+/**
  * Free the memory pointed to by the given pointer.
  */
 void memory_free(void *addr)
