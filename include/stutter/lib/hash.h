@@ -18,6 +18,10 @@ typedef unsigned int (*hash_t)(void *);
 #define HASH_LOAD_FACTOR	0.75
 #endif
 
+#ifndef HASH_GROW_FACTOR
+#define HASH_GROW_FACTOR	1.75
+#endif
+
 #ifndef HASH_INITIAL_SIZE
 #define HASH_INITIAL_SIZE	10
 #endif
@@ -101,7 +105,7 @@ typedef unsigned int (*hash_t)(void *);
 	typeof((list).table[0]) tmp;									\
 													\
 	if (newtable = (typeof(newtable)) memory_alloc((newsize) * sizeof(typeof(newtable[0])))) {	\
-		memset((list).table, '\0', (newsize) * sizeof(typeof(newtable[0])));			\
+		memset(newtable, '\0', (newsize) * sizeof(typeof(newtable[0])));			\
 		oldsize = (list).size;									\
 		(list).size = newsize;									\
 		for (i = 0;i < oldsize;i++) {								\
@@ -139,7 +143,22 @@ typedef unsigned int (*hash_t)(void *);
 #define hash_entries_v(list)		(list).entries
 #define hash_load_v(list)		( hash_entries_v(list) / hash_size_v(list) )
 
+#define hash_add_node_and_grow_v(list, field, node, name, hashfunc) {	\
+	hash_add_node_v(list, field, node, hashfunc(list, name));	\
+	if (hash_load_v(list) > HASH_LOAD_FACTOR)			\
+		hash_rehash_v(list, field, (hash_size_v(list) * HASH_GROW_FACTOR), hashfunc(list, node->name));		\
+}
+
 /*** Hash Functions ***/
+
+static inline unsigned int sdbm_partial_hash(char *str, int len) {
+	int i;
+	unsigned int hash = 0;
+
+	for (i = 0;len && (i < len) && (str[i] != '\0');i++)
+		hash = str[i] + (hash << 6) + (hash << 16) - hash;
+	return(hash);
+}
 
 static inline unsigned int sdbm_hash(char *str) {
 	int i;
