@@ -98,6 +98,19 @@ typedef unsigned int (*hash_t)(void *);
 	}								\
 }
 
+#define hash_traverse_list_v(list, field, body) {			\
+	int hashi;							\
+	typeof((list).table[0]) cur;					\
+									\
+	for (hashi = 0;hashi < (list).size;hashi++) {			\
+		cur = (list).table[hashi];				\
+		while (cur) {						\
+			body;						\
+			cur = cur->field.next;				\
+		}							\
+	}								\
+}
+
 #define hash_rehash_v(list, field, newsize, hash_func) {						\
 	int i, hash, oldsize;										\
 	typeof((list).table) newtable;									\
