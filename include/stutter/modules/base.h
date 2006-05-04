@@ -28,8 +28,11 @@ int base_cmd_remove(char *, char *);
 int base_cmd_parse(char *, char *);
 
 /* Types */
-struct type_s *base_load_time(void);
+struct type_s *base_load_table(void);
+struct type_s *base_load_string(void);
+struct type_s *base_load_format(void);
 struct type_s *base_load_status(void);
+struct type_s *base_load_time(void);
 struct type_s *base_load_command(void);
 
 #endif
