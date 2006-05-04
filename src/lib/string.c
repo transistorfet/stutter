@@ -18,19 +18,19 @@
  * character expansion (using the given arguments) and return
  * it or NULL on error.
  */
-string_t create_string(char *str, ...)
+string_t create_string(char *fmt, ...)
 {
 	va_list va;
-	string_t new_str;
+	string_t str;
 	char buffer[STRING_MAX_SIZE];
 
-	va_start(va, str);
-	vsprintf(buffer, str, va);
+	va_start(va, fmt);
+	vsprintf(buffer, fmt, va);
 	va_end(va);
-	if (!(new_str = memory_alloc(strlen(buffer) + 1)))
+	if (!(str = memory_alloc(strlen(buffer) + 1)))
 		return(NULL);
-	strcpy(new_str, buffer);
-	return(new_str);
+	strcpy(str, buffer);
+	return(str);
 }
 
 /**
@@ -44,6 +44,33 @@ string_t create_empty_string(unsigned int size)
 	if (!(str = memory_alloc(size + 1)))
 		return(NULL);
 	str[0] = '\0';
+	return(str);
+}
+
+/**
+ * A wrapper function for recreate_string_real.
+ */
+string_t recreate_string(string_t str, char *fmt, ...)
+{
+	va_list va;
+
+	va_start(va, fmt);
+	return(recreate_string_real(str, fmt, va));
+}
+
+/**
+ * Recreate a string using the given format and arguments destroying the
+ * old string if necessary.  A pointer to the new string is returned.
+ */
+string_t recreate_string_real(string_t str, char *fmt, va_list va)
+{
+	char buffer[STRING_MAX_SIZE];
+
+	vsprintf(buffer, fmt, va);
+	va_end(va);
+	if (!(str = memory_realloc(str, strlen(buffer) + 1)))
+		return(NULL);
+	strcpy(str, buffer);
 	return(str);
 }
 
