@@ -14,14 +14,6 @@
 #include <stutter/lib/hash.h>
 #include <stutter/lib/memory.h>
 
-#ifndef NAMESPACE_INIT_SIZE
-#define NAMESPACE_INIT_SIZE		10
-#endif
-
-#ifndef NAMESPACE_LOAD_FACTOR
-#define NAMESPACE_LOAD_FACTOR		HASH_LOAD_FACTOR
-#endif
-
 #ifndef VARIABLE_INIT_SIZE
 #define VARIABLE_INIT_SIZE		20
 #endif
@@ -30,251 +22,228 @@
 #define VARIABLE_LOAD_FACTOR		HASH_LOAD_FACTOR
 #endif
 
-#define namespace_hash_m(list, str)		(sdbm_hash(str) % hash_size_v(list))
-#define namespace_compare_m(str)		(!strcmp(cur->data.name, str))
-
-#define variable_hash_m(list, str)		(sdbm_hash(str) % hash_size_v(list))
-#define variable_compare_m(str)			(!strcmp(cur->data.name, str))
+#define variable_hash_m(list, str, len)		(sdbm_partial_hash(str, len) % hash_size_v(list))
+#define variable_compare_m(str, len)		(!strncmp(cur->data.name, str, len) && (strlen(cur->data.name) == len))
 
 struct variable_node_s {
 	struct variable_s data;
 	hash_node_v(variable_node_s) vl;
 };
 
-struct namespace_node_s {
-	struct namespace_s data;
+struct variable_table_s {
 	hash_list_v(variable_node_s) vl;
-	hash_node_v(namespace_node_s) nl;
 };
 
-static hash_list_v(namespace_node_s) namespace_list;
+static struct variable_table_s *variable_root;
 
-static char **variable_path = NULL;
-static int variable_path_entries = 0;
+static int variable_validate_name(char *);
 
 int init_variable(void)
 {
 	init_type();
-	hash_init_v(namespace_list, NAMESPACE_INIT_SIZE);
+
+	if (!(variable_root = create_variable_table()))
+		return(-1);
 	return(0);
 }
 
 int release_variable(void)
 {
-	struct namespace_node_s *node;
-
-	hash_destroy_list_v(namespace_list, nl,
-		node = cur;
-		hash_destroy_list_v(node->vl, vl,
-			cur->data.type->destroy(cur->data.value);
-			memory_free(cur);
-		);
-		hash_release_v(node->vl);
-		memory_free(node);
-	);
-	hash_release_v(namespace_list);
+	destroy_variable_table(variable_root);
 	release_type();
 	return(0);
 }
 
 /**
- * Add a variable of the given type to the namespace refered to by
- * the given ns_name with the given var_name and associated with the
- * given value (the exact pointer given will be used by the variable
- * and manipulated by the functions in the given type).  If the
- * variable already exists, its value will be destroyed and replaced
- * with the given value.  A pointer to the newly created variable is
- * returned on success or NULL is returned on error.  If the type
- * given is NULL, the function just returns NULL.  In all other error
- * conditions, the value is destroyed using the type's destroy function.
+ * Create a new variable table and return a pointer to it or NULL on error.
  */
-struct variable_s *add_variable(struct type_s *type, char *ns_name, char *var_name, void *value)
+struct variable_table_s *create_variable_table(void)
 {
-	struct variable_s *var;
-	struct namespace_node_s *ns;
-	struct variable_node_s *node;
+	struct variable_table_s *table;
 
-	if (!type)
+	if (!(table = (struct variable_table_s *) memory_alloc(sizeof(struct variable_table_s))))
 		return(NULL);
-
-	if (var = find_variable(type, ns_name, var_name)) {
-		var->type->destroy(var->value);
-		var->value = value;
-		return(var);
-	}
-	else {
-		if (ns_name) {
-			if (!(ns = (struct namespace_node_s *) find_variable_namespace(ns_name)) && !(ns = (struct namespace_node_s *) add_variable_namespace(ns_name, 0)))
-				return(NULL);
-		}
-		else if (!variable_path_entries || !(ns = (struct namespace_node_s *) find_variable_namespace(variable_path[0])))
-			return(NULL);
-
-		if (!(node = memory_alloc(sizeof(struct variable_node_s) + strlen(var_name) + 1))) {
-			type->destroy(value);
-			return(NULL);
-		}
-		node->data.name = (char *) (((unsigned int) node) + sizeof(struct variable_node_s));
-		strcpy(node->data.name, var_name);
-		node->data.type = type;
-		node->data.ns = &ns->data;
-		node->data.value = value;
-        
-		hash_add_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name));
-		if (hash_load_v(ns->vl) > VARIABLE_LOAD_FACTOR)
-			hash_rehash_v(ns->vl, vl, (hash_size_v(ns->vl) * 1.75), variable_hash_m(ns->vl, cur->data.name));
-		return(&node->data);
-	}
+	hash_init_v(table->vl, VARIABLE_INIT_SIZE);
+	return(table);
 }
 
 /**
- * The variable of the given type (or any if type is NULL) in the given
- * namespace with the given name is removed from the variable list
- * and its value is destroyed.  If the removal is successful, a 0 is
- * returned; if the variable is not found -1 is returned.
+ * Destroy the given variable table and all the variables it contains.  A
+ * 0 is returned on success or a -1 on failure.
  */
-int remove_variable(struct type_s *type, char *ns_name, char *var_name)
+int destroy_variable_table(struct variable_table_s *table)
 {
-	struct namespace_node_s *ns;
-	struct variable_node_s *node;
-
-	if (ns_name) {
-		if (!(ns = (struct namespace_node_s *) find_variable_namespace(ns_name)))
-			return(-1);
-	}
-	else if (!variable_path_entries || !(ns = (struct namespace_node_s *) find_variable_namespace(variable_path[0])))
-		return(-1);
-
-	// TODO check the type of the variable before deleting
-	hash_remove_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name), variable_compare_m(var_name));
-	if (!node)
-		return(-1);
-	node->data.type->destroy(node->data.value);
-	memory_free(node);
-	return(0);
-}
-
-/**
- * Look up the variable with the given name and return the variable
- * structure defining it or return NULL if the variable has not
- * been defined.
- */
-struct variable_s *find_variable(struct type_s *type, char *ns_name, char *var_name)
-{
-	int i = 0;
-	struct variable_s *var;
-	struct namespace_node_s *ns;
-	struct variable_node_s *node;
-
-	if (ns_name) {
-		if (!(ns = (struct namespace_node_s *) find_variable_namespace(ns_name)))
-			return(NULL);
-		hash_find_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name), variable_compare_m(var_name));
-		if (node && (!type || (node->data.type == type)))
-			return(&node->data);
-	}
-	else {
-		for (;i < variable_path_entries;i++) {
-			if ((ns = (struct namespace_node_s *) find_variable_namespace(variable_path[i]))) {
-				hash_find_node_v(ns->vl, vl, node, variable_hash_m(ns->vl, var_name), variable_compare_m(var_name));
-				if (node && (!type || (node->data.type == type)))
-					return(&node->data);
-			}
-		}
-	}
-
-	return(NULL);
-}
-
-/*
- * Create a new namespace with the given name and the given bitflags and return
- * a pointer to it on success or NULL on failure.
- */
-struct namespace_s *add_variable_namespace(char *name, int bitflags)
-{
-	struct namespace_node_s *node;
-
-	if (!(node = memory_alloc(sizeof(struct namespace_node_s) + strlen(name) + 1)))
-		return(NULL);
-	node->data.name = (char *) (((unsigned int) node) + sizeof(struct namespace_node_s));
-	strcpy(node->data.name, name);
-	node->data.bitflags = bitflags;
-	hash_init_v(node->vl, VARIABLE_INIT_SIZE);
-
-	hash_add_node_v(namespace_list, nl, node, namespace_hash_m(namespace_list, name));
-	if (hash_load_v(namespace_list) > NAMESPACE_LOAD_FACTOR)
-		hash_rehash_v(namespace_list, nl, (hash_size_v(namespace_list) * 1.75), namespace_hash_m(namespace_list, cur->data.name));
-	return(&node->data);
-}
-
-/**
- * Remove the namespace with the given name and destroy all of the variables
- * associated with it.  A 0 is returned on success or -1 on failure.
- */
-int remove_variable_namespace(char *name)
-{
-	struct namespace_node_s *node;
-
-	hash_remove_node_v(namespace_list, nl, node, namespace_hash_m(namespace_list, name), namespace_compare_m(name));
-	if (!node)
-		return(-1);
-	hash_destroy_list_v(node->vl, vl,
-		cur->data.type->destroy(cur->data.value);
+	hash_destroy_list_v(table->vl, vl,
+		if (cur->data.type->destroy)
+			cur->data.type->destroy(cur->data.value);
 		memory_free(cur);
 	);
-	hash_release_v(node->vl);
-	memory_free(node);	
-	return(0);
-}
-
-/*
- * Find the namespace with the given name and return a pointer to it or
- * return NULL if the namespace cannot be found.
- */
-struct namespace_s *find_variable_namespace(char *name)
-{
-	struct namespace_node_s *node;
-
-	hash_find_node_v(namespace_list, nl, node, namespace_hash_m(namespace_list, name), namespace_compare_m(name));
-	return(&node->data);
+	hash_release_v(table->vl);
 }
 
 /**
- * Set the current path lookup table to names in the given string
- * where the string is of the format "name;name;...".  If the new
- * table cannot be created, -1 is returned and the original path
- * remains unmodified otherwise a 0 is returned.
+ * This is a wrapper for add_variable_real.
  */
-int select_variable_path(char *str)
+struct variable_s *add_variable(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, ...)
 {
-	char *tmp, **path;
-	int i = 0, j = 0, entries = 1;
+	va_list va;
 
-	for (;str[i] != '\0';i++) {
-		if (str[i] == ';')
-			entries++;
+	va_start(va, str);
+	return(add_variable_real(table, type, name, bitflags, str, va));
+}
+
+/**
+ * Add a new variable with the given name, type and bitflags to the given table
+ * or if NULL is given as the table, variable_root is used.  The variable is
+ * initialized with a value created using the type's create function and the
+ * given string and parameters.  If the name given contains the name seperator
+ * character, each part of the name is looked up except the last name and if that
+ * variable does not exist, the function fails.  If the variable with the given
+ * name already exists and the types match, the create function will be called
+ * with the given parameters and the old variable's value.  If the types do not
+ * match then the function fails.  If the type is NULL, the variable name is
+ * invalid, or the function fails, NULL is returned.  Otherwise the pointer to the
+ * variable is returned.
+ */
+struct variable_s *add_variable_real(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, va_list va)
+{
+	int len;
+	struct variable_node_s *node;
+
+	if (!type || variable_validate_name(name))
+		return(NULL);
+	else if (!table)
+		table = variable_root;
+
+	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
+
+	hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
+	if (!node) {
+		if ((name[len] != '\0') || !type->create)
+			return(NULL);
+		if (!(node = memory_alloc(sizeof(struct variable_node_s) + strlen(name) + 1)))
+			return(NULL);
+		node->data.name = (char *) (((unsigned int) node) + sizeof(struct variable_node_s));
+		strcpy(node->data.name, name);
+		node->data.type = type;
+		node->data.bitflags = bitflags;
+		node->data.value = type->create(NULL, str, va);
+        
+		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
+		if (hash_load_v(table->vl) > VARIABLE_LOAD_FACTOR)
+			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * 1.75), variable_hash_m(table->vl, cur->data.name, strlen(cur->data.name)));
+		return(&node->data);
 	}
-
-	if (!(path = memory_alloc(i + 1 + (entries * sizeof(char *)))))
-		return(-1);
-	tmp = (char *) (((size_t) path) + (entries * sizeof(char *)));
-
-	path[j++] = tmp;
-	for (i = 0;str[i] != '\0';i++) {
-		if (str[i] == ';') {
-			tmp[i] = '\0';
-			path[j++] = &tmp[i + 1];
-		}
-		else
-			tmp[i] = str[i];
+	else if (name[len] != '\0') {
+		if (!node->data.type->add)
+			return(NULL);
+		return(node->data.type->add(node->data.value, type, &name[len + 1], bitflags, str, va));
 	}
-	tmp[i] = '\0';
+	else if (node->data.type == type) {
+		if (!node->data.type->create)
+			return(NULL);
+		node->data.value = node->data.type->create(node->data.value, str, va);
+		return(&node->data);
+	}
+	else
+		return(NULL);
+}
 
-	if (variable_path)
-		memory_free(variable_path);
-	variable_path = path;
-	variable_path_entries = entries;
+/**
+ * Remove the variable with the given name found using the given table or if NULL is
+ * given then using variable_root.  If the type is given and it does not match the
+ * type of the variable found, then -1 is returned.  If the variable is not found
+ * then 1 is returned.  If the variable is removed successfully, then 0 is returned.
+ */
+int remove_variable(struct variable_table_s *table, struct type_s *type, char *name)
+{
+	int len;
+	struct variable_node_s *node;
+
+	if (!table)
+		table = variable_root;
+	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
+
+	if (name[len] != '\0') {
+		hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
+		if (!node || !node->data.type->remove)
+			return(1);
+		return(node->data.type->remove(node->data.value, type, &name[len + 1]));
+	}
+	else {
+		hash_remove_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
+		if (!node)
+			return(-1);
+		if (node->data.type->destroy)
+			node->data.type->destroy(node->data.value);
+		memory_free(node);
+		return(0);
+	}
+}
+
+/**
+ * Find the variable with the given name in the given table or if NULL is given,
+ * the using variable_root.  A pointer to the variable is returned or NULL on
+ * error.
+ */
+struct variable_s *find_variable(struct variable_table_s *table, char *name)
+{
+	int len;
+	struct variable_node_s *node;
+
+	if (!table)
+		table = variable_root;
+	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
+
+	hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
+	if (!node)
+		return(NULL);
+	else if (name[len] != '\0') {
+		if (!node->data.type->index)
+			return(NULL);
+		return(node->data.type->index(node->data.value, &name[len + 1]));
+	}
+	else
+		return(&node->data);
+}
+
+/**
+ * Traverse each variable in the given table or if NULL is given then
+ * variable_root is used.  For each variable (if NULL is given as the
+ * type or for each variable that has the given type if a type is given)
+ * the given function is called with the variable as the first parameter
+ * and the given pointer as the second parameter.  If a non-zero value
+ * is returned by the function, the traversal stops and that value is
+ * returned otherwise a 0 is returned if the traversal completes.
+ */
+int traverse_variable_table(struct variable_table_s *table, struct type_s *type, type_traverse_func_t func, void *ptr)
+{
+	int ret = 0;
+
+	if (!table)
+		table = variable_root;
+
+	hash_traverse_list_v(table->vl, vl,
+		if ((cur->data.type == type) && (ret = func(&cur->data, ptr)))
+			return(ret);
+	);
 	return(0);
 }
 
+/*** Local Functions ***/
+
+/**
+ * Check that the given string only contains legal variable name characters
+ * and return 0 if it does or -1 otherwise.
+ */
+static int variable_validate_name(char *str)
+{
+	int i;
+
+	for (i = 0;str[i] != '\0';i++) {
+		if (!(((str[i] >= 'A') && (str[i] <= 'Z')) || ((str[i] >= 'a') && (str[i] <= 'z')) || ((str[i] >= '0') && (str[i] <= '9')) || (str[i] == NAME_SEPARATOR) || (str[i] == '-')))
+			return(-1);
+	}
+	return(0);
+}
 

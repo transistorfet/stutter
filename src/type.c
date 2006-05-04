@@ -6,6 +6,7 @@
  */
 
 
+#include <stdarg.h>
 #include <string.h>
 
 #include CONFIG_H
@@ -58,7 +59,7 @@ int release_type(void)
  * Add a type to the list with the given name and with the given
  * function pointers.  A 0 is returned on success or -1 on error.
  */
-struct type_s *add_type(char *name, create_t create, stringify_t stringify, evaluate_t evaluate, destroy_t destroy)
+struct type_s *add_type(char *name, int bitflags, type_create_t create, type_destroy_t destroy, type_add_t add, type_remove_t remove, type_index_t index, type_traverse_t traverse, type_stringify_t stringify, type_evaluate_t evaluate)
 {
 	struct type_node_s *node;
 
@@ -66,10 +67,15 @@ struct type_s *add_type(char *name, create_t create, stringify_t stringify, eval
 		return(NULL);
 	node->type.name = (char *) (((unsigned int) node) + sizeof(struct type_node_s));
 	strcpy(node->type.name, name);
+	node->type.bitflags = bitflags;
 	node->type.create = create;
+	node->type.destroy = destroy;
+	node->type.add = add;
+	node->type.remove = remove;
+	node->type.index = index;
+	node->type.traverse = traverse;
 	node->type.stringify = stringify;
 	node->type.evaluate = evaluate;
-	node->type.destroy = destroy;
 	hash_add_node_v(type_list, tl, node, type_hash_m(type_list, name));
 	if (hash_load_v(type_list) > TYPE_LOAD_FACTOR)
 		hash_rehash_v(type_list, tl, (hash_size_v(type_list) * 1.75), type_hash_m(type_list, node->type.name));

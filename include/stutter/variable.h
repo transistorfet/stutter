@@ -10,6 +10,7 @@
 #include <stutter/type.h>
 #include <stutter/lib/string.h>
 
+/*
 struct namespace_s {
 	char *name;
 	int bitflags;
@@ -21,19 +22,30 @@ struct variable_s {
 	char *name;
 	void *value;
 };
+*/
+
+
+struct variable_s {
+	struct type_s *type;
+	char *name;
+	int bitflags;
+	void *value;
+};
+
+struct variable_table_s;
 
 int init_variable(void);
 int release_variable(void);
 
-struct variable_s *add_variable(struct type_s *, char *, char *, void *);
-int remove_variable(struct type_s *, char *, char *);
-struct variable_s *find_variable(struct type_s *, char *, char *);
 
-struct namespace_s *add_variable_namespace(char *, int);
-int remove_variable_namespace(char *);
-struct namespace_s *find_variable_namespace(char *);
+struct variable_table_s *create_variable_table(void);
+int destroy_variable_table(struct variable_table_s *);
 
-int select_variable_path(char *);
+struct variable_s *add_variable(struct variable_table_s *, struct type_s *, char *, int, char *, ...);
+struct variable_s *add_variable_real(struct variable_table_s *, struct type_s *, char *, int, char *, va_list);
+int remove_variable(struct variable_table_s *, struct type_s *, char *);
+struct variable_s *find_variable(struct variable_table_s *, char *);
+int traverse_variable_table(struct variable_table_s *, struct type_s *, type_traverse_func_t, void *);
 
 #endif
 
