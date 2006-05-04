@@ -14,8 +14,11 @@ OBJS =	init.o \
 	cmds/set.o \
 	cmds/parse.o \
 	cmds/remove.o \
-	types/time.o \
+	types/table.o \
+	types/format.o \
+	types/string.o \
 	types/status.o \
+	types/time.o \
 	types/command.o
 
 include $(ROOT)/rules.mk
