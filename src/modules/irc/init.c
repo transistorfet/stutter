@@ -1,5 +1,5 @@
 /*
- * Module Name:		load.c
+ * Module Name:		init.c
  * Version:		0.1
  * Module Requirements:	type ; string ; variable ; modirc
  * Description:		IRC Module Initializer
@@ -31,6 +31,8 @@ static struct command_prototype_s irc_commands[] = {
 	{ NULL, NULL, NULL }
 };
 
+static struct variable_s *irc_table;
+
 int init_irc(void)
 {
 	int i = 0;
@@ -39,15 +41,18 @@ int init_irc(void)
 	init_irc_server();
 	signal_connect("irc_msg_dispatch", irc_dispatch_msg, NULL);
 
+	if (!(type = find_type("table")) || !(irc_table = add_variable(NULL, type, "irc", 0, "")))
+		return(-1);
+
 	if (!(type = find_type("status")) || !type->create)
 		return(-1);
-	add_variable(type, IRC_NAMESPACE, "current_nick", type->create("%r%p", irc_stringify_nick, NULL));
-	add_variable(type, IRC_NAMESPACE, "current_channel", type->create("%r%p", irc_stringify_channel, NULL));
+	add_variable(irc_table->value, type, "current_nick", 0, "%r%p", irc_stringify_nick, NULL);
+	add_variable(irc_table->value, type, "current_channel", 0, "%r%p", irc_stringify_channel, NULL);
 
 	if (!(type = find_type("command")) || !type->create)
 		return(-1);
 	for (;irc_commands[i].name;i++)
-		add_variable(type, IRC_NAMESPACE, irc_commands[i].name, type->create("%r%p", irc_commands[i].func, irc_commands[i].ptr));
+		add_variable(NULL, type, irc_commands[i].name, 0, "%r%p", irc_commands[i].func, irc_commands[i].ptr);
 
 	return(0);
 }
@@ -61,7 +66,7 @@ int release_irc(void)
 		return(-1);
 
 	for (;irc_commands[i].name;i++)
-		remove_variable(type, IRC_NAMESPACE, irc_commands[i].name);
+		remove_variable(NULL, type, irc_commands[i].name);
 
 	release_irc_server();
 	return(0);
