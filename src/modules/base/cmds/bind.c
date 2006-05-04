@@ -20,7 +20,7 @@ int base_cmd_bind(char *env, char *args)
 	void *window;
 	string_t sequence;
 	char *context = NULL;
-	char *key, *ns, *name;
+	char *key, *name;
 	struct variable_s *var;
 
 	trim_whitespace_m(args);
@@ -28,19 +28,18 @@ int base_cmd_bind(char *env, char *args)
 		split_string_m(&args[1], context, args, ' ');
 	get_param_m(args, key, ' ');
 	get_param_m(args, name, ' ');
-	get_prefix_m(name, ns, ':');
 
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
-	if (!(var = find_variable(NULL, ns, name))) {
-		fe_print(window, create_string("Error: %s:%s variable not found.", ns ? ns : "", name));
+	if (!(var = find_variable(NULL, name))) {
+		fe_print(window, create_string("Error: %s variable not found.", name));
 		return(-1);
 	}
 
 	if (!(sequence = util_convert_key(key)) || bind_key(context, sequence, var, create_string(args)))
 		fe_print(window, create_string("Error binding key"));
 	else
-		fe_print(window, create_string("Key %s bound to %s:%s %s", key, ns ? ns : "", name, args));
+		fe_print(window, create_string("Key %s bound to %s %s", key, name, args));
 	if (sequence)
 		destroy_string(sequence);
 	return(0);

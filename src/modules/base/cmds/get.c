@@ -16,21 +16,20 @@
 
 int base_cmd_get(char *env, char *args)
 {
+	char *name;
 	void *window;
 	string_t value;
-	char *ns, *name;
 	struct variable_s *var;
 
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 	get_param_m(args, name, ' ');
-	get_prefix_m(name, ns, ':');
-	if (!(var = find_variable(NULL, ns, name)) || !var->type->stringify)
+	if (!(var = find_variable(NULL, name)) || !var->type->stringify)
 		fe_print(window, create_string("Variable is undefined."));
 	else if (!(value = var->type->stringify(var->value)))
-		fe_print(window, create_string("Error stringifying variable, %s:%s.", var->ns->name, name));
+		fe_print(window, create_string("Error stringifying variable, %s.", name));
 	else {
-		fe_print(window, create_string("Variable: %s:%s = %s", var->ns->name, name, value));
+		fe_print(window, create_string("Variable: %s = %s", name, value));
 		destroy_string(value);
 	}
 
