@@ -109,9 +109,9 @@ int util_expand_to_buffer(char *str, char *buffer, int max)
 	int i, k;
 	int j = 0;
 	char delim;
+	char *name;
 	int recurse;
 	string_t value;
-	char *name, *ns;
 	struct variable_s *var;
 
 	for (i = 0;(str[i] != '\0') && (j < max - 1);i++) {
@@ -142,7 +142,7 @@ int util_expand_to_buffer(char *str, char *buffer, int max)
 				buffer[k] = str[i];
 			buffer[k] = '\0';
 			get_prefix_m(name, ns, ':');
-			if ((var = find_variable(NULL, ns, name)) && var->type->stringify && (value = var->type->stringify(var->value))) {
+			if ((var = find_variable(NULL, name)) && var->type->stringify && (value = var->type->stringify(var->value))) {
 				if (recurse)
 					j += util_expand_to_buffer(value, &buffer[j], max - j);
 				else {
@@ -158,6 +158,7 @@ int util_expand_to_buffer(char *str, char *buffer, int max)
 		else
 			buffer[j++] = str[i];
 	}
+	buffer[j] = '\0';
 	return(j);
 }
 
@@ -166,7 +167,6 @@ string_t util_expand_variable(char *str, int *count)
 	int k;
 	int i = 0;
 	char delim;
-	char *name, *ns;
 	char buffer[MAX_NAME];
 	string_t value = NULL;
 	struct variable_s *var;
@@ -187,9 +187,7 @@ string_t util_expand_variable(char *str, int *count)
 	for (k = 0;(str[i] != '\0') && (str[i] != delim) && (k < MAX_NAME - 1);k++, i++)
 		buffer[k] = str[i];
 	buffer[k] = '\0';
-	name = buffer;
-	get_prefix_m(name, ns, ':');
-	if ((var = find_variable(NULL, ns, name)) && var->type->stringify)
+	if ((var = find_variable(NULL, buffer)) && var->type->stringify)
 		value = var->type->stringify(var->value);
 	if (delim != '}')
 		i--;
@@ -239,8 +237,7 @@ int util_expand_variable_to_buffer(char *str, char *buffer, int max, int *str_co
 	for (k = j;(str[i] != '\0') && (str[i] != delim) && (k < max - 1);k++, i++)
 		buffer[k] = str[i];
 	buffer[k] = '\0';
-	get_prefix_m(name, ns, ':');
-	if ((var = find_variable(NULL, ns, name)) && var->type->stringify && (value = var->type->stringify(var->value))) {
+	if ((var = find_variable(NULL, name)) && var->type->stringify && (value = var->type->stringify(var->value))) {
 		if (recurse)
 			j += util_expand_to_buffer(value, &buffer[j], max - j);
 		else {
