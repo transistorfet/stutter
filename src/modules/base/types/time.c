@@ -18,7 +18,18 @@ static string_t base_time_stringify(void *);
 
 struct type_s *base_load_time(void)
 {
-	return(add_type("time", (create_t) create_string, (stringify_t) base_time_stringify, NULL, (destroy_t) destroy_string));
+	return(add_type(
+		"time",
+		0,
+		(type_create_t) recreate_string_real,
+		(type_destroy_t) destroy_string,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		(type_stringify_t) base_time_stringify,
+		NULL
+	));
 }
 
 /*** Local Functions ***/

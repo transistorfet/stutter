@@ -17,27 +17,39 @@ struct base_command_s {
 	void *ptr;
 };
 
-static void *base_command_create(char *, ...);
+static void *base_command_create(void *, char *, va_list);
 static int base_command_evaluate(void *, void *);
 static void base_command_destroy(void *);
 
 struct type_s *base_load_command(void)
 {
-	return(add_type("command", (create_t) base_command_create, NULL, (evaluate_t) base_command_evaluate, (destroy_t) base_command_destroy));
+	return(add_type(
+		"command",
+		0,
+		(type_create_t) base_command_create,
+		(type_destroy_t) base_command_destroy,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+		(type_evaluate_t) base_command_evaluate
+	));
 }
 
-static void *base_command_create(char *str, ...)
+static void *base_command_create(void *value, char *str, va_list va)
 {
 	void *ptr;
-	va_list va;
 	callback_t func;
 	struct base_command_s *command;
+
+	if (value)
+		base_command_destroy(value);
 
 	if (strncmp(str, "%r%", 3) || ((str[3] != 'p') && (str[3] != 's') && (str[3] != 'd') && (str[3] != 'c')) || (str[4] != '\0'))
 		return(NULL);
 	if (!(command = (struct base_command_s *) memory_alloc(sizeof(struct base_command_s))))
 		return(NULL);
-	va_start(va, str);
 	command->func = va_arg(va, callback_t);
 	command->ptr = va_arg(va, void *);
 	va_end(va);
