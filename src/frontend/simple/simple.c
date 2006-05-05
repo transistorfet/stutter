@@ -1,7 +1,7 @@
 /*
  * Module Name:		simple.c
  * Version:		0.1
- * Module Requirements:	type ; queue ; string ; variable ; net ; screen ; keyboard
+ * Module Requirements:	type ; signal ; queue ; string ; variable ; net ; screen
  * Description:		Simple Frontend
  */
 
@@ -10,6 +10,7 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/signal.h>
 #include <stutter/variable.h>
 #include <stutter/lib/queue.h>
 #include <stutter/lib/string.h>
@@ -32,7 +33,7 @@ int init_frontend(void)
 
 	if (!(window_list = create_queue(0, (destroy_t) destroy_window)))
 		return(-1);
-	if (!(statusbar = create_statusbar(FE_STATUS_BAR_HEIGHT, FE_NAMESPACE, FE_STATUS)))
+	if (!(statusbar = create_statusbar(FE_STATUS_BAR_HEIGHT, FE_STATUS)))
 		return(-1);
 	if (!(input = create_input(0, 0)))
 		return(-1);
@@ -219,8 +220,12 @@ void fe_refresh(void *widget)
 
 void fe_terminate(int status)
 {
+	signal_emit("terminate", (void *) status);
 	exit_flag = 0;
 }
+
+#define BIND_KEY(key, var)	\
+	bind_key(NULL, key, find_variable(NULL, var), create_string(""));
 
 /**
  * Main Entry Point
@@ -229,6 +234,7 @@ main(int argc, char **argv)
 {
 	int ch;
 	struct type_s *type;
+	struct variable_s *table;
 
 	if (init_system()) {
 		printf("Failed to initialize system\n");
@@ -236,8 +242,12 @@ main(int argc, char **argv)
 		return(0);
 	}
 
+	LOAD_MODULES();
+	if (!(type = find_type("table")) || !(table = add_variable(NULL, type, "fe", 0, "")))
+		return(-1);
 	if (type = find_type("format"))
-		add_variable(type, FE_NAMESPACE, FE_STATUS, type->create("%s", FE_STATUS_BAR));
+		add_variable(NULL, type, FE_STATUS, 0, "%s", FE_STATUS_BAR);
+	BIND_KEYS();
 
 	if (init_frontend()) {
 		printf("Failed to initialize frontend\n");
@@ -246,7 +256,6 @@ main(int argc, char **argv)
 	}
 
 	fe_refresh(NULL);
-	load_modules();
 
 	while (exit_flag) {
 		fe_refresh(NULL);
@@ -255,7 +264,7 @@ main(int argc, char **argv)
 			input_default(input, ch);
 	}
 
-	unload_modules();
+	RELEASE_MODULES();
 	release_frontend();
 	release_system();
 	return(0);

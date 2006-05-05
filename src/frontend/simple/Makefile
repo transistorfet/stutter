@@ -9,9 +9,8 @@ OBJS =	simple.o \
 	statusbar.o \
 	screen.o \
 	net.o \
-	$(ROOT)/src/main.a \
-	$(ROOT)/src/modules/base/modbase.a \
-	$(ROOT)/src/modules/irc/modirc.a
+	$(MODULES) \
+	$(ROOT)/src/main.a
 
 LIBS = -lncurses
 
