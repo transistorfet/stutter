@@ -103,7 +103,7 @@ int bind_key(char *context, char *str, struct variable_s *variable, string_t arg
 	struct key_s *key, *cur_key;
 	struct key_map_s *map, *cur_map;
 
-	if ((*str == '\0') || !variable)
+	if ((*str == '\0') || !variable || !variable->type->evaluate)
 		return(-1);
 	if (!(cur_map = context ? key_find_context(context) : current_root) && !(cur_map = key_add_context(context)))
 		return(-1);
