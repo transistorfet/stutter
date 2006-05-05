@@ -12,8 +12,8 @@
 #define VARIABLE_PATH			"irc;base"
 
 /* Frontend Values */
-#define FE_STATUS			"status"
-#define FE_STATUS_BAR			" $time $irc:current_nick on $irc:current_channel"
+#define FE_STATUS			"fe.status"
+#define FE_STATUS_BAR			" $time $irc.current_nick on $irc.current_channel"
 #define FE_STATUS_BAR_HEIGHT		1
 
 /* Base Module Values */
@@ -64,11 +64,22 @@
 #define UNKNOWN_COMMAND			"*** Unknown Command"
 #define COMMAND_PREFIX			"/"
 #define DEFAULT_COMMAND			""
+#define NAME_SEPARATOR			'.'
 	
 //#define GREET_MSG			"Welcome to the show!"
 
-#define DOTFILE_DIR			".stutter"
-#define DEFAULT_DOTFILE_DIR		"/usr/local/etc"
+#define LOAD_MODULES()			\
+	init_base();			\
+	init_irc();
+
+#define RELEASE_MODULES()		\
+	release_irc();			\
+	release_base();
+
+#define BIND_KEYS()			\
+	BIND_KEY("\n", "parse")		\
+	BIND_KEY("\x18", "next")	\
+	BIND_KEY("\x11", "previous")
 
 #define BASE_COMMANDS()			\
 	DECLARE_COMMAND(bind)		\
