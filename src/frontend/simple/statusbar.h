@@ -12,7 +12,7 @@ struct statusbar_s {
 	struct variable_s *status;
 };
 
-struct statusbar_s *create_statusbar(int, char *, char *);
+struct statusbar_s *create_statusbar(int, char *);
 int destroy_statusbar(struct statusbar_s *);
 int refresh_statusbar(struct statusbar_s *);
 

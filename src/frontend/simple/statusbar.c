@@ -16,14 +16,14 @@
 /**
  * Allocate and initialize a statusbar structure given the intialization values.
  */
-struct statusbar_s *create_statusbar(int height, char *ns, char *name)
+struct statusbar_s *create_statusbar(int height, char *name)
 {
 	struct statusbar_s *statusbar;
 
 	if (!(statusbar = (struct statusbar_s *) memory_alloc(sizeof(struct statusbar_s))))
 		return(NULL);
 	statusbar->height = height;
-	if (!(statusbar->status = find_variable(NULL, ns, name)) || !statusbar->status->type->stringify) {
+	if (!(statusbar->status = find_variable(NULL, name)) || !statusbar->status->type->stringify) {
 		memory_free(statusbar);
 		return(NULL);
 	}
