@@ -1,18 +1,15 @@
 /*
  * Module Name:		main.c
  * Version:		0.1
- * Module Requirements:	type ; utils ; variable ; frontend ; string ; modirc ; modbase
+ * Module Requirements:	key ; type ; signal ; variable
  * Description:		IRC Client
  */
 
 #include CONFIG_H
+#include <stutter/key.h>
 #include <stutter/type.h>
-#include <stutter/utils.h>
+#include <stutter/signal.h>
 #include <stutter/variable.h>
-#include <stutter/frontend.h>
-#include <stutter/lib/string.h>
-#include <stutter/modules/irc.h>
-#include <stutter/modules/base.h>
 
 
 int init_system(void)
@@ -21,10 +18,6 @@ int init_system(void)
 	init_type();
 	init_variable();
 	init_key();
-
-	add_type("string", (create_t) create_string, (stringify_t) duplicate_string, NULL, (destroy_t) destroy_string);
-	add_type("format", (create_t) create_string, (stringify_t) util_expand_str, NULL, (destroy_t) destroy_string);
-
 	return(0);
 }
 
@@ -37,40 +30,4 @@ int release_system(void)
 	return(0);
 }
 
-int load_modules(void)
-{
-	void *window;
-
-	/* Load Modules */
-	init_base();
-	init_irc();
-
-	select_variable_path(VARIABLE_PATH);
-
-	/* Setup Base Module */
-	bind_key(NULL, "\n", find_variable(NULL, NULL, "parse"), create_string(""));
-	bind_key(NULL, "\x18", find_variable(NULL, NULL, "next"), create_string(""));
-	bind_key(NULL, "\x11", find_variable(NULL, NULL, "previous"), create_string(""));
-
-	#ifdef GREET_MSG
-	fe_print(window, create_string(GREET_MSG));
-	#endif
-
-	#ifdef IRC_DEFAULT_SERVER
-	if (!(window = fe_create_widget("irc", "window", NULL, NULL)))
-		return(-1);
-	if (!irc_server_connect(IRC_DEFAULT_SERVER, IRC_DEFAULT_PORT, IRC_DEFAULT_NICK, window))
-		fe_print(window, create_string("Error connecting to server %s on port %d", IRC_DEFAULT_SERVER, IRC_DEFAULT_PORT));
-	#endif
-
-	return(0);
-}
-
-int unload_modules(void)
-{
-	/* Release Modules */
-	release_irc();
-	release_base();
-	return(0);
-}
 
