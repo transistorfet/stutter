@@ -1,14 +1,52 @@
 
+	* test traverse in variable.c
+
+	* have modules make their tables and put their variable in them
+	* finish moving the load_modules() function to someplace else
+	* fix the initialization order problem in the frontend
+	* make a function that will do a sprintf (on a global buffer?) or *something* so that you can
+	  replace create_string in the fe_print's when you change the fe_print prototype
+	* what can you call the directory where signal handlers for modules can be stored?
+
 Signals:
+	* message "channels" which can be directed to various windows and sources (perhaps it should be
+	  controlled by the frontend so that a channel like "critical errors" can cause popup messages
+	  whereas "normal errors" can print to the current window).
 	* a way to call a signal handler when a parameter passed by the emitter matches (further
 	  specifying a signal) (think net callbacks with the parameter being the socket)
+	* with net callbacks, windows will pass a message to a window along with the socket which means
+	  the network struct needs to first be looked up before a signal can be emitted for that network
+	  struct (ie. first you do a lookup (net.c must have a table of network structs) and then you
+	  emit the signal which does a hashtable lookup on the signal and then a table lookup on the
+	  network struct to get the signal handlers (of which there is only likely to be 1)).  This is
+	  instead of just a static callback stored in the network struct itself.  The only way I see to
+	  overcome this is to use the socket to index the signal (in which case net.c would not store a list
+	  of network structs for windows and gtk (but still for console)).  This however requires that the
+	  callee knows to index based on the socket which is doesn't.  *This* can be overcome by using *only*
+	  the socket and not having a network struct.  The one thing we loose with that is the saved read
+	  buffer but then again you can have a private table of read buffers indexed by socket (hashtable
+	  perhaps) in net.c
 	* error handling using signals?  at least a string describing the specific error
+	* a window handler connecting to a signal emitted for a particular window so that it can
+	  free memory when that window is destroyed for example (server registering for its status
+	  window and if a command like /close causes that window to be destroyed, the server disconnects
+	  and frees all resources it uses)
 
 Structural Issues:
-	* once again how will you do error handling (with signals?) do you need a signal heirarchy?  It
-	  would be nice to pass the specific error number/identifier and/or a string describing the error
-	  which can be printed when the signal is emitted.  Will a single str and a generic signal name
-	  such as "frontend_error" or "network_error" suffice?
+**	* should we make *everything* a channel (like the error channels mentioned above?).  Messages that
+	  come from an IRC channel (eg. #philosophy) would be formatted and sent to the "#philosophy"
+	  channel which the #philosophy window would be subscribed to thus displaying the message in the
+	  #philosophy window.  Would this make logging easier by allowing the logger to subscribe to
+	  various channels and getting the formatted data instead of receiving the irc messages directly
+	  and formatting them itself?  What kind of overhead is involved in this?  Would the signals system
+	  suffice to implement this?  what changes to the signals system would have to be made?  How would
+	  various entities subscribe and unsubscribe and how can these be controlled by the user?
+
+	* should you be able to reassign to a variable of an unknown type (ie. pass NULL as the type to
+	  add_variable?
+	* should we add a parent field to the variable?
+	* how will you do timers?  they have to be implemented through the frontend.  Should a timeout
+	  cause a signal to be emitted?  a callback (stored in the timer struct) to be called?
 	* is there a fancy configurable way that the destination of printed messages is sent?  For example,
 	  a way to specify that the names printed by the msgs/names.c file are sent to the current window,
 	  the status window, and the appropriate channel window?
@@ -19,17 +57,14 @@ Structural Issues:
 	  signal and the numeric command parameter?
 	* think about xml (possibly using a special char for <>) and what would acutally be done
 	  (particularily with respect to irc_format_msg)
-	* should namespaces (and contexts) form a heirarchy so that when something is not found in one,
-	  its parent is checked?
 	* how do we handle the case where a pointer is stored with a callback and then the callback is
 	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
 	  it will never be needed again so even if we can access it, we have no way to know that we can
 	  get rid of it.  This also applies to a second parameter supply to bind_key.  How will we destroy
-	  it when a key binding is lost?  (Can typed values be used here?)
-	* the quit command is irc-specific but can it be made independant? (make a quit command that just
-	  quits by calling fe_terminate() and then have fe_terminate() send a quit signal that is caught
-	  by an irc specific quit command (that can also catch the disconnect signal) which displays a
-	  quit message in irc)
+	  it when a key binding is lost?  (Can typed values be used here?) (a function in signals to delete
+	  all signal handlers with a reference to a particular pointer?  will this possibly delete things
+	  that its not suppose to since the pointer is not necessarily an address?) another possability is
+	  to have a event/message/something signal handler for that pointer.
 	* standardize the interpretation of the create type function parameters (the format string should
 	  only ever contain a description of the arguments and should never be an argument itself)
 
@@ -49,28 +84,28 @@ Structural Issues:
 	  control a terminal)
 
 Bugs:
-
-	* simple does not check for NULL current_window which causes a segfault when server deletes the
-	  window when the connection fails.
 	* there is a bug in stutter such that when there is a disconnect, stutter doesn't recognize it as
 	  such and continues to select on that socket which returns -1 (i assume) which causes it to hog
 	  all the bandwidth
 	* fix parse so that /parse something command doesn't cause a segfault
 	* in /names, if the channel doesn't have a window, the names aren't displayed anywhere
 	* when server is down, there is no responsiveness and no way to break out; timeout is long
-	* fix the long initial timeout (happens when network is disconnected)
-	* BIGBUG: when a server doesn't respond after connection (the ircserver i set up), you can still
-	  issue joins and such tbut they don't actually work.  MAKE SURE TO CLEAN UP AFTER A SERVER FAILURE
-	  (is this fixed now?)
+	* fix the long initial timeout (happens when network is disconnected) (remember that it tries to
+	  connect 3 times).
 	* there is a bug such that if you try to say something in the status window, the server says no such nick
 
 General:
+	* finish implementing the new quit command
+	* reduce dependance on stringify by using static buffers more (such as in irc_format_msg and the
+	  utils) and modify the frontend to accept a static string to fe_print instead of a string_t
+	* add something so that net can print messages, particularily a "Failed to connect, Retrying" message
 	* fix up error handling in net.c and server.c
-	* change names of msg functions parse, collapse to marshall, unmarshall
 	* pass realname to server when connecting
-	* try to pretty up code that finds the namespace to use in find_variable and add_variable
 	* fix all hash_init and hash_rehash instances to check for memory allocation failure
-	* fix history in input.c
+	* fix history in input.c (the queue inline implementation cannot be used unless it is fixed because
+	  if you store the "current" pointer and an append call deletes that node then you will get a
+	  segfault.  Current must either be stored in the queue struct or else the macro implementation
+	  must be used).
 
 	* add a cmd that takes a string in env and a string in args, merges them, and parses/evaluates it
 	  as a command without the leading /
@@ -106,6 +141,7 @@ General:
 	* add reconnect command
 	* add error message handling
 
+	* change the name of screen.c to terminal.c
 	* add home/end/erase-line functions to be keybound
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
 	* figure out how to do a complext text frontend (no common/ to start with)
@@ -121,13 +157,8 @@ General:
 
 	* should i maintain a seperate changelog for each module, frontend, and the main program?
 
-	* should you have a create tmp string feature so that you can store the string in a static buffer
-	  but destroy_string will check for it and not try to free it (would threads kill this idea?)
 	* possibly change variable names to be passed as a single string with the namespace and variable
 	  name (seperated by a colon or something else) instead of being passed as 2 seperate strings.
-	* is it possible to display the output of a single channel on multiple windows by using a special
-	  group-of-windows window that is stored in the channel struct and a call to print to this window
-	  will call print on each window in its group?
 	* can have xml/javascript/flash displayed from a script somewhat like firefox extensions (except
 	  hopefully in less files?) ???????????????????????
 
