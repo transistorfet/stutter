@@ -1,6 +1,7 @@
 
 FRONTEND = simple
-MODULES = base irc
+MODULES = $(ROOT)/src/modules/base/modbase.a \
+	  $(ROOT)/src/modules/irc/modirc.a
 
 CONFIG_H = ../config.h
 ARFLAGS = rc
