@@ -25,7 +25,7 @@ string_t create_string(char *fmt, ...)
 	char buffer[STRING_MAX_SIZE];
 
 	va_start(va, fmt);
-	vsprintf(buffer, fmt, va);
+	vsnprintf(buffer, STRING_MAX_SIZE, fmt, va);
 	va_end(va);
 	if (!(str = memory_alloc(strlen(buffer) + 1)))
 		return(NULL);
@@ -66,7 +66,7 @@ string_t recreate_string_real(string_t str, char *fmt, va_list va)
 {
 	char buffer[STRING_MAX_SIZE];
 
-	vsprintf(buffer, fmt, va);
+	vsnprintf(buffer, STRING_MAX_SIZE, fmt, va);
 	va_end(va);
 	if (!(str = memory_realloc(str, strlen(buffer) + 1)))
 		return(NULL);
