@@ -50,22 +50,22 @@ struct irc_channel *irc_current_channel(void)
 	return(last_channel);
 }
 
-string_t irc_stringify_nick(void *ptr)
+char *irc_stringify_nick(void *ptr)
 {
 	struct irc_server *server;
 
 	if (!(server = irc_current_server()))
 		return(NULL);
-	return(create_string(server->nick));
+	return(server->nick);
 }
 
-string_t irc_stringify_channel(void *ptr)
+char *irc_stringify_channel(void *ptr)
 {
 	struct irc_channel *channel;
 
 	if (!(channel = irc_current_channel()))
 		return(NULL);
-	return(create_string(channel->name));
+	return(channel->name);
 }
 
 
