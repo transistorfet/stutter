@@ -14,92 +14,77 @@
 #include <stutter/modules/irc.h>
 #include <stutter/modules/base.h>
 
-#define MAX_BUFFER		1024
-
-#define msg_copy_str_m(buffer, str, count)				\
+#define msg_copy_str_m(buffer, str, count, max)				\
 	if (str) {							\
-		strncpy(&buffer[count], str, (MAX_BUFFER - count - 1));	\
+		strncpy(&buffer[count], str, (max - count - 1));	\
 		count += strlen(str);					\
 	}
 
-static int irc_format_buffer(struct irc_msg *, char *, char *, int);
-
 /**
- * Allocate a string and format the data in the given message (and any
- * variable parameters) using the given format string.  If successful,
- * a pointer to the malloc'd string is returned; otherwise NULL is returned
+ * Format the data in the given message (and any variable parameters) using
+ * the given format string into the given buffer up to the given maximum
+ * number of characters.  If successful, the number of characters written
+ * to the buffer is returned; otherwise a negative number is returned.
  */
-string_t irc_format_msg(struct irc_msg *msg, char *str)
-{
-	int j = 0;
-	char buffer[MAX_BUFFER];
-
-	j += irc_format_buffer(msg, str, buffer, MAX_BUFFER - 1);
-	buffer[j++] = '\0';
-
-	return(create_string("%s", buffer));
-}
-
-/*** Local Functions ***/
-
-static int irc_format_buffer(struct irc_msg *msg, char *str, char *buffer, int max)
+int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 {
 	int i, k;
 	int j = 0;
 	char *tmp;
-	string_t value;
 	time_t current_time;
 	struct tm *timestamp;
+	char value[STRING_SIZE];
 	struct irc_server *server;
 	struct irc_channel *channel;
 
+	max--;
 	channel = irc_current_channel();
 	server = channel ? channel->server : NULL;
-	for (i = 0;(str[i] != '\0') && (j < max);i++) {
-		if (str[i] == '%') {
-			switch (str[++i]) {
+	for (i = 0;(fmt[i] != '\0') && (j < max);i++) {
+		if (fmt[i] == '%') {
+			switch (fmt[++i]) {
 				case '@':
 					timestamp = localtime(&msg->time);
-					j += strftime(&buffer[j], MAX_BUFFER - j, IRC_TIMESTAMP, timestamp);
+					j += strftime(&buffer[j], max - j, IRC_TIMESTAMP, timestamp);
 					break;
 				case 'B':
 					#ifdef IRC_BANNER
-					msg_copy_str_m(buffer, IRC_BANNER, j);
+					msg_copy_str_m(buffer, IRC_BANNER, j, max);
 					#endif
 					break;
 				case 'n':
 					if (server)
-						msg_copy_str_m(buffer, server->nick, j);
+						msg_copy_str_m(buffer, server->nick, j, max);
 					break;
 				case 'c':
 					if (channel)
-						msg_copy_str_m(buffer, channel->name, j);
+						msg_copy_str_m(buffer, channel->name, j, max);
 					break;
 				case 't':
 					if (channel)
-						msg_copy_str_m(buffer, channel->topic, j);
+						msg_copy_str_m(buffer, channel->topic, j, max);
 					break;
 				case 'C':
 					if (tmp = irc_command_name(msg->cmd))
-						msg_copy_str_m(buffer, tmp, j);
+						msg_copy_str_m(buffer, tmp, j, max);
 					break;
 				case 'N':
 					if (msg)
-						msg_copy_str_m(buffer, msg->nick, j);
+						msg_copy_str_m(buffer, msg->nick, j, max);
 					break;
 				case 'S':
 					if (msg)
-						msg_copy_str_m(buffer, msg->host, j);
+						msg_copy_str_m(buffer, msg->host, j, max);
 					break;
 				case 'M':
 					if (msg)
-						msg_copy_str_m(buffer, msg->text, j);
+						msg_copy_str_m(buffer, msg->text, j, max);
 					break;
 				case 'P':
 					if (msg) {
-						k = str[++i] - 0x31;
+						k = fmt[++i] - 0x31;
 						if ((k >= 0) && (k < msg->num_params))
-							msg_copy_str_m(buffer, msg->params[k], j);
+							msg_copy_str_m(buffer, msg->params[k], j, max);
 					}
 					break;
 				case '%':
@@ -109,15 +94,14 @@ static int irc_format_buffer(struct irc_msg *msg, char *str, char *buffer, int m
 					break;
 			}
 		}
-		else if (str[i] == '$') {
-			if (value = util_expand_variable(&str[i], &i)) {
-				j += irc_format_buffer(msg, value, &buffer[j], max - j);
-				destroy_string(value);
-			}
+		else if (fmt[i] == '$') {
+			if (util_expand_variable(&fmt[i], value, STRING_SIZE, &i) > 0)
+				j += irc_format_msg(msg, value, &buffer[j], max - j + 1);
 		}
 		else
-			buffer[j++] = str[i];
+			buffer[j++] = fmt[i];
 	}
+	buffer[j] = '\0';
 	return(j);
 }
 
