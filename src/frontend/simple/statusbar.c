@@ -48,20 +48,19 @@ int destroy_statusbar(struct statusbar_s *statusbar)
 int refresh_statusbar(struct statusbar_s *statusbar)
 {
 	int i;
-	string_t str;
 	short width, height;
+	char buffer[STRING_SIZE];
 
 	width = screen_width();
 	height = screen_height();
 
 	screen_set_attribs(SC_INVERSE, 0, 0);
 	screen_clear(0, height - statusbar->height - 1, width, statusbar->height);
-	if (str = statusbar->status->type->stringify(statusbar->status->value)) {
-		if (strlen(str) > width)
-			str[width] = '\0';
+	if ((i = statusbar->status->type->stringify(statusbar->status->value, buffer, STRING_SIZE)) >= 0) {
+		if (i > width)
+			buffer[width] = '\0';
 		screen_move(0, height - statusbar->height - 1);
-		screen_print(str, 0);
-		destroy_string(str);
+		screen_print(buffer, 0);
 	}
 	screen_set_attribs(SC_NORMAL, 0, 0);
 	return(0);
