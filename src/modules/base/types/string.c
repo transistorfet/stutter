@@ -22,7 +22,7 @@ struct type_s *base_load_string(void)
 		NULL,
 		NULL,
 		NULL,
-		(type_stringify_t) duplicate_string,
+		(type_stringify_t) copy_string,
 		NULL
 	));
 }
