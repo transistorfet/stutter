@@ -1,7 +1,7 @@
 /*
  * Module Name:		window.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; string ; screen
+ * Module Requirements:	queue ; memory ; screen
  * Description:		Window Manager
  */
 
@@ -9,7 +9,6 @@
 
 #include <stutter/lib/queue.h>
 #include <stutter/lib/memory.h>
-#include <stutter/lib/string.h>
 #include "screen.h"
 #include "window.h"
 
@@ -36,8 +35,6 @@ struct window_s *create_window(int size)
 int destroy_window(struct window_s *window)
 {
 	queue_destroy_v(window->log, log,
-		if (cur->line)
-			destroy_string(cur->line);
 		memory_free(cur);
 	);
 	memory_free(window);
@@ -94,7 +91,7 @@ int refresh_window(struct window_s *window)
 /**
  * Add the given message to the log of the given window.
  */
-int window_print(struct window_s *window, string_t str)
+int window_print(struct window_s *window, const char *str)
 {
 	struct window_entry_s *node;
 
@@ -103,9 +100,10 @@ int window_print(struct window_s *window, string_t str)
 	/** If the window is not at the bottom then make sure the screen doesn't move */
 	if (window->cur_line && (window->cur_line < window->max_lines))
 		window->cur_line++;
-	if (!(node = (struct window_entry_s *) memory_alloc(sizeof(struct window_entry_s))))
+	if (!(node = (struct window_entry_s *) memory_alloc(sizeof(struct window_entry_s) + strlen(str) + 1)))
 		return(-1);
-	node->line = str;
+	node->line = (char *) (((size_t) node) + sizeof(struct window_entry_s));
+	strcpy(node->line, str);
 	queue_prepend_node_v(window->log, node, log);
 	return(0);
 }
@@ -121,8 +119,6 @@ int window_clear(struct window_s *window)
 	if (!window)
 		return(-1);
 	queue_destroy_v(window->log, log,
-		if (cur->line)
-			destroy_string(cur->line);
 		memory_free(cur);
 	);
 	return(0);
