@@ -25,8 +25,8 @@ void *fe_previous_widget(char *context, void *ref);
 void *fe_first_widget(char *context, void *ref);
 void *fe_last_widget(char *context, void *ref);
 
-int fe_print(void *widget, string_t str);
-char *fe_read(void *widget);
+int fe_print(void *widget, const char *str);
+char *fe_read(void *widget, char *buffer, int max);
 void fe_clear(void *widget);
 void fe_move(void *widget, short x, short y);
 int fe_scroll(void *widget, int diff);
