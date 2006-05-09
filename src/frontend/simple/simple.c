@@ -167,10 +167,10 @@ int fe_print(void *widget, string_t str)
 	return(0);
 }
 
-char *fe_read(void *widget)
+char *fe_read(void *widget, char *buffer, int max)
 {
 	if (widget == input)
-		return(input_get_buffer(input));
+		return(input_get_buffer(input, buffer, max));
 	return(NULL);
 }
 
