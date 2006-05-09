@@ -17,6 +17,7 @@ string_t recreate_string(string_t, char *, ...);
 string_t recreate_string_real(string_t, char *, va_list);
 void destroy_string(string_t);
 string_t duplicate_string(string_t);
+int copy_string(string_t, char *, int);
 
 #endif
 

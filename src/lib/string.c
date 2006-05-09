@@ -90,10 +90,24 @@ string_t duplicate_string(string_t str)
 {
 	string_t dup;
 
-	if (!(dup = memory_alloc(strlen(str) + 1)))
+	if (!str || !(dup = memory_alloc(strlen(str) + 1)))
 		return(NULL);
 	strcpy(dup, str);
 	return(dup);
+}
+
+/**
+ * Copy the given string to the given buffer up to the given
+ * maximum number of characters - 1 (for terminator).  The
+ * number of characters copied is returned or -1 on error.
+ */
+int copy_string(string_t str, char *buffer, int max)
+{
+	if (!str)
+		return(-1);
+	strncpy(buffer, str, max - 1);
+	buffer[max - 1] = '\0';
+	return(strlen(buffer));
 }
 
 
