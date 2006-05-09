@@ -5,6 +5,7 @@
  * Description:		Part Channel Notification Message
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -13,7 +14,7 @@
  */
 int irc_msg_part(struct irc_server *server, struct irc_msg *msg)
 {
-	char *str;
+	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
@@ -25,9 +26,9 @@ int irc_msg_part(struct irc_server *server, struct irc_msg *msg)
 	}
 	else {
 		irc_remove_user(channel->users, msg->nick);
-		if (!(str = irc_format_msg(msg, IRC_FMT_PART)))
+		if (irc_format_msg(msg, IRC_FMT_PART, buffer, STRING_SIZE) < 0)
 			return(-1);
-		fe_print(channel->window, str);
+		fe_print(channel->window, buffer);
 	}
 
 	return(0);

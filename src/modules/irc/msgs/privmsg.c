@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -15,7 +16,7 @@
  */
 int irc_msg_privmsg(struct irc_server *server, struct irc_msg *msg)
 {
-	char *str, *format;
+	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(server->channels, msg->params[0])) && ((msg->params[0][0] != '#') && !(channel = irc_current_channel())))
@@ -24,14 +25,15 @@ int irc_msg_privmsg(struct irc_server *server, struct irc_msg *msg)
 	if ((msg->text[0] == 0x01) && !strncmp(&msg->text[1], "ACTION", 6)) {
 		msg->text = &msg->text[8];
 		msg->text[strlen(msg->text) - 1] = '\0';
-		format = msg->nick ? IRC_FMT_ACTION : IRC_FMT_ACTION_SELF;
+		if (irc_format_msg(msg, msg->nick ? IRC_FMT_ACTION : IRC_FMT_ACTION_SELF, buffer, STRING_SIZE) < 0)
+			return(-1);
 	}
-	else
-		format = msg->nick ? IRC_FMT_PRIVMSG : IRC_FMT_PRIVMSG_SELF;
+	else {
+		if (irc_format_msg(msg, msg->nick ? IRC_FMT_PRIVMSG : IRC_FMT_PRIVMSG_SELF, buffer, STRING_SIZE) < 0)
+			return(-1);
+	}
 
-	if (!(str = irc_format_msg(msg, format)))
-		return(-1);
-	fe_print(channel->window, str);
+	fe_print(channel->window, buffer);
 	return(0);
 }
 

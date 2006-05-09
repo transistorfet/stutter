@@ -5,6 +5,7 @@
  * Description:		Kick Notification Message
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -14,14 +15,13 @@
 int irc_msg_kick(struct irc_server *server, struct irc_msg *msg)
 {
 	void *window;
-	char *str, *format;
+	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
 		return(-1);
 
 	if (!strcmp(server->nick, msg->params[1])) {
-		format = IRC_FMT_KICK_SELF;
 		if (channel->bitflags & IRC_CBF_AUTO_REJOIN)
 			irc_join_channel(server, msg->params[0]);
 		else {
@@ -29,15 +29,16 @@ int irc_msg_kick(struct irc_server *server, struct irc_msg *msg)
 			irc_remove_channel(server->channels, msg->params[0]);
 			channel = server->status;
 		}
+		if (irc_format_msg(msg, IRC_FMT_KICK_SELF, buffer, STRING_SIZE) < 0)
+			return(-1);
 	}
 	else {
 		irc_remove_user(channel->users, msg->params[1]);
-		format = IRC_FMT_KICK;
+		if (irc_format_msg(msg, IRC_FMT_KICK, buffer, STRING_SIZE) < 0)
+			return(-1);
 	}
 
-	if (!(str = irc_format_msg(msg, format)))
-		return(-1);
-	fe_print(channel->window, str);
+	fe_print(channel->window, buffer);
 	return(0);
 }
 

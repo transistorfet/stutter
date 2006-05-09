@@ -5,6 +5,7 @@
  * Description:		Join Channel Notification Message
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -13,8 +14,8 @@
  */
 int irc_msg_join(struct irc_server *server, struct irc_msg *msg)
 {
-	char *str;
 	void *window;
+	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!strcmp(server->nick, msg->nick)) {
@@ -30,9 +31,9 @@ int irc_msg_join(struct irc_server *server, struct irc_msg *msg)
 
 	irc_add_user(channel->users, msg->nick, 0);
 
-	if (!(str = irc_format_msg(msg, IRC_FMT_JOIN)))
+	if (irc_format_msg(msg, IRC_FMT_JOIN, buffer, STRING_SIZE) < 0)
 		return(-1);
-	fe_print(channel->window, str);
+	fe_print(channel->window, buffer);
 	return(0);
 }
 

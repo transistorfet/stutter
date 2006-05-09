@@ -5,6 +5,7 @@
  * Description:		Notice Notification Message
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/lib/string.h>
 #include <stutter/modules/irc.h>
@@ -14,17 +15,17 @@
  */
 int irc_msg_notice(struct irc_server *server, struct irc_msg *msg)
 {
-	char *str;
+	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_current_channel()))
 		return(-1);
 
-	if (!(str = irc_format_msg(msg, msg->nick ? IRC_FMT_NOTICE : IRC_FMT_NOTICE_SELF)))
+	if (irc_format_msg(msg, msg->nick ? IRC_FMT_NOTICE : IRC_FMT_NOTICE_SELF, buffer, STRING_SIZE) < 0)
 		return(-1);
 	if (channel != server->status)
-		fe_print(server->status->window, duplicate_string(str));
-	fe_print(channel->window, str);
+		fe_print(server->status->window, buffer);
+	fe_print(channel->window, buffer);
 	return(0);
 }
 

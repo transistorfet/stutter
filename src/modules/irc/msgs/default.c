@@ -5,16 +5,17 @@
  * Description:		Default Notification Message (for Unhandled Messages)
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_msg_default(struct irc_server *server, struct irc_msg *msg)
 {
-	char *str;
+	char buffer[STRING_SIZE];
 
-	if (!(str = irc_format_msg(msg, IRC_FMT_DEFAULT)))
+	if (irc_format_msg(msg, IRC_FMT_DEFAULT, buffer, STRING_SIZE) < 0)
 		return(-1);
-	fe_print(server->status->window, str);
+	fe_print(server->status->window, buffer);
 	return(0);
 }
 

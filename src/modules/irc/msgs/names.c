@@ -5,6 +5,7 @@
  * Description:		Name Notification Message
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
@@ -16,14 +17,15 @@ int irc_msg_names(struct irc_server *server, struct irc_msg *msg)
 {
 	int bitflags;
 	char *str, *name;
+	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(server->channels, msg->params[2])))
 		return(-1);
 
-	if (!(str = irc_format_msg(msg, IRC_FMT_NAMES)))
+	if (irc_format_msg(msg, IRC_FMT_NAMES, buffer, STRING_SIZE) < 0)
 		return(-1);
-	fe_print(channel->window, str);
+	fe_print(channel->window, buffer);
 
 	str = msg->text;
 	while (*str != '\0') {
