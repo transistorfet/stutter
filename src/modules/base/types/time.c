@@ -12,9 +12,7 @@
 #include <stutter/lib/string.h>
 #include <stutter/modules/base.h>
 
-#define MAX_BUFFER		64
-
-static string_t base_time_stringify(void *);
+static int base_time_stringify(void *, char *, int);
 
 struct type_s *base_load_time(void)
 {
@@ -34,13 +32,14 @@ struct type_s *base_load_time(void)
 
 /*** Local Functions ***/
 
-static string_t base_time_stringify(void *ptr)
+static int base_time_stringify(void *ptr, char *buffer, int max)
 {
+	int i;
 	time_t current_time;
-	char buffer[MAX_BUFFER];
 
 	current_time = time(NULL);
-	strftime(buffer, MAX_BUFFER, (char *) ptr, localtime(&current_time));
-	return(create_string("%s", buffer));
+	if (!(i = strftime(buffer, max, (char *) ptr, localtime(&current_time))))
+		return(-1);
+	return(i);
 }
 
