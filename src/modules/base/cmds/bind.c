@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include CONFIG_H
 #include <stutter/type.h>
 #include <stutter/utils.h>
 #include <stutter/variable.h>
@@ -18,10 +19,10 @@
 int base_cmd_bind(char *env, char *args)
 {
 	void *window;
-	string_t sequence;
 	char *context = NULL;
 	char *key, *name;
 	struct variable_s *var;
+	char buffer[STRING_SIZE];
 
 	trim_whitespace_m(args);
 	if (*args == '-')
@@ -32,16 +33,17 @@ int base_cmd_bind(char *env, char *args)
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 	if (!(var = find_variable(NULL, name))) {
-		fe_print(window, create_string("Error: %s variable not found.", name));
+		if (snprintf(buffer, STRING_SIZE, "Error: %s variable not found.", name) >= 0)
+			fe_print(window, buffer);
 		return(-1);
 	}
 
-	if (!(sequence = util_convert_key(key)) || bind_key(context, sequence, var, create_string(args)))
-		fe_print(window, create_string("Error binding key"));
-	else
-		fe_print(window, create_string("Key %s bound to %s %s", key, name, args));
-	if (sequence)
-		destroy_string(sequence);
+	if ((util_convert_key(key, buffer, STRING_SIZE) < 0) || bind_key(context, buffer, var, create_string(args)))
+		fe_print(window, "Error binding key");
+	else {
+		snprintf(buffer, STRING_SIZE, "Key %s bound to %s %s", key, name, args);
+		fe_print(window, buffer);
+	}
 	return(0);
 }
 

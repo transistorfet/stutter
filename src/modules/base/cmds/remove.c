@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include CONFIG_H
 #include <stutter/type.h>
 #include <stutter/variable.h>
 #include <stutter/frontend.h>
@@ -19,15 +20,20 @@ int base_cmd_remove(char *env, char *args)
 	char *name;
 	void *window;
 	struct variable_s *var;
+	char buffer[STRING_SIZE];
 
 	get_param_m(args, name, ' ');
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
-	if (!remove_variable(NULL, find_type("string"), name))
-		fe_print(window, create_string("Variable %s removed.", name));
-	else
-		fe_print(window, create_string("Error removing variable."));
-	return(0);
+	if (!remove_variable(NULL, find_type("string"), name)) {
+		if (snprintf(buffer, STRING_SIZE, "Variable %s removed.", name) >= 0)
+			fe_print(window, buffer);
+		return(0);
+	}
+	else {
+		fe_print(window, "Error removing variable.");
+		return(-1);
+	}
 }
 
 

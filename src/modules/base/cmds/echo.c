@@ -15,7 +15,7 @@ int base_cmd_echo(char *env, char *args)
 
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
-	fe_print(window, create_string("%s", args));
+	fe_print(window, args);
 	return(0);
 }
 

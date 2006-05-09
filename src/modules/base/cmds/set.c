@@ -22,6 +22,7 @@ int base_cmd_set(char *env, char *args)
 	void *window;
 	struct type_s *type;
 	struct variable_s *var;
+	char buffer[STRING_SIZE];
 	char *type_name = BASE_DEFAULT_SET_TYPE;
 
 
@@ -34,12 +35,19 @@ int base_cmd_set(char *env, char *args)
 	get_param_m(args, name, ' ');
 
 	trim_whitespace_m(args);
-	if (!(type = find_type(type_name)) || !type->create)
-		fe_print(window, create_string("Error: Type %s not found.", type_name));
-	else if (!(var = add_variable(NULL, type, name, 0, "%s", args)))
-		fe_print(window, create_string("Error setting variable."));
-	else
-		fe_print(window, create_string("Variable: %s <= %s", name, args));
+	if (!(type = find_type(type_name)) || !type->create) {
+		if (snprintf(buffer, STRING_SIZE, "Error: Type %s not found.", type_name) >= 0)
+			fe_print(window, buffer);
+		return(-1);
+	}
+	else if (!(var = add_variable(NULL, type, name, 0, "%s", args))) {
+		fe_print(window, "Error setting variable.");
+		return(-1);
+	}
+	else {
+		if (snprintf(buffer, STRING_SIZE, "Variable: %s <= %s", name, args) >= 0)
+			fe_print(window, buffer);
+	}
 	return(0);
 }
 
