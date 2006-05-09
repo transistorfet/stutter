@@ -141,8 +141,10 @@ int fe_net_send(network_t net, char *msg, int size)
 		return(0);
 	DEBUG_LOG("raw.out", msg);
 	do {
-		if ((sent = send(net->socket, (void *) msg, size, 0)) <= 0)
+		if ((sent = send(net->socket, (void *) msg, size, 0)) < 0)
 			return(-1);
+		else if (!sent)
+			return(0);
 		count += sent;
 	} while (count < size);
 	return(count);
@@ -150,7 +152,7 @@ int fe_net_send(network_t net, char *msg, int size)
 
 /**
  * Receive the given number of bytes, store them in the given msg buffer
- * and return the number of bytes read or -1 on error.
+ * and return the number of bytes read or -1 on error or disconnect.
  */ 
 int fe_net_receive(network_t net, char *msg, int size)
 {
@@ -159,7 +161,7 @@ int fe_net_receive(network_t net, char *msg, int size)
 	struct timeval timeout = { 0, 0 };
 
 	if (!net)
-		return(0);
+		return(-1);
 
 	size--;
 	for (i = 0;i < size;i++) {
@@ -173,6 +175,8 @@ int fe_net_receive(network_t net, char *msg, int size)
 		FD_SET(net->socket, &rd);
 		if (select(net->socket + 1, &rd, NULL, NULL, &timeout) && ((j = recv(net->socket, &msg[i], size - i, 0)) > 0))
 			i += j;
+		if (j <= 0)
+			return(-1);
 	}
 
 	msg[i] = '\0';
@@ -183,7 +187,7 @@ int fe_net_receive(network_t net, char *msg, int size)
 /**
  * Receive a string from the network connection up to a maximum of
  * size-1 (a null char is appended) and return the number of bytes
- * read or -1 on error.
+ * read or -1 on error or disconnect.
  */ 
 int fe_net_receive_str(network_t net, char *msg, int size, char ch)
 {
@@ -192,7 +196,7 @@ int fe_net_receive_str(network_t net, char *msg, int size, char ch)
 	struct timeval timeout = { 0, 0 };
 
 	if (!net)
-		return(0);
+		return(-1);
 
 	size--;
 	for (i = 0;i < size;i++) {
@@ -210,7 +214,7 @@ int fe_net_receive_str(network_t net, char *msg, int size, char ch)
 			if (!select(net->socket + 1, &rd, NULL, NULL, &timeout))
 				return(i);
 			if ((net->length = recv(net->socket, net->buffer, NET_READ_BUFFER, 0)) <= 0)
-				return(net->length);
+				return(-1);
 			net->read = 0;
 		}
 		msg[i] = net->buffer[net->read++];
@@ -261,7 +265,7 @@ int fe_net_wait(float t)
 
 	if ((ret = select(max + 1, &rd, NULL, NULL, &timeout)) == -1) {
 		// TODO what do we do in the case of a socket error?
-		return(0);
+		return(-1);
 	}
 
 	for (cur = net_list;cur;cur = cur->next) {
