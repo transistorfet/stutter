@@ -22,8 +22,7 @@ typedef struct variable_s *(*type_add_t)(void *, struct type_s *, char *, int, c
 typedef int (*type_remove_t)(void *, struct type_s *, char *);
 typedef struct variable_s *(*type_index_t)(void *, char *);
 typedef int (*type_traverse_t)(void *, type_traverse_func_t, struct type_s *, void *);
-// TODO should stringify take a buffer and fill it instead of returning a string_t?
-typedef string_t (*type_stringify_t)(void *);
+typedef int (*type_stringify_t)(void *, char *, int);
 typedef int (*type_evaluate_t)(void *, char *);
 
 struct type_s {
