@@ -15,13 +15,15 @@
 
 #define MAX_BUFFER		64
 
+typedef char *(*status_t)(void *);
+
 struct base_status_s {
-	type_stringify_t func;
+	status_t func;
 	void *ptr;
 };
 
 static void *base_status_create(void *, char *, va_list);
-static string_t base_status_stringify(void *);
+static int base_status_stringify(void *, char *, int);
 static void base_status_destroy(void *);
 
 struct type_s *base_load_status(void)
@@ -54,17 +56,23 @@ static void *base_status_create(void *value, char *str, va_list va)
 
 	if (!(status = (struct base_status_s *) memory_alloc(sizeof(struct base_status *))))
 		return(NULL);
-	status->func = va_arg(va, type_stringify_t);
+	status->func = va_arg(va, status_t);
 	status->ptr = va_arg(va, void *);
 	va_end(va);
 	return(status);
 }
 
-static string_t base_status_stringify(void *ptr)
+static int base_status_stringify(void *ptr, char *buffer, int max)
 {
+	string_t str;
+
 	if (!ptr)
-		return(NULL);
-	return(((struct base_status_s *) ptr)->func(((struct base_status_s *) ptr)->ptr));
+		return(-1);
+	if (!(str = ((struct base_status_s *) ptr)->func(((struct base_status_s *) ptr)->ptr)))
+		return(-1);
+	strncpy(buffer, str, max - 1);
+	buffer[max - 1] = '\0';
+	return(strlen(buffer));	
 }
 
 static void base_status_destroy(void *ptr)
