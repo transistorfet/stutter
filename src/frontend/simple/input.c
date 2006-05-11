@@ -31,8 +31,10 @@ struct input_s *create_input(int size, int history)
 	input->max = size;
 	input->buffer = (char *) (((size_t) input) + sizeof(struct input_s));
 
-	input->max_history = history;
-	queue_init_v(input->history);
+	if (!(input->history = create_queue(history, (destroy_t) destroy_string))) {
+		memory_free(input);
+		return(NULL);
+	}
 
 	return(input);
 }
@@ -42,11 +44,7 @@ struct input_s *create_input(int size, int history)
  */
 int destroy_input(struct input_s *input)
 {
-	queue_destroy_v(input->history, history,
-		if (cur->cmd)
-			destroy_string(cur->cmd);
-		memory_free(cur);
-	);
+	destroy_queue(input->history);
 	memory_free(input);
 	return(0);
  }
@@ -122,35 +120,22 @@ int clear_input(struct input_s *input)
  */
 int input_save_buffer(struct input_s *input)
 {
-//	char *str;
+	char *str;
 
 	input->buffer[input->end] = '\0';
-//	if (str = create_string(input->buffer))
-//		queue_append(input->history, str);
+	if (str = create_string(input->buffer))
+		queue_append(input->history, str);
 	return(0);
 }
 
 /**
  * Return the current input buffer.
  */
-char *input_get_buffer(struct input_s *input)
+char *input_get_buffer(struct input_s *input, char *buffer, int max)
 {
-	char *str;
-	struct input_history_s *node;
-
-	if ((str = create_string(input->buffer)) && (node = (struct input_history_s *) memory_alloc(sizeof(struct input_history_s)))) {
-		node->cmd = str;
-		queue_append_node_v(input->history, node, history);
-		if (queue_size_v(input->history) > input->max_history) {
-			queue_pop_node_v(input->history, node, history);
-			if (node) {
-				if (node->cmd)
-					destroy_string(node->cmd);
-				memory_free(node);
-			}
-		}
-	}
-	return(input->buffer);
+	strncpy(buffer, input->buffer, max - 1);
+	buffer[max - 1] = '\0';
+	return(buffer);
 }
 
 /**
