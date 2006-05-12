@@ -12,7 +12,7 @@ include $(ROOT)/config.mk
 all: $(TARGET) $(LIB_TARGET)
 
 $(TARGET): $(DIRS) $(OBJS)
-	$(LD) $(LIBPATH) $(LDFLAGS) -o$(TARGET) $(OBJS) $(LIBS)
+	$(LD) $(LIBPATH) $(LDFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
 $(LIB_TARGET): $(DIRS) $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
