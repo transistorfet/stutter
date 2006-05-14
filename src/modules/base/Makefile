@@ -14,6 +14,7 @@ OBJS =	init.o \
 	cmds/set.o \
 	cmds/parse.o \
 	cmds/remove.o \
+	cmds/source.o \
 	types/table.o \
 	types/format.o \
 	types/string.o \

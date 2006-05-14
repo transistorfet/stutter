@@ -26,6 +26,7 @@ int base_cmd_get(char *, char *);
 int base_cmd_set(char *, char *);
 int base_cmd_remove(char *, char *);
 int base_cmd_parse(char *, char *);
+int base_cmd_source(char *, char *);
 
 /* Types */
 struct type_s *base_load_table(void);
