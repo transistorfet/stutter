@@ -156,12 +156,10 @@ void *fe_last_widget(char *context, void *ref)
 }
 
 
-int fe_print(void *widget, string_t str)
+int fe_print(void *widget, const char *str)
 {
-	if (widget == input) {
+	if (widget == input)
 		input_set_buffer(input, str);
-		destroy_string(str);
-	}
 	else
 		window_print((struct window_s *) widget, str);
 	return(0);
@@ -256,6 +254,9 @@ main(int argc, char **argv)
 	}
 
 	fe_refresh(NULL);
+	#ifdef STUTTER_INIT
+	STUTTER_INIT(argc, argv);
+	#endif
 
 	while (exit_flag) {
 		fe_refresh(NULL);
