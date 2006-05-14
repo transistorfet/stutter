@@ -25,7 +25,6 @@ int exit_flag = 1;
 struct input_s *input;
 struct queue_s *window_list;
 struct statusbar_s *statusbar;
-struct queue_node_s *current_window;
 
 int init_frontend(void)
 {
@@ -37,7 +36,6 @@ int init_frontend(void)
 		return(-1);
 	if (!(input = create_input(0, 0)))
 		return(-1);
-	current_window = NULL;
 	return(0);
 }
 
@@ -65,8 +63,6 @@ int fe_destroy_widget(void *widget)
 {
 	if ((widget == statusbar) || (widget == input))
 		return(-1);
-	if (current_window && (current_window->ptr == widget))
-		current_window = NULL;
 	queue_delete(window_list, widget);
 	return(0);
 }
@@ -105,8 +101,8 @@ void *fe_current_widget(char *context, void *ref)
 {
 	if (!strcmp(context, "input"))
 		return(input);
-	else if (current_window)
-		return(current_window->ptr);
+	else
+		return(queue_current(window_list));
 	return(NULL);
 }
 
@@ -114,44 +110,52 @@ int fe_select_widget(char *context, void *ref, void *widget)
 {
 	if (!strcmp(context, "input"))
 		return(-1);
-	if (current_window = queue_find(window_list, widget))
+	if (window_list->current = queue_find(window_list, widget))
 		return(0);
 	return(-1);
 }
 
 void *fe_next_widget(char *context, void *ref)
 {
+	struct window_s *window;
+
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window && (current_window = queue_next(current_window)))
-		return((struct window_s *) current_window->ptr);
+	if (window = (struct window_s *) queue_next(window_list))
+		return(window);
 	return(NULL);
 }
 
 void *fe_previous_widget(char *context, void *ref)
 {
+	struct window_s *window;
+
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window && (current_window = queue_previous(current_window)))
-		return((struct window_s *) current_window->ptr);
+	if (window = (struct window_s *) queue_previous(window_list))
+		return(window);
 	return(NULL);
 }
 
 void *fe_first_widget(char *context, void *ref)
 {
+	struct window_s *window;
+
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_first(window_list))
-		return((struct window_s *) current_window->ptr);
+	if (window = (struct window_s *) queue_first(window_list))
+		return(window);
 	return(NULL);
 }
 
 void *fe_last_widget(char *context, void *ref)
 {
+	struct window_s *window;
+
 	if (!strcmp(context, "input"))
 		return(input);
-	if (current_window = queue_last(window_list))
-		return((struct window_s *) current_window->ptr);
+	if (window = (struct window_s *) queue_last(window_list))
+		return(window);
 	return(NULL);
 }
 
@@ -199,11 +203,13 @@ int fe_scroll(void *widget, int diff)
 
 void fe_refresh(void *widget)
 {
+	struct window_s *window;
+
 	if (!widget) {
-		if (!current_window && !(current_window = queue_first(window_list)))
+		if (!queue_current_node(window_list) && !queue_first_node(window_list))
 			screen_clear(0, 0, screen_width(), screen_height() - statusbar->height - 1);
-		else
-			refresh_window((struct window_s *) current_window->ptr);
+		else if (window = (struct window_s *) queue_current(window_list))
+			refresh_window(window);
 		refresh_statusbar(statusbar);
 		refresh_input(input);
 	}
