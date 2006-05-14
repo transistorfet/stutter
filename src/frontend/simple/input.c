@@ -142,7 +142,7 @@ char *input_get_buffer(struct input_s *input, char *buffer, int max)
  * Erase the current contents of the buffer of the given input structure
  * and replace it with the given string.
  */
-int input_set_buffer(struct input_s *input, char *str)
+int input_set_buffer(struct input_s *input, const char *str)
 {
 	strncpy(input->buffer, str, input->max);
 	input->i = input->end = strlen(str);
@@ -165,14 +165,12 @@ int input_default(struct input_s *input, int ch)
 			input_delete_char(input);
 			break;
 		case KEY_UP:
-			// TODO fix for new queue
-//			if (str = queue_previous(input->history))
-//				input_set_buffer(input, str);
+			if ((str = queue_previous(input->history)) || (str = queue_last(input->history)))
+				input_set_buffer(input, str);
 			break;
 		case KEY_DOWN:
-			// TODO fix for new queue
-//			if (str = queue_next(input->history))
-//				input_set_buffer(input, str);
+			if ((str = queue_next(input->history)) || (str = queue_first(input->history)))
+				input_set_buffer(input, str);
 			break;
 		case KEY_RIGHT:
 			if (input->i < input->end)
