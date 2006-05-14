@@ -65,7 +65,11 @@
 #define COMMAND_PREFIX			"/"
 #define DEFAULT_COMMAND			""
 #define NAME_SEPARATOR			'.'
-	
+
+#define STRING_SIZE			512
+
+#define DOT_FILE			"~/.stutterrc"
+
 //#define GREET_MSG			"Welcome to the show!"
 
 #define LOAD_MODULES()			\
@@ -91,7 +95,8 @@
 	DECLARE_COMMAND(parse)		\
 	DECLARE_COMMAND(get)		\
 	DECLARE_COMMAND(set)		\
-	DECLARE_COMMAND(remove)
+	DECLARE_COMMAND(remove)		\
+	DECLARE_COMMAND(source)
 
 #define IRC_COMMANDS()			\
 	DECLARE_COMMAND(disconnect)	\
@@ -108,6 +113,13 @@
 	DECLARE_COMMAND(server)		\
 	DECLARE_COMMAND(whois)		\
 	ADD_COMMAND("", say, NULL)
+
+
+#define STUTTER_INIT(argc, argv) {				\
+	struct variable_s *var;					\
+	if (var = find_variable(NULL, "source"))		\
+		var->type->evaluate(var->value, DOT_FILE);	\
+}
 
 #endif
 
