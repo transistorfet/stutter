@@ -124,6 +124,7 @@ struct queue_node_s {
 struct queue_s {
 	int max;
 	destroy_t destroy;
+	struct queue_node_s *current;
 	queue_list_v(queue_node_s) q;
 };
 
@@ -135,6 +136,7 @@ static inline struct queue_s *create_queue(int max, destroy_t destroy)
 		return(NULL);
 	queue->max = max;
 	queue->destroy = destroy;
+	queue->current = NULL;
 	queue_init_v(queue->q);
 	return(queue);
 }
@@ -158,6 +160,8 @@ static inline int queue_prepend(struct queue_s *queue, void *ptr)
 	queue_prepend_node_v(queue->q, node, q);
 	if (queue->max && (queue_size_v(queue->q) > queue->max)) {
 		queue_pop_node_v(queue->q, node, q);
+		if (queue->current == node)
+			queue->current = NULL;
 		queue->destroy(node->ptr);
 		memory_free(node);
 	}
@@ -184,6 +188,8 @@ static inline void *queue_shift(struct queue_s *queue)
 
 	queue_shift_node_v(queue->q, node, q);
 	ptr = node->ptr;
+	if (queue->current == node)
+		queue->current = NULL;
 	memory_free(node);
 	return(ptr);
 }
@@ -195,6 +201,8 @@ static inline void *queue_pop(struct queue_s *queue)
 
 	queue_pop_node_v(queue->q, node, q);
 	ptr = node->ptr;
+	if (queue->current == node)
+		queue->current = NULL;
 	memory_free(node);
 	return(ptr);
 }
@@ -203,6 +211,8 @@ static inline void queue_delete(struct queue_s *queue, void *ptr)
 {
 	queue_traverse_v(queue->q, q,
 		if (cur->ptr == ptr) {
+			if (queue->current == cur)
+				queue->current = NULL;
 			queue_remove_node_v(queue->q, cur, q);
 			break;
 		}
@@ -218,11 +228,19 @@ static inline struct queue_node_s *queue_find(struct queue_s *queue, void *ptr)
 	return(NULL);
 }
 
-#define queue_first(list)		(list) ? (list)->q.head : NULL
-#define queue_last(list)		(list) ? (list)->q.tail : NULL
-#define queue_next(node)		(node) ? (node)->q.next : NULL
-#define queue_previous(node)		(node) ? (node)->q.prev : NULL
-#define queue_size(list)		(node) ? (list)->q.size : NULL
+#define queue_first(list)		( ((list) && ((list)->current = (list)->q.head)) ? (list)->current->ptr : NULL )
+#define queue_last(list)		( ((list) && ((list)->current = (list)->q.tail)) ? (list)->current->ptr : NULL )
+#define queue_next(list)		( ((list) && (list)->current && ((list)->current = (list)->current->q.next)) ? (list)->current->ptr : NULL )
+#define queue_previous(list)		( ((list) && (list)->current && ((list)->current = (list)->current->q.prev)) ? (list)->current->ptr : NULL )
+#define queue_current(list)		( ((list) && (list)->current) ? ((list)->current)->ptr : NULL )
+
+#define queue_first_node(list)		( (list) ? ((list)->current = (list)->q.head) : NULL )
+#define queue_last_node(list)		( (list) ? ((list)->current = (list)->q.tail) : NULL )
+#define queue_next_node(list)		( ((list) && (list)->current) ? ((list)->current = (list)->current->q.next) : NULL )
+#define queue_previous_node(list)	( ((list) && (list)->current) ? ((list)->current = (list)->current->q.prev) : NULL )
+#define queue_current_node(list)	( (list) ? (list)->current : NULL )
+
+#define queue_size(list)		( (list) ? (list)->q.size : NULL )
 
 #endif
 
