@@ -15,7 +15,7 @@
 
 #define MAX_BUFFER		64
 
-typedef char *(*status_t)(void *);
+typedef int (*status_t)(void *, char *, int);
 
 struct base_status_s {
 	status_t func;
@@ -64,15 +64,9 @@ static void *base_status_create(void *value, char *str, va_list va)
 
 static int base_status_stringify(void *ptr, char *buffer, int max)
 {
-	string_t str;
-
 	if (!ptr)
 		return(-1);
-	if (!(str = ((struct base_status_s *) ptr)->func(((struct base_status_s *) ptr)->ptr)))
-		return(-1);
-	strncpy(buffer, str, max - 1);
-	buffer[max - 1] = '\0';
-	return(strlen(buffer));	
+	return(((struct base_status_s *) ptr)->func(((struct base_status_s *) ptr)->ptr, buffer, max));
 }
 
 static void base_status_destroy(void *ptr)

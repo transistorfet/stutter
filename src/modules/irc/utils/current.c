@@ -50,22 +50,28 @@ struct irc_channel *irc_current_channel(void)
 	return(last_channel);
 }
 
-char *irc_stringify_nick(void *ptr)
+/**
+ * Copy the nick on the current server to the given buffer.
+ */
+int irc_stringify_nick(void *ptr, char *buffer, int max)
 {
 	struct irc_server *server;
 
 	if (!(server = irc_current_server()))
-		return(NULL);
-	return(server->nick);
+		return(-1);
+	return(copy_string(server->nick, buffer, max));
 }
 
-char *irc_stringify_channel(void *ptr)
+/**
+ * Copy the current channel name to the given buffer.
+ */
+int irc_stringify_channel(void *ptr, char *buffer, int max)
 {
 	struct irc_channel *channel;
 
 	if (!(channel = irc_current_channel()))
-		return(NULL);
-	return(channel->name);
+		return(-1);
+	return(copy_string(channel->name, buffer, max));
 }
 
 

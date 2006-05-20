@@ -49,8 +49,8 @@ int irc_format_msg(struct irc_msg *, char *, char *, int);
 
 struct irc_server *irc_current_server(void);
 struct irc_channel *irc_current_channel(void);
-char *irc_stringify_nick(void *);
-char *irc_stringify_channel(void *);
+int irc_stringify_nick(void *, char *, int);
+int irc_stringify_channel(void *, char *, int);
 
 #endif
 
