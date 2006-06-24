@@ -13,7 +13,6 @@ OBJS =	init.o \
 	cmds/nick.o \
 	cmds/notice.o \
 	cmds/ping.o \
-	cmds/quit.o \
 	cmds/say.o \
 	cmds/server.o \
 	cmds/whois.o \
@@ -21,19 +20,20 @@ OBJS =	init.o \
 	core/user.o \
 	core/channel.o \
 	core/server.o \
-	msgs/nick.o \
+	msgs/default.o \
 	msgs/join.o \
 	msgs/kick.o \
 	msgs/names.o \
+	msgs/nick.o \
 	msgs/notice.o \
 	msgs/part.o \
 	msgs/privmsg.o \
 	msgs/quit.o \
 	msgs/topic.o \
-	msgs/default.o \
 	utils/current.o \
 	utils/dispatch.o \
-	utils/format.o
+	utils/format.o \
+	utils/quit.o
 
 include $(ROOT)/rules.mk
 
