@@ -23,18 +23,10 @@
 #endif
 
 #define signal_hash_m(list, str)		(sdbm_hash(str) % hash_size_v(list))
-#define signal_compare_m(str)			(!strcmp(cur->name, name))
-
-struct signal_handler_s {
-	signal_t func;
-	void *ptr;
-	struct signal_handler_s *next;
-};
+#define signal_compare_m(str)			(!strcmp(cur->data.name, str))
 
 struct signal_node_s {
-	char *name;
-	int bitflags;
-	struct signal_handler_s *handlers;
+	struct signal_s data;
 	hash_node_v(signal_node_s) sl;
 };
 
@@ -67,19 +59,19 @@ int release_signal(void)
 /**
  * Add a new signal with the given name to the list of signals.
  */
-int add_signal(char *name)
+int add_signal(char *name, int bitflags)
 {
 	struct signal_node_s *node;
 
 	if (!(node = memory_alloc(sizeof(struct signal_node_s) + strlen(name) + 1)))
 		return(-1);
-	node->name = (char *) (((unsigned int) node) + sizeof(struct signal_node_s));
-	strcpy(node->name, name);
-	node->bitflags = 0;
-	node->handlers = NULL;
+	node->data.name = (char *) (((unsigned int) node) + sizeof(struct signal_node_s));
+	strcpy(node->data.name, name);
+	node->data.bitflags = bitflags;
+	node->data.handlers = NULL;
 	hash_add_node_v(signal_list, sl, node, signal_hash_m(signal_list, name));
 	if (hash_load_v(signal_list) > SIGNAL_LOAD_FACTOR)
-		hash_rehash_v(signal_list, sl, (hash_size_v(signal_list) * 1.75), signal_hash_m(signal_list, node->name));
+		hash_rehash_v(signal_list, sl, (hash_size_v(signal_list) * 1.75), signal_hash_m(signal_list, node->data.name));
 	return(0);
 }
 
@@ -99,6 +91,18 @@ int remove_signal(char *name)
 	return(0);
 }
 
+/*
+struct signal_s *find_signal(char *name, void *ptr)
+{
+	struct signal_node_s *node;
+
+	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_name_m(name));
+	if (!node)
+		return(NULL);
+	return(&node->data);
+}
+*/
+
 /**
  * Connect a new handler to the signal with the given name so that the given
  * when that signal is emitted, the given function is called with the given
@@ -106,7 +110,7 @@ int remove_signal(char *name)
  * and the signal must already be created using the add_signal function.  If
  * an error occurs, -1 is returned, otherwise 0 is returned. 
  */
-int signal_connect(char *name, signal_t func, void *ptr)
+int signal_connect(char *name, void *index, signal_t func, void *ptr)
 {
 	struct signal_node_s *node;
 	struct signal_handler_s *handler;
@@ -118,10 +122,11 @@ int signal_connect(char *name, signal_t func, void *ptr)
 		return(-1);
 	if (!(handler = memory_alloc(sizeof(struct signal_handler_s))))
 		return(-1);
+	handler->index = index;
 	handler->func = func;
 	handler->ptr = ptr;
-	handler->next = node->handlers;
-	node->handlers = handler;
+	handler->next = node->data.handlers;
+	node->data.handlers = handler;
 	return(0);
 }
 
@@ -131,7 +136,7 @@ int signal_connect(char *name, signal_t func, void *ptr)
  * and that match the given pointer (or if NULL is given then any pointer).
  * The number of signals disconnected is returned.
  */
-int signal_disconnect(char *name, signal_t func, void *ptr)
+int signal_disconnect(char *name, void *index, signal_t func, void *ptr)
 {
 	int disconnected = 0;
 	struct signal_node_s *node;
@@ -139,15 +144,15 @@ int signal_disconnect(char *name, signal_t func, void *ptr)
 
 	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
 	if (!node)
-		return(0);
+		return(-1);
 	prev = NULL;
-	cur = node->handlers;
+	cur = node->data.handlers;
 	while (cur) {
-		if ((!func || (cur->func == func)) && (!ptr || (cur->ptr == ptr))) {
+		if ((cur->index == index) && (!func || (cur->func == func)) && (!ptr || (cur->ptr == ptr))) {
 			if (prev)
 				prev->next = cur->next;
 			else
-				node->handlers= cur->next;
+				node->data.handlers= cur->next;
 			memory_free(cur);
 			disconnected++;
 		}
@@ -160,9 +165,10 @@ int signal_disconnect(char *name, signal_t func, void *ptr)
 /**
  * All of the handlers associated with the signal specified by the given
  * name are called with the given pointer passed as the second argument.
- * The number of handlers called is returned.
+ * The number of handlers called is returned or -1 is returned if the
+ * signal is not found.
  */
-int signal_emit(char *name, void *ptr)
+int signal_emit(char *name, void *index, void *ptr)
 {
 	int calls = 0;
 	struct signal_node_s *node;
@@ -170,11 +176,14 @@ int signal_emit(char *name, void *ptr)
 
 	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
 	if (!node)
-		return(0);
-	cur = node->handlers;
+		return(-1);
+	cur = node->data.handlers;
 	while (cur) {
-		cur->func(cur->ptr, ptr);
-		calls++;
+		if (cur->index == index) {
+			// TODO change the signal function format
+			cur->func(cur->ptr, ptr);
+			calls++;
+		}
 		cur = cur->next;
 	}
 	return(calls);
@@ -191,7 +200,7 @@ static void signal_destroy_node(struct signal_node_s *node)
 {
 	struct signal_handler_s *cur, *tmp;
 
-	cur = node->handlers;
+	cur = node->data.handlers;
 	while (cur) {
 		tmp = cur->next;
 		memory_free(tmp);
