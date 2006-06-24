@@ -10,21 +10,6 @@
 #include <stutter/type.h>
 #include <stutter/lib/string.h>
 
-/*
-struct namespace_s {
-	char *name;
-	int bitflags;
-};
-
-struct variable_s {
-	struct type_s *type;
-	struct namespace_s *ns;
-	char *name;
-	void *value;
-};
-*/
-
-
 struct variable_s {
 	struct type_s *type;
 	char *name;
@@ -36,7 +21,6 @@ struct variable_table_s;
 
 int init_variable(void);
 int release_variable(void);
-
 
 struct variable_table_s *create_variable_table(void);
 int destroy_variable_table(struct variable_table_s *);
