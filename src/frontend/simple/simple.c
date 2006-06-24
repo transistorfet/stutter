@@ -246,6 +246,8 @@ main(int argc, char **argv)
 		return(0);
 	}
 
+	add_signal("quit", 0);
+
 	LOAD_MODULES();
 	if (!(type = find_type("table")) || !(table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
