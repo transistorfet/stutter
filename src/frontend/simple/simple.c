@@ -222,9 +222,9 @@ void fe_refresh(void *widget)
 	screen_refresh();
 }
 
-void fe_terminate(int status)
+void fe_quit(char *reason)
 {
-	signal_emit("terminate", (void *) status);
+	signal_emit("quit", NULL, (void *) reason);
 	exit_flag = 0;
 }
 
