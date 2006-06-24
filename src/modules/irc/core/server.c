@@ -35,7 +35,7 @@ int init_irc_server(void)
 	if (server_initialized)
 		return(1);
 	linear_init_v(server_list);
-	add_signal("irc_msg_dispatch");
+	add_signal("irc_msg_dispatch", 0);
 	server_initialized = 1;
 	return(0);
 }
@@ -276,7 +276,7 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 		return(-1);
 	msg->server = server;
 	if (!(ret = irc_send_msg(server, msg)))
-		signal_emit("irc_msg_dispatch", msg);
+		signal_emit("irc_msg_dispatch", NULL, msg);
 	irc_destroy_msg(msg);
 	return(ret);
 }
@@ -295,7 +295,7 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 		return(-1);
 	msg->server = server;
 	if (!(ret = irc_send_msg(server, msg)))
-		signal_emit("irc_msg_dispatch", msg);
+		signal_emit("irc_msg_dispatch", NULL, msg);
 	irc_destroy_msg(msg);
 	return(ret);
 }
@@ -341,7 +341,7 @@ static int irc_server_receive(struct irc_server *server, network_t net)
 	struct irc_msg *msg;
 
 	if (msg = irc_receive_msg(server))
-		signal_emit("irc_msg_dispatch", msg);
+		signal_emit("irc_msg_dispatch", NULL, msg);
 	irc_destroy_msg(msg);
 	return(0);
 }
