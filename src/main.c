@@ -18,6 +18,9 @@ int init_system(void)
 	init_type();
 	init_variable();
 	init_key();
+
+	add_signal("error_general", 0);
+
 	return(0);
 }
 
@@ -27,6 +30,7 @@ int release_system(void)
 	release_variable();
 	release_type();
 	release_signal();
+
 	return(0);
 }
 
