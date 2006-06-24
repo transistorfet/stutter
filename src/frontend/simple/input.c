@@ -125,6 +125,7 @@ int input_save_buffer(struct input_s *input)
 	input->buffer[input->end] = '\0';
 	if (str = create_string(input->buffer))
 		queue_append(input->history, str);
+	input->history->current = NULL;
 	return(0);
 }
 
