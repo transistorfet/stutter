@@ -32,7 +32,7 @@ void fe_move(void *widget, short x, short y);
 int fe_scroll(void *widget, int diff);
 void fe_refresh(void *widget);
 
-void fe_terminate(int status);
+void fe_quit(char *reason);
 
 #endif
 
