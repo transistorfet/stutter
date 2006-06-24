@@ -11,6 +11,7 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/utils.h>
 #include <stutter/variable.h>
 #include <stutter/frontend.h>
 #include <stutter/lib/macros.h>
@@ -30,8 +31,7 @@ int base_cmd_source(char *env, char *args)
 	}
 
 	if (!(fptr = fopen(str, "r"))) {
-		snprintf(buffer, STRING_SIZE, "Error opening file: %s", str);
-		signal_emit("error.general", buffer);
+		util_emit_str("error_general", NULL, "Error opening file: %s", str);
 		return(-1);
 	}
 
