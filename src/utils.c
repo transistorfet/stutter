@@ -9,6 +9,7 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/signal.h>
 #include <stutter/variable.h>
 #include <stutter/lib/macros.h>
 #include <stutter/lib/string.h>
@@ -162,5 +163,20 @@ int util_expand_variable(char *str, char *buffer, int max, int *str_count)
 		*str_count += i;
 	buffer[j] = '\0';
 	return(j);
+}
+
+/**
+ * Format a string given the sprintf-style format string and optional arguments
+ * and emit that string to the given signal.
+ */
+int util_emit_str(char *name, void *index, char *fmt, ...)
+{
+	va_list va;
+	char buffer[STRING_SIZE];
+
+	va_start(va, fmt);
+	if (vsnprintf(buffer, STRING_SIZE, fmt, va) < 0)
+		return(-1);
+	return(signal_emit(name, index, buffer));
 }
 
