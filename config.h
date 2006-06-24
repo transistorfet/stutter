@@ -95,8 +95,13 @@
 	DECLARE_COMMAND(parse)		\
 	DECLARE_COMMAND(get)		\
 	DECLARE_COMMAND(set)		\
+	DECLARE_COMMAND(quit)		\
 	DECLARE_COMMAND(remove)		\
 	DECLARE_COMMAND(source)
+
+#define IRC_HANDLERS()							\
+	ADD_HANDLER("irc_msg_dispatch", NULL, irc_dispatch_msg, NULL)	\
+	ADD_HANDLER("quit", NULL, irc_sig_quit, NULL)
 
 #define IRC_COMMANDS()			\
 	DECLARE_COMMAND(disconnect)	\
@@ -108,7 +113,6 @@
 	DECLARE_COMMAND(nick)		\
 	DECLARE_COMMAND(notice)		\
 	DECLARE_COMMAND(ping)		\
-	DECLARE_COMMAND(quit)		\
 	DECLARE_COMMAND(say)		\
 	DECLARE_COMMAND(server)		\
 	DECLARE_COMMAND(whois)		\
