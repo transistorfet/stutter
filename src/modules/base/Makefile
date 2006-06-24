@@ -5,22 +5,23 @@ ROOT = ../../..
 LIB_TARGET = modbase.a
 OBJS =	init.o \
 	cmds/bind.o \
-	cmds/next.o \
-	cmds/previous.o \
-	cmds/echo.o \
 	cmds/clear.o \
-	cmds/scroll.o \
+	cmds/echo.o \
 	cmds/get.o \
-	cmds/set.o \
+	cmds/next.o \
 	cmds/parse.o \
+	cmds/previous.o \
+	cmds/quit.o \
 	cmds/remove.o \
+	cmds/scroll.o \
+	cmds/set.o \
 	cmds/source.o \
-	types/table.o \
+	types/command.o \
 	types/format.o \
-	types/string.o \
 	types/status.o \
-	types/time.o \
-	types/command.o
+	types/string.o \
+	types/table.o \
+	types/time.o
 
 include $(ROOT)/rules.mk
 
