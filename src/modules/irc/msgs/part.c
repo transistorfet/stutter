@@ -12,17 +12,17 @@
 /**
  * Update the user information and print message to channel.
  */
-int irc_msg_part(struct irc_server *server, struct irc_msg *msg)
+int irc_msg_part(char *env, struct irc_msg *msg)
 {
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
-	if (!(channel = irc_find_channel(server->channels, msg->params[0])))
+	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		return(-1);
 
-	if (!strcmp(server->nick, msg->nick)) {
+	if (!strcmp(msg->server->nick, msg->nick)) {
 		fe_destroy_widget(channel->window);
-		irc_remove_channel(server->channels, msg->params[0]);
+		irc_remove_channel(msg->server->channels, msg->params[0]);
 	}
 	else {
 		irc_remove_user(channel->users, msg->nick);

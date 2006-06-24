@@ -13,14 +13,14 @@
 /**
  * Update the user information and print message to channel.
  */
-int irc_msg_names(struct irc_server *server, struct irc_msg *msg)
+int irc_msg_names(char *env, struct irc_msg *msg)
 {
 	int bitflags;
 	char *str, *name;
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
-	if (!(channel = irc_find_channel(server->channels, msg->params[2])))
+	if (!(channel = irc_find_channel(msg->server->channels, msg->params[2])))
 		return(-1);
 
 	if (irc_format_msg(msg, IRC_FMT_NAMES, buffer, STRING_SIZE) < 0)

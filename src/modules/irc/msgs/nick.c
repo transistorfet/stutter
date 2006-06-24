@@ -14,19 +14,19 @@ static int irc_msg_nick_traverse(struct irc_channel *, struct irc_msg *);
 /**
  * Update a user's nick and prints message to channel.
  */
-int irc_msg_nick(struct irc_server *server, struct irc_msg *msg)
+int irc_msg_nick(char *env, struct irc_msg *msg)
 {
 	char buffer[STRING_SIZE];
 
-	if (!strcmp(server->nick, msg->nick)) {
-		strncpy(server->nick, msg->params[0], IRC_MAX_NICK - 1);
-		server->nick[IRC_MAX_NICK - 1] = '\0';
+	if (!strcmp(msg->server->nick, msg->nick)) {
+		strncpy(msg->server->nick, msg->params[0], IRC_MAX_NICK - 1);
+		msg->server->nick[IRC_MAX_NICK - 1] = '\0';
 	}
-	irc_traverse_channel_list(server->channels, (traverse_t) irc_msg_nick_traverse, msg);
+	irc_traverse_channel_list(msg->server->channels, (traverse_t) irc_msg_nick_traverse, msg);
 
 	if (irc_format_msg(msg, IRC_FMT_NICK, buffer, STRING_SIZE) < 0)
 		return(-1);
-	fe_print(server->status->window, buffer);
+	fe_print(msg->server->status->window, buffer);
 	return(0);
 }
 

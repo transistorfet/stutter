@@ -12,21 +12,21 @@
 /**
  * Update the user information and print message to channel.
  */
-int irc_msg_join(struct irc_server *server, struct irc_msg *msg)
+int irc_msg_join(char *env, struct irc_msg *msg)
 {
 	void *window;
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
-	if (!strcmp(server->nick, msg->nick)) {
-		if (!(window = fe_create_widget("irc", "window", NULL, NULL)) || !(channel = irc_add_channel(server->channels, msg->params[0], window, server))) {
-			irc_leave_channel(server, msg->params[0]);
+	if (!strcmp(msg->server->nick, msg->nick)) {
+		if (!(window = fe_create_widget("irc", "window", NULL, NULL)) || !(channel = irc_add_channel(msg->server->channels, msg->params[0], window, msg->server))) {
+			irc_leave_channel(msg->server, msg->params[0]);
 			// TODO print error message
 			return(-1);
 		}
 		fe_select_widget("window", NULL, window);
 	}
-	else if (!(channel = irc_find_channel(server->channels, msg->params[0])))
+	else if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		return(-1);
 
 	irc_add_user(channel->users, msg->nick, 0);

@@ -14,12 +14,13 @@
 /**
  * Prints private message to channel.
  */
-int irc_msg_privmsg(struct irc_server *server, struct irc_msg *msg)
+int irc_msg_privmsg(char *env, struct irc_msg *msg)
 {
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
-	if (!(channel = irc_find_channel(server->channels, msg->params[0])) && ((msg->params[0][0] != '#') && !(channel = irc_current_channel())))
+	// TODO modify so privmsgs to individuals are still printed but using a differnt format
+	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])) && ((msg->params[0][0] != '#') && !(channel = irc_current_channel())))
 		return(-1);
 
 	if ((msg->text[0] == 0x01) && !strncmp(&msg->text[1], "ACTION", 6)) {

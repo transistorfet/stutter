@@ -13,7 +13,7 @@
 /**
  * Prints message to current channel and status channel.
  */
-int irc_msg_notice(struct irc_server *server, struct irc_msg *msg)
+int irc_msg_notice(char *env, struct irc_msg *msg)
 {
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
@@ -23,8 +23,8 @@ int irc_msg_notice(struct irc_server *server, struct irc_msg *msg)
 
 	if (irc_format_msg(msg, msg->nick ? IRC_FMT_NOTICE : IRC_FMT_NOTICE_SELF, buffer, STRING_SIZE) < 0)
 		return(-1);
-	if (channel != server->status)
-		fe_print(server->status->window, buffer);
+	if (channel != msg->server->status)
+		fe_print(msg->server->status->window, buffer);
 	fe_print(channel->window, buffer);
 	return(0);
 }
