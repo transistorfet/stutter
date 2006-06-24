@@ -6,6 +6,7 @@ LIB_TARGET = modbase.a
 OBJS =	init.o \
 	cmds/bind.o \
 	cmds/clear.o \
+	cmds/clearline.o \
 	cmds/echo.o \
 	cmds/get.o \
 	cmds/next.o \

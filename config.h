@@ -44,19 +44,21 @@
 #define IRC_FMT_DEFAULT			"%N!%S %C %M"
 #define IRC_FMT_ACTION			"[%@] * %N %M"
 #define IRC_FMT_ACTION_SELF		"[%@] * %n %M"
-#define IRC_FMT_PRIVMSG			"[%@ %N] %M"
-#define IRC_FMT_PRIVMSG_SELF		"[%@ %n] %M"
-#define IRC_FMT_NOTICE			"%B [%@] -%N- %M"
-#define IRC_FMT_NOTICE_SELF		"%B [%@] -%n- %M"
 #define IRC_FMT_JOIN			"%B [%@] Joined %P1: %N (%S)"
-#define IRC_FMT_PART			"%B [%@] Leaving %P1: %N (%M)"
-#define IRC_FMT_QUIT			"%B [%@] Quit: %N (%M)"
-#define IRC_FMT_TOPIC			"%B Topic Set by %N To: %M"
-//#define IRC_FMT_NAMES			"$banner Users on <channel>%P3</channel>: <msg>%T</msg>"
-#define IRC_FMT_NAMES			"%B Users on %P3: %M"
 #define IRC_FMT_KICK			"%B [%@] %P2 was kicked from %P1 by %N (%M)"
 #define IRC_FMT_KICK_SELF		"%B [%@] You were kicked from %P1 by %N (%M)"
+//#define IRC_FMT_NAMES			"$banner Users on <channel>%P3</channel>: <msg>%T</msg>"
+#define IRC_FMT_NAMES			"%B Users on %P3: %M"
 #define IRC_FMT_NICK			"%B [%@] nick: %N -> %P1"
+#define IRC_FMT_NOTICE			"%B [%@] -%N- %M"
+#define IRC_FMT_NOTICE_SELF		"%B [%@] -%n- %M"
+#define IRC_FMT_PART			"%B [%@] Leaving %P1: %N (%M)"
+#define IRC_FMT_PRIVATE_MSG		"-[%@ %N]- %M"
+#define IRC_FMT_PRIVATE_MSG_SELF	"-[%@ %n]- %M"
+#define IRC_FMT_PUBLIC_MSG		"[%@ %N] %M"
+#define IRC_FMT_PUBLIC_MSG_SELF		"[%@ %n] %M"
+#define IRC_FMT_QUIT			"%B [%@] Quit: %N (%M)"
+#define IRC_FMT_TOPIC			"%B Topic Set by %N To: %M"
 
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 
@@ -83,20 +85,22 @@
 #define BIND_KEYS()			\
 	BIND_KEY("\n", "parse")		\
 	BIND_KEY("\x18", "next")	\
+	BIND_KEY("\x15", "clearline")	\
 	BIND_KEY("\x11", "previous")
 
 #define BASE_COMMANDS()			\
 	DECLARE_COMMAND(bind)		\
-	DECLARE_COMMAND(next)		\
-	DECLARE_COMMAND(previous)	\
-	DECLARE_COMMAND(echo)		\
 	DECLARE_COMMAND(clear)		\
-	DECLARE_COMMAND(scroll)		\
-	DECLARE_COMMAND(parse)		\
+	DECLARE_COMMAND(clearline)	\
+	DECLARE_COMMAND(echo)		\
 	DECLARE_COMMAND(get)		\
-	DECLARE_COMMAND(set)		\
+	DECLARE_COMMAND(next)		\
+	DECLARE_COMMAND(parse)		\
+	DECLARE_COMMAND(previous)	\
 	DECLARE_COMMAND(quit)		\
 	DECLARE_COMMAND(remove)		\
+	DECLARE_COMMAND(scroll)		\
+	DECLARE_COMMAND(set)		\
 	DECLARE_COMMAND(source)
 
 #define IRC_HANDLERS()							\

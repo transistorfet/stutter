@@ -18,6 +18,7 @@ int release_base(void);
 /* Commands */
 int base_cmd_bind(char *, char *);
 int base_cmd_clear(char *, char *);
+int base_cmd_clearline(char *, char *);
 int base_cmd_echo(char *, char *);
 int base_cmd_get(char *, char *);
 int base_cmd_next(char *, char *);
