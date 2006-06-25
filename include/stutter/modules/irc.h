@@ -43,6 +43,9 @@ int irc_msg_privmsg(char *, struct irc_msg *);
 int irc_msg_quit(char *, struct irc_msg *);
 int irc_msg_topic(char *, struct irc_msg *);
 
+int irc_msg_ctcp_action(char *, struct irc_msg *);
+int irc_msg_ctcp_ping(char *, struct irc_msg *);
+
 /* Utils */
 int irc_dispatch_msg(char *, struct irc_msg *);
 int irc_format_msg(struct irc_msg *, char *, char *, int);
