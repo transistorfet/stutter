@@ -23,12 +23,6 @@
 #define BASE_DEFAULT_SET_TYPE		"string"
 
 /* IRC Module Values */
-//#define IRC_DEFAULT_SERVER		"irc.othersideirc.net"
-//#define IRC_DEFAULT_SERVER		"192.168.1.101"
-//#define IRC_DEFAULT_SERVER		"euro.othersideirc.net"
-//#define IRC_DEFAULT_SERVER		"irc.neovanglist.net"
-#define IRC_DEFAULT_SERVER		"clarke.freenode.net"
-//#define IRC_DEFAULT_SERVER		"irc.newnet.net"
 #define IRC_DEFAULT_PORT		6667
 #define IRC_DEFAULT_NICK		"CaptainPants"
 
@@ -41,10 +35,12 @@
 #define IRC_TIMESTAMP			"%d-%b:%H:%M"
 #define IRC_BANNER			"***"
 
-#define IRC_FMT_DEFAULT			"%N!%S %C %M"
-#define IRC_FMT_ACTION			"[%@] * %N %M"
-#define IRC_FMT_ACTION_SELF		"\x02[\x02%@\x02]\x02 * %n %M"
-#define IRC_FMT_JOIN			"%B [%@] Joined %P1: %N (%S)"
+#define IRC_FMT_DEFAULT			"%N!%H %C %M"
+#define IRC_FMT_PRIVATE_ACTION		"[%@] <*> %N %M"
+#define IRC_FMT_PRIVATE_ACTION_SELF	"\x02[\x02%@\x02]\x02 <*> %n %M"
+#define IRC_FMT_PUBLIC_ACTION		"[%@] * %N %M"
+#define IRC_FMT_PUBLIC_ACTION_SELF	"\x02[\x02%@\x02]\x02 * %n %M"
+#define IRC_FMT_JOIN			"%B [%@] Joined %P1: %N (%H)"
 #define IRC_FMT_KICK			"%B [%@] %P2 was kicked from %P1 by %N (%M)"
 #define IRC_FMT_KICK_SELF		"%B [%@] You were kicked from %P1 by %N (%M)"
 //#define IRC_FMT_NAMES			"$banner Users on <channel>%P3</channel>: <msg>%T</msg>"
@@ -53,6 +49,8 @@
 #define IRC_FMT_NOTICE			"%B [%@] -%N- %M"
 #define IRC_FMT_NOTICE_SELF		"%B \x02[\x02%@\x02]\x02 -%n- %M"
 #define IRC_FMT_PART			"%B [%@] Leaving %P1: %N (%M)"
+#define IRC_FMT_PING			"%B [%@] Ping received from %N (%H)"
+#define IRC_FMT_PING_REPLY		"%B [%@] Ping reply from %N (%M)"
 #define IRC_FMT_PRIVATE_MSG		"-[%@ %N]- %M"
 #define IRC_FMT_PRIVATE_MSG_SELF	"-\x02[\x02%@ %n\x02]\x02- %M"
 #define IRC_FMT_PUBLIC_MSG		"[%@ %N] %M"
@@ -104,7 +102,9 @@
 	DECLARE_COMMAND(source)
 
 #define IRC_HANDLERS()							\
-	ADD_HANDLER("irc_msg_dispatch", NULL, irc_dispatch_msg, NULL)	\
+	ADD_HANDLER("irc_dispatch_msg", NULL, irc_dispatch_msg, NULL)	\
+	ADD_HANDLER("irc_dispatch_ctcp", NULL, irc_msg_ctcp_action, NULL)	\
+	ADD_HANDLER("irc_dispatch_ctcp", NULL, irc_msg_ctcp_ping, NULL)	\
 	ADD_HANDLER("quit", NULL, irc_sig_quit, NULL)
 
 #define IRC_COMMANDS()			\
