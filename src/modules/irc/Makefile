@@ -30,10 +30,15 @@ OBJS =	init.o \
 	msgs/privmsg.o \
 	msgs/quit.o \
 	msgs/topic.o \
+	msgs/ctcp/action.o \
+	msgs/ctcp/ping.o \
 	utils/current.o \
 	utils/dispatch.o \
 	utils/format.o \
 	utils/quit.o
 
 include $(ROOT)/rules.mk
+
+init.o: $(CONFIG_H)
+$(CONFIG_H):
 
