@@ -1,7 +1,7 @@
 /*
  * Module Name:		input.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; string ; screen
+ * Module Requirements:	queue ; memory ; string ; terminal
  * Description:		Input Buffer
  */
 
@@ -11,7 +11,7 @@
 #include <stutter/lib/queue.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/string.h>
-#include "screen.h"
+#include "terminal.h"
 #include "input.h"
 
 /**
@@ -50,22 +50,22 @@ int destroy_input(struct input_s *input)
  }
 
 /**
- * Redraw the given input buffer on the screen.
+ * Redraw the given input buffer on the terminal.
  */
 int refresh_input(struct input_s *input)
 {
 	int i;
 	short width, height;
 
-	width = screen_width();
-	height = screen_height();
+	width = terminal_width();
+	height = terminal_height();
 
 	input->buffer[input->end] = '\0';
-	screen_clear(0, height - 1, width, 1);
-	screen_move(0, height - 1);
+	terminal_clear(0, height - 1, width, 1);
+	terminal_move(0, height - 1);
 	i = input->i - width + 1;
-	screen_print(&input->buffer[(i >= 0) ? i : 0], 0);
-	screen_move(( input->i >= width ? width - 1 : input->i ), height - 1);
+	terminal_print(&input->buffer[(i >= 0) ? i : 0], 0);
+	terminal_move(( input->i >= width ? width - 1 : input->i ), height - 1);
 	return(0);
 }
 

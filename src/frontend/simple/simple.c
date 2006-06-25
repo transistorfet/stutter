@@ -1,7 +1,7 @@
 /*
  * Module Name:		simple.c
  * Version:		0.1
- * Module Requirements:	type ; signal ; queue ; string ; variable ; net ; screen
+ * Module Requirements:	type ; signal ; queue ; string ; variable ; net ; terminal
  * Description:		Simple Frontend
  */
 
@@ -17,8 +17,8 @@
 #include <stutter/lib/globals.h>
 #include "input.h"
 #include "window.h"
+#include "terminal.h"
 #include "statusbar.h"
-#include "screen.h"
 #include "net.h"
 
 int exit_flag = 1;
@@ -28,7 +28,7 @@ struct statusbar_s *statusbar;
 
 int init_frontend(void)
 {
-	init_screen();
+	init_terminal();
 
 	if (!(window_list = create_queue(0, (destroy_t) destroy_window)))
 		return(-1);
@@ -44,7 +44,7 @@ int release_frontend(void)
 	destroy_input(input);
 	destroy_statusbar(statusbar);
 	destroy_queue(window_list);
-	release_screen();
+	release_terminal();
 
 	return(0);
 }
@@ -74,7 +74,7 @@ void *fe_get_parent(void *widget)
 
 short fe_get_width(void *widget)
 {
-	return(screen_width());
+	return(terminal_width());
 }
 
 short fe_get_height(void *widget)
@@ -83,7 +83,7 @@ short fe_get_height(void *widget)
 		return(statusbar->height);
 	else if (widget == input)
 		return(1);
-	return(screen_height() - 2);
+	return(terminal_height() - 2);
 }
 
 void *fe_find_widget(char *id)
@@ -179,9 +179,9 @@ char *fe_read(void *widget, char *buffer, int max)
 void fe_clear(void *widget)
 {
 	if (widget == statusbar) {
-		screen_set_attribs(SC_INVERSE, 0, 0);
-		screen_clear(0, screen_height() - statusbar->height - 1, screen_width(), statusbar->height);
-		screen_set_attribs(SC_NORMAL, 0, 0);
+		terminal_set_attribs(SC_INVERSE, 0, 0);
+		terminal_clear(0, terminal_height() - statusbar->height - 1, terminal_width(), statusbar->height);
+		terminal_set_attribs(SC_NORMAL, 0, 0);
 	}
 	else if (widget == input)
 		clear_input(input);
@@ -192,7 +192,7 @@ void fe_clear(void *widget)
 void fe_move(void *widget, short x, short y)
 {
 	if (widget == statusbar)
-		screen_move(x, screen_height() - statusbar->height - 1);
+		terminal_move(x, terminal_height() - statusbar->height - 1);
 }
 
 int fe_scroll(void *widget, int diff)
@@ -207,7 +207,7 @@ void fe_refresh(void *widget)
 
 	if (!widget) {
 		if (!queue_current_node(window_list) && !queue_first_node(window_list))
-			screen_clear(0, 0, screen_width(), screen_height() - statusbar->height - 1);
+			terminal_clear(0, 0, terminal_width(), terminal_height() - statusbar->height - 1);
 		else if (window = (struct window_s *) queue_current(window_list))
 			refresh_window(window);
 		refresh_statusbar(statusbar);
@@ -219,7 +219,7 @@ void fe_refresh(void *widget)
 		refresh_statusbar(statusbar);
 	else
 		refresh_window(widget);
-	screen_refresh();
+	terminal_refresh();
 }
 
 void fe_quit(char *reason)
@@ -269,7 +269,7 @@ main(int argc, char **argv)
 	while (exit_flag) {
 		fe_refresh(NULL);
 		fe_net_wait(1);
-		if ((ch = screen_read_char()) && (process_key(ch)))
+		if ((ch = terminal_read_char()) && (process_key(ch)))
 			input_default(input, ch);
 	}
 

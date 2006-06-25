@@ -7,7 +7,7 @@ OBJS =	simple.o \
 	input.o \
 	window.o \
 	statusbar.o \
-	screen.o \
+	terminal.o \
 	net.o \
 	$(MODULES) \
 	$(ROOT)/src/main.a

@@ -1,7 +1,7 @@
 /*
  * Module Name:		statusbar.c
  * Version:		0.1
- * Module Requirements: type ; memory ; stringt ; variable ; screen
+ * Module Requirements: type ; memory ; stringt ; variable ; terminal
  * Description:		Status Bar Widget
  */
 
@@ -10,7 +10,7 @@
 #include <stutter/variable.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/string.h>
-#include "screen.h"
+#include "terminal.h"
 #include "statusbar.h"
 
 /**
@@ -51,18 +51,18 @@ int refresh_statusbar(struct statusbar_s *statusbar)
 	short width, height;
 	char buffer[STRING_SIZE];
 
-	width = screen_width();
-	height = screen_height();
+	width = terminal_width();
+	height = terminal_height();
 
-	screen_set_attribs(SC_INVERSE, 0, 0);
-	screen_clear(0, height - statusbar->height - 1, width, statusbar->height);
+	terminal_set_attribs(SC_INVERSE, 0, 0);
+	terminal_clear(0, height - statusbar->height - 1, width, statusbar->height);
 	if ((i = statusbar->status->type->stringify(statusbar->status->value, buffer, STRING_SIZE)) >= 0) {
 		if (i > width)
 			buffer[width] = '\0';
-		screen_move(0, height - statusbar->height - 1);
-		screen_print(buffer, 0);
+		terminal_move(0, height - statusbar->height - 1);
+		terminal_print(buffer, 0);
 	}
-	screen_set_attribs(SC_NORMAL, 0, 0);
+	terminal_set_attribs(SC_NORMAL, 0, 0);
 	return(0);
 }
 

@@ -1,7 +1,7 @@
 /*
  * Module Name:		window.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; screen
+ * Module Requirements:	queue ; memory ; terminal
  * Description:		Window Manager
  */
 
@@ -9,7 +9,7 @@
 
 #include <stutter/lib/queue.h>
 #include <stutter/lib/memory.h>
-#include "screen.h"
+#include "terminal.h"
 #include "window.h"
 
 static int window_wrap_string(char *, int);
@@ -42,7 +42,7 @@ int destroy_window(struct window_s *window)
  }
 
 /**
- * Redraw the given window on the screen if it is not hidden.
+ * Redraw the given window on the terminal if it is not hidden.
  */
 int refresh_window(struct window_s *window)
 {
@@ -52,13 +52,13 @@ int refresh_window(struct window_s *window)
 	struct window_entry_s *cur;
 	int breaks[WINDOW_MAX_WRAP];
 
-	width = screen_width();
-	height = screen_height();
+	width = terminal_width();
+	height = terminal_height();
 
 	// TODO how do you get the statusbar height?
 	lines = height - 3;
-	screen_clear(0, 0, width, height - 2);
-	screen_move(0, lines);
+	terminal_clear(0, 0, width, height - 2);
+	terminal_move(0, lines);
 
 	if (!(cur = queue_first_v(window->log)))
 		return(0);
@@ -77,8 +77,8 @@ int refresh_window(struct window_s *window)
 		}
 
 		for (;i >= 0;i--) {
-			screen_move(0, lines);
-			screen_print(&str[j], breaks[i]);
+			terminal_move(0, lines);
+			terminal_print(&str[j], breaks[i]);
 			lines--;
 			j -= breaks[i - 1];
 		}

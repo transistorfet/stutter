@@ -1,23 +1,23 @@
 /*
- * Module Name:		screen.c
+ * Module Name:		terminal.c
  * Version:		0.1
  * Module Requirements:	(none)
  * System Requirements:	Curses Library
- * Description:		Curses Screen Manager
+ * Description:		Curses Terminal Manager
  */
 
 #include <curses.h>
 #include <stdlib.h>
 
-#include "screen.h"
+#include "terminal.h"
 
-short screen_last_width, screen_last_height;
-static int screen_attribs[] = { A_NORMAL, A_BOLD, A_REVERSE, A_BLINK };
+short terminal_last_width, terminal_last_height;
+static int terminal_attribs[] = { A_NORMAL, A_BOLD, A_REVERSE, A_BLINK };
 
 /**
- * Initialize the screen and return 0 on success.
+ * Initialize the terminal and return 0 on success.
  */
-int init_screen(void)
+int init_terminal(void)
 {
 	int i, j;
 
@@ -35,41 +35,41 @@ int init_screen(void)
 	noecho();
 	scrollok(stdscr, 1);
 	nodelay(stdscr, TRUE);
-	getmaxyx(stdscr, screen_last_height, screen_last_width);
+	getmaxyx(stdscr, terminal_last_height, terminal_last_width);
 	return(0);
 }
 
 /**
- * Release all screen resources and return 0 on success.
+ * Release all terminal resources and return 0 on success.
  */
-int release_screen(void)
+int release_terminal(void)
 {
 	endwin();
 	return(0);
 }
 
 /**
- * Redraw and refresh the screen by calling all registered refresh callback
+ * Redraw and refresh the terminal by calling all registered refresh callback
  * functions and return 0 on success.
  */
-void screen_refresh(void)
+void terminal_refresh(void)
 {
-	getmaxyx(stdscr, screen_last_height, screen_last_width);
+	getmaxyx(stdscr, terminal_last_height, terminal_last_width);
 	refresh();
 }
 
 /**
- * Fill an area of the screen of the given size and starting at the given
+ * Fill an area of the terminal of the given size and starting at the given
  * x,y coordinates with a blank character.
  */
-void screen_clear(short x, short y, short width, short height)
+void terminal_clear(short x, short y, short width, short height)
 {
 	int i;
 
 	if (!width)
-		width = screen_last_width - x;
+		width = terminal_last_width - x;
 	if (!height)
-		height = screen_last_height - y;
+		height = terminal_last_height - y;
 
 	for (i = 0;i < height;i++) {
 		move(y, x);
@@ -79,66 +79,49 @@ void screen_clear(short x, short y, short width, short height)
 }
 
 /**
- * Move the cursor of the given screen to the given x, y coordinates.
+ * Move the cursor of the given terminal to the given x, y coordinates.
  */
-void screen_move(short x, short y)
+void terminal_move(short x, short y)
 {
 	move(y, x);
 }
 
 /**
  * Print the given string to the given length (or the whole string if
- * the given length is 0) to the given screen and return 0 on success.
+ * the given length is 0) to the given terminal and return 0 on success.
  */
-int screen_print(char *str, int length)
+int terminal_print(char *str, int length)
 {
 	int i;
+	int attrib = SC_NORMAL;
 
 	if (!length)
 		length = 2147483647;
-	for (i = 0;(str[i] != '\0') && (i < length);i++)
-		addch(str[i]);
+	for (i = 0;(str[i] != '\0') && (i < length);i++) {
+		if (str[i] == 0x02) {
+			attrib = (attrib & ~SC_BOLD) | (SC_BOLD & (attrib ^ SC_BOLD));
+			terminal_set_attribs(attrib, 0, 0);
+		}
+		else
+			addch(str[i]);
+	}
 	return(0);
 }
 
-int screen_read_char(void)
+int terminal_read_char(void)
 {
 	int ch;
 
 	ch = getch();
-//	switch (ch) {
-//		case 0x7f:
-//		case KEY_BACKSPACE:
-//			return(0x08);
-//		case KEY_UP:
-//			return(KC_UP);
-//		case KEY_DOWN:
-//			return(KC_DOWN);
-//		case KEY_RIGHT:
-//			return(KC_RIGHT);
-//		case KEY_LEFT:
-//			return(KC_LEFT);
-//		case KEY_HOME:
-//			return(KC_HOME);
-//		case KEY_END:
-//			return(KC_END);
-//		case KEY_NPAGE:
-//			return(KC_PAGEUP);
-//		case KEY_PPAGE:
-//			return(KC_PAGEDOWN);
-//		case KEY_ENTER:
-//			return('\n');
-//		default:
-			return(ch);
-//	}
+	return(ch);
 }
 
 /**
- * Set the current attributes of the given screen to the given attributes.
+ * Set the current attributes of the given terminal to the given attributes.
  */
-void screen_set_attribs(int attrib, int fg, int bg)
+void terminal_set_attribs(int attrib, int fg, int bg)
 {
-	attrset(screen_attribs[attrib] | COLOR_PAIR((bg * 8) + fg));
+	attrset(terminal_attribs[attrib] | COLOR_PAIR((bg * 8) + fg));
 }
 
 

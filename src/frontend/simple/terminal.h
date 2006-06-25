@@ -1,11 +1,11 @@
 /*
- * Header Name:		screen.h
+ * Header Name:		terminal.h
  * Version:		0.1
- * Description:		Screen Manager Interface
+ * Description:		Terminal Manager Interface
  */
 
-#ifndef _SIMPLE_SCREEN_H
-#define _SIMPLE_SCREEN_H
+#ifndef _SIMPLE_TERMINAL_H
+#define _SIMPLE_TERMINAL_H
 
 #include <stutter/lib/globals.h>
 
@@ -23,20 +23,20 @@
 #define SC_CYAN		0x06
 #define SC_WHITE	0x07
 
-#define screen_width()			screen_last_width
-#define screen_height()			screen_last_height
+#define terminal_width()			terminal_last_width
+#define terminal_height()			terminal_last_height
 
-extern short screen_last_width, screen_last_height;
+extern short terminal_last_width, terminal_last_height;
 
-int init_screen(void);
-int release_screen(void);
+int init_terminal(void);
+int release_terminal(void);
 
-void screen_refresh(void);
-void screen_clear(short, short, short, short);
-void screen_move(short, short);
-int screen_print(char *, int);
-int screen_read_char(void);
-void screen_set_attribs(int, int, int);
+void terminal_refresh(void);
+void terminal_clear(short, short, short, short);
+void terminal_move(short, short);
+int terminal_print(char *, int);
+int terminal_read_char(void);
+void terminal_set_attribs(int, int, int);
 
 #endif
 
