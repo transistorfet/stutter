@@ -93,18 +93,26 @@ void terminal_move(short x, short y)
 int terminal_print(char *str, int length)
 {
 	int i;
-	int attrib = SC_NORMAL;
+	int attrib = TA_NORMAL;
 
 	if (!length)
 		length = 2147483647;
 	for (i = 0;(str[i] != '\0') && (i < length);i++) {
-		if (str[i] == 0x02) {
-			attrib = (attrib & ~SC_BOLD) | (SC_BOLD & (attrib ^ SC_BOLD));
-			terminal_set_attribs(attrib, 0, 0);
+		switch (str[i]) {
+			case 0x02:
+				attrib = (attrib & ~TA_BOLD) | (TA_BOLD & (attrib ^ TA_BOLD));
+				terminal_set_attribs(attrib, 0, 0);
+				break;
+			case 0x06:
+				attrib = (attrib & ~TA_BLINK) | (TA_BLINK & (attrib ^ TA_BLINK));
+				terminal_set_attribs(attrib, 0, 0);
+				break;
+			default:
+				addch(str[i]);
+				break;
 		}
-		else
-			addch(str[i]);
 	}
+	terminal_set_attribs(TA_NORMAL, 0, 0);
 	return(0);
 }
 

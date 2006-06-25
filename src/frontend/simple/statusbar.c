@@ -54,7 +54,7 @@ int refresh_statusbar(struct statusbar_s *statusbar)
 	width = terminal_width();
 	height = terminal_height();
 
-	terminal_set_attribs(SC_INVERSE, 0, 0);
+	terminal_set_attribs(TA_INVERSE, 0, 0);
 	terminal_clear(0, height - statusbar->height - 1, width, statusbar->height);
 	if ((i = statusbar->status->type->stringify(statusbar->status->value, buffer, STRING_SIZE)) >= 0) {
 		if (i > width)
@@ -62,7 +62,7 @@ int refresh_statusbar(struct statusbar_s *statusbar)
 		terminal_move(0, height - statusbar->height - 1);
 		terminal_print(buffer, 0);
 	}
-	terminal_set_attribs(SC_NORMAL, 0, 0);
+	terminal_set_attribs(TA_NORMAL, 0, 0);
 	return(0);
 }
 

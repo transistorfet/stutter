@@ -179,9 +179,9 @@ char *fe_read(void *widget, char *buffer, int max)
 void fe_clear(void *widget)
 {
 	if (widget == statusbar) {
-		terminal_set_attribs(SC_INVERSE, 0, 0);
+		terminal_set_attribs(TA_INVERSE, 0, 0);
 		terminal_clear(0, terminal_height() - statusbar->height - 1, terminal_width(), statusbar->height);
-		terminal_set_attribs(SC_NORMAL, 0, 0);
+		terminal_set_attribs(TA_NORMAL, 0, 0);
 	}
 	else if (widget == input)
 		clear_input(input);

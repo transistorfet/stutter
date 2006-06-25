@@ -9,19 +9,19 @@
 
 #include <stutter/lib/globals.h>
 
-#define SC_NORMAL	0x00
-#define SC_BOLD		0x01
-#define SC_INVERSE	0x02
-#define SC_BLINK	0x03
+#define TA_NORMAL	0x00
+#define TA_BOLD		0x01
+#define TA_INVERSE	0x02
+#define TA_BLINK	0x03
 
-#define SC_BLACK	0x00
-#define SC_RED		0x01
-#define SC_GREEN	0x02
-#define SC_YELLOW	0x03
-#define SC_BLUE		0x04
-#define SC_MAGENTA	0x05
-#define SC_CYAN		0x06
-#define SC_WHITE	0x07
+#define TA_BLACK	0x00
+#define TA_RED		0x01
+#define TA_GREEN	0x02
+#define TA_YELLOW	0x03
+#define TA_BLUE		0x04
+#define TA_MAGENTA	0x05
+#define TA_CYAN		0x06
+#define TA_WHITE	0x07
 
 #define terminal_width()			terminal_last_width
 #define terminal_height()			terminal_last_height
