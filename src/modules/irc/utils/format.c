@@ -72,7 +72,7 @@ int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 					if (msg)
 						msg_copy_str_m(buffer, msg->nick, j, max);
 					break;
-				case 'S':
+				case 'H':
 					if (msg)
 						msg_copy_str_m(buffer, msg->host, j, max);
 					break;
