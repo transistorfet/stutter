@@ -26,6 +26,8 @@ int irc_msg_privmsg(char *env, struct irc_msg *msg)
 
 		// TODO remove this and replace with a ctcp handler
 		if (!strncmp(&msg->text[1], "ACTION", 6)) {
+			if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
+				return(-1);
 			msg->text = &msg->text[8];
 			msg->text[strlen(msg->text) - 1] = '\0';
 			if (irc_format_msg(msg, msg->nick ? IRC_FMT_ACTION : IRC_FMT_ACTION_SELF, buffer, STRING_SIZE) < 0)
