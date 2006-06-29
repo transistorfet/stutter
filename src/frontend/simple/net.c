@@ -82,7 +82,7 @@ network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
  */
 network_t fe_net_listen(int port, callback_t receiver, void *ptr)
 {
-
+	// TODO add server capabilities
 }
 
 /**
@@ -211,8 +211,10 @@ int fe_net_receive_str(network_t net, char *msg, int size, char ch)
 			//	as a msg that hasn't been fully recieved.  We could send a signal to report
 			//	the error somehow (which raises the question of should we do (and how would
 			//	we do) socket specific signals.
-			if (!select(net->socket + 1, &rd, NULL, NULL, &timeout))
+			if (!select(net->socket + 1, &rd, NULL, NULL, &timeout)) {
+				msg[i + 1] = '\0';
 				return(i);
+			}
 			if ((net->length = recv(net->socket, net->buffer, NET_READ_BUFFER, 0)) <= 0)
 				return(-1);
 			net->read = 0;
@@ -222,7 +224,7 @@ int fe_net_receive_str(network_t net, char *msg, int size, char ch)
 			break;
 	}
 
-	msg[++i] = '\0';
+	msg[i + 1] = '\0';
 	DEBUG_LOG("raw.in", msg);
 	return(i);
 }
