@@ -30,6 +30,9 @@ int base_cmd_scroll(char *, char *);
 int base_cmd_set(char *, char *);
 int base_cmd_source(char *, char *);
 
+/* Signal Handlers */
+int base_sig_print(void *, char *);
+
 /* Types */
 struct type_s *base_load_command(void);
 struct type_s *base_load_format(void);
@@ -37,6 +40,7 @@ struct type_s *base_load_status(void);
 struct type_s *base_load_string(void);
 struct type_s *base_load_table(void);
 struct type_s *base_load_time(void);
+struct type_s *base_load_wildcard(void);
 
 #endif
 
