@@ -18,8 +18,8 @@ int base_cmd_parse(char *env, char *args)
 {
 	void *input;
 	char *str, *cmd;
-	struct variable_s *var;
 	char buffer[STRING_SIZE];
+	struct variable_s *table, *var;
 
 	if (!(input = fe_current_widget("input", NULL)))
 		return(-1);
@@ -30,13 +30,19 @@ int base_cmd_parse(char *env, char *args)
 	if (!strncmp(str, COMMAND_PREFIX, strlen(COMMAND_PREFIX))) {
 		str = &str[strlen(COMMAND_PREFIX)];
 		get_param_m(str, cmd, ' ');
-		if ((var = find_variable(NULL, cmd)) && var->type->evaluate)
-			var->type->evaluate(var->value, str);
-		else
-			fe_print(fe_current_widget("window", NULL), UNKNOWN_COMMAND);
 	}
-	else if ((var = find_variable(NULL, DEFAULT_COMMAND)) && var->type->evaluate)
+	else
+		cmd = DEFAULT_COMMAND;
+
+	if ((table = find_variable(NULL, BASE_PARSE_PATH_VARIABLE)) && table->type->index)
+		var = table->type->index(table->value, cmd);
+	else
+		var = find_variable(NULL, cmd);
+
+	if (var && var->type->evaluate)
 		var->type->evaluate(var->value, str);
+	else
+		fe_print(fe_current_widget("window", NULL), ERR_MSG_UNKNOWN_COMMAND);
 	fe_clear(input);
 
 	return(0);
