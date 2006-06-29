@@ -1,22 +1,10 @@
 
-	* test traverse in variable.c
-
-	* have modules make their tables and put their variable in them
-	* tidy up the simple.c initialization (should we make it common for each frontend? at least key binds)
-	* what can you call the directory where signal handlers for modules can be stored?
-	* convert the status variable callbacks to take buffers intead of returning char *
-	* add a signal that can be used to trigger things that are currently timed like statusbar refresh
-	  (statusbar would need to be called ever time the time-var changes which could be really tricky)
-
 Signals:
 	* what if you store the channel struct pointer as the index?  there can be an irc-specific
 	  method of finding the channel by assuming the index of an "irc-print" signal (or whatever it
 	  will be called) is a channel struct but it would still need a method of searching all signal
 	  handlers for "irc-print" for the current window pointer stored as the signal handler's
 	  parameter.
-	* can store a struct signal_s * (?) with the channel struct that the message handlers can then
-	  use to emit that signal so that it goes to that channel (instead of having to build up the
-	  name of the signal).
 
 	* "channels" which can be directed to various windows and sources (perhaps it should be
 	  controlled by the frontend so that a channel like "critical errors" can cause popup messages
@@ -35,11 +23,19 @@ Signals:
 	  the socket and not having a network struct.  The one thing we loose with that is the saved read
 	  buffer but then again you can have a private table of read buffers indexed by socket (hashtable
 	  perhaps) in net.c
-	* error handling using signals?  at least a string describing the specific error
 	* a window handler connecting to a signal emitted for a particular window so that it can
 	  free memory when that window is destroyed for example (server registering for its status
 	  window and if a command like /close causes that window to be destroyed, the server disconnects
 	  and frees all resources it uses)
+	* if there are performance problems with the ctcp dispatch signal (after the message is handled,
+	  it will still emit the signal to the other handlers) we can use priorities and emit stopping.
+	  Anything that is just observing the messages or that needs to be called all the time can be
+	  a higher priority and then the normal handler can stop the emit thus everything that wants the
+	  message should have received it.
+	* should key presses emit signals (with a signal handler that executes a command) instead of
+	  just doing commands? (no this would mean a lot of extra stuff stored and would require a double
+	  setup (set up key and then signal handler).  Instead it would have to be a keypress generates a
+	  fixed signal but then that throws out all the context stuff in keybinding.)
 
 Structural Issues:
 	* should we add a mechanism to signals that allows for signals to "inherit" from others so that
@@ -53,13 +49,12 @@ Structural Issues:
 	* can we fix the /parse issue by making it take the string as a param instead and have a signal
 	  handler that is called when the key is pressed that acutally get the input and calls parse?
 	* should you be able to reassign to a variable of an unknown type (ie. pass NULL as the type to
-	  add_variable?
+	  add_variable? (this would let you assign to a wildcard variable (which takes a string anyways)
+	  using the set command without having to specify the type).
 	* should we add a parent field to the variable?
 	* how will you do timers?  they have to be implemented through the frontend.  Should a timeout
-	  cause a signal to be emitted?  a callback (stored in the timer struct) to be called?
-	* is there a fancy configurable way that the destination of printed messages is sent?  For example,
-	  a way to specify that the names printed by the msgs/names.c file are sent to the current window,
-	  the status window, and the appropriate channel window?
+	  cause a signal to be emitted?  a callback (stored in the timer struct) to be called?  Could make
+	  an 'events' system.
 	* can we use macros to implement the ability to set at compile time which parameters are compiled
 	  in and which are modifiable variables?  how will we handle this for all the things in config.h
 	* think about xml (possibly using a special char for <>) and what would acutally be done
@@ -74,7 +69,11 @@ Structural Issues:
 	  to have a event/message/something signal handler for that pointer.
 	* standardize the interpretation of the create type function parameters (the format string should
 	  only ever contain a description of the arguments and should never be an argument itself)
+	* should the libs/ be moved to the root dir (since the primary issue was all the headers but now
+	  that they are all inside include/stutter/ they wont conflict with system headers).
 
+	* write an xml parser (in lib or frontend/common ?)
+	* use the type system for widget types.  A widget is created from a type and subwidgets are added
 	* there needs to be a generic (cross-frontend) way to represent keys
 	* how will xml be handled?
 	* how do you get the statusbar height in window.c
@@ -89,11 +88,13 @@ Structural Issues:
 	  control a terminal)
 
 Bugs:
+	* if you change your nick while someone is connected to the same network with that nick then it
+	  will change the nick (on the statusbar and thus in the server struct) and it isn't changed back
+	  when the error message is received from the server
 	* there is a bug in stutter such that when there is a disconnect, stutter doesn't recognize it as
 	  such and continues to select on that socket which returns -1 (i assume) which causes it to hog
 	  all the bandwidth
 	* fix parse so that /parse something command doesn't cause a segfault
-	* in /names, if the channel doesn't have a window, the names aren't displayed anywhere
 	* when server is down, there is no responsiveness and no way to break out; timeout is long
 	* fix the long initial timeout (happens when network is disconnected) (remember that it tries to
 	  connect 3 times).
@@ -101,33 +102,35 @@ Bugs:
 	  nick
 
 General:
-	* finish implementing the new quit command
+	* tidy up the simple.c initialization (should we make it common for each frontend? at least key binds)
+	* should it be emit_signal instead of signal_emit?  my natural tendency seems to be emit_signal
+	* make an unknown ctcp command
 	* add something (a signal emitted by net perhaps) so that net can print messages, particularily a
 	  "Failed to connect, Retrying" message
-	* add a function to utils.c possibly that uses vsnprintf to make a string and then emits.  (This
-	  will make reporting errors much easier).
-	* fix up error handling in net.c and server.c
-	* add the variable path resolution system back into variable.c (with both a get and set function)
-	* add a function to key.c to get the current binding of a key sequence (without processing)
+	* move the print.c signal handler to a proper signal dir thing
 	* fix all hash_init and hash_rehash instances to check for memory allocation failure
-	* fix history in input.c (the queue inline implementation cannot be used unless it is fixed because
-	  if you store the "current" pointer and an append call deletes that node then you will get a
-	  segfault.  The current node reference must either be stored in the queue struct or else the macro
-	  implementation must be used).
+	* add some kind of flag to irc_server that signifies that you are connected
 
-	* add a cmd that takes a string in env and a string in args, merges them, and parses/evaluates it
-	  as a command without the leading /
+	* add a type with an evaluate function that takes a string (stored) and a string in args, merges
+	  them, and parses/evaluates it as a command
 	* add an alias command which creates a new command with the given name using the above command as
 	  the function and the args string as the string parameter (to become env)
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
 
-	* once and for all decide on the variable name seperator!
+	* fix up error handling in net.c and server.c
+	* add a function to key.c to get the current binding of a key sequence (without processing)
+	* add a signal that can be used to trigger things that are currently timed like statusbar refresh
+	  (statusbar would need to be called ever time the time-var changes which could be really tricky)
 	* make variables and types case-insensitive
-	* can we add partial variable (command) name matching?
 	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
-	* unify the naming patterns for namespace/variables, frontend widgets, etc.
+	* unify the naming patterns for variables and frontend widgets, etc.
 
+	* make a way to reorder the windows? (so you don't get channels and status windows mixed up? or
+	  should this be a feature of the more advanced text frontend?)
+	* have an "activity" status indicator in the status bar so you know when stuff has been said and
+	  in what channels
+	* have keybindings for targeting specific windows (does this require window numbers?)
 	* pass realname to server when connecting
 	* make msgs/join.c print a message when it fails to create a window
 	* rewrite msg.c using va_args instead of making an array and use sprintf
@@ -141,14 +144,13 @@ General:
 	* add mode command
 	* add topic commnd (<channel> [<topic>])
 	* add list command
-	* add ping/whowas commands
+	* add whowas commands
 	* add channel and user mode bits
 	* add handling for CTCP commands
 	* add reconnect command
 	* add error message handling
 
-	* change the name of screen.c to terminal.c
-	* add home/end/erase-line functions to be keybound
+	* add home/end functions to be keybound
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
 	* add multiframe (using multiple curses windows) to screen.c
 	* decide on a widget interface to use in order to implement the advanced text frontend
@@ -159,8 +161,6 @@ General:
 
 	* use expand to buffer or something in irc_format_msg to convert variables *before* substituting
 	  %% arguments
-
-	* should i maintain a seperate changelog for each module, frontend, and the main program?
 
 	* can have xml/javascript/flash displayed from a script somewhat like firefox extensions (except
 	  hopefully in less files?) ???????????????????????
