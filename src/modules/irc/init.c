@@ -18,16 +18,17 @@
 struct handler_prototype_s {
 	char *name;
 	void *index;
+	int priority;
 	signal_t func;
 	void *ptr;
 };
 
-#define ADD_HANDLER(name, index, func, env)	\
-	{ name, index, (signal_t) func, env },
+#define ADD_HANDLER(name, index, priority, func, env)	\
+	{ name, index, priority, (signal_t) func, env },
 
 static struct handler_prototype_s irc_handlers[] = {
 	IRC_HANDLERS()
-	{ NULL, NULL, NULL }
+	{ NULL, NULL, 0, NULL, NULL }
 };
 
 struct command_prototype_s {
@@ -55,8 +56,9 @@ int init_irc(void)
 	struct type_s *type;
 
 	init_irc_server();
+
 	for (i = 0;irc_handlers[i].name;i++)
-		signal_connect(irc_handlers[i].name, irc_handlers[i].index, (signal_t) irc_handlers[i].func, irc_handlers[i].ptr);
+		signal_connect(irc_handlers[i].name, irc_handlers[i].index, irc_handlers[i].priority, (signal_t) irc_handlers[i].func, irc_handlers[i].ptr);
 
 	if (!(type = find_type("table")) || !(irc_table = add_variable(NULL, type, "irc", 0, "")))
 		return(-1);
@@ -69,7 +71,7 @@ int init_irc(void)
 	if (!(type = find_type("command")) || !type->create)
 		return(-1);
 	for (i = 0;irc_commands[i].name;i++)
-		add_variable(NULL, type, irc_commands[i].name, 0, "%r%p", irc_commands[i].func, irc_commands[i].ptr);
+		add_variable(irc_table->value, type, irc_commands[i].name, 0, "%r%p", irc_commands[i].func, irc_commands[i].ptr);
 
 	return(0);
 }
@@ -82,8 +84,11 @@ int release_irc(void)
 	if (!(type = find_type("command")) || !type->create)
 		return(-1);
 
-	for (;irc_commands[i].name;i++)
-		remove_variable(NULL, type, irc_commands[i].name);
+	for (i = 0;irc_commands[i].name;i++)
+		remove_variable(irc_table->value, type, irc_commands[i].name);
+
+	for (i = 0;irc_handlers[i].name;i++)
+		signal_disconnect(irc_handlers[i].name, irc_handlers[i].index, (signal_t) irc_handlers[i].func, irc_handlers[i].ptr);
 
 	release_irc_server();
 	return(0);
