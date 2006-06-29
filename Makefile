@@ -14,3 +14,6 @@ $(DIRS):
 update:
 	cvs -d$(CVSROOT) update -d
 
+clean:
+	make -C src clean && make -C src/frontend/$(FRONTEND) clean && make -C src/modules/irc clean && make -C src/modules/base clean
+
