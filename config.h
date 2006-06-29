@@ -21,6 +21,7 @@
 #define BASE_DATE			"%d-%b"
 #define BASE_TIMESTAMP			"%d-%b:%H:%M"
 #define BASE_DEFAULT_SET_TYPE		"string"
+#define BASE_PARSE_PATH_VARIABLE	"path"
 
 /* IRC Module Values */
 #define IRC_DEFAULT_PORT		6667
@@ -60,8 +61,9 @@
 
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 
+#define ERR_MSG_UNKNOWN_COMMAND		"*** Unknown Command"
+
 /* General Values */
-#define UNKNOWN_COMMAND			"*** Unknown Command"
 #define COMMAND_PREFIX			"/"
 #define DEFAULT_COMMAND			""
 #define NAME_SEPARATOR			'.'
@@ -80,11 +82,14 @@
 	release_irc();			\
 	release_base();
 
-#define BIND_KEYS()			\
-	BIND_KEY("\n", "parse")		\
-	BIND_KEY("\x18", "next")	\
-	BIND_KEY("\x15", "clearline")	\
-	BIND_KEY("\x11", "previous")
+#define BIND_KEYS()				\
+	BIND_KEY("\n", "base.parse")		\
+	BIND_KEY("\x18", "base.next")		\
+	BIND_KEY("\x15", "base.clearline")	\
+	BIND_KEY("\x11", "base.previous")
+
+#define BASE_HANDLERS()							\
+	ADD_HANDLER("error_general", NULL, 10, base_sig_print, NULL)
 
 #define BASE_COMMANDS()			\
 	DECLARE_COMMAND(bind)		\
@@ -102,10 +107,10 @@
 	DECLARE_COMMAND(source)
 
 #define IRC_HANDLERS()							\
-	ADD_HANDLER("irc_dispatch_msg", NULL, irc_dispatch_msg, NULL)	\
-	ADD_HANDLER("irc_dispatch_ctcp", NULL, irc_msg_ctcp_action, NULL)	\
-	ADD_HANDLER("irc_dispatch_ctcp", NULL, irc_msg_ctcp_ping, NULL)	\
-	ADD_HANDLER("quit", NULL, irc_sig_quit, NULL)
+	ADD_HANDLER("irc_dispatch_msg", NULL, 10, irc_dispatch_msg, NULL)	\
+	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
+	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
+	ADD_HANDLER("quit", NULL, 10, irc_sig_quit, NULL)
 
 #define IRC_COMMANDS()			\
 	DECLARE_COMMAND(disconnect)	\
@@ -125,7 +130,7 @@
 
 #define STUTTER_INIT(argc, argv) {				\
 	struct variable_s *var;					\
-	if (var = find_variable(NULL, "source"))		\
+	if (var = find_variable(NULL, "base.source"))		\
 		var->type->evaluate(var->value, DOT_FILE);	\
 }
 
