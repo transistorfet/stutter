@@ -91,18 +91,6 @@ int remove_signal(char *name)
 	return(0);
 }
 
-/*
-struct signal_s *find_signal(char *name, void *ptr)
-{
-	struct signal_node_s *node;
-
-	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_name_m(name));
-	if (!node)
-		return(NULL);
-	return(&node->data);
-}
-*/
-
 /**
  * Connect a new handler to the signal with the given name so that the given
  * when that signal is emitted, the given function is called with the given
@@ -110,10 +98,10 @@ struct signal_s *find_signal(char *name, void *ptr)
  * and the signal must already be created using the add_signal function.  If
  * an error occurs, -1 is returned, otherwise 0 is returned. 
  */
-int signal_connect(char *name, void *index, signal_t func, void *ptr)
+int signal_connect(char *name, void *index, int priority, signal_t func, void *ptr)
 {
 	struct signal_node_s *node;
-	struct signal_handler_s *handler;
+	struct signal_handler_s *handler, *cur, *prev;
 
 	if (!func)
 		return(-1);
@@ -123,10 +111,33 @@ int signal_connect(char *name, void *index, signal_t func, void *ptr)
 	if (!(handler = memory_alloc(sizeof(struct signal_handler_s))))
 		return(-1);
 	handler->index = index;
+	handler->priority = priority;
 	handler->func = func;
 	handler->ptr = ptr;
-	handler->next = node->data.handlers;
-	node->data.handlers = handler;
+	handler->next = NULL;
+
+	if (!node->data.handlers)
+		node->data.handlers = handler;
+	else {
+		prev = NULL;
+		cur = node->data.handlers;
+		while (cur) {
+			if (priority >= cur->priority) {
+				if (prev) {
+					prev->next = handler;
+					handler->next = cur;
+				}
+				else {
+					handler->next = node->data.handlers;
+					node->data.handlers = handler;
+				}
+			}
+			else if (!cur->next)
+				cur->next = handler;
+			prev = cur;
+			cur = cur->next;
+		}
+	}
 	return(0);
 }
 
@@ -181,8 +192,10 @@ int signal_emit(char *name, void *index, void *ptr)
 	while (cur) {
 		if (cur->index == index) {
 			// TODO change the signal function format
-			cur->func(cur->ptr, ptr);
+			//cur->func(cur->ptr, index, ptr)
 			calls++;
+			if (cur->func(cur->ptr, ptr) == SIGNAL_STOP_EMIT)
+				break;
 		}
 		cur = cur->next;
 	}
