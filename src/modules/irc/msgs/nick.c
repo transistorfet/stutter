@@ -5,6 +5,8 @@
  * Description:		Nick Change Notification Message
  */
 
+#include <string.h>
+
 #include <stutter/frontend.h>
 #include <stutter/lib/string.h>
 #include <stutter/modules/irc.h>

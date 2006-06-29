@@ -7,6 +7,7 @@
 
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include CONFIG_H
 #include <stutter/utils.h>

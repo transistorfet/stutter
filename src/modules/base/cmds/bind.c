@@ -5,6 +5,7 @@
  * Description:		Bind Key Command
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include CONFIG_H
