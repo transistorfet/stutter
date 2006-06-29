@@ -22,7 +22,9 @@ OBJS =	init.o \
 	types/status.o \
 	types/string.o \
 	types/table.o \
-	types/time.o
+	types/time.o \
+	types/wildcard.o \
+	utils/print.o
 
 include $(ROOT)/rules.mk
 
