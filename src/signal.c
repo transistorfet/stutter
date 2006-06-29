@@ -151,7 +151,7 @@ int signal_disconnect(char *name, void *index, signal_t func, void *ptr)
 {
 	int disconnected = 0;
 	struct signal_node_s *node;
-	struct signal_handler_s *cur, *prev;
+	struct signal_handler_s *cur, *prev, *tmp;
 
 	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
 	if (!node)
@@ -161,14 +161,17 @@ int signal_disconnect(char *name, void *index, signal_t func, void *ptr)
 	while (cur) {
 		if ((cur->index == index) && (!func || (cur->func == func)) && (!ptr || (cur->ptr == ptr))) {
 			if (prev)
-				prev->next = cur->next;
+				prev->next = tmp = cur->next;
 			else
-				node->data.handlers= cur->next;
+				node->data.handlers = tmp = cur->next;
 			memory_free(cur);
 			disconnected++;
+			cur = tmp;
 		}
-		prev = cur;
-		cur = cur->next;
+		else {
+			prev = cur;
+			cur = cur->next;
+		}
 	}
 	return(disconnected);
 }
