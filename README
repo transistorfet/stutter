@@ -1,7 +1,13 @@
 
-Stutter pre0.2
+Stutter 0.2
 
-To Compile:
+Introduction:
+	Stutter is module communications platform.  Currently it
+	has an IRC module and a simple curses frontend.
+
+	A lot has changed since v0.1 (mostly backend type stuff).
+
+Compiling & Installing:
 	make
 
 	There is no install.  Only one binary (bin/stutter) is
