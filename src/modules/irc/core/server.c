@@ -170,6 +170,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
+			util_emit_str("error_general", NULL, "Error: Disconnected from %s", server->address);
 			fe_net_disconnect(server->net);
 			server->net = NULL;
 			return(NULL);
