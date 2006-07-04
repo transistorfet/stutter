@@ -12,6 +12,7 @@
 #include CONFIG_H
 #include <stutter/type.h>
 #include <stutter/lib/hash.h>
+#include <stutter/lib/macros.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/globals.h>
 
@@ -23,8 +24,8 @@
 #define TYPE_LOAD_FACTOR	0.75
 #endif
 
-#define type_hash_m(list, str)			(sdbm_hash(str) % hash_size_v(list))
-#define type_compare_m(str)			(!strcmp(cur->type.name, name))
+#define type_hash_m(list, str)			(sdbm_hash_icase(str) % hash_size_v(list))
+#define type_compare_m(str)			(!strcmp_icase(cur->type.name, name))
 
 struct type_node_s {
 	struct type_s type;

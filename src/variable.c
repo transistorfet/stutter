@@ -12,6 +12,7 @@
 #include <stutter/type.h>
 #include <stutter/variable.h>
 #include <stutter/lib/hash.h>
+#include <stutter/lib/macros.h>
 #include <stutter/lib/memory.h>
 
 #ifndef VARIABLE_INIT_SIZE
@@ -22,8 +23,8 @@
 #define VARIABLE_LOAD_FACTOR		HASH_LOAD_FACTOR
 #endif
 
-#define variable_hash_m(list, str, len)		(sdbm_partial_hash(str, len) % hash_size_v(list))
-#define variable_compare_m(str, len)		(!strncmp(cur->data.name, str, len) && (strlen(cur->data.name) == len))
+#define variable_hash_m(list, str, len)		(sdbm_partial_hash_icase(str, len) % hash_size_v(list))
+#define variable_compare_m(str, len)		(!strncmp_icase(cur->data.name, str, len) && (strlen(cur->data.name) == len))
 
 struct variable_node_s {
 	struct variable_s data;
