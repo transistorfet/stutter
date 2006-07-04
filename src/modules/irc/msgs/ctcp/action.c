@@ -9,6 +9,7 @@
 
 #include CONFIG_H
 #include <stutter/frontend.h>
+#include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
 
 /**
@@ -19,7 +20,7 @@ int irc_msg_ctcp_action(char *env, struct irc_msg *msg)
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
-	if (!strncmp(&msg->text[1], "ACTION", 6)) {
+	if (!strncmp_icase(&msg->text[1], "ACTION", 6)) {
 		msg->text = &msg->text[8];
 		msg->text[strlen(msg->text) - 1] = '\0';
 		if (!(channel = irc_find_channel(msg->server->channels, msg->params[0]))) {
