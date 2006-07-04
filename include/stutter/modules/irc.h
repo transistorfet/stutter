@@ -17,6 +17,7 @@ int init_irc(void);
 int release_irc(void);
 
 /* Commands */
+int irc_cmd_ctcp(char *, char *);
 int irc_cmd_disconnect(char *, char *);
 int irc_cmd_join(char *, char *);
 int irc_cmd_leave(char *, char *);
@@ -45,6 +46,7 @@ int irc_msg_topic(char *, struct irc_msg *);
 
 int irc_msg_ctcp_action(char *, struct irc_msg *);
 int irc_msg_ctcp_ping(char *, struct irc_msg *);
+int irc_msg_ctcp_version(char *, struct irc_msg *);
 
 /* Utils */
 int irc_dispatch_msg(char *, struct irc_msg *);

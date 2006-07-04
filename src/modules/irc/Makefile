@@ -4,6 +4,7 @@ ROOT = ../../..
 
 LIB_TARGET = modirc.a
 OBJS =	init.o \
+	cmds/ctcp.o \
 	cmds/disconnect.o \
 	cmds/join.o \
 	cmds/leave.o \
@@ -32,6 +33,7 @@ OBJS =	init.o \
 	msgs/topic.o \
 	msgs/ctcp/action.o \
 	msgs/ctcp/ping.o \
+	msgs/ctcp/version.o \
 	utils/current.o \
 	utils/dispatch.o \
 	utils/format.o \
