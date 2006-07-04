@@ -61,6 +61,18 @@
 	while ((*str == ' ') || (*str == '\t') || (*str == '\n') || (*str == '\r'))	\
 		str++;
 
+/**
+ * Compare two strings case insensitively.
+ */
+#define strcmp_icase(str1, str2)	\
+	strcasecmp(str1, str2)
+
+/**
+ * Compare two strings case insensitively up to a maximum number of characters.
+ */
+#define strncmp_icase(str1, str2, max)	\
+	strncasecmp(str1, str2, max)
+
 #endif
 
 

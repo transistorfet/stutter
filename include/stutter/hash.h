@@ -182,6 +182,24 @@ static inline unsigned int sdbm_hash(char *str) {
 	return(hash);
 }
 
+static inline unsigned int sdbm_partial_hash_icase(char *str, int len) {
+	int i;
+	unsigned int hash = 0;
+
+	for (i = 0;len && (i < len) && (str[i] != '\0');i++)
+		hash = (((str[i] >= 'A') && (str[i] <= 'Z')) ? str[i] + 0x20 : str[i]) + (hash << 6) + (hash << 16) - hash;
+	return(hash);
+}
+
+static inline unsigned int sdbm_hash_icase(char *str) {
+	int i;
+	unsigned int hash = 0;
+
+	for (i = 0;str[i] != '\0';i++)
+		hash = (((str[i] >= 'A') && (str[i] <= 'Z')) ? str[i] + 0x20 : str[i]) + (hash << 6) + (hash << 16) - hash;
+	return(hash);
+}
+
 /*** Inline Interface ***/
 
 struct hash_node_s {
