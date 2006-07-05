@@ -44,8 +44,7 @@ static struct variable_s *base_wildcard_index(char *value, char *name)
 		if ((value[i] == ';') || (value[i] == '\0')) {
 			ch = value[i];
 			value[i] = '\0';
-			if (((*str == '\0') && (variable = find_variable(NULL, name)))
-			    || ((table = find_variable(NULL, str)) && table->type->index && (variable = table->type->index(table->value, name)))) {
+			if (((*str == '\0') && (variable = find_variable(NULL, name))) || (variable = index_variable(NULL, str, name))) {
 				value[i] = ch;
 				return(variable);
 			}

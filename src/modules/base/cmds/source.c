@@ -21,8 +21,8 @@ int base_cmd_source(char *env, char *args)
 {
 	FILE *fptr;
 	char *str, *cmd;
+	struct variable_s *var;
 	char buffer[STRING_SIZE];
-	struct variable_s *table, *var;
 
 	get_param_m(args, str, ' ');
 	if ((*str == '~') && (cmd = getenv("HOME"))) {
@@ -42,11 +42,8 @@ int base_cmd_source(char *env, char *args)
 			if (!strncmp(str, COMMAND_PREFIX, strlen(COMMAND_PREFIX)))
 				str = &str[strlen(COMMAND_PREFIX)];
 			get_param_m(str, cmd, ' ');
-			if ((table = find_variable(NULL, BASE_PARSE_PATH_VARIABLE)) && table->type->index)
-				var = table->type->index(table->value, cmd);
-			else
+			if (!(var = index_variable(NULL, BASE_PARSE_PATH_VARIABLE, cmd)))
 				var = find_variable(NULL, cmd);
-                        
 			if (var && var->type->evaluate)
 				var->type->evaluate(var->value, str);
 			else

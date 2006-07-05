@@ -18,8 +18,8 @@ int base_cmd_parse(char *env, char *args)
 {
 	void *input;
 	char *str, *cmd;
+	struct variable_s *var;
 	char buffer[STRING_SIZE];
-	struct variable_s *table, *var;
 
 	if (!(input = fe_current_widget("input", NULL)))
 		return(-1);
@@ -34,11 +34,8 @@ int base_cmd_parse(char *env, char *args)
 	else
 		cmd = DEFAULT_COMMAND;
 
-	if ((table = find_variable(NULL, BASE_PARSE_PATH_VARIABLE)) && table->type->index)
-		var = table->type->index(table->value, cmd);
-	else
+	if (!(var = index_variable(NULL, BASE_PARSE_PATH_VARIABLE, cmd)))
 		var = find_variable(NULL, cmd);
-
 	if (var && var->type->evaluate)
 		var->type->evaluate(var->value, str);
 	else
