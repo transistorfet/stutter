@@ -9,6 +9,7 @@
 
 #include <stutter/type.h>
 #include <stutter/lib/string.h>
+#include <stutter/lib/memory.h>
 
 struct variable_s {
 	struct type_s *type;
