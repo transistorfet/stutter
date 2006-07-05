@@ -131,6 +131,7 @@ int signal_connect(char *name, void *index, int priority, signal_t func, void *p
 					handler->next = node->data.handlers;
 					node->data.handlers = handler;
 				}
+				break;
 			}
 			else if (!cur->next)
 				cur->next = handler;
