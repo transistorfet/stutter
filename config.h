@@ -6,6 +6,8 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
+#define STUTTER_VERSION			"pre-0.3"
+
 #define FE_NAMESPACE			"fe"
 #define BASE_NAMESPACE			"base"
 #define IRC_NAMESPACE			"irc"
@@ -36,6 +38,8 @@
 #define IRC_TIMESTAMP			"%d-%b:%H:%M"
 #define IRC_BANNER			"***"
 
+#define IRC_FMT_CTCP_VERSION		"%B [%@] CTCP Version received from %N (%H)"
+#define IRC_FMT_CTCP_VERSION_REPLY	"%B [%@] CTCP Version reply from %N (%H) %M"
 #define IRC_FMT_DEFAULT			"%N!%H %C %M"
 #define IRC_FMT_PRIVATE_ACTION		"[%@] <*> %N %M"
 #define IRC_FMT_PRIVATE_ACTION_SELF	"\x02[\x02%@\x02]\x02 <*> %n %M"
@@ -60,6 +64,7 @@
 #define IRC_FMT_TOPIC			"%B Topic Set by %N To: %M"
 
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
+#define IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION
 
 #define ERR_MSG_UNKNOWN_COMMAND		"*** Unknown Command"
 
@@ -110,9 +115,11 @@
 	ADD_HANDLER("irc_dispatch_msg", NULL, 10, irc_dispatch_msg, NULL)	\
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
+	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_version, NULL)	\
 	ADD_HANDLER("quit", NULL, 10, irc_sig_quit, NULL)
 
 #define IRC_COMMANDS()			\
+	DECLARE_COMMAND(ctcp)	\
 	DECLARE_COMMAND(disconnect)	\
 	DECLARE_COMMAND(join)		\
 	DECLARE_COMMAND(leave)		\
