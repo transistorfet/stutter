@@ -63,6 +63,10 @@ int init_irc(void)
 	if (!(type = find_type("table")) || !(irc_table = add_variable(NULL, type, "irc", 0, "")))
 		return(-1);
 
+	if (!(type = find_type("string")) || !type->create)
+		return(-1);
+	add_variable(irc_table->value, type, "version", 0, "%s", IRC_VERSION_RESPONSE);
+
 	if (!(type = find_type("status")) || !type->create)
 		return(-1);
 	add_variable(irc_table->value, type, "current_nick", 0, "%r%p", irc_stringify_nick, NULL);
