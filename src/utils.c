@@ -120,10 +120,9 @@ int util_expand_variable(char *str, char *buffer, int max, int *str_count)
 {
 	int k;
 	char delim;
+	char *name;
 	int recurse;
-	char *name, *ns;
 	int i = 0, j = 0;
-	struct variable_s *var;
 	char value[STRING_SIZE];
 
 	if (str[i] == '$')
@@ -144,10 +143,10 @@ int util_expand_variable(char *str, char *buffer, int max, int *str_count)
 		delim = ' ';
 
 	name = buffer;
-	for (k = 0;(str[i] != '\0') && (str[i] != delim) && (k < max - 1);k++, i++)
+	for (k = 0;(str[i] != '\0') && (str[i] != delim) && is_variable_char_m(str[i]) && (k < max - 1);k++, i++)
 		buffer[k] = str[i];
 	buffer[k] = '\0';
-	if ((var = find_variable(NULL, name)) && var->type->stringify && (var->type->stringify(var->value, value, STRING_SIZE) >= 0)) {
+	if (stringify_variable(NULL, name, value, STRING_SIZE) >= 0) {
 		if (recurse)
 			j = util_expand_str(value, buffer, max);
 		else {
