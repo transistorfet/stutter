@@ -242,7 +242,7 @@ static int variable_validate_name(char *str)
 	int i;
 
 	for (i = 0;str[i] != '\0';i++) {
-		if (!(((str[i] >= 'A') && (str[i] <= 'Z')) || ((str[i] >= 'a') && (str[i] <= 'z')) || ((str[i] >= '0') && (str[i] <= '9')) || (str[i] == NAME_SEPARATOR) || (str[i] == '_') || (str[i] == '-')))
+		if (!is_variable_char_m(str[i]))
 			return(-1);
 	}
 	return(0);
