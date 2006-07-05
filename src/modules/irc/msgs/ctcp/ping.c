@@ -5,21 +5,22 @@
  * Description:		Ping CTCP Message
  */
 
+#include <time.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include CONFIG_H
 #include <stutter/frontend.h>
+#include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
 
-/**
- * Prints private message to channel.
- */
 int irc_msg_ctcp_ping(char *env, struct irc_msg *msg)
 {
+	char number[20];
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
-	if (!strncmp(&msg->text[1], "PING", 4) && msg->nick) {
+	if (!strncmp_icase(&msg->text[1], "PING", 4) && msg->nick) {
 		if (!(channel = irc_current_channel()))
 			return(-1);
 		if (msg->cmd == IRC_MSG_PRIVMSG) {
@@ -28,7 +29,9 @@ int irc_msg_ctcp_ping(char *env, struct irc_msg *msg)
 				return(-1);
 		}
 		else if (msg->cmd == IRC_MSG_NOTICE) {
-			// TODO format msg->text
+			msg->text[strlen(msg->text) - 1] = '\0';
+			snprintf(number, 20, "%d secs", time(NULL) - atoi(&msg->text[6]));
+			msg->text = number;
 			if (irc_format_msg(msg, IRC_FMT_PING_REPLY, buffer, STRING_SIZE) < 0)
 				return(-1);
 		}
