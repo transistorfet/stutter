@@ -61,8 +61,6 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, char *name, v
 {
 	struct irc_channel_node *node;
 
-	if (irc_find_channel(list, name))
-		return(NULL);
 	if (!(node = (struct irc_channel_node *) memory_alloc(sizeof(struct irc_channel_node) + strlen(name) + 1)))
 		return(NULL);
 	memset(node, '\0', sizeof(struct irc_channel_node));
