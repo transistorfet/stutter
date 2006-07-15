@@ -31,7 +31,7 @@ int base_cmd_source(char *env, char *args)
 	}
 
 	if (!(fptr = fopen(str, "r"))) {
-		util_emit_str("error_general", NULL, "Error opening file: %s", str);
+		util_emit_str("base.error", NULL, ERR_MSG_UNABLE_TO_OPEN_FILE, str);
 		return(-1);
 	}
 
