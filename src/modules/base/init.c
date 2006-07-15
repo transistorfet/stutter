@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <stutter/init.h>
 #include <stutter/type.h>
 #include <stutter/signal.h>
 #include <stutter/variable.h>
@@ -16,17 +17,6 @@
 #include <stutter/modules/base.h>
 
 /* Handlers List */
-
-struct handler_prototype_s {
-	char *name;
-	void *index;
-	int priority;
-	signal_t func;
-	void *ptr;
-};
-
-#define ADD_HANDLER(name, index, priority, func, env)	\
-	{ name, index, priority, (signal_t) func, env },
 
 static struct handler_prototype_s base_handlers[] = {
 	BASE_HANDLERS()
@@ -52,18 +42,6 @@ static struct type_prototype_s base_types[] = {
 
 /* Commands List */
 
-struct command_prototype_s {
-	char *name;
-	callback_t func;
-	void *ptr;
-};
-
-#define ADD_COMMAND(name, func, env)	\
-	{ name, (callback_t) base_cmd_##func, env },
-
-#define DECLARE_COMMAND(name)	\
-	{ #name, (callback_t) base_cmd_##name, NULL },
-
 static struct command_prototype_s base_commands[] = {
 	BASE_COMMANDS()
 	{ NULL, NULL, NULL }
@@ -75,6 +53,8 @@ int init_base(void)
 {
 	int i = 0;
 	struct type_s *type;
+
+	add_signal("base.error", 0);
 
 	/* Add Signal Handlers */
 	for (i = 0;base_handlers[i].name;i++)
@@ -127,6 +107,7 @@ int release_base(void)
 		remove_variable(base_table->value, NULL, base_commands[i].name);
 	for (i = 0;base_handlers[i].name;i++)
 		signal_disconnect(base_handlers[i].name, base_handlers[i].index, (signal_t) base_handlers[i].func, base_handlers[i].ptr);
+	remove_signal("base.error");
 	return(0);
 }
 
