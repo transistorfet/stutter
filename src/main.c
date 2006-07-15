@@ -19,7 +19,7 @@ int init_system(void)
 	init_variable();
 	init_key();
 
-	add_signal("error_general", 0);
+	add_signal("general_error", 0);
 
 	return(0);
 }
