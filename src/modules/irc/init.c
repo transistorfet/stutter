@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <stutter/init.h>
 #include <stutter/type.h>
 #include <stutter/signal.h>
 #include <stutter/variable.h>
@@ -15,33 +16,10 @@
 #include <stutter/lib/globals.h>
 #include <stutter/modules/irc.h>
 
-struct handler_prototype_s {
-	char *name;
-	void *index;
-	int priority;
-	signal_t func;
-	void *ptr;
-};
-
-#define ADD_HANDLER(name, index, priority, func, env)	\
-	{ name, index, priority, (signal_t) func, env },
-
 static struct handler_prototype_s irc_handlers[] = {
 	IRC_HANDLERS()
 	{ NULL, NULL, 0, NULL, NULL }
 };
-
-struct command_prototype_s {
-	char *name;
-	callback_t func;
-	void *ptr;
-};
-
-#define ADD_COMMAND(name, func, env)	\
-	{ name, (callback_t) irc_cmd_##func, env },
-
-#define DECLARE_COMMAND(name)	\
-	{ #name, (callback_t) irc_cmd_##name, NULL },
 
 static struct command_prototype_s irc_commands[] = {
 	IRC_COMMANDS()
@@ -55,6 +33,7 @@ int init_irc(void)
 	int i = 0;
 	struct type_s *type;
 
+	add_signal("irc.error", 0);
 	init_irc_server();
 
 	for (i = 0;irc_handlers[i].name;i++)
@@ -95,6 +74,7 @@ int release_irc(void)
 		signal_disconnect(irc_handlers[i].name, irc_handlers[i].index, (signal_t) irc_handlers[i].func, irc_handlers[i].ptr);
 
 	release_irc_server();
+	remove_signal("irc.error");
 	return(0);
 }
 
