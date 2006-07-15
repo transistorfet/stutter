@@ -1,11 +1,12 @@
 /*
  * Module Name:		join.c
  * Version:		0.1
- * Module Requirements:	frontend ; modirc
+ * Module Requirements:	utils ; frontend ; modirc
  * Description:		Join Channel Notification Message
  */
 
 #include CONFIG_H
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -19,12 +20,16 @@ int irc_msg_join(char *env, struct irc_msg *msg)
 	struct irc_channel *channel;
 
 	if (!strcmp(msg->server->nick, msg->nick)) {
-		if (!(window = fe_create_widget("irc", "window", NULL, NULL)) || !(channel = irc_add_channel(msg->server->channels, msg->params[0], window, msg->server))) {
+		if (channel = irc_find_channel(msg->server->channels, msg->params[0]))
+			fe_select_widget("window", NULL, channel->window);
+		else if ((window = fe_create_widget("irc", "window", NULL, NULL)) && (channel = irc_add_channel(msg->server->channels, msg->params[0], window, msg->server)))
+			fe_select_widget("window", NULL, window);
+		else {
 			irc_leave_channel(msg->server, msg->params[0]);
-			// TODO print error message
+			fe_destroy_widget(window);
+			util_emit_str("irc.error", NULL, ERR_MSG_JOIN_ERROR, msg->params[0]);
 			return(-1);
 		}
-		fe_select_widget("window", NULL, window);
 	}
 	else if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		return(-1);
