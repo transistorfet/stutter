@@ -20,7 +20,6 @@ int irc_cmd_disconnect(char *env, char *args)
 	if (!(msg = irc_create_msg(IRC_MSG_QUIT, NULL, NULL, 1, (*args != '\0') ? args : IRC_QUIT_MSG)))
 		return(-1);
 	irc_send_msg(server, msg);
-	irc_destroy_msg(msg);
 
 	irc_traverse_channel_list(server->channels, (traverse_t) irc_cmd_disconnect_destroy_window, msg);
 	irc_server_disconnect(server);

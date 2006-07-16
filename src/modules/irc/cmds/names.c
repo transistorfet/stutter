@@ -18,7 +18,6 @@ int irc_cmd_names(char *env, char *args)
 	if (!(msg = irc_create_msg(IRC_MSG_NAMES, NULL, NULL, 1, (*args != '\0') ? args : channel->name)))
 		return(-1);
 	irc_send_msg(channel->server, msg);
-	irc_destroy_msg(msg);
 	return(0);
 }
 

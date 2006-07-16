@@ -18,7 +18,6 @@ int irc_cmd_whois(char *env, char *args)
 	if (!(msg = irc_create_msg(IRC_MSG_WHOIS, NULL, NULL, 1, args)))
 		return(-1);
 	irc_send_msg(server, msg);
-	irc_destroy_msg(msg);
 	return(0);
 }
 
