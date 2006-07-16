@@ -8,6 +8,7 @@
 #define _STUTTER_MODULES_IRC_SERVER_H
 
 #include CONFIG_H
+#include <stutter/lib/queue.h>
 #include <stutter/frontend/net.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/channel.h>
@@ -24,6 +25,7 @@ struct irc_server {
 	network_t net;
 	time_t last_ping;
 	char nick[IRC_MAX_NICK];
+	queue_list_v(irc_msg) send_queue;
 	struct irc_channel *status;
 	struct irc_channel_list *channels;
 };
