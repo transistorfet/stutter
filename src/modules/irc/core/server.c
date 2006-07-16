@@ -1,7 +1,7 @@
 /*
  * Module Name:		server.c
  * Version:		0.1
- * Module Requirements:	frontend ; memory ; linear ; msg ; channel
+ * Module Requirements:	frontend ; queue ; memory ; linear ; msg ; channel
  * Description:		Server Interface Manager
  */
 
@@ -11,6 +11,7 @@
 
 #include CONFIG_H
 #include <stutter/signal.h>
+#include <stutter/lib/queue.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/linear.h>
 #include <stutter/lib/globals.h>
@@ -29,6 +30,8 @@ static linear_list_v(irc_server_node) server_list;
 
 static int irc_server_init_connection(struct irc_server *);
 static int irc_server_receive(struct irc_server *, network_t);
+static int irc_server_rejoin_channel(struct irc_channel *, struct irc_server *);
+static int irc_server_flush_send_queue(struct irc_server *);
 
 int init_irc_server(void)
 {
@@ -72,6 +75,7 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 	strcpy(node->server.address, address);
 	node->server.port = port;
 	strncpy(node->server.nick, nick, IRC_MAX_NICK);
+	queue_init_v(node->server.send_queue);
 
 	node->server.channels = irc_create_channel_list();
 	node->server.status = irc_add_channel(node->server.channels, IRC_SERVER_STATUS_CHANNEL, window, &node->server);
@@ -90,11 +94,14 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 int irc_server_reconnect(struct irc_server *server)
 {
 	fe_net_disconnect(server->net);
+	server->bitflags &= ~IRC_SBF_CONNECTED;
 	if (irc_server_init_connection(server)) {
-		irc_server_disconnect(server);
+		util_emit_str("irc.error", NULL, ERR_MSG_RECONNECT_ERROR, server->address);
+		fe_net_disconnect(server->net);
+		server->net = NULL;
 		return(-1);
 	}
-	// TODO reconnect to channels in list
+	irc_traverse_channel_list(server->channels, (traverse_t) irc_server_rejoin_channel, server);
 	return(0);
 }
 
@@ -141,17 +148,24 @@ struct irc_channel *irc_server_find_window(void * window)
 
 /**
  * Send the given irc message to the given server and return 0 (or -1 on
- * error).
+ * error).  The message is destroyed by this function and must not be
+ * referenced after calling this function.
  */
 int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 {
-	int size;
+	int size, ret;
 	char buffer[IRC_MAX_MSG];
 
-	if (!server || !msg || !(size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
-		return(-1);
-	if (fe_net_send(server->net, buffer, size) != size)
-		return(-1);
+	if (!(server->bitflags & IRC_SBF_CONNECTED)) {
+		queue_append_node_v(server->send_queue, msg, queue);
+	}
+	else {
+		if (server && msg && (size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
+			ret = fe_net_send(server->net, buffer, size);
+		irc_destroy_msg(msg);
+		if (ret != size)
+			return(-1);
+	}
 	return(0);
 }
 
@@ -170,10 +184,8 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
-			util_emit_str("error_general", NULL, "Error: Disconnected from %s", server->address);
-			fe_net_disconnect(server->net);
-			server->net = NULL;
-			return(NULL);
+			if (irc_server_reconnect(server))
+				return(NULL);
 		}
 		else if (size == 0)
 			return(NULL);
@@ -196,15 +208,20 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 /**
  * Send the given message to every server in the server list and return 0
  * on success or -1 if any particular send fails.  If a send fails, the
- * function will continue attempting to send messages.
+ * function will continue attempting to send messages.  The message is
+ * destroyed by this function and must not be referenced after calling this
+ * function.
  */
 int irc_broadcast_msg(struct irc_msg *msg)
 {
 	int ret = 0;
+	struct irc_msg *new_msg;
 
 	linear_traverse_list_v(server_list, sl,
-		ret = irc_send_msg(&cur->server, msg);
+		if (new_msg = irc_duplicate_msg(msg))
+			ret = irc_send_msg(&cur->server, new_msg);
 	);
+	irc_destroy_msg(msg);
 	return(ret);
 }
 
@@ -220,12 +237,10 @@ int irc_broadcast_msg(struct irc_msg *msg)
 int irc_join_channel(struct irc_server *server, char *name)
 {
 	struct irc_msg *msg;
-	struct irc_channel *channel;
 
 	if (!(msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)))
 		return(-1);
 	irc_send_msg(server, msg);
-	irc_destroy_msg(msg);
 	return(0);
 }
 
@@ -242,7 +257,6 @@ int irc_leave_channel(struct irc_server *server, char *name)
 	if (!(msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, name)))
 		return(-1);
 	irc_send_msg(server, msg);
-	irc_destroy_msg(msg);
 	return(0);
 }
 
@@ -258,7 +272,6 @@ int irc_change_nick(struct irc_server *server, char *nick)
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, nick)))
 		return(-1);
 	ret = irc_send_msg(server, msg);
-	irc_destroy_msg(msg);
 	if (!ret) {
 		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
 		server->nick[IRC_MAX_NICK - 1] = '\0';
@@ -280,7 +293,6 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 	msg->server = server;
 	if (!(ret = irc_send_msg(server, msg)))
 		signal_emit("irc_dispatch_msg", NULL, msg);
-	irc_destroy_msg(msg);
 	return(ret);
 }
 
@@ -299,7 +311,6 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 	msg->server = server;
 	if (!(ret = irc_send_msg(server, msg)))
 		signal_emit("irc_dispatch_msg", NULL, msg);
-	irc_destroy_msg(msg);
 	return(ret);
 }
 
@@ -317,20 +328,14 @@ static int irc_server_init_connection(struct irc_server *server)
 	if (!(server->net = fe_net_connect(server->address, server->port, (callback_t) irc_server_receive, server)))
 		return(-1);
 
-	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)))
-		return(-1);
-	ret = irc_send_msg(server, msg);
-	irc_destroy_msg(msg);
-
-	if (!ret) {
-		if (!(msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")))
-			return(-1);
-		ret = irc_send_msg(server, msg);
-		irc_destroy_msg(msg);
-		if (!ret)
-			return(0);
+	server->bitflags |= IRC_SBF_CONNECTED;
+	if ((msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)) && !irc_send_msg(server, msg)
+	    && (msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")) && !irc_send_msg(server, msg)) {
+		server->bitflags &= ~IRC_SBF_CONNECTED;
+		return(0);
 	}
 	fe_net_disconnect(server->net);
+	server->bitflags &= ~IRC_SBF_CONNECTED;
 	server->net = NULL;
 	return(-1);
 }
@@ -346,6 +351,29 @@ static int irc_server_receive(struct irc_server *server, network_t net)
 	if (msg = irc_receive_msg(server))
 		signal_emit("irc_dispatch_msg", NULL, msg);
 	irc_destroy_msg(msg);
+	if (server->bitflags & IRC_SBF_CONNECTED)
+		irc_server_flush_send_queue(server);
+	return(0);
+}
+
+/**
+ * Join all the channels after reconnecting to the server.
+ */
+static int irc_server_rejoin_channel(struct irc_channel *channel, struct irc_server *server)
+{
+	if (strcmp(channel->name, IRC_SERVER_STATUS_CHANNEL))
+		return(irc_join_channel(server, channel->name));
+	return(0);
+}
+
+/**
+ * 
+ */
+static int irc_server_flush_send_queue(struct irc_server *server)
+{
+	queue_destroy_v(server->send_queue, queue,
+		irc_send_msg(server, cur);
+	);
 	return(0);
 }
 
