@@ -27,7 +27,7 @@ int irc_cmd_names(char *, char *);
 int irc_cmd_nick(char *, char *);
 int irc_cmd_notice(char *, char *);
 int irc_cmd_ping(char *, char *);
-int irc_cmd_quit(char *, char *);
+int irc_cmd_reconnect(char *, char *);
 int irc_cmd_say(char *, char *);
 int irc_cmd_server(char *, char *);
 int irc_cmd_whois(char *, char *);

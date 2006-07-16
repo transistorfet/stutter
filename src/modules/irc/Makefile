@@ -14,6 +14,7 @@ OBJS =	init.o \
 	cmds/nick.o \
 	cmds/notice.o \
 	cmds/ping.o \
+	cmds/reconnect.o \
 	cmds/say.o \
 	cmds/server.o \
 	cmds/whois.o \
