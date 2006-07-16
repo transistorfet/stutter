@@ -57,8 +57,6 @@ Structural Issues:
 	  an 'events' system.
 	* can we use macros to implement the ability to set at compile time which parameters are compiled
 	  in and which are modifiable variables?  how will we handle this for all the things in config.h
-	* think about xml (possibly using a special char for <>) and what would acutally be done
-	  (particularily with respect to irc_format_msg)
 	* how do we handle the case where a pointer is stored with a callback and then the callback is
 	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
 	  it will never be needed again so even if we can access it, we have no way to know that we can
@@ -71,11 +69,12 @@ Structural Issues:
 	  only ever contain a description of the arguments and should never be an argument itself)
 	* should the libs/ be moved to the root dir (since the primary issue was all the headers but now
 	  that they are all inside include/stutter/ they wont conflict with system headers).
+	* is there such a thing as too many variables?
 
-	* write an xml parser (in lib or frontend/common ?)
+	* is there a better name for the main file with the interface functions in frontend/*/core/?
+	* change terminal_print to print the whole string given -1 as the length instead of 0 ??
 	* use the type system for widget types.  A widget is created from a type and subwidgets are added
 	* there needs to be a generic (cross-frontend) way to represent keys
-	* how will xml be handled?
 	* how do you get the statusbar height in window.c
 	* how are you going to deal with keys and screen size in the simple/screen.c module
 	* is there a way to set the statusbar colour across the screen that is appropriately general without
@@ -93,15 +92,23 @@ Bugs:
 	  when the error message is received from the server
 	* there is a bug in stutter such that when there is a disconnect, stutter doesn't recognize it as
 	  such and continues to select on that socket which returns -1 (i assume) which causes it to hog
-	  all the bandwidth
+	  all the bandwidth (is this fixed now?)
 	* fix parse so that /parse something command doesn't cause a segfault
-	* when server is down, there is no responsiveness and no way to break out; timeout is long
-	* fix the long initial timeout (happens when network is disconnected) (remember that it tries to
-	  connect 3 times).
 	* there is a bug such that if you try to say something in the status window, the server says no such
 	  nick
 
 General:
+	* should colour schemes be largely frontend dependant?  we still need a way to specify colours.
+	  one way could be to have variable in the frontend for various event/properties (standardized
+	  across all frontends) with the value as a frontend-specific value which the frontend can recognize
+	  and then strings printed to the frontend can use the variables (eg. "${fe.error}ERROR: ...${fe.fg}")
+	* optimize for space and speed (re-evaluate things).
+	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
+
+	* change the formating for private messages to include the user's name you are sending to
+	* do something with base/init.c and the loading of types
+	* add whois message response handling so that the messages are printed to the current window.
+	* fix simple/terminal.c after you figure out how it should accept formatted output
 	* tidy up the simple.c initialization (should we make it common for each frontend? at least key binds)
 	* should it be emit_signal instead of signal_emit?  my natural tendency seems to be emit_signal
 	* make an unknown ctcp command
@@ -118,12 +125,12 @@ General:
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
 
+	* is there a way to not have the initialization tables (they are big and only used at the start)
+	* modify net.c to print a message when the connection times out and it retries.
 	* fix up error handling in net.c and server.c
 	* add a function to key.c to get the current binding of a key sequence (without processing)
 	* add a signal that can be used to trigger things that are currently timed like statusbar refresh
 	  (statusbar would need to be called ever time the time-var changes which could be really tricky)
-	* make variables and types case-insensitive
-	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
 	* unify the naming patterns for variables and frontend widgets, etc.
 
 	* make a way to reorder the windows? (so you don't get channels and status windows mixed up? or
@@ -146,8 +153,6 @@ General:
 	* add list command
 	* add whowas commands
 	* add channel and user mode bits
-	* add handling for CTCP commands
-	* add reconnect command
 	* add error message handling
 
 	* add home/end functions to be keybound
@@ -159,6 +164,7 @@ General:
 	* document the required frontend things widgets (like window, input), things that can be passed
 	  to fe_current...
 
+	* add the slab allocator
 	* use expand to buffer or something in irc_format_msg to convert variables *before* substituting
 	  %% arguments
 
