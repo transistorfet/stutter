@@ -49,6 +49,7 @@
 #define IRC_FMT_KICK			"%B [%@] %P2 was kicked from %P1 by %N (%M)"
 #define IRC_FMT_KICK_SELF		"%B [%@] You were kicked from %P1 by %N (%M)"
 //#define IRC_FMT_NAMES			"$banner Users on <channel>%P3</channel>: <msg>%T</msg>"
+//#define IRC_FMT_NAMES			"${fe.colour.status}$banner Users on %P3: %M"
 #define IRC_FMT_NAMES			"%B Users on %P3: %M"
 #define IRC_FMT_NICK			"%B [%@] nick: %N -> %P1"
 #define IRC_FMT_NOTICE			"%B [%@] -%N- %M"
@@ -77,7 +78,10 @@
 
 #define DOT_FILE			"~/.stutterrc"
 
-//#define GREET_MSG			"Welcome to the show!"
+#define ERR_MSG_UNABLE_TO_OPEN_FILE	"Error: Unable to open the file, %s"
+#define ERR_MSG_SERVER_DISCONNECTED	"Error: Disconnected from %s"
+#define ERR_MSG_RECONNECT_ERROR		"Error: Unable to reconnect to %s"
+#define ERR_MSG_JOIN_ERROR		"Error: Unable to create channel resources after joining %s"
 
 #define LOAD_MODULES()			\
 	init_base();			\
@@ -93,23 +97,27 @@
 	BIND_KEY("\x15", "base.clearline")	\
 	BIND_KEY("\x11", "base.previous")
 
+/*** Base Module ***/
+
 #define BASE_HANDLERS()							\
 	ADD_HANDLER("error_general", NULL, 10, base_sig_print, NULL)
 
-#define BASE_COMMANDS()			\
-	DECLARE_COMMAND(bind)		\
-	DECLARE_COMMAND(clear)		\
-	DECLARE_COMMAND(clearline)	\
-	DECLARE_COMMAND(echo)		\
-	DECLARE_COMMAND(get)		\
-	DECLARE_COMMAND(next)		\
-	DECLARE_COMMAND(parse)		\
-	DECLARE_COMMAND(previous)	\
-	DECLARE_COMMAND(quit)		\
-	DECLARE_COMMAND(remove)		\
-	DECLARE_COMMAND(scroll)		\
-	DECLARE_COMMAND(set)		\
-	DECLARE_COMMAND(source)
+#define BASE_COMMANDS()					\
+	ADD_COMMAND("bind", base_cmd_bind)		\
+	ADD_COMMAND("clear", base_cmd_clear)		\
+	ADD_COMMAND("clearline", base_cmd_clearline)	\
+	ADD_COMMAND("echo", base_cmd_echo)		\
+	ADD_COMMAND("get", base_cmd_get)		\
+	ADD_COMMAND("next", base_cmd_next)		\
+	ADD_COMMAND("parse", base_cmd_parse)		\
+	ADD_COMMAND("previous", base_cmd_previous)	\
+	ADD_COMMAND("quit", base_cmd_quit)		\
+	ADD_COMMAND("remove", base_cmd_remove)		\
+	ADD_COMMAND("scroll", base_cmd_scroll)		\
+	ADD_COMMAND("set", base_cmd_set)		\
+	ADD_COMMAND("source", base_cmd_source)
+
+/*** IRC Module ***/
 
 #define IRC_HANDLERS()							\
 	ADD_HANDLER("irc_dispatch_msg", NULL, 10, irc_dispatch_msg, NULL)	\
@@ -118,21 +126,22 @@
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_version, NULL)	\
 	ADD_HANDLER("quit", NULL, 10, irc_sig_quit, NULL)
 
-#define IRC_COMMANDS()			\
-	DECLARE_COMMAND(ctcp)	\
-	DECLARE_COMMAND(disconnect)	\
-	DECLARE_COMMAND(join)		\
-	DECLARE_COMMAND(leave)		\
-	DECLARE_COMMAND(me)		\
-	DECLARE_COMMAND(msg)		\
-	DECLARE_COMMAND(names)		\
-	DECLARE_COMMAND(nick)		\
-	DECLARE_COMMAND(notice)		\
-	DECLARE_COMMAND(ping)		\
-	DECLARE_COMMAND(say)		\
-	DECLARE_COMMAND(server)		\
-	DECLARE_COMMAND(whois)		\
-	ADD_COMMAND("", say, NULL)
+#define IRC_COMMANDS()					\
+	ADD_COMMAND("ctcp", irc_cmd_ctcp)		\
+	ADD_COMMAND("disconnect", irc_cmd_disconnect)	\
+	ADD_COMMAND("join", irc_cmd_join)		\
+	ADD_COMMAND("leave", irc_cmd_leave)		\
+	ADD_COMMAND("me", irc_cmd_me)			\
+	ADD_COMMAND("msg", irc_cmd_msg)			\
+	ADD_COMMAND("names", irc_cmd_names)		\
+	ADD_COMMAND("nick", irc_cmd_nick)		\
+	ADD_COMMAND("notice", irc_cmd_notice)		\
+	ADD_COMMAND("ping", irc_cmd_ping)		\
+	ADD_COMMAND("reconnect", irc_cmd_reconnect)	\
+	ADD_COMMAND("say", irc_cmd_say)			\
+	ADD_COMMAND("server", irc_cmd_server)		\
+	ADD_COMMAND("whois", irc_cmd_whois)		\
+	ADD_COMMAND("", irc_cmd_say)
 
 
 #define STUTTER_INIT(argc, argv) {				\
