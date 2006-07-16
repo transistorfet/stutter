@@ -8,6 +8,7 @@
 #define _STUTTER_MODULES_IRC_MSG_H
 
 #include <time.h>
+#include <stutter/lib/queue.h>
 #include <stutter/modules/irc/commands.h>
 
 #define IRC_MAX_MSG		512
@@ -19,6 +20,7 @@ struct irc_msg {
 	int size;
 	time_t time;
 	struct irc_server *server;
+	queue_node_v(irc_msg) queue;
 	short cmd;
 	char *nick;
 	char *host;
