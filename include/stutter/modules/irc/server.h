@@ -16,6 +16,7 @@
 #define IRC_SERVER_STATUS_CHANNEL	"status"
 
 #define IRC_SBF_CONNECTED		0x01
+#define IRC_SBF_RECONNECTING		0x02
 
 struct irc_server {
 	int bitflags;
