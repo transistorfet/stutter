@@ -162,6 +162,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 	else {
 		if (server && msg && (size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
 			ret = fe_net_send(server->net, buffer, size);
+		// TODO should we dispatch messages here instead?
 		irc_destroy_msg(msg);
 		if (ret != size)
 			return(-1);
@@ -184,8 +185,9 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
-			if (irc_server_reconnect(server))
+			if ((server->bitflags & IRC_SBF_RECONNECTING) || irc_server_reconnect(server))
 				return(NULL);
+			server->bitflags |= IRC_SBF_RECONNECTING;
 		}
 		else if (size == 0)
 			return(NULL);
@@ -291,9 +293,8 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, text)))
 		return(-1);
 	msg->server = server;
-	if (!(ret = irc_send_msg(server, msg)))
-		signal_emit("irc_dispatch_msg", NULL, msg);
-	return(ret);
+	signal_emit("irc_dispatch_msg", NULL, msg);
+	return(irc_send_msg(server, msg));
 }
 
 /**
@@ -309,9 +310,8 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, text)))
 		return(-1);
 	msg->server = server;
-	if (!(ret = irc_send_msg(server, msg)))
-		signal_emit("irc_dispatch_msg", NULL, msg);
-	return(ret);
+	signal_emit("irc_dispatch_msg", NULL, msg);
+	return(irc_send_msg(server, msg));
 }
 
 /*** Local Functions ***/
