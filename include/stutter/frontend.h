@@ -30,7 +30,6 @@ char *fe_read(void *widget, char *buffer, int max);
 void fe_clear(void *widget);
 void fe_move(void *widget, short x, short y);
 int fe_scroll(void *widget, int diff);
-void fe_refresh(void *widget);
 
 void fe_quit(char *reason);
 
