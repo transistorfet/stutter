@@ -42,9 +42,9 @@
 #define IRC_FMT_CTCP_VERSION_REPLY	"%B [%@] CTCP Version reply from %N (%H) %M"
 #define IRC_FMT_DEFAULT			"%N!%H %C %M"
 #define IRC_FMT_PRIVATE_ACTION		"[%@] <*> %N %M"
-#define IRC_FMT_PRIVATE_ACTION_SELF	"\x02[\x02%@\x02]\x02 <*> %n %M"
+#define IRC_FMT_PRIVATE_ACTION_SELF	"${fe.bold}[${fe.bold}%@${fe.bold}]${fe.bold} <*> %n %M"
 #define IRC_FMT_PUBLIC_ACTION		"[%@] * %N %M"
-#define IRC_FMT_PUBLIC_ACTION_SELF	"\x02[\x02%@\x02]\x02 * %n %M"
+#define IRC_FMT_PUBLIC_ACTION_SELF	"${fe.bold}[${fe.bold}%@${fe.bold}]${fe.bold} * %n %M"
 #define IRC_FMT_JOIN			"%B [%@] Joined %P1: %N (%H)"
 #define IRC_FMT_KICK			"%B [%@] %P2 was kicked from %P1 by %N (%M)"
 #define IRC_FMT_KICK_SELF		"%B [%@] You were kicked from %P1 by %N (%M)"
@@ -53,14 +53,14 @@
 #define IRC_FMT_NAMES			"%B Users on %P3: %M"
 #define IRC_FMT_NICK			"%B [%@] nick: %N -> %P1"
 #define IRC_FMT_NOTICE			"%B [%@] -%N- %M"
-#define IRC_FMT_NOTICE_SELF		"%B \x02[\x02%@\x02]\x02 -%n- %M"
+#define IRC_FMT_NOTICE_SELF		"%B ${fe.bold}[${fe.bold}%@${fe.bold}]${fe.bold} -%n- %M"
 #define IRC_FMT_PART			"%B [%@] Leaving %P1: %N (%M)"
 #define IRC_FMT_PING			"%B [%@] Ping received from %N (%H)"
 #define IRC_FMT_PING_REPLY		"%B [%@] Ping reply from %N (%M)"
 #define IRC_FMT_PRIVATE_MSG		"-[%@ %N]- %M"
-#define IRC_FMT_PRIVATE_MSG_SELF	"-\x02[\x02%@ %n\x02]\x02- %M"
+#define IRC_FMT_PRIVATE_MSG_SELF	"-${fe.bold}[${fe.bold}%@ %n -> %N${fe.bold}]${fe.bold}- %M"
 #define IRC_FMT_PUBLIC_MSG		"[%@ %N] %M"
-#define IRC_FMT_PUBLIC_MSG_SELF		"\x02[\x02%@ %n\x02]\x02 %M"
+#define IRC_FMT_PUBLIC_MSG_SELF		"${fe.bold}[${fe.bold}%@ %n${fe.bold}]${fe.bold} %M"
 #define IRC_FMT_QUIT			"%B [%@] Quit: %N (%M)"
 #define IRC_FMT_TOPIC			"%B Topic Set by %N To: %M"
 
@@ -140,6 +140,7 @@
 	ADD_COMMAND("reconnect", irc_cmd_reconnect)	\
 	ADD_COMMAND("say", irc_cmd_say)			\
 	ADD_COMMAND("server", irc_cmd_server)		\
+	ADD_COMMAND("topic", irc_cmd_topic)		\
 	ADD_COMMAND("whois", irc_cmd_whois)		\
 	ADD_COMMAND("", irc_cmd_say)
 
