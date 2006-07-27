@@ -30,6 +30,7 @@ int irc_cmd_ping(char *, char *);
 int irc_cmd_reconnect(char *, char *);
 int irc_cmd_say(char *, char *);
 int irc_cmd_server(char *, char *);
+int irc_cmd_topic(char *, char *);
 int irc_cmd_whois(char *, char *);
 
 /* Messages */
