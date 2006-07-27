@@ -17,6 +17,7 @@ OBJS =	init.o \
 	cmds/reconnect.o \
 	cmds/say.o \
 	cmds/server.o \
+	cmds/topic.o \
 	cmds/whois.o \
 	core/msg.o \
 	core/user.o \
