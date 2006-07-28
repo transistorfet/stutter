@@ -29,12 +29,19 @@
 #define IRC_MSG_INFO			1020
 #define IRC_MSG_NOTICE			1021
 #define IRC_MSG_PRIVMSG			1022
-#define IRC_MSG_WHO			1023
-#define IRC_MSG_WHOIS			1024
-#define IRC_MSG_WHOWAS			1025
-#define IRC_MSG_PING			1026
-#define IRC_MSG_PONG			1027
-#define IRC_MSG_ERROR			1028
+#define IRC_MSG_INVITE			1023
+#define IRC_MSG_WHO			1024
+#define IRC_MSG_WHOIS			1025
+#define IRC_MSG_WHOWAS			1026
+#define IRC_MSG_PING			1027
+#define IRC_MSG_PONG			1028
+#define IRC_MSG_MOTD			1029
+#define IRC_MSG_LUSERS			1030
+#define IRC_MSG_ERROR			1031
+#define IRC_MSG_SQUIT			1032
+#define IRC_MSG_SERVLIST		1033
+#define IRC_MSG_SQUERY			1034
+#define IRC_MSG_KILL			1035
 
 #define IRC_RPL_WELCOME			001
 #define IRC_RPL_YOURHOST		002
