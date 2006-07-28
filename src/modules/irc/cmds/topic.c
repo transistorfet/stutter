@@ -15,10 +15,14 @@ int irc_cmd_topic(char *env, char *args)
 	struct irc_msg *msg;
 	struct irc_channel *channel;
 
-	get_param_m(args, name, ' ');
-	if (!(channel = irc_current_channel()))
+	if ((*args == '\0') || !(channel = irc_current_channel()))
 		return(-1);
-	if (!(msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 1, (*args != '\0') ? args : channel->name)))
+	get_param_m(args, name, ' ');
+	if (*args == '\0')
+		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 1, name);
+	else
+		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 2, name, args);
+	if (!msg)
 		return(-1);
 	irc_send_msg(channel->server, msg);
 	return(0);
