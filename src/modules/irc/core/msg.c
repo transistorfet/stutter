@@ -1,7 +1,7 @@
 /*
  * Module Name:		msg.c
  * Version:		0.1
- * Module Requirements:	(none)
+ * Module Requirements:	utils
  * Description:		Message Manager
  */
 
@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include <stutter/utils.h>
 #include <stutter/modules/irc/msg.h>
 
 #define msg_copy_addr_m(dest, src, size)	\
@@ -23,43 +24,52 @@
 struct irc_msg_commands {
 	char *name;
 	short cmd;
-	short bitflags;
+	unsigned int use_text : 1;
+	unsigned int min_params : 4;
+	unsigned int max_params : 4;
 };
 
 static struct irc_msg_commands msg_commands[] = {
-	{ "PASS", IRC_MSG_PASS, 0 },
-	{ "NICK", IRC_MSG_NICK, 0 },
-	{ "USER", IRC_MSG_USER, 1 },
-	{ "OPER", IRC_MSG_OPER, 0 },
-	{ "QUIT", IRC_MSG_QUIT, 1 },
-	{ "JOIN", IRC_MSG_JOIN, 0 },
-	{ "PART", IRC_MSG_PART, 1 },
-	{ "MODE", IRC_MSG_MODE, 0 },
-	{ "TOPIC", IRC_MSG_TOPIC, 1 },
-	{ "NAMES", IRC_MSG_NAMES, 0 },
-	{ "LIST", IRC_MSG_LIST, 0 },
-	{ "KICK", IRC_MSG_KICK, 1 },
-	{ "VERSION", IRC_MSG_VERSION, 0 },
-	{ "STATS", IRC_MSG_STATS, 0 },
-	{ "LINKS", IRC_MSG_LINKS, 0 },
-	{ "TIME", IRC_MSG_TIME, 0 },
-	{ "CONNECT", IRC_MSG_CONNECT, 0 },
-	{ "TRACE", IRC_MSG_TRACE, 0 },
-	{ "ADMIN", IRC_MSG_ADMIN, 0 },
-	{ "INFO", IRC_MSG_INFO, 0 },
-	{ "PRIVMSG", IRC_MSG_PRIVMSG, 1 },
-	{ "NOTICE", IRC_MSG_NOTICE, 1 },
-	{ "WHO", IRC_MSG_WHO, 0 },
-	{ "WHOIS", IRC_MSG_WHOIS, 0 },
-	{ "WHOWAS", IRC_MSG_WHOWAS, 0 },
-	{ "PING", IRC_MSG_PING, 1 },
-	{ "PONG", IRC_MSG_PONG, 1 },
-	{ "ERROR", IRC_MSG_ERROR, 1 },
+	{ "PASS", IRC_MSG_PASS, 0, 1, 1 },
+	{ "NICK", IRC_MSG_NICK, 0, 1, 1 },
+	{ "USER", IRC_MSG_USER, 1, 4, 4 },
+	{ "OPER", IRC_MSG_OPER, 0, 2, 2 },
+	{ "QUIT", IRC_MSG_QUIT, 1, 0, 1 },
+	{ "JOIN", IRC_MSG_JOIN, 0, 1, 2 },
+	{ "PART", IRC_MSG_PART, 1, 1, 2 },
+	{ "MODE", IRC_MSG_MODE, 0, 2, 0 },
+	{ "TOPIC", IRC_MSG_TOPIC, 1, 1, 2 },
+	{ "NAMES", IRC_MSG_NAMES, 0, 1, 2 },
+	{ "LIST", IRC_MSG_LIST, 0, 0, 1 },
+	{ "KICK", IRC_MSG_KICK, 1, 2, 3 },
+	{ "VERSION", IRC_MSG_VERSION, 0, 0, 1 },
+	{ "STATS", IRC_MSG_STATS, 0, 0, 2 },
+	{ "LINKS", IRC_MSG_LINKS, 0, 0, 2 },
+	{ "TIME", IRC_MSG_TIME, 0, 0, 1 },
+	{ "CONNECT", IRC_MSG_CONNECT, 0, 2, 3 },
+	{ "TRACE", IRC_MSG_TRACE, 0, 0, 1 },
+	{ "ADMIN", IRC_MSG_ADMIN, 0, 0, 1 },
+	{ "INFO", IRC_MSG_INFO, 0, 0, 1 },
+	{ "NOTICE", IRC_MSG_NOTICE, 1, 2, 2 },
+	{ "PRIVMSG", IRC_MSG_PRIVMSG, 1, 2, 2 },
+	{ "INVITE", IRC_MSG_INVITE, 0, 2, 2 },
+	{ "WHO", IRC_MSG_WHO, 0, 1, 2 },
+	{ "WHOIS", IRC_MSG_WHOIS, 0, 1, 2 },
+	{ "WHOWAS", IRC_MSG_WHOWAS, 0, 1, 3 },
+	{ "PING", IRC_MSG_PING, 1, 1, 2 },
+	{ "PONG", IRC_MSG_PONG, 1, 1, 2 },
+	{ "MOTD", IRC_MSG_MOTD, 0, 0, 1 },
+	{ "LUSERS", IRC_MSG_LUSERS, 0, 0, 2 },
+	{ "ERROR", IRC_MSG_ERROR, 1, 1, 1 },
+	{ "SQUIT", IRC_MSG_SQUIT, 1, 2, 2 },
+	{ "SERVLIST", IRC_MSG_SERVLIST, 0, 0, 2 },
+	{ "SQUERY", IRC_MSG_SQUERY, 1, 2, 2 },
+	{ "KILL", IRC_MSG_KILL, 1, 2, 2 },
 	{ NULL, 0 }
 };
 
 static struct irc_msg *msg_create(short, short, char *, char *, short, char **);
-static int msg_command_bitflags(short);
+static struct irc_msg_commands *msg_get_command(short);
 static int msg_ctoa(int, char *);
 static char *msg_uppercase(char *);
 
@@ -72,6 +82,7 @@ struct irc_msg *irc_create_msg(short cmd, char *nick, char *host, short num_para
 	int j;
 	va_list va;
 	char *params[IRC_MAX_PARAMS];
+	struct irc_msg_commands *info;
 
 	if (num_params >= IRC_MAX_PARAMS)
 		return(NULL);
@@ -79,7 +90,17 @@ struct irc_msg *irc_create_msg(short cmd, char *nick, char *host, short num_para
 	va_start(va, num_params);
 	for (j = 0;j < num_params;j++)
 		params[j] = va_arg(va, char *);
-	return(msg_create(msg_command_bitflags(cmd), cmd, nick, host, num_params, params));
+	if (info = msg_get_command(cmd)) {
+		if (num_params < info->min_params) {
+			util_emit_str("irc.error", NULL, "IRC message, %s, doesn't have enough parameters", info->name);
+			return(NULL);
+		}
+		else if (info->max_params && (num_params > info->max_params)) {
+			util_emit_str("irc.error", NULL, "IRC message, %s, has too many parameters", info->name);
+			return(NULL);
+		}
+	}
+	return(msg_create((info && (num_params == info->max_params)) ? info->use_text : 0, cmd, nick, host, num_params, params));
 }
 
 /**
@@ -319,16 +340,16 @@ static struct irc_msg *msg_create(short bitflags, short cmd, char *nick, char *h
  * Search the list of commands for the command number given and return 1
  * if the command should have a quoted parameter at the end or 0 otherwise.
  */
-static int msg_command_bitflags(short cmd)
+static struct irc_msg_commands *msg_get_command(short cmd)
 {
 	int i = 0;
 
 	while (msg_commands[i].name) {
 		if (msg_commands[i].cmd == cmd)
-			return(msg_commands[i].bitflags);
+			return(&msg_commands[i]);
 		i++;
 	}
-	return(0);
+	return(NULL);
 }
 
 /**
