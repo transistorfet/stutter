@@ -16,6 +16,7 @@ int irc_dispatch_msg(char *env, struct irc_msg *msg)
 		case 003:
 		case 004:
 			msg->server->bitflags |= IRC_SBF_CONNECTED;
+			msg->server->bitflags &= ~IRC_SBF_RECONNECTING;
 			return(irc_msg_default(env, msg));
 		case IRC_MSG_NOTICE:
 			return(irc_msg_notice(env, msg));
