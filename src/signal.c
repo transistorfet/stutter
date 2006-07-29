@@ -194,7 +194,7 @@ int signal_emit(char *name, void *index, void *ptr)
 		return(-1);
 	cur = node->data.handlers;
 	while (cur) {
-		if (cur->index == index) {
+		if (cur->index == index || (!cur->index && (node->data.bitflags & SIG_BF_USE_WILDCARD_INDEX))) {
 			// TODO change the signal function format
 			//cur->func(cur->ptr, index, ptr)
 			calls++;
