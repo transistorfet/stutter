@@ -13,7 +13,7 @@ int irc_msg_default(char *env, struct irc_msg *msg)
 {
 	char buffer[STRING_SIZE];
 
-	if (irc_format_msg(msg, IRC_FMT_DEFAULT, buffer, STRING_SIZE) < 0)
+	if (irc_format_msg(msg, env ? env : IRC_FMT_DEFAULT, buffer, STRING_SIZE) < 0)
 		return(-1);
 	fe_print(msg->server->status->window, buffer);
 	return(0);
