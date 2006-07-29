@@ -220,7 +220,7 @@ static void signal_destroy_node(struct signal_node_s *node)
 	cur = node->data.handlers;
 	while (cur) {
 		tmp = cur->next;
-		memory_free(tmp);
+		memory_free(cur);
 		cur = tmp;
 	}
 	memory_free(node);
