@@ -111,7 +111,7 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct type
 	int len;
 	struct variable_node_s *node;
 
-	if (!type || variable_validate_name(name))
+	if (variable_validate_name(name))
 		return(NULL);
 	else if (!table)
 		table = variable_root;
@@ -120,7 +120,7 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct type
 
 	hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
 	if (!node) {
-		if ((name[len] != '\0') || !type->create)
+		if ((name[len] != '\0') || !type || !type->create)
 			return(NULL);
 		if (!(node = memory_alloc(sizeof(struct variable_node_s) + strlen(name) + 1)))
 			return(NULL);
@@ -140,7 +140,7 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct type
 			return(NULL);
 		return(node->data.type->add(node->data.value, type, &name[len + 1], bitflags, str, va));
 	}
-	else if (node->data.type == type) {
+	else if (!type || (node->data.type == type)) {
 		if (!node->data.type->create)
 			return(NULL);
 		node->data.value = node->data.type->create(node->data.value, str, va);
