@@ -21,7 +21,7 @@ int irc_cmd_topic(char *env, char *args)
 	if (*args == '\0')
 		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 1, name);
 	else
-		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 2, name, args);
+		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 2, name, (!strcmp_icase(args, "none")) ? "" : args);
 	if (!msg)
 		return(-1);
 	irc_send_msg(channel->server, msg);
