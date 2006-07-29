@@ -23,6 +23,7 @@ OBJS =	init.o \
 	core/user.o \
 	core/channel.o \
 	core/server.o \
+	msgs/current.o \
 	msgs/default.o \
 	msgs/join.o \
 	msgs/kick.o \
