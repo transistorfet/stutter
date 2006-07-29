@@ -12,6 +12,8 @@
 
 #define SIGNAL_STOP_EMIT		1
 
+#define SIG_BF_USE_WILDCARD_INDEX	0x0001
+
 typedef int (*signal_t)(void *, void *);
 
 struct signal_handler_s {
