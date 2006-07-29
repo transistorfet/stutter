@@ -5,37 +5,10 @@ Signals:
 	  will be called) is a channel struct but it would still need a method of searching all signal
 	  handlers for "irc-print" for the current window pointer stored as the signal handler's
 	  parameter.
-
-	* "channels" which can be directed to various windows and sources (perhaps it should be
-	  controlled by the frontend so that a channel like "critical errors" can cause popup messages
-	  whereas "normal errors" can print to the current window).
-	* a way to call a signal handler when a parameter passed by the emitter matches (further
-	  specifying a signal) (think net callbacks with the parameter being the socket)
-	* with net callbacks, windows(OS) will pass a message to a window along with the socket which means
-	  the network struct needs to first be looked up before a signal can be emitted for that network
-	  struct (ie. first you do a lookup (net.c must have a table of network structs) and then you
-	  emit the signal which does a hashtable lookup on the signal and then a table lookup on the
-	  network struct to get the signal handlers (of which there is only likely to be 1)).  This is
-	  instead of just a static callback stored in the network struct itself.  The only way I see to
-	  overcome this is to use the socket to index the signal (in which case net.c would not store a list
-	  of network structs for windows and gtk (but still for console)).  This however requires that the
-	  callee knows to index based on the socket which is doesn't.  *This* can be overcome by using *only*
-	  the socket and not having a network struct.  The one thing we loose with that is the saved read
-	  buffer but then again you can have a private table of read buffers indexed by socket (hashtable
-	  perhaps) in net.c
 	* a window handler connecting to a signal emitted for a particular window so that it can
 	  free memory when that window is destroyed for example (server registering for its status
 	  window and if a command like /close causes that window to be destroyed, the server disconnects
 	  and frees all resources it uses)
-	* if there are performance problems with the ctcp dispatch signal (after the message is handled,
-	  it will still emit the signal to the other handlers) we can use priorities and emit stopping.
-	  Anything that is just observing the messages or that needs to be called all the time can be
-	  a higher priority and then the normal handler can stop the emit thus everything that wants the
-	  message should have received it.
-	* should key presses emit signals (with a signal handler that executes a command) instead of
-	  just doing commands? (no this would mean a lot of extra stuff stored and would require a double
-	  setup (set up key and then signal handler).  Instead it would have to be a keypress generates a
-	  fixed signal but then that throws out all the context stuff in keybinding.)
 
 Structural Issues:
 	* should we add a mechanism to signals that allows for signals to "inherit" from others so that
@@ -46,12 +19,10 @@ Structural Issues:
 	  should we use an added signal manager compare feature to dispatch all messages using a single
 	  signal and the numeric command parameter?
 
-	* can we fix the /parse issue by making it take the string as a param instead and have a signal
-	  handler that is called when the key is pressed that acutally get the input and calls parse?
-	* should you be able to reassign to a variable of an unknown type (ie. pass NULL as the type to
-	  add_variable? (this would let you assign to a wildcard variable (which takes a string anyways)
-	  using the set command without having to specify the type).
+	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages?)
 	* should we add a parent field to the variable?
+	* what can be used as the index for network ready signals?  The network_t itself?  can we make
+	  network signals better than the network callback we have now?
 	* how will you do timers?  they have to be implemented through the frontend.  Should a timeout
 	  cause a signal to be emitted?  a callback (stored in the timer struct) to be called?  Could make
 	  an 'events' system.
@@ -67,24 +38,24 @@ Structural Issues:
 	  to have a event/message/something signal handler for that pointer.
 	* standardize the interpretation of the create type function parameters (the format string should
 	  only ever contain a description of the arguments and should never be an argument itself)
-	* should the libs/ be moved to the root dir (since the primary issue was all the headers but now
-	  that they are all inside include/stutter/ they wont conflict with system headers).
-	* is there such a thing as too many variables?
 
-	* is there a better name for the main file with the interface functions in frontend/*/core/?
-	* change terminal_print to print the whole string given -1 as the length instead of 0 ??
-	* use the type system for widget types.  A widget is created from a type and subwidgets are added
+	* should irc_format_msg send references to %M through a converter that takes IRC codes (^B, ^F, ^C,
+	  etc) and insert the appropriate variables instead?
+
+	* how will you draw the cursor?
 	* there needs to be a generic (cross-frontend) way to represent keys
+	* since you can access the x/y coordinates directly, should you be able to move the cursor directly
+	  (using macros like the ones for getting the height and width)?
+	* use the type system for widget types.  A widget is created from a type and subwidgets are added
 	* how do you get the statusbar height in window.c
-	* how are you going to deal with keys and screen size in the simple/screen.c module
-	* is there a way to set the statusbar colour across the screen that is appropriately general without
-	  using multiple frames and if not, use multiple frames in frontend/simple.
 	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
 	  specific or will it be through the variable system in which case a widget would be a variable
 	  of the "widget" type.
-	* can we eliminate the need for lots of extra frontend functions by using a byte encoded stream
-	  input to a function like print with escape codes as well as meta data (somewhat like how you
-	  control a terminal)
+
+	* should the libs/ be moved to the root dir (since the primary issue was all the headers but now
+	  that they are all inside include/stutter/ they wont conflict with system headers).
+	* can we fix the /parse issue by making it take the string as a param instead and have a signal
+	  handler that is called when the key is pressed that acutally get the input and calls parse?
 
 Bugs:
 	* if you change your nick while someone is connected to the same network with that nick then it
@@ -98,25 +69,35 @@ Bugs:
 	  nick
 
 General:
+	* MAKE SURE all message handlers don't clobber the message!
+	* pass realname to server when connecting
+	* fix all hash_init and hash_rehash instances to check for memory allocation failure
+
+	* should the net module have an init and release?  (particularily so you can shutdown the sockets
+	  properly on a program quit).
+	* add something (a signal emitted by net perhaps) so that net can print messages, particularily a
+	  "Failed to connect, Retrying" message
+	* modify net.c to print a message when the connection times out and it retries.
+	* fix up error handling in net.c and server.c
+
+	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
+	* should it be emit_signal instead of signal_emit?  my natural tendency seems to be emit_signal
+	* add print handlers for the irc.error and base.error signals
+	* change the formating for private messages to include the user's name you are sending to
+	* do something with base/init.c and the loading of types
+	* make an unknown ctcp command
+	* move the print.c signal handler to a proper signal dir thing
+
 	* should colour schemes be largely frontend dependant?  we still need a way to specify colours.
 	  one way could be to have variable in the frontend for various event/properties (standardized
 	  across all frontends) with the value as a frontend-specific value which the frontend can recognize
 	  and then strings printed to the frontend can use the variables (eg. "${fe.error}ERROR: ...${fe.fg}")
-	* optimize for space and speed (re-evaluate things).
-	* add no-remove and no-change bitflags to variables (once they are set, they cannot be unset)
-
-	* change the formating for private messages to include the user's name you are sending to
-	* do something with base/init.c and the loading of types
-	* add whois message response handling so that the messages are printed to the current window.
-	* fix simple/terminal.c after you figure out how it should accept formatted output
+	* add a fe_find_widget function to find a widget by the id and/or window number
+	* modify simple/terminal.c follow the new conventions
 	* tidy up the simple.c initialization (should we make it common for each frontend? at least key binds)
-	* should it be emit_signal instead of signal_emit?  my natural tendency seems to be emit_signal
-	* make an unknown ctcp command
-	* add something (a signal emitted by net perhaps) so that net can print messages, particularily a
-	  "Failed to connect, Retrying" message
-	* move the print.c signal handler to a proper signal dir thing
-	* fix all hash_init and hash_rehash instances to check for memory allocation failure
-	* add some kind of flag to irc_server that signifies that you are connected
+	* unify the naming patterns for variables and frontend widgets, etc.
+	* make a way to reorder the windows? (so you don't get channels and status windows mixed up? or
+	  should this be a feature of the more advanced text frontend?)
 
 	* add a type with an evaluate function that takes a string (stored) and a string in args, merges
 	  them, and parses/evaluates it as a command
@@ -124,49 +105,41 @@ General:
 	  the function and the args string as the string parameter (to become env)
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
+	* modify user.c and channel.c to use a hash table instead of the linear list
 
+	* switch over to the 3 parameter signal handler function (with index) or else make multiple
+	  signal handler function formats (errorprone?)
 	* is there a way to not have the initialization tables (they are big and only used at the start)
-	* modify net.c to print a message when the connection times out and it retries.
-	* fix up error handling in net.c and server.c
 	* add a function to key.c to get the current binding of a key sequence (without processing)
 	* add a signal that can be used to trigger things that are currently timed like statusbar refresh
 	  (statusbar would need to be called ever time the time-var changes which could be really tricky)
-	* unify the naming patterns for variables and frontend widgets, etc.
 
-	* make a way to reorder the windows? (so you don't get channels and status windows mixed up? or
-	  should this be a feature of the more advanced text frontend?)
 	* have an "activity" status indicator in the status bar so you know when stuff has been said and
 	  in what channels
 	* have keybindings for targeting specific windows (does this require window numbers?)
-	* pass realname to server when connecting
-	* make msgs/join.c print a message when it fails to create a window
 	* rewrite msg.c using va_args instead of making an array and use sprintf
 	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
 	  addresses)
 	* get realname, nick from current user's info (on unix)
-	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
-	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
-	* test multiserver functionality (more thuroughly?)
 
 	* add mode command
-	* add topic commnd (<channel> [<topic>])
 	* add list command
 	* add whowas commands
 	* add channel and user mode bits
 	* add error message handling
+	* add dcc support
 
 	* add home/end functions to be keybound
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
 	* add multiframe (using multiple curses windows) to screen.c
-	* decide on a widget interface to use in order to implement the advanced text frontend
-	* what are the disadvantages of having frames store only the refresh callback?
 	* catch the ^C signal and cancel a connect
 	* document the required frontend things widgets (like window, input), things that can be passed
 	  to fe_current...
 
+	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
+	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
+	* optimize for space and speed (re-evaluate things).
 	* add the slab allocator
-	* use expand to buffer or something in irc_format_msg to convert variables *before* substituting
-	  %% arguments
 
 	* can have xml/javascript/flash displayed from a script somewhat like firefox extensions (except
 	  hopefully in less files?) ???????????????????????
