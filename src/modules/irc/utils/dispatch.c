@@ -17,7 +17,21 @@ int irc_dispatch_msg(char *env, struct irc_msg *msg)
 		case 004:
 			msg->server->bitflags |= IRC_SBF_CONNECTED;
 			msg->server->bitflags &= ~IRC_SBF_RECONNECTING;
-			return(irc_msg_default(env, msg));
+			return(irc_msg_default(NULL, msg));
+		case IRC_RPL_WHOISUSER:
+			return(irc_msg_current(IRC_FMT_WHOISUSER, msg));
+		case IRC_RPL_WHOISSERVER:
+			return(irc_msg_current(IRC_FMT_WHOISSERVER, msg));
+		case IRC_RPL_WHOISOPERATOR:
+			return(irc_msg_current(IRC_FMT_WHOISOPERATOR, msg));
+		case IRC_RPL_WHOISIDLE:
+			return(irc_msg_current(IRC_FMT_WHOISIDLE, msg));
+		case IRC_RPL_WHOISCHANNELS:
+			return(irc_msg_current(IRC_FMT_WHOISCHANNELS, msg));
+		case IRC_RPL_WHOISSPECIAL:
+			return(irc_msg_current(IRC_FMT_WHOISSPECIAL, msg));
+		case IRC_RPL_ENDOFWHOIS:
+			return(0);
 		case IRC_MSG_NOTICE:
 			return(irc_msg_notice(env, msg));
 		case IRC_MSG_JOIN:
@@ -38,7 +52,7 @@ int irc_dispatch_msg(char *env, struct irc_msg *msg)
 		case IRC_MSG_QUIT:
 			return(irc_msg_quit(env, msg));
 		default:
-			return(irc_msg_default(env, msg));
+			return(irc_msg_default(NULL, msg));
 	}
 
 	return(0);
