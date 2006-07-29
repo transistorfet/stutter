@@ -38,8 +38,8 @@ int init_irc_server(void)
 	if (server_initialized)
 		return(1);
 	linear_init_v(server_list);
-	add_signal("irc_dispatch_msg", 0);
-	add_signal("irc_dispatch_ctcp", 0);
+	add_signal("irc_dispatch_msg", SIG_BF_USE_WILDCARD_INDEX);
+	add_signal("irc_dispatch_ctcp", SIG_BF_USE_WILDCARD_INDEX);
 	server_initialized = 1;
 	return(0);
 }
@@ -293,7 +293,7 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, text)))
 		return(-1);
 	msg->server = server;
-	signal_emit("irc_dispatch_msg", NULL, msg);
+	signal_emit("irc_dispatch_msg", msg->cmd, msg);
 	return(irc_send_msg(server, msg));
 }
 
@@ -310,7 +310,7 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, text)))
 		return(-1);
 	msg->server = server;
-	signal_emit("irc_dispatch_msg", NULL, msg);
+	signal_emit("irc_dispatch_msg", msg->cmd, msg);
 	return(irc_send_msg(server, msg));
 }
 
@@ -349,7 +349,7 @@ static int irc_server_receive(struct irc_server *server, network_t net)
 	struct irc_msg *msg;
 
 	if (msg = irc_receive_msg(server))
-		signal_emit("irc_dispatch_msg", NULL, msg);
+		signal_emit("irc_dispatch_msg", msg->cmd, msg);
 	irc_destroy_msg(msg);
 	if (server->bitflags & IRC_SBF_CONNECTED)
 		irc_server_flush_send_queue(server);
