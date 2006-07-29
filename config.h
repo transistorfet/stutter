@@ -40,6 +40,7 @@
 
 #define IRC_FMT_CTCP_VERSION		"%B [%@] CTCP Version received from %N (%H)"
 #define IRC_FMT_CTCP_VERSION_REPLY	"%B [%@] CTCP Version reply from %N (%H) %M"
+#define IRC_FMT_CURRENT			"%N!%H %C %M"
 #define IRC_FMT_DEFAULT			"%N!%H %C %M"
 #define IRC_FMT_PRIVATE_ACTION		"[%@] <*> %N %M"
 #define IRC_FMT_PRIVATE_ACTION_SELF	"${fe.bold}[${fe.bold}%@${fe.bold}]${fe.bold} <*> %n %M"
@@ -63,6 +64,12 @@
 #define IRC_FMT_PUBLIC_MSG_SELF		"${fe.bold}[${fe.bold}%@ %n${fe.bold}]${fe.bold} %M"
 #define IRC_FMT_QUIT			"%B [%@] Quit: %N (%M)"
 #define IRC_FMT_TOPIC			"%B Topic Set by %N To: %M"
+#define IRC_FMT_WHOISUSER		"%B [Whois %P2] Realname : %M"
+#define IRC_FMT_WHOISSERVER		"%B [Whois %P2] Server : %P3 (%M)"
+#define IRC_FMT_WHOISOPERATOR		"%B %P2 %M"
+#define IRC_FMT_WHOISIDLE		"%B [Whois %P2] %P3 %M"
+#define IRC_FMT_WHOISCHANNELS		"%B [Whois %P2] Channels : %M"
+#define IRC_FMT_WHOISSPECIAL		"%B %M"
 
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 #define IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION
@@ -100,7 +107,8 @@
 /*** Base Module ***/
 
 #define BASE_HANDLERS()							\
-	ADD_HANDLER("error_general", NULL, 10, base_sig_print, NULL)
+	ADD_HANDLER("error_general", NULL, 10, base_sig_print, NULL)	\
+	ADD_HANDLER("base.error", NULL, 10, base_sig_print, NULL)
 
 #define BASE_COMMANDS()					\
 	ADD_COMMAND("bind", base_cmd_bind)		\
@@ -119,7 +127,7 @@
 
 /*** IRC Module ***/
 
-#define IRC_HANDLERS()							\
+#define IRC_HANDLERS()								\
 	ADD_HANDLER("irc_dispatch_msg", NULL, 10, irc_dispatch_msg, NULL)	\
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
