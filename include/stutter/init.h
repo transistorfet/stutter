@@ -40,8 +40,8 @@ struct command_prototype_s {
 
 /*** Keys ***/
 
-#define BIND_KEY(key, var)	\
-	bind_key(NULL, key, find_variable(NULL, var), create_string(""));
+#define BIND_KEY(key, var, params)	\
+	bind_key(NULL, key, find_variable(NULL, var), create_string(params));
 
 #endif
 
