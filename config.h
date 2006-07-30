@@ -17,6 +17,7 @@
 #define FE_STATUS			"fe.status"
 #define FE_STATUS_BAR			" $time $irc.current_nick on $irc.current_channel"
 #define FE_STATUS_BAR_HEIGHT		1
+#define FE_WINDOW_LOG_SIZE		1000
 
 /* Base Module Values */
 #define BASE_TIME			"%H:%M"
@@ -99,10 +100,12 @@
 	release_base();
 
 #define BIND_KEYS()				\
-	BIND_KEY("\n", "base.parse")		\
-	BIND_KEY("\x18", "base.next")		\
-	BIND_KEY("\x15", "base.clearline")	\
-	BIND_KEY("\x11", "base.previous")
+	BIND_KEY("\n", "base.parse", "")	\
+	BIND_KEY("\x18", "base.next", "")	\
+	BIND_KEY("\x15", "base.clearline", "")	\
+	BIND_KEY("\x11", "base.previous", "")	\
+	BIND_KEY("\x10", "base.scroll", "1")	\
+	BIND_KEY("\x19", "base.scroll", "-1")
 
 /*** Base Module ***/
 
