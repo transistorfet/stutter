@@ -7,24 +7,26 @@
 #ifndef _STUTTER_FRONTEND_SURFACE_H
 #define _STUTTER_FRONTEND_SURFACE_H
 
-#define SA_NORMAL	0x00
-#define SA_BOLD		0x01
-#define SA_INVERSE	0x02
-#define SA_BLINK	0x04
+#define SA_NORMAL		0x00
+#define SA_BOLD			0x01
+#define SA_INVERSE		0x02
+#define SA_BLINK		0x04
 
-#define SA_BLACK	0x000000
-#define SA_RED		0xFF0000
-#define SA_GREEN	0x00FF00
-#define SA_YELLOW	0xFFFF00
-#define SA_BLUE		0x0000FF
-#define SA_MAGENTA	0xFF00FF
-#define SA_CYAN		0x00FFFF
-#define SA_WHITE	0xFFFFFF
+#define SA_BLACK		0x000000
+#define SA_RED			0xFF0000
+#define SA_GREEN		0x00FF00
+#define SA_YELLOW		0xFFFF00
+#define SA_BLUE			0x0000FF
+#define SA_MAGENTA		0xFF00FF
+#define SA_CYAN			0x00FFFF
+#define SA_WHITE		0xFFFFFF
 
 #define SCC_GET_ATTRIB		0x0010
 #define SCC_SET_ATTRIB		0x0020
 #define SCC_MODIFY_ATTRIB	0x0030
 #define SCC_RESIZE		0x0040
+
+#define SUR_BF_UNDESTROYABLE	0x0001
 
 #define surface_get_width_m(surface)		( ((struct surface_s *) surface)->width )
 #define surface_get_height_m(surface)		( ((struct surface_s *) surface)->height )
