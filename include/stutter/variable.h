@@ -11,6 +11,9 @@
 #include <stutter/lib/string.h>
 #include <stutter/lib/memory.h>
 
+#define VAR_BF_NO_MODIFY	0x0001
+#define VAR_BF_NO_REMOVE	0x0002
+
 struct variable_s {
 	struct type_s *type;
 	char *name;

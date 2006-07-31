@@ -140,7 +140,7 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct type
 			return(NULL);
 		return(node->data.type->add(node->data.value, type, &name[len + 1], bitflags, str, va));
 	}
-	else if (!type || (node->data.type == type)) {
+	else if ((!type || (node->data.type == type)) && !(node->data.bitflags & VAR_BF_NO_MODIFY)) {
 		if (!node->data.type->create)
 			return(NULL);
 		node->data.value = node->data.type->create(node->data.value, str, va);
@@ -175,10 +175,17 @@ int remove_variable(struct variable_table_s *table, struct type_s *type, char *n
 		hash_remove_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
 		if (!node)
 			return(-1);
-		if (node->data.type->destroy)
-			node->data.type->destroy(node->data.value);
-		memory_free(node);
-		return(0);
+		if (node->data.bitflags & VAR_BF_NO_REMOVE) {
+			// TODO is this bad to remove the node and then re-add it?
+			hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
+			return(1);
+		}
+		else {
+			if (node->data.type->destroy)
+				node->data.type->destroy(node->data.value);
+			memory_free(node);
+			return(0);
+		}
 	}
 }
 
