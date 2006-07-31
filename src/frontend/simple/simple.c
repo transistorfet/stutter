@@ -10,12 +10,14 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <stutter/init.h>
 #include <stutter/type.h>
 #include <stutter/signal.h>
 #include <stutter/variable.h>
 #include <stutter/lib/queue.h>
 #include <stutter/lib/string.h>
 #include <stutter/lib/globals.h>
+
 #include "input.h"
 #include "window.h"
 #include "terminal.h"
@@ -54,7 +56,7 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 {
 	struct window_s *window;
 
-	if (strcmp(type, "window") || !(window = create_window(100)))
+	if (strcmp(type, "window") || !(window = create_window(FE_WINDOW_LOG_SIZE)))
 		return(NULL);
 	queue_append(window_list, window);
 	return(window);
@@ -229,9 +231,6 @@ void fe_quit(char *reason)
 	exit_flag = 0;
 }
 
-#define BIND_KEY(key, var)	\
-	bind_key(NULL, key, find_variable(NULL, var), create_string(""));
-
 /**
  * Main Entry Point
  */
@@ -254,6 +253,9 @@ main(int argc, char **argv)
 		return(-1);
 	if (type = find_type("format"))
 		add_variable(NULL, type, FE_STATUS, 0, "%s", FE_STATUS_BAR);
+	if (type = find_type("string")) {
+		add_variable(NULL, type, "fe.bold", 0, "%s", "\x02");
+	}
 	BIND_KEYS();
 
 	if (init_frontend()) {
