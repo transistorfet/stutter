@@ -20,6 +20,8 @@
 #include <stutter/modules/irc/server.h>
 #include <stutter/modules/irc/channel.h>
 
+#define server_is_unbufferable_msg_m(msg)		((msg->cmd == IRC_MSG_NICK) || (msg->cmd == IRC_MSG_USER) || (msg->cmd == IRC_MSG_PASS) || (msg->cmd == IRC_MSG_OPER) || (msg->cmd == IRC_MSG_QUIT) || (msg->cmd == IRC_MSG_SQUIT))
+
 struct irc_server_node {
 	struct irc_server server;
 	linear_node_v(irc_server_node) sl;
@@ -95,6 +97,10 @@ int irc_server_reconnect(struct irc_server *server)
 {
 	fe_net_disconnect(server->net);
 	server->bitflags &= ~IRC_SBF_CONNECTED;
+	queue_destroy_v(server->send_queue, queue,
+		irc_destroy_msg(cur);
+	);
+
 	if (irc_server_init_connection(server)) {
 		util_emit_str("irc.error", NULL, ERR_MSG_RECONNECT_ERROR, server->address);
 		fe_net_disconnect(server->net);
@@ -113,6 +119,9 @@ int irc_server_disconnect(struct irc_server *server)
 	linear_remove_node_v(server_list, sl, (struct irc_server_node *) server);
 	irc_destroy_channel_list(server->channels);
 	fe_net_disconnect(server->net);
+	queue_destroy_v(server->send_queue, queue,
+		irc_destroy_msg(cur);
+	);
 	memory_free(server);
 	return(0);
 }
@@ -135,7 +144,7 @@ struct irc_server *irc_find_server(char *address)
  * on all the servers.  If no channel is associated with the given window
  * then NULL is returned.
  */
-struct irc_channel *irc_server_find_window(void * window)
+struct irc_channel *irc_server_find_window(void *window)
 {
 	struct irc_channel *channel;
 
@@ -156,8 +165,8 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 	int size, ret;
 	char buffer[IRC_MAX_MSG];
 
-	if (!(server->bitflags & IRC_SBF_CONNECTED)) {
-		queue_append_node_v(server->send_queue, msg, queue);
+	if (!(server->bitflags & IRC_SBF_CONNECTED) && !server_is_unbufferable_msg_m(msg)) {
+		queue_append_node_v(server->send_queue, queue, msg);
 	}
 	else {
 		if (server && msg && (size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
@@ -293,7 +302,7 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, text)))
 		return(-1);
 	msg->server = server;
-	signal_emit("irc_dispatch_msg", msg->cmd, msg);
+	signal_emit("irc_dispatch_msg", (void *) (int) msg->cmd, msg);
 	return(irc_send_msg(server, msg));
 }
 
@@ -310,7 +319,7 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, text)))
 		return(-1);
 	msg->server = server;
-	signal_emit("irc_dispatch_msg", msg->cmd, msg);
+	signal_emit("irc_dispatch_msg", (void *) (int) msg->cmd, msg);
 	return(irc_send_msg(server, msg));
 }
 
@@ -328,10 +337,8 @@ static int irc_server_init_connection(struct irc_server *server)
 	if (!(server->net = fe_net_connect(server->address, server->port, (callback_t) irc_server_receive, server)))
 		return(-1);
 
-	server->bitflags |= IRC_SBF_CONNECTED;
 	if ((msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)) && !irc_send_msg(server, msg)
 	    && (msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")) && !irc_send_msg(server, msg)) {
-		server->bitflags &= ~IRC_SBF_CONNECTED;
 		return(0);
 	}
 	fe_net_disconnect(server->net);
@@ -349,7 +356,7 @@ static int irc_server_receive(struct irc_server *server, network_t net)
 	struct irc_msg *msg;
 
 	if (msg = irc_receive_msg(server))
-		signal_emit("irc_dispatch_msg", msg->cmd, msg);
+		signal_emit("irc_dispatch_msg", (void *) (int) msg->cmd, msg);
 	irc_destroy_msg(msg);
 	if (server->bitflags & IRC_SBF_CONNECTED)
 		irc_server_flush_send_queue(server);
