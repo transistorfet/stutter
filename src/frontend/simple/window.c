@@ -63,7 +63,7 @@ int refresh_window(struct window_s *window)
 	if (!(cur = queue_first_v(window->log)))
 		return(0);
 	for (j = 0;j < window->cur_line;j++) {
-		if (!(cur = queue_next_v(cur, log)))
+		if (!(cur = queue_next_v(log, cur)))
 			return(0);
 	}
 	while (lines >= 0) {
@@ -82,7 +82,7 @@ int refresh_window(struct window_s *window)
 			lines--;
 			j -= breaks[i - 1];
 		}
-		if (!(cur = queue_next_v(cur, log)))
+		if (!(cur = queue_next_v(log, cur)))
 			break;
 	}
 	return(0);
@@ -104,7 +104,7 @@ int window_print(struct window_s *window, const char *str)
 		return(-1);
 	node->line = (char *) (((size_t) node) + sizeof(struct window_entry_s));
 	strcpy(node->line, str);
-	queue_prepend_node_v(window->log, node, log);
+	queue_prepend_node_v(window->log, log, node);
 	return(0);
 }
 
