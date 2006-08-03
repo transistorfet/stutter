@@ -30,7 +30,7 @@
 	(list).head = NULL;				\
 	(list).tail = NULL;
 
-#define queue_prepend_node_v(list, node, field) {	\
+#define queue_prepend_node_v(list, field, node) {	\
 	(node)->field.next = (list).head;		\
 	(node)->field.prev = NULL;			\
 	(list).head = (node);				\
@@ -39,7 +39,7 @@
 	(list).size++;					\
 }
 
-#define queue_append_node_v(list, node, field) {	\
+#define queue_append_node_v(list, field, node) {	\
 	(node)->field.next = NULL;			\
 	(node)->field.prev = (list).tail;		\
 	if ((list).tail)				\
@@ -50,7 +50,7 @@
 	(list).size++;					\
 }
 
-#define queue_shift_node_v(list, ptr, field) {		\
+#define queue_shift_node_v(list, field, ptr) {		\
 	ptr = (list).head;				\
 	if ((list).head) {				\
 		(list).head = (list).head->field.next;	\
@@ -62,7 +62,7 @@
 	}						\
 }
 
-#define queue_pop_node_v(list, ptr, field) {		\
+#define queue_pop_node_v(list, field, ptr) {		\
 	ptr = (list).tail;				\
 	if ((list).tail) {				\
 		(list).tail = (list).tail->field.prev;	\
@@ -74,7 +74,7 @@
 	}						\
 }
 
-#define queue_remove_node_v(list, node, field) {			\
+#define queue_remove_node_v(list, field, node) {			\
 	if ((node)->field.prev)						\
 		(node)->field.prev->field.next = (node)->field.next;	\
 	else								\
@@ -110,8 +110,8 @@
 
 #define queue_first_v(list)		(list).head
 #define queue_last_v(list)		(list).tail
-#define queue_next_v(node, field)	(node)->field.next
-#define queue_previous_v(node, field)	(node)->field.prev
+#define queue_next_v(field, node)	(node)->field.next
+#define queue_previous_v(field, node)	(node)->field.prev
 #define queue_size_v(list)		(list).size
 
 /*** Inline Interface ***/
@@ -157,9 +157,9 @@ static inline int queue_prepend(struct queue_s *queue, void *ptr)
 	if (!(node = (struct queue_node_s *) memory_alloc(sizeof(struct queue_node_s))))
 		return(-1);
 	node->ptr = ptr;
-	queue_prepend_node_v(queue->q, node, q);
+	queue_prepend_node_v(queue->q, q, node);
 	if (queue->max && (queue_size_v(queue->q) > queue->max)) {
-		queue_pop_node_v(queue->q, node, q);
+		queue_pop_node_v(queue->q, q, node);
 		if (queue->current == node)
 			queue->current = NULL;
 		queue->destroy(node->ptr);
@@ -177,7 +177,7 @@ static inline int queue_append(struct queue_s *queue, void *ptr)
 	if (!(node = (struct queue_node_s *) memory_alloc(sizeof(struct queue_node_s))))
 		return(-1);
 	node->ptr = ptr;
-	queue_append_node_v(queue->q, node, q);
+	queue_append_node_v(queue->q, q, node);
 	return(0);
 }
 
@@ -186,7 +186,7 @@ static inline void *queue_shift(struct queue_s *queue)
 	void *ptr;
 	struct queue_node_s *node;
 
-	queue_shift_node_v(queue->q, node, q);
+	queue_shift_node_v(queue->q, q, node);
 	ptr = node->ptr;
 	if (queue->current == node)
 		queue->current = NULL;
@@ -199,7 +199,7 @@ static inline void *queue_pop(struct queue_s *queue)
 	void *ptr;
 	struct queue_node_s *node;
 
-	queue_pop_node_v(queue->q, node, q);
+	queue_pop_node_v(queue->q, q, node);
 	ptr = node->ptr;
 	if (queue->current == node)
 		queue->current = NULL;
@@ -213,7 +213,7 @@ static inline void queue_delete(struct queue_s *queue, void *ptr)
 		if (cur->ptr == ptr) {
 			if (queue->current == cur)
 				queue->current = NULL;
-			queue_remove_node_v(queue->q, cur, q);
+			queue_remove_node_v(queue->q, q, cur);
 			break;
 		}
 	);
