@@ -65,7 +65,7 @@ int refresh_input(struct input_s *input)
 	surface_clear_m(input->surface, 0, height - 1, width, 1);
 	surface_move_m(input->surface, 0, height - 1);
 	i = input->i - width + 1;
-	surface_print_m(input->surface, &input->buffer[(i >= 0) ? i : 0], -1);
+	surface_print_m(input->surface, &input->buffer[(i >= 0) ? i : 0], (input->end >= width) ? width - 1 : -1);
 	surface_move_m(input->surface, ( input->i >= width ? width - 1 : input->i ), height - 1);
 	return(0);
 }
