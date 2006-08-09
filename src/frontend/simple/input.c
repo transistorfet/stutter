@@ -64,7 +64,7 @@ int refresh_input(struct input_s *input)
 	terminal_clear(0, height - 1, width, 1);
 	terminal_move(0, height - 1);
 	i = input->i - width + 1;
-	terminal_print(&input->buffer[(i >= 0) ? i : 0], 0);
+	terminal_print(&input->buffer[(i >= 0) ? i : 0], (input->end >= width) ? width - 1 : 0);
 	terminal_move(( input->i >= width ? width - 1 : input->i ), height - 1);
 	return(0);
 }
