@@ -17,14 +17,14 @@ OBJS =	init.o \
 	cmds/scroll.o \
 	cmds/set.o \
 	cmds/source.o \
+	sigs/print.o \
 	types/command.o \
 	types/format.o \
 	types/status.o \
 	types/string.o \
 	types/table.o \
 	types/time.o \
-	types/wildcard.o \
-	utils/print.o
+	types/wildcard.o
 
 include $(ROOT)/rules.mk
 
