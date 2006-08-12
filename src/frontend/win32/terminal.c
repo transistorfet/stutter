@@ -167,6 +167,10 @@ int terminal_print(struct terminal_s *terminal, char *str, int length)
 	if (length == -1)
 		length = strlen(str);
 	TextOut(terminal->context, terminal->surface.x * terminal->charx, terminal->surface.y * terminal->chary, str, length);
+	terminal->surface.x += (length % terminal->surface.width);
+	terminal->surface.y += (length / terminal->surface.width);
+	if (terminal->surface.y > terminal->surface.height)
+		terminal->surface.y = terminal->surface.y % terminal->surface.height;
 	return(0);
 }
 
