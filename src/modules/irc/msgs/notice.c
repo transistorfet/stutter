@@ -19,7 +19,7 @@ int irc_msg_notice(char *env, struct irc_msg *msg)
 	struct irc_channel *channel;
 
 	if (*msg->text == 0x01)
-		signal_emit("irc_dispatch_ctcp", NULL, msg);
+		emit_signal("irc_dispatch_ctcp", NULL, msg);
 	else {
 		if (!(channel = irc_current_channel()))
 			return(-1);
