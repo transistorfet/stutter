@@ -29,7 +29,7 @@ struct variable_table_s *fe_table;
 extern int init_frontend(void);
 extern int release_frontend(void);
 
-int handle_quit(char *, char *);
+int handle_quit(char *, void *, char *);
 LRESULT CALLBACK windows_callback(HWND, UINT, WPARAM, LPARAM);
 
 int init_windows(void)
@@ -126,7 +126,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR argv, int WinMode
 
 /*** Local Functions ***/
 
-int handle_quit(char *env, char *msg)
+int handle_quit(char *env, void *index, char *msg)
 {
 	PostQuitMessage(0);
 	return(SIGNAL_STOP_EMIT);
