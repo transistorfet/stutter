@@ -16,9 +16,11 @@ int irc_cmd_leave(char *env, char *args)
 	struct irc_channel *channel;
 
 	get_param_m(args, name, ' ');
-	if (!(server = irc_current_server()) || !(channel = irc_find_channel(server->channels, name)))
+	if (!(server = irc_current_server()))
 		return(-1);
-	irc_leave_channel(channel->server, name);
+	if ((*name != '\0') ? !(channel = irc_find_channel(server->channels, name)) : !(channel = irc_current_channel()))
+		return(-1);
+	irc_leave_channel(channel->server, channel->name);
 	return(0);
 }
 
