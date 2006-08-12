@@ -216,7 +216,7 @@ void fe_refresh(void)
 
 void fe_quit(char *reason)
 {
-	signal_emit("quit", NULL, (void *) reason);
+	emit_signal("quit", NULL, (void *) reason);
 }
 
 

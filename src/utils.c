@@ -176,6 +176,6 @@ int util_emit_str(char *name, void *index, char *fmt, ...)
 	va_start(va, fmt);
 	if (vsnprintf(buffer, STRING_SIZE, fmt, va) < 0)
 		return(-1);
-	return(signal_emit(name, index, buffer));
+	return(emit_signal(name, index, buffer));
 }
 
