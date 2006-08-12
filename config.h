@@ -18,6 +18,7 @@
 #define FE_STATUS_BAR			" $time $irc.current_nick on $irc.current_channel"
 #define FE_STATUS_BAR_HEIGHT		1
 #define FE_WINDOW_LOG_SIZE		1000
+#define FE_WINDOW_WRAP_STRING		"        "
 
 /* Base Module Values */
 #define BASE_TIME			"%H:%M"
@@ -147,6 +148,7 @@
 	ADD_COMMAND("names", irc_cmd_names)		\
 	ADD_COMMAND("nick", irc_cmd_nick)		\
 	ADD_COMMAND("notice", irc_cmd_notice)		\
+	ADD_COMMAND("part", irc_cmd_leave)		\
 	ADD_COMMAND("ping", irc_cmd_ping)		\
 	ADD_COMMAND("reconnect", irc_cmd_reconnect)	\
 	ADD_COMMAND("say", irc_cmd_say)			\
