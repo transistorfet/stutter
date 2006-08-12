@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include CONFIG_H
 #include <stutter/lib/queue.h>
 #include <stutter/lib/memory.h>
 #include <stutter/frontend/surface.h>
@@ -70,15 +71,20 @@ int refresh_window(struct window_s *window)
 	while (lines >= 0) {
 		str = cur->line;
 		j = 0;
+		tmp = width;
 		for (i = 0;i < WINDOW_MAX_WRAP;i++) {
 			breaks[i] = window_wrap_string(&str[j], width);
 			if (breaks[i] == -1)
 				break;
+			if (tmp = width)
+				tmp = width - strlen(FE_WINDOW_WRAP_STRING);
 			j += breaks[i];
 		}
 
 		for (;i >= 0;i--) {
 			surface_move_m(window->surface, 0, lines);
+			if (i != 0)
+				surface_print_m(window->surface, FE_WINDOW_WRAP_STRING, -1);
 			surface_print_m(window->surface, &str[j], breaks[i]);
 			lines--;
 			j -= breaks[i - 1];
