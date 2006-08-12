@@ -37,10 +37,10 @@ OBJS =	init.o \
 	msgs/ctcp/action.o \
 	msgs/ctcp/ping.o \
 	msgs/ctcp/version.o \
+	sigs/dispatch.o \
+	sigs/quit.o \
 	utils/current.o \
-	utils/dispatch.o \
-	utils/format.o \
-	utils/quit.o
+	utils/format.o
 
 include $(ROOT)/rules.mk
 
