@@ -15,7 +15,7 @@
 /**
  * Prints private message to channel.
  */
-int irc_msg_ctcp_action(char *env, struct irc_msg *msg)
+int irc_msg_ctcp_action(char *env, void *index, struct irc_msg *msg)
 {
 	int pos;
 	char buffer[STRING_SIZE];

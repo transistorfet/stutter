@@ -14,8 +14,10 @@
 #include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
 
-int irc_msg_ctcp_ping(char *env, struct irc_msg *msg)
+int irc_msg_ctcp_ping(char *env, void *index, struct irc_msg *msg)
 {
+	int pos;
+	char *tmp;
 	char number[20];
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
@@ -29,11 +31,15 @@ int irc_msg_ctcp_ping(char *env, struct irc_msg *msg)
 				return(-1);
 		}
 		else if (msg->cmd == IRC_MSG_NOTICE) {
-			msg->text[strlen(msg->text) - 1] = '\0';
+			tmp = msg->text;
+			pos = strlen(msg->text) - 1;
+			msg->text[pos] = '\0';
 			snprintf(number, 20, "%d secs", time(NULL) - atoi(&msg->text[6]));
 			msg->text = number;
 			if (irc_format_msg(msg, IRC_FMT_PING_REPLY, buffer, STRING_SIZE) < 0)
 				return(-1);
+			msg->text = tmp;
+			msg->text[pos] = 0x01;
 		}
 		else
 			return(-1);
