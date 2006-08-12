@@ -12,6 +12,7 @@
 #include <stutter/lib/memory.h>
 #include <stutter/lib/string.h>
 #include <stutter/frontend/surface.h>
+#include <stutter/frontend/keycodes.h>
 #include "input.h"
 
 /**
@@ -161,22 +162,22 @@ int input_default(struct input_s *input, int ch)
 	char *str;
 
 	switch (ch) {
-		case 0x08:
+		case KC_BACKSPACE:
 			input_delete_char(input);
 			break;
-		case 1000:
+		case KC_UP:
 			if ((str = queue_previous(input->history)) || (str = queue_last(input->history)))
 				input_set_buffer(input, str);
 			break;
-		case 1001:
+		case KC_DOWN:
 			if ((str = queue_next(input->history)) || (str = queue_first(input->history)))
 				input_set_buffer(input, str);
 			break;
-		case 1002:
+		case KC_LEFT:
 			if (input->i < input->end)
 				input->i++;
 			break;
-		case 1003:
+		case KC_RIGHT:
 			if (input->i > 0)
 				input->i--;
 			break;

@@ -16,6 +16,7 @@
 #include <stutter/lib/memory.h>
 #include <stutter/lib/linear.h>
 #include <stutter/frontend/surface.h>
+#include <stutter/frontend/keycodes.h>
 #include "terminal.h"
 
 #define TERMINAL_DEFAULT_WIDTH		80
@@ -342,16 +343,18 @@ void terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 int terminal_convert_char(int ch)
 {
 	switch (ch) {
+		case 0x08:
+			return(KC_BACKSPACE);
 		case VK_RETURN:
-			return(0x0a);
+			return(KC_ENTER);
 		case VK_UP:
-			return(1000);
+			return(KC_UP);
 		case VK_DOWN:
-			return(1001);
+			return(KC_DOWN);
 		case VK_RIGHT:
-			return(1002);
+			return(KC_RIGHT);
 		case VK_LEFT:
-			return(1003);
+			return(KC_LEFT);
 		default:
 			return(-1);
 	}
