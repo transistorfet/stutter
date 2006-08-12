@@ -21,6 +21,18 @@
 	#define DEBUG_LOG(file, str)
 #endif
 
+#ifdef DEBUG
+	#define DEBUG_LOG_LIMITED(file, str, num) {	\
+		FILE *debug_fptr;			\
+		if (debug_fptr = fopen(file, "a")) {	\
+			fwrite(str, num, 1, debug_fptr); \
+			fclose(debug_fptr);		\
+		}					\
+	}
+#else
+	#define DEBUG_LOG_LIMITED(file, str, num)
+#endif
+
 #endif
 
 
