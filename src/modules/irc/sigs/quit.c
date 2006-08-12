@@ -8,7 +8,7 @@
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
-int irc_sig_quit(void *ptr, char *args)
+int irc_sig_quit(void *ptr, void *index, char *args)
 {
 	struct irc_msg *msg;
 
