@@ -31,7 +31,7 @@ int base_cmd_set(char *, char *);
 int base_cmd_source(char *, char *);
 
 /* Signal Handlers */
-int base_sig_print(void *, char *);
+int base_sig_print(void *, void *, char *);
 
 /* Types */
 struct type_s *base_load_command(void);
