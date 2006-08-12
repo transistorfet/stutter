@@ -92,6 +92,33 @@ int remove_signal(char *name)
 }
 
 /**
+ * All of the handlers associated with the signal specified by the given
+ * name are called with the given pointer passed as the second argument.
+ * The number of handlers called is returned or -1 is returned if the
+ * signal is not found.
+ */
+int emit_signal(char *name, void *index, void *ptr)
+{
+	int calls = 0;
+	struct signal_node_s *node;
+	struct signal_handler_s *cur;
+
+	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
+	if (!node)
+		return(-1);
+	cur = node->data.handlers;
+	while (cur) {
+		if (cur->index == index || (!cur->index && (node->data.bitflags & SIG_BF_USE_WILDCARD_INDEX))) {
+			calls++;
+			if (cur->func(cur->ptr, index, ptr) == SIGNAL_STOP_EMIT)
+				break;
+		}
+		cur = cur->next;
+	}
+	return(calls);
+}
+
+/**
  * Connect a new handler to the signal with the given name so that the given
  * when that signal is emitted, the given function is called with the given
  * pointer passed as the first argument.  The given function must not be NULL
@@ -175,35 +202,6 @@ int signal_disconnect(char *name, void *index, signal_t func, void *ptr)
 		}
 	}
 	return(disconnected);
-}
-
-/**
- * All of the handlers associated with the signal specified by the given
- * name are called with the given pointer passed as the second argument.
- * The number of handlers called is returned or -1 is returned if the
- * signal is not found.
- */
-int signal_emit(char *name, void *index, void *ptr)
-{
-	int calls = 0;
-	struct signal_node_s *node;
-	struct signal_handler_s *cur;
-
-	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
-	if (!node)
-		return(-1);
-	cur = node->data.handlers;
-	while (cur) {
-		if (cur->index == index || (!cur->index && (node->data.bitflags & SIG_BF_USE_WILDCARD_INDEX))) {
-			// TODO change the signal function format
-			//cur->func(cur->ptr, index, ptr)
-			calls++;
-			if (cur->func(cur->ptr, ptr) == SIGNAL_STOP_EMIT)
-				break;
-		}
-		cur = cur->next;
-	}
-	return(calls);
 }
 
 
