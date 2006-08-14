@@ -132,7 +132,7 @@
 /*** IRC Module ***/
 
 #define IRC_HANDLERS()								\
-	ADD_HANDLER("irc_dispatch_msg", NULL, 10, irc_dispatch_msg, NULL)	\
+	ADD_HANDLER("irc_dispatch_msg", NULL, 10, irc_sig_dispatch_msg, NULL)	\
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
 	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_version, NULL)	\
