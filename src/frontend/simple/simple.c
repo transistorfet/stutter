@@ -227,7 +227,7 @@ void fe_refresh(void *widget)
 
 void fe_quit(char *reason)
 {
-	signal_emit("quit", NULL, (void *) reason);
+	emit_signal("quit", NULL, (void *) reason);
 	exit_flag = 0;
 }
 
