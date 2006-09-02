@@ -15,7 +15,6 @@
 #include <stutter/frontend/surface.h>
 #include "frame.h"
 #include "window.h"
-#include "../core/widget.h"
 
 struct widget_type_s frame_type = {
 	"frame",
