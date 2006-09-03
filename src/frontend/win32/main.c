@@ -17,9 +17,9 @@
 #include <stutter/variable.h>
 #include <stutter/lib/string.h>
 #include <stutter/lib/globals.h>
+#include <stutter/frontend/widget.h>
 
 #include "net.h"
-#include "input.h"
 #include "terminal.h"
 
 HINSTANCE this_instance;
@@ -75,7 +75,7 @@ int init_windows(void)
 	add_variable(fe_table, type, "inverse", 0, "\x16");
 
 	if (type = find_type("format"))
-		add_variable(NULL, type, FE_STATUS, 0, "%s", FE_STATUS_BAR);
+		add_variable(NULL, type, "fe.status", 0, "%s", FE_STATUS_BAR);
 	BIND_KEYS();
 
 	if (init_terminal())
@@ -152,10 +152,10 @@ LRESULT CALLBACK windows_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM
 			if ((wparam = terminal_convert_char(wparam)) == -1)
 				break;
 		case WM_CHAR: {
-			struct input_s *input;
+			struct widget_s *input;
 
 			if (process_key(wparam) && (input = (struct input_s *) fe_current_widget("input", NULL)))
-				input_default(input, wparam);
+				widget_control(input, WCC_PROCESS_CHAR, wparam);
 			InvalidateRect(hwnd, NULL, 1);
 			break;
 		}

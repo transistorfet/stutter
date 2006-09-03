@@ -163,7 +163,6 @@ int terminal_print(struct terminal_s *terminal, char *str, int length)
 	int i;
 	char *tmp;
 	char buffer[STRING_SIZE];
-
 	if (length == -1)
 		length = strlen(str);
 	TextOut(terminal->context, terminal->surface.x * terminal->charx, terminal->surface.y * terminal->chary, str, length);
@@ -347,8 +346,6 @@ void terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 int terminal_convert_char(int ch)
 {
 	switch (ch) {
-		case 0x08:
-			return(KC_BACKSPACE);
 		case VK_RETURN:
 			return(KC_ENTER);
 		case VK_UP:
