@@ -8,6 +8,7 @@
 #define _STUTTER_MODULES_IRC_USER_H
 
 #include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
 
 #define IRC_UBF_OP		0x80
 #define IRC_UBF_VOICE		0x40
@@ -25,6 +26,7 @@ struct irc_user *irc_add_user(struct irc_user_list *, char *, int);
 int irc_remove_user(struct irc_user_list *, char *);
 struct irc_user *irc_find_user(struct irc_user_list *, char *);
 int irc_change_user_nick(struct irc_user_list *, char *, char *);
+int irc_traverse_user_list(struct irc_user_list *, traverse_t, void *);
 
 #endif
 
