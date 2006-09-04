@@ -133,12 +133,17 @@ struct irc_channel *irc_channel_find_window(struct irc_channel_list *list, void 
 /**
  * Traverse the given channel list and for each channel call the given traverse
  * function passing the channel struct as the first parameter and the given
- * ptr as the second parameter.  Return 0 if the traverse completes successfully.
+ * ptr as the second parameter.  Return 0 if the traverse completes successfully
+ * or if the traverse function returns non-zero, the traverse is stopped and the
+ * returned value is returned.
  */
 int irc_traverse_channel_list(struct irc_channel_list *list, traverse_t func, void *ptr)
 {
+	int ret;
+
 	linear_traverse_list_v(list->cl, cl,
-		func(&cur->channel, ptr);
+		if (ret = func(&cur->channel, ptr))
+			return(ret);
 	);
 	return(0);
 }

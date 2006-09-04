@@ -10,6 +10,7 @@
 #include <stutter/lib/memory.h>
 #include <stutter/lib/linear.h>
 #include <stutter/lib/string.h>
+#include <stutter/lib/globals.h>
 #include <stutter/modules/irc/user.h>
 
 struct irc_user_node {
@@ -115,6 +116,24 @@ int irc_change_user_nick(struct irc_user_list *list, char *oldnick, char *newnic
 		return(1);
 	destroy_string(node->user.nick);
 	node->user.nick = create_string(newnick);
+	return(0);
+}
+
+/**
+ * Traverse the given user list and for each user call the given traverse
+ * function passing the user struct as the first parameter and the given
+ * ptr as the second parameter.  Return 0 if the traverse completes successfully
+ * or if the traverse function returns non-zero, the traverse is stopped and the
+ * returned value is returned.
+ */
+int irc_traverse_user_list(struct irc_user_list *list, traverse_t func, void *ptr)
+{
+	int ret;
+
+	linear_traverse_list_v(list->ul, ul,
+		if (ret = func(&cur->user, ptr))
+			return(ret);
+	);
 	return(0);
 }
 
