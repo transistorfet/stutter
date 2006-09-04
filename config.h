@@ -147,6 +147,7 @@
 	ADD_COMMAND("join", irc_cmd_join)		\
 	ADD_COMMAND("leave", irc_cmd_leave)		\
 	ADD_COMMAND("me", irc_cmd_me)			\
+	ADD_COMMAND("mode", irc_cmd_mode)		\
 	ADD_COMMAND("msg", irc_cmd_msg)			\
 	ADD_COMMAND("names", irc_cmd_names)		\
 	ADD_COMMAND("nick", irc_cmd_nick)		\

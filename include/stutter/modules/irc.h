@@ -23,6 +23,7 @@ int irc_cmd_disconnect(char *, char *);
 int irc_cmd_join(char *, char *);
 int irc_cmd_leave(char *, char *);
 int irc_cmd_me(char *, char *);
+int irc_cmd_mode(char *, char *);
 int irc_cmd_msg(char *, char *);
 int irc_cmd_names(char *, char *);
 int irc_cmd_nick(char *, char *);

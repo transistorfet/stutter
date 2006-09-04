@@ -10,6 +10,7 @@ OBJS =	init.o \
 	cmds/join.o \
 	cmds/leave.o \
 	cmds/me.o \
+	cmds/mode.o \
 	cmds/msg.o \
 	cmds/names.o \
 	cmds/nick.o \
