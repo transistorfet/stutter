@@ -106,7 +106,9 @@
 	BIND_KEY("\x15", "base.clearline", "")	\
 	BIND_KEY("\x11", "base.previous", "")	\
 	BIND_KEY("\x10", "base.scroll", "1")	\
-	BIND_KEY("\x19", "base.scroll", "-1")
+	BIND_KEY("\x19", "base.scroll", "-1")	\
+	BIND_KEY("\x09", "irc.complete", "")
+
 
 /*** Base Module ***/
 
@@ -139,6 +141,7 @@
 	ADD_HANDLER("quit", NULL, 10, irc_sig_quit, NULL)
 
 #define IRC_COMMANDS()					\
+	ADD_COMMAND("complete", irc_cmd_complete)	\
 	ADD_COMMAND("ctcp", irc_cmd_ctcp)		\
 	ADD_COMMAND("disconnect", irc_cmd_disconnect)	\
 	ADD_COMMAND("join", irc_cmd_join)		\
