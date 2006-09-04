@@ -51,6 +51,7 @@
 #define IRC_FMT_JOIN			"%B [%@] Joined %P1: %N (%H)"
 #define IRC_FMT_KICK			"%B [%@] %P2 was kicked from %P1 by %N (%M)"
 #define IRC_FMT_KICK_SELF		"%B [%@] You were kicked from %P1 by %N (%M)"
+#define IRC_FMT_MODE			"%B Mode on %P1: %P2 %P3 %P4 %P5 %P6 %P7 %P8"
 //#define IRC_FMT_NAMES			"$banner Users on <channel>%P3</channel>: <msg>%T</msg>"
 //#define IRC_FMT_NAMES			"${fe.colour.status}$banner Users on %P3: %M"
 #define IRC_FMT_NAMES			"%B Users on %P3: %M"

@@ -32,6 +32,8 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 			return(irc_msg_current(IRC_FMT_WHOISSPECIAL, msg));
 		case IRC_RPL_ENDOFWHOIS:
 			return(0);
+		case IRC_MSG_MODE:
+			return(irc_msg_mode(env, msg));
 		case IRC_MSG_NOTICE:
 			return(irc_msg_notice(env, msg));
 		case IRC_MSG_JOIN:

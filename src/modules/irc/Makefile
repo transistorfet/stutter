@@ -29,6 +29,7 @@ OBJS =	init.o \
 	msgs/default.o \
 	msgs/join.o \
 	msgs/kick.o \
+	msgs/mode.o \
 	msgs/names.o \
 	msgs/nick.o \
 	msgs/notice.o \

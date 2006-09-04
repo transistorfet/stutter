@@ -40,6 +40,7 @@ int irc_msg_current(char *, struct irc_msg *);
 int irc_msg_default(char *, struct irc_msg *);
 int irc_msg_join(char *, struct irc_msg *);
 int irc_msg_kick(char *, struct irc_msg *);
+int irc_msg_mode(char *, struct irc_msg *);
 int irc_msg_names(char *, struct irc_msg *);
 int irc_msg_nick(char *, struct irc_msg *);
 int irc_msg_notice(char *, struct irc_msg *);
