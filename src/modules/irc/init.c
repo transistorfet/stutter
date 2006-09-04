@@ -64,11 +64,9 @@ int release_irc(void)
 	int i = 0;
 	struct type_s *type;
 
-	if (!(type = find_type("command")) || !type->create)
-		return(-1);
-
-	for (i = 0;irc_commands[i].name;i++)
-		remove_variable(irc_table->value, type, irc_commands[i].name);
+	/** Remove the whole variable table */
+	irc_table->bitflags &= ~VAR_BF_NO_REMOVE;
+	remove_variable(NULL, NULL, "irc");
 
 	for (i = 0;irc_handlers[i].name;i++)
 		signal_disconnect(irc_handlers[i].name, irc_handlers[i].index, (signal_t) irc_handlers[i].func, irc_handlers[i].ptr);

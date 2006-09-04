@@ -1,8 +1,8 @@
 /*
- * Module Name:		load.c
+ * Module Name:		init.c
  * Version:		0.1
  * Module Requirements:	type ; signal ; string ; variable ; modbase
- * Description:		Command Parser
+ * Description:		Base Module Initializer
  */
 
 #include <stdlib.h>
@@ -63,7 +63,7 @@ int init_base(void)
 	/* Load Table Type */
 	if (!(type = base_load_table()))
 		return(-1);
-	if (!(base_table = add_variable(NULL, type, "base", 0, "")))
+	if (!(base_table = add_variable(NULL, type, "base", VAR_BF_NO_REMOVE, "")))
 		return(-1);
 
 	/* Load String Type */
@@ -103,8 +103,10 @@ int release_base(void)
 {
 	int i = 0;
 
-	for (i = 0;base_commands[i].name;i++)
-		remove_variable(base_table->value, NULL, base_commands[i].name);
+	/** Remove the whole variable table */
+	base_table->bitflags &= ~VAR_BF_NO_REMOVE;
+	remove_variable(NULL, NULL, "base");
+
 	for (i = 0;base_handlers[i].name;i++)
 		signal_disconnect(base_handlers[i].name, base_handlers[i].index, (signal_t) base_handlers[i].func, base_handlers[i].ptr);
 	remove_signal("base.error");
