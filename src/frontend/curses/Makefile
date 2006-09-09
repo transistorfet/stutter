@@ -8,6 +8,7 @@ OBJS =	main.o \
 	net.o \
 	terminal.o \
 	../common/core/widget.o \
+	../common/utils/format.o \
 	../common/widgets/frame.o \
 	../common/widgets/input.o \
 	../common/widgets/scroll.o \
