@@ -71,8 +71,7 @@ int input_refresh(struct input_s *input)
 	surface_move_m(input->window.surface, input->window.x, input->window.y);
 	i = input->i - input->window.width + 1;
 	surface_print_m(input->window.surface, &input->buffer[(i >= 0) ? i : 0], (input->end >= input->window.width) ? input->window.width - 1 : -1);
-	// TODO how will you set the cursor
-	surface_move_m(input->window.surface, ( input->i >= input->window.width ? input->window.width - 1 : input->i ), input->window.height - 1);
+	surface_move_m(input->window.surface, ( (input->i >= input->window.width) ? input->window.width - 1 : input->i ), input->window.y);
 	return(0);
 }
 
