@@ -73,6 +73,13 @@
 #define strncmp_icase(str1, str2, max)	\
 	strncasecmp(str1, str2, max)
 
+/**
+ * Returns true is the given character is one of the ASCII char that represent
+ * the numbers 0-9 or false otherwise.
+ */
+#define is_number_char_m(ch)	\
+	( ((ch) >= 0x30) && ((ch) <= 0x39) )
+
 #endif
 
 
