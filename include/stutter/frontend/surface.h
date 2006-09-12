@@ -12,6 +12,12 @@
 #define SA_INVERSE		0x02
 #define SA_BLINK		0x04
 
+#define SA_METHOD		0xf0000000
+#define SA_SET			0x00000000
+#define SA_RESET		0x10000000
+#define SA_OR			0x20000000
+#define SA_TOGGLE		0x30000000
+
 #define SA_BLACK		0x000000
 #define SA_RED			0xFF0000
 #define SA_GREEN		0x00FF00
@@ -20,6 +26,12 @@
 #define SA_MAGENTA		0xFF00FF
 #define SA_CYAN			0x00FFFF
 #define SA_WHITE		0xFFFFFF
+
+#define SA_ORANGE		0xFF7F00
+#define SA_PINK			0xFF007F
+#define SA_BROWN		0x7F7F00
+#define SA_GREY			0x7F7F7F
+#define SA_TURQUOISE		0x007F7F
 
 #define SCC_GET_ATTRIB		0x0010
 #define SCC_SET_ATTRIB		0x0020
@@ -78,6 +90,24 @@ struct surface_s {
 	short width;
 	short height;
 };
+
+/*** Miscellaneous Macros and Inline Functions ***/
+
+static inline int surface_modify_attrib(int org, int mod)
+{
+	switch (mod & SA_METHOD) {
+		case SA_SET:
+			return(mod & ~SA_METHOD);
+		case SA_RESET:
+			return(org & ~(mod & ~SA_METHOD));
+		case SA_OR:
+			return(org | (mod & ~SA_METHOD));
+		case SA_TOGGLE:
+			return(org ^ (mod & ~SA_METHOD));
+		default:
+			return(mod & ~SA_METHOD);
+	}
+}
 
 #endif
 
