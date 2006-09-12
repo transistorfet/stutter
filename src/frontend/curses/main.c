@@ -49,10 +49,11 @@ int init_curses(void)
 
 	if (!(type = find_type("string")))
 		return(-1);
-	add_variable(fe_table, type, "bold", 0, "");
+	add_variable(fe_table, type, "bold", 0, "\x02");
 	add_variable(fe_table, type, "normal", 0, "");
 	add_variable(fe_table, type, "flash", 0, "");
 	add_variable(fe_table, type, "inverse", 0, "\x16");
+	add_variable(fe_table, type, "colour", 0, "\x03");
 
 	if (type = find_type("format"))
 		add_variable(NULL, type, "fe.status", 0, "%s", FE_STATUS_BAR);
