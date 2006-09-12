@@ -15,6 +15,7 @@
 #include <stutter/frontend/surface.h>
 #include "statusbar.h"
 #include "window.h"
+#include "../utils/format.h"
 
 struct widget_type_s statusbar_type = {
 	"statusbar",
@@ -45,19 +46,30 @@ int statusbar_release(struct statusbar_s *statusbar)
 
 int statusbar_refresh(struct statusbar_s *statusbar)
 {
-	int i;
+	int i, k;
 	attrib_t attrib;
 	char buffer[STRING_SIZE];
+	struct format_string_s *format;
 
 	surface_control_m(statusbar->window.surface, SCC_GET_ATTRIB, &attrib);
-	// TODO add format thing and modify so that the status variable contains any colouring
-	surface_control_m(statusbar->window.surface, SCC_MODIFY_ATTRIB, SA_INVERSE, -1, -1);
 	surface_clear_m(statusbar->window.surface, statusbar->window.x, statusbar->window.y, statusbar->window.width, statusbar->window.height);
-	if ((i = util_expand_str(statusbar->text, buffer, STRING_SIZE)) >= 0) {
-		if (i > statusbar->window.width)
-			buffer[statusbar->window.width] = '\0';
+	// TODO can you make this use an unallocated parsed format string??
+	if ((util_expand_str(statusbar->text, buffer, STRING_SIZE) >= 0) && (format = create_format_string(buffer))) {
 		surface_move_m(statusbar->window.surface, statusbar->window.x, statusbar->window.y);
-		surface_print_m(statusbar->window.surface, buffer, -1);
+		for (i = 0, k = 0;k < format->num_styles;k++) {
+			if (format->styles[k].index >= statusbar->window.width)
+				break;
+			surface_print_m(statusbar->window.surface, &format->str[i], format->styles[k].index - i);
+			surface_control_m(statusbar->window.surface, SCC_MODIFY_ATTRIB, format->styles[k].attrib.attrib, format->styles[k].attrib.fg, format->styles[k].attrib.bg);
+			i = format->styles[k].index;
+		}
+		surface_print_m(statusbar->window.surface, &format->str[i], ((format->length >= statusbar->window.width) ? statusbar->window.width : format->length ) - i);
+		if (format->length < statusbar->window.width) {
+			for (i = 0;(i < (statusbar->window.width - format->length)) && (i < STRING_SIZE);i++)
+				buffer[i] = ' ';
+			surface_print_m(statusbar->window.surface, buffer, i);
+		}
+		destroy_format_string(format);
 	}
 	surface_control_m(statusbar->window.surface, SCC_SET_ATTRIB, &attrib);
 	return(0);
