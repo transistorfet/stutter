@@ -23,7 +23,7 @@ struct format_string_s {
 	struct format_style_s *styles;
 };
 
-struct format_string_s *create_format_string(char *);
+struct format_string_s *create_format_string(const char *);
 int destroy_format_string(struct format_string_s *);
 
 #endif

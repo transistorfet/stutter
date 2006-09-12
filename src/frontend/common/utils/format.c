@@ -15,7 +15,7 @@
 static int format_colours[] = { SA_WHITE, SA_BLACK, SA_BLUE, SA_GREEN, SA_RED, SA_CYAN, SA_MAGENTA, SA_YELLOW,
 				SA_YELLOW, SA_GREEN, SA_CYAN, SA_CYAN, SA_BLUE, SA_MAGENTA, SA_WHITE, SA_WHITE };
 
-static int format_string_parse(char *, char *, int, struct format_style_s *, int, int *);
+static int format_string_parse(const char *, char *, int, struct format_style_s *, int, int *);
 
 /**
  * Parse the given string into a string without special attribute characters
@@ -23,7 +23,7 @@ static int format_string_parse(char *, char *, int, struct format_style_s *, int
  * become active.  A pointer to the parsed string structure is returned or
  * NULL is returned on error.
  */
-struct format_string_s *create_format_string(char *str)
+struct format_string_s *create_format_string(const char *str)
 {
 	char buffer[STRING_SIZE];
 	int i, num_styles, length;
@@ -60,7 +60,7 @@ int destroy_format_string(struct format_string_s *format)
  * the given int pointer, length, unless it is NULL.  The number of styles used
  * is returned or -1 is returned on error.
  */
-static int format_string_parse(char *str, char *buffer, int buffer_max, struct format_style_s *styles, int styles_max, int *length)
+static int format_string_parse(const char *str, char *buffer, int buffer_max, struct format_style_s *styles, int styles_max, int *length)
 {
 	int i = 0, j = 0, k = 0;
 
@@ -122,52 +122,6 @@ static int format_string_parse(char *str, char *buffer, int buffer_max, struct f
 	if (length)
 		*length = j;
 	return(k);
-
-/*
-	int j;
-	int i = 0, k = 0;
-
-	// TODO what the fsck do you do about multiple attribs (bold & inverse at the same time for example?)
-	format[0].attrib.fg = -1;
-	format[0].attrib.bg  = -1;
-	format[0].attrib.attrib = 0;
-	while (1) {
-		format[k].str = &str[i];
-		for (j = i;(str[j] != '\0') && format_is_not_char_m(str[j]);j++) ;
-		format[k].len = j - i;
-		i = j;
-		if (format[k].len) {
-			if (++k >= FORMAT_MAX_STRINGS)
-				break;
-			format[k].attrib = format[k - 1].attrib;
-		}
-		if (str[i] == '\0')
-			break;
-		switch (str[i++]) {
-			case 0x02: {
-				if (format[k].attrib.attrib & SA_BOLD)
-					format[k].attrib.attrib &= ~SA_BOLD;
-				else
-					format[k].attrib.attrib |= SA_BOLD;
-				break;
-			}
-			case 0x03: {
-				// TODO colour
-				break;
-			}
-			case 0x16: {
-				if (format[k].attrib.attrib & SA_INVERSE)
-					format[k].attrib.attrib &= ~SA_INVERSE;
-				else
-					format[k].attrib.attrib |= SA_INVERSE;
-				break;
-			}
-			default:
-				break;
-		}
-	}
-	return(k);
-*/
 }
 
 
