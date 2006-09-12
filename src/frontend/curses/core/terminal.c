@@ -145,6 +145,7 @@ void terminal_move(struct terminal_s *terminal, short x, short y)
 {
 	terminal->surface.x = (x < terminal->surface.width) ? x : terminal->surface.width - 1;
 	terminal->surface.y = (y < terminal->surface.height) ? y : terminal->surface.height - 1;
+	move(terminal->surface.y, terminal->surface.x);
 }
 
 int terminal_control(struct terminal_s *terminal, int cmd, ...)
@@ -172,7 +173,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 
 			arg = va_arg(va, int);
 			if (arg != -1)
-				terminal->attrib.attrib = arg;
+				terminal->attrib.attrib = surface_modify_attrib(terminal->attrib.attrib, arg);
 			arg = va_arg(va, int);
 			if (arg != -1)
 				terminal->attrib.fg = arg;
