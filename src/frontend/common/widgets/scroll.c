@@ -14,6 +14,7 @@
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "scroll.h"
+#include "../utils/format.h"
 
 #define WINDOW_MAX_WRAP		20
 
@@ -54,20 +55,21 @@ int scroll_release(struct scroll_s *scroll)
 
 int scroll_refresh(struct scroll_s *scroll)
 {
-	char *str;
-	int i, j, lines = 0;
+	int line = 0;
+	attrib_t attrib;
+	int x, y, width, height;
+	int i, j, k, max, limit;
 	struct surface_s *surface;
 	struct scroll_entry_s *cur;
-	int breaks[WINDOW_MAX_WRAP];
-	int x, y, width, height, tmp;
+	int indices[WINDOW_MAX_WRAP];
 
 	widget_control(scroll->widget.parent, WCC_GET_SURFACE, &surface);
 	widget_control(scroll->widget.parent, WCC_GET_SIZE, &width, &height);
 	widget_control(scroll->widget.parent, WCC_GET_POSITION, &x, &y);
 
-	lines = height - 1;
+	line = height - 1;
 	surface_clear_m(surface, x, y, width, height);
-	surface_move_m(surface, x, y + lines);
+	surface_move_m(surface, x, y + line);
 
 	if (!(cur = queue_first_v(scroll->log)))
 		return(0);
@@ -75,27 +77,42 @@ int scroll_refresh(struct scroll_s *scroll)
 		if (!(cur = queue_next_v(log, cur)))
 			return(0);
 	}
-	while (lines >= 0) {
-		str = cur->line;
-		j = 0;
-		tmp = width;
-		for (i = 0;i < WINDOW_MAX_WRAP;i++) {
-			breaks[i] = scroll_wrap_string(&str[j], tmp);
-			if (breaks[i] == -1)
-				break;
-			if (tmp = width)
-				tmp = width - strlen(FE_WINDOW_WRAP_STRING);
-			j += breaks[i];
-		}
 
-		for (;i >= 0;i--) {
-			surface_move_m(surface, x, y + lines);
-			if (i != 0)
-				surface_print_m(surface, FE_WINDOW_WRAP_STRING, -1);
-			surface_print_m(surface, &str[j], breaks[i]);
-			lines--;
-			j -= breaks[i - 1];
+	while (line >= 0) {
+		limit = width;
+		for (i = j = 0;j < WINDOW_MAX_WRAP;j++) {
+			indices[j] = scroll_wrap_string(&cur->format->str[i], limit);
+			if (indices[j] == -1)
+				break;
+			if (!j)
+				limit = width - strlen(FE_WINDOW_WRAP_STRING);
+			i += indices[j];
 		}
+		max = (j == WINDOW_MAX_WRAP) ? j : j + 1;
+
+		line -= max;
+		surface_control_m(surface, SCC_GET_ATTRIB, &attrib);
+		for (i = j = 0;(j < max) && (line + j < 0);j++)
+			i += indices[j];
+		for (k = 0;(k < cur->format->num_styles) && (cur->format->styles[k].index < i);k++)
+			surface_control_m(surface, SCC_MODIFY_ATTRIB, cur->format->styles[k].attrib.attrib, cur->format->styles[k].attrib.fg, cur->format->styles[k].attrib.bg);
+		for (;j < max;j++) {
+			surface_move_m(surface, x, y + line + j + 1);
+			if (j)
+				surface_print_m(surface, FE_WINDOW_WRAP_STRING, -1);
+			if (indices[j] == -1)
+				limit = cur->format->length;
+			else
+				limit = indices[j] + i;
+			for (;(k < cur->format->num_styles) && (cur->format->styles[k].index < limit);k++) {
+				surface_print_m(surface, &cur->format->str[i], cur->format->styles[k].index - i);
+				surface_control_m(surface, SCC_MODIFY_ATTRIB, cur->format->styles[k].attrib.attrib, cur->format->styles[k].attrib.fg, cur->format->styles[k].attrib.bg);
+				i = cur->format->styles[k].index;
+			}
+			surface_print_m(surface, &cur->format->str[i], limit - i);
+			i = limit;
+		}
+		surface_control_m(surface, SCC_SET_ATTRIB, &attrib);
 		if (!(cur = queue_next_v(log, cur)))
 			break;
 	}
@@ -105,6 +122,7 @@ int scroll_refresh(struct scroll_s *scroll)
 int scroll_print(struct scroll_s *scroll, const char *str, int len)
 {
 	struct scroll_entry_s *node;
+	struct format_string_s *format;
 
 	if (!scroll || !str)
 		return(-1);
@@ -114,12 +132,13 @@ int scroll_print(struct scroll_s *scroll, const char *str, int len)
 	if (scroll->cur_line && (scroll->cur_line < scroll->max_lines))
 		scroll->cur_line++;
 
-	// TODO parse for new format using the common format parser
-	if (!(node = (struct scroll_entry_s *) memory_alloc(sizeof(struct scroll_entry_s) + len + 1)))
+	// TODO should you be able to allocate the format and node together?
+	if (!(format = create_format_string(str)))
 		return(-1);
-	node->line = (char *) (((size_t) node) + sizeof(struct scroll_entry_s));
-	strncpy(node->line, str, len);
-	node->line[len] = '\0';
+	if (!(node = (struct scroll_entry_s *) memory_alloc(sizeof(struct scroll_entry_s))))
+		return(-1);
+	node->format = format;
+
 	queue_prepend_node_v(scroll->log, log, node);
 
 	return(len);

@@ -11,9 +11,10 @@
 
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
+#include "../utils/format.h"
 
 struct scroll_entry_s {
-	char *line;
+	struct format_string_s *format;
 	queue_node_v(scroll_entry_s) log;
 };
 
