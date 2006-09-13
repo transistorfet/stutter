@@ -255,11 +255,11 @@ static inline int terminal_convert_colour(int colour)
 {
 	int index = 0;
 
-	if ((colour & 0x000000ff) >= 0x80)
+	if ((colour & 0x000000ff) >= 0x7F)
 		index |= 0x04;
-	if ((colour & 0x0000ff00) >= 0x8000)
+	if ((colour & 0x0000ff00) >= 0x7F00)
 		index |= 0x02;
-	if ((colour & 0x00ff0000) >= 0x800000)
+	if ((colour & 0x00ff0000) >= 0x7F0000)
 		index |= 0x01;
 	return(index);
 }
