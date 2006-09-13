@@ -43,7 +43,7 @@ int init_frontend(void)
 	if (!(statusbar = (struct widget_s *) create_widget(&statusbar_type, "statusbar", NULL)))
 		return(-1);
 	widget_control(statusbar, WCC_SET_SURFACE, terminal);
-	widget_print_m(statusbar, FE_STATUS, -1);
+	widget_print_m(statusbar, FE_STATUSBAR, -1);
 
 	if (!(input = (struct widget_s *) create_widget(&input_type, "input", NULL)))
 		return(-1);
