@@ -3,7 +3,6 @@
 - can we have net not depend on terminal
 
 - fix fonts
-- change input to use generic key values rather than the windows.h constants
 - store terminal structs in a list so that you can look up a terminal based
   on the HWND passed to the windows function.
 - make a seperate function/module for parsing text for attribute chars
