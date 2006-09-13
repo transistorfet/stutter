@@ -226,7 +226,13 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			attrib_t *attrib;
 
 			attrib = va_arg(va, attrib_t *);
-			terminal->attrib = *attrib;
+			if (!attrib)
+				return(-1);
+			terminal->attrib.attrib = surface_modify_attrib(terminal->attrib.attrib, attrib->attrib);
+			if (attrib->fg != -1)
+				terminal->attrib.fg = attrib->fg;
+			if (attrib->bg != -1)
+				terminal->attrib.bg = attrib->bg;
 			terminal_set_attribs(terminal, terminal->attrib);
 			return(0);
 		}
@@ -235,7 +241,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 
 			arg = va_arg(va, int);
 			if (arg != -1)
-				terminal->attrib.attrib = arg;
+				terminal->attrib.attrib = surface_modify_attrib(terminal->attrib.attrib, arg);
 			arg = va_arg(va, int);
 			if (arg != -1)
 				terminal->attrib.fg = arg;
