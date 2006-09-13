@@ -56,7 +56,7 @@ int init_curses(void)
 	add_variable(fe_table, type, "colour", 0, "\x03");
 
 	if (type = find_type("format"))
-		add_variable(NULL, type, "fe.status", 0, "%s", FE_STATUS_BAR);
+		add_variable(NULL, type, "fe.statusbar", 0, "%s", FE_STATUSBAR);
 	BIND_KEYS();
 
 	if (init_net())
