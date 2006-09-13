@@ -60,7 +60,8 @@ int statusbar_refresh(struct statusbar_s *statusbar)
 			if (format->styles[k].index >= statusbar->window.width)
 				break;
 			surface_print_m(statusbar->window.surface, &format->str[i], format->styles[k].index - i);
-			surface_control_m(statusbar->window.surface, SCC_MODIFY_ATTRIB, format->styles[k].attrib.attrib, format->styles[k].attrib.fg, format->styles[k].attrib.bg);
+			surface_control_m(statusbar->window.surface, SCC_SET_ATTRIB, &format->styles[k].attrib);
+//			surface_control_m(statusbar->window.surface, SCC_MODIFY_ATTRIB, format->styles[k].attrib.attrib, format->styles[k].attrib.fg, format->styles[k].attrib.bg);
 			i = format->styles[k].index;
 		}
 		surface_print_m(statusbar->window.surface, &format->str[i], ((format->length >= statusbar->window.width) ? statusbar->window.width : format->length ) - i);
