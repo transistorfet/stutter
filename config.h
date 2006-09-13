@@ -14,8 +14,8 @@
 #define VARIABLE_PATH			"irc;base"
 
 /* Frontend Values */
-#define FE_STATUS			"$&fe.status"
-#define FE_STATUS_BAR			"${fe.inverse} $time $irc.current_nick on $irc.current_channel"
+#define FE_STATUSBAR			"$&fe.statusbar"
+#define FE_STATUSBAR_DEFAULT		"${fe.inverse} $time $irc.current_nick on $irc.current_channel"
 #define FE_STATUS_BAR_HEIGHT		1
 #define FE_WINDOW_LOG_SIZE		1000
 #define FE_WINDOW_WRAP_STRING		"        "
