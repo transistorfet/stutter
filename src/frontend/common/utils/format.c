@@ -11,9 +11,8 @@
 #include <stutter/frontend/surface.h>
 #include "format.h"
 
-// TODO how do you make the proper colours??
-static int format_colours[] = { SA_WHITE, SA_BLACK, SA_BLUE, SA_GREEN, SA_RED, SA_CYAN, SA_MAGENTA, SA_YELLOW,
-				SA_YELLOW, SA_GREEN, SA_CYAN, SA_CYAN, SA_BLUE, SA_MAGENTA, SA_WHITE, SA_WHITE };
+static int format_colours[] = { 0x7F7F7F, 0x000000, 0x00007F, 0x007F00, 0x7F0000, 0x007F7F, 0x7F007F, 0x7F7F00,
+				0xFFFF00, 0x00FF00, 0x00FFFF, 0xFF0000, 0x0000FF, 0xFF00FF, 0x7F7F7F, 0xFFFFFF };
 
 static int format_string_parse(const char *, char *, int, struct format_style_s *, int, int *);
 
