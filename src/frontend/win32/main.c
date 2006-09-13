@@ -74,8 +74,11 @@ int init_windows(void)
 	add_variable(fe_table, type, "flash", 0, "");
 	add_variable(fe_table, type, "inverse", 0, "\x16");
 
+	add_variable(fe_table, type, "colour_test", 0, "\x03\x30K0 \x03\x31K1 \x03\x32K2 \x03\x33K3 \x03\x34K4 \x03\x35K5 \x03\x36K6 \x03\x37K7 \x03\x38K8 \x03\x39K9 \x03\x31\x30K10 \x03\x31\x31K11 \x03\x31\x32K12 \x03\x31\x33K13 \x03\x31\x34K14 \x03\x31\x35K15");
+	add_variable(fe_table, type, "bold_test", 0, "\x02\x03\x30K0 \x03\x31K1 \x03\x32K2 \x03\x33K3 \x03\x34K4 \x03\x35K5 \x03\x36K6 \x03\x37K7 \x03\x38K8 \x03\x39K9 \x03\x31\x30K10 \x03\x31\x31K11 \x03\x31\x32K12 \x03\x31\x33K13 \x03\x31\x34K14 \x03\x31\x35K15");
+
 	if (type = find_type("format"))
-		add_variable(NULL, type, "fe.status", 0, "%s", FE_STATUS_BAR);
+		add_variable(NULL, type, "fe.statusbar", 0, "%s", FE_STATUSBAR_DEFAULT);
 	BIND_KEYS();
 
 	if (init_terminal())
@@ -144,13 +147,15 @@ LRESULT CALLBACK windows_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM
 				fe_quit("Lost Terminal");
 			break;
 		}
-		case NET_MESSAGE:
+		case NET_MESSAGE: {
 			fe_net_handle_message(wparam, LOWORD(lparam), HIWORD(lparam));
 			InvalidateRect(hwnd, NULL, 1);
 			break;
-		case WM_KEYDOWN:
+		}
+		case WM_KEYDOWN: {
 			if ((wparam = terminal_convert_char(wparam)) == -1)
 				break;
+		}
 		case WM_CHAR: {
 			struct widget_s *input;
 
@@ -164,6 +169,7 @@ LRESULT CALLBACK windows_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM
 
 			if (terminal = terminal_find(hwnd)) {
 				terminal_resizing(terminal, (RECT *) lparam, wparam);
+				// TODO cause a resize/update of widgets
 				InvalidateRect(hwnd, NULL, 1);
 			}
 			break;
