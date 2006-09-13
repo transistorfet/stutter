@@ -67,7 +67,7 @@ int scroll_refresh(struct scroll_s *scroll)
 	widget_control(scroll->widget.parent, WCC_GET_SIZE, &width, &height);
 	widget_control(scroll->widget.parent, WCC_GET_POSITION, &x, &y);
 
-	line = height - 1;
+	line = height;
 	surface_clear_m(surface, x, y, width, height);
 	surface_move_m(surface, x, y + line);
 
@@ -95,9 +95,9 @@ int scroll_refresh(struct scroll_s *scroll)
 		for (i = j = 0;(j < max) && (line + j < 0);j++)
 			i += indices[j];
 		for (k = 0;(k < cur->format->num_styles) && (cur->format->styles[k].index < i);k++)
-			surface_control_m(surface, SCC_MODIFY_ATTRIB, cur->format->styles[k].attrib.attrib, cur->format->styles[k].attrib.fg, cur->format->styles[k].attrib.bg);
+			surface_control_m(surface, SCC_SET_ATTRIB, &cur->format->styles[k].attrib);
 		for (;j < max;j++) {
-			surface_move_m(surface, x, y + line + j + 1);
+			surface_move_m(surface, x, y + line + j);
 			if (j)
 				surface_print_m(surface, FE_WINDOW_WRAP_STRING, -1);
 			if (indices[j] == -1)
@@ -106,7 +106,7 @@ int scroll_refresh(struct scroll_s *scroll)
 				limit = indices[j] + i;
 			for (;(k < cur->format->num_styles) && (cur->format->styles[k].index < limit);k++) {
 				surface_print_m(surface, &cur->format->str[i], cur->format->styles[k].index - i);
-				surface_control_m(surface, SCC_MODIFY_ATTRIB, cur->format->styles[k].attrib.attrib, cur->format->styles[k].attrib.fg, cur->format->styles[k].attrib.bg);
+				surface_control_m(surface, SCC_SET_ATTRIB, &cur->format->styles[k].attrib);
 				i = cur->format->styles[k].index;
 			}
 			surface_print_m(surface, &cur->format->str[i], limit - i);
