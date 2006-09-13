@@ -27,16 +27,19 @@ Structural Issues:
 	* standardize the interpretation of the create type function parameters (the format string should
 	  only ever contain a description of the arguments and should never be an argument itself)
 
-	* should irc_format_msg send references to %M through a converter that takes IRC codes (^B, ^F, ^C,
-	  etc) and insert the appropriate variables instead?
-
-	* how will you draw the cursor?
+	* the current/select functions can use the context as a partial type name lookup such that there
+	  are special context names which correspond to special object "superclasses" such as 'frame' and
+	  'input'.  Then when you specify something like 'frame' as the context, it means a general type of
+	  widget.  ???
+	* should you make the format parser function take a format_string_s pointer with the buffer and
+	  array already set and with the max values so that it takes fewer arguments
+	* how can you specify to a scroll widget which parser to use to parse the attributes out of strings
+	  printed to that widget.
+	* how will you draw the cursor? draw it yourself using a reverse colour attribute?
 	* should colour schemes be largely frontend dependant?  we still need a way to specify colours.
-	  one way could be to have variable in the frontend for various event/properties (standardized
+	  one way could be to have variables in the frontend for various event/properties (standardized
 	  across all frontends) with the value as a frontend-specific value which the frontend can recognize
 	  and then strings printed to the frontend can use the variables (eg. "${fe.error}ERROR: ...${fe.fg}")
-	* since you can access the x/y coordinates directly, should you be able to move the cursor directly
-	  (using macros like the ones for getting the height and width)?
 	* use the type system for widget types.  A widget is created from a type and subwidgets are added
 	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
 	  specific or will it be through the variable system in which case a widget would be a variable
@@ -48,15 +51,14 @@ Structural Issues:
 	* what can be used as the index for network ready signals?  The network_t itself?  can we make
 	  network signals better than the network callback we have now?
 	* should we add a parent field to the variable?
-	* should it be emit_signal instead of signal_emit?  my natural tendency seems to be emit_signal
 	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages?)
 	* should we add a mechanism to signals that allows for signals to "inherit" from others so that
 	  when a signal is emitted (irc channel) it also triggers another signal (like "general_msg") or
 	  something which might making logging easier?  Can this be implemented as just a signal handler
 	  that emits another signal in which case you can set the priority level at which the 'inherited'
 	  signal is called (put the handler in signal.c even)?
+	* change network_t to fe_network_t???
 
-	* is there a way to not have the initialization tables (they are big and only used at the start)
 	* should the libs/ be moved to the root dir (since the primary issue was all the headers but now
 	  that they are all inside include/stutter/ they wont conflict with system headers).
 	* can we fix the /parse issue by making it take the string as a param instead and have a signal
@@ -71,8 +73,24 @@ Bugs:
 	* fix parse so that /parse something command doesn't cause a segfault
 	* there is a bug such that if you try to say something in the status window, the server says no such
 	  nick
+	* the windows version sometimes hangs up when printing the motd and wont change the display but you
+	  can still type and the statusbar updates.
+	* when you quit sometimes it says broken pipe
+	* history may not be working properly in the long run (it may fill up and stop) but look into it
 
 General:
+
+	* fix format so that it recognizes a closing ^C and restores the original colours
+	* add cursor drawing to input by just drawing that character in reverse colours and getting the
+	  curses terminal to turn off the cursor (what about multiple possible cursors on the screen)
+
+	* we can use fe_resize to resize the root widget for a surface thus taking care of the resize issue.
+	  Where would the resize take place?  During refresh?  
+	* make a frontend/exec.h or frontend/execute.h implementation that is capable of running processes
+	  in the background such that the input is available asyncronously.
+	* change fe_read to return an int instead of char *
+	* make user.c store the user names in a sorted list (linear_insert_sorted ??)
+
 	* MAKE SURE all message handlers don't clobber the message!
 	* fix all hash_init and hash_rehash instances to check for memory allocation failure
 	* make an unknown ctcp message handler
@@ -83,14 +101,14 @@ General:
 	  "Failed to connect, Retrying" message
 	* modify net.c to print a message when the connection times out and it retries.
 	* fix up error handling in net.c and server.c
+	* make the mode msg handler update the channel and user mode bits
+	* look into the slow time it takes for the program to quit
 
 	* have an "activity" status indicator in the status bar so you know when stuff has been said and
 	  in what channels
-	* tab complete
 	* have keybindings for targeting specific windows (does this require window numbers?)
-	* get realname, nick from current user's info (on unix)
-	* pass realname to server when connecting
-	* add mode command
+	* get realname, nick from current user's info (on unix) (store in a "realname" variable?)
+	* pass realname to server when connecting (base it on a "realname" variable?)
 	* add list command
 	* add whowas command
 	* add kick command
@@ -107,19 +125,21 @@ General:
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
 
+	* make common format.c more general in the format that it parses (specifiable parser function?)
+	* move include files into an include/ directory inside of each module's directory (and then same
+	  for frontends)
 	* make a more cross platform way of getting ceratin values like username and user's homedir
 	* make a configuration/compilation script that builds the makefiles
 	* modify user.c and channel.c to use a hash table instead of the linear list
 	* rewrite msg.c using va_args instead of making an array and use sprintf
 	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
 	  addresses)
-	* switch over to the 3 parameter signal handler function (with index) or else make multiple
-	  signal handler function formats (errorprone?)
 	* add a function to key.c to get the current binding of a key sequence (without processing)
 	* do something with base/init.c and the loading of types
 
 	* unify the naming patterns for variables and frontend widgets, etc.
-	* can we fix the handling of the no remove flag in variables?
+	* can we fix the handling of the no remove flag in variables so that is doesn't remove the node
+	  from the list before checking the flag and readding it when it finds it's not suppose to remove it?
 	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
 	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
 	* optimize for space and speed (re-evaluate things).
