@@ -8,7 +8,9 @@ OBJS =	main.o \
 	fe.o \
 	net.o \
 	terminal.o \
+	../common/cmds/insert.o \
 	../common/core/widget.o \
+	../common/types/command.o \
 	../common/utils/format.o \
 	../common/widgets/frame.o \
 	../common/widgets/input.o \

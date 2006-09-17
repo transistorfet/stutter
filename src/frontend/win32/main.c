@@ -29,6 +29,10 @@ struct variable_table_s *fe_table;
 extern int init_frontend(void);
 extern int release_frontend(void);
 
+// TODO put these in an include file somewhere
+extern struct type_s *fe_common_load_command(void);
+extern int common_cmd_insert(struct widget_s *, char *);
+
 int handle_quit(char *, void *, char *);
 LRESULT CALLBACK windows_callback(HWND, UINT, WPARAM, LPARAM);
 
@@ -67,18 +71,23 @@ int init_windows(void)
 		return(-1);
 	fe_table = var->value;
 
+	if (!(type = fe_common_load_command()))
+		return(-1);
+	add_variable(fe_table, type, "insert", 0, "(widget * string -> int) * widget", common_cmd_insert, NULL);
+
 	if (!(type = find_type("string")))
 		return(-1);
-	add_variable(fe_table, type, "bold", 0, "");
+	add_variable(fe_table, type, "bold", 0, "\x02");
 	add_variable(fe_table, type, "normal", 0, "");
 	add_variable(fe_table, type, "flash", 0, "");
 	add_variable(fe_table, type, "inverse", 0, "\x16");
+	add_variable(fe_table, type, "colour", 0, "\x03");
 
 	add_variable(fe_table, type, "colour_test", 0, "\x03\x30K0 \x03\x31K1 \x03\x32K2 \x03\x33K3 \x03\x34K4 \x03\x35K5 \x03\x36K6 \x03\x37K7 \x03\x38K8 \x03\x39K9 \x03\x31\x30K10 \x03\x31\x31K11 \x03\x31\x32K12 \x03\x31\x33K13 \x03\x31\x34K14 \x03\x31\x35K15");
 	add_variable(fe_table, type, "bold_test", 0, "\x02\x03\x30K0 \x03\x31K1 \x03\x32K2 \x03\x33K3 \x03\x34K4 \x03\x35K5 \x03\x36K6 \x03\x37K7 \x03\x38K8 \x03\x39K9 \x03\x31\x30K10 \x03\x31\x31K11 \x03\x31\x32K12 \x03\x31\x33K13 \x03\x31\x34K14 \x03\x31\x35K15");
 
 	if (type = find_type("format"))
-		add_variable(NULL, type, "fe.statusbar", 0, "%s", FE_STATUSBAR_DEFAULT);
+		add_variable(fe_table, type, "statusbar", 0, "%s", FE_STATUSBAR_DEFAULT);
 	BIND_KEYS();
 
 	if (init_terminal())
