@@ -103,6 +103,34 @@ int input_read(struct input_s *input, char *buffer, int max)
 int input_control(struct input_s *input, int cmd, va_list va)
 {
 	switch (cmd) {
+		case WCC_SCROLL: {
+			int i, amount;
+			char *str = NULL;
+
+			amount = va_arg(va, int);
+			if (amount >= 0) {
+				for (i = 0;i < amount;i++) {
+					if (!(str = queue_next(input->history)))
+						str = queue_first(input->history);
+				}
+			}
+			else {
+				amount *= -1;
+				for (i = 0;i < amount;i++) {
+					if (!(str = queue_previous(input->history)))
+						str = queue_last(input->history);
+				}
+			}
+			if (str)
+				input_print(input, str, -1);
+			break;
+		}
+		case WCC_INSERT_CHAR: {
+			int ch;
+			ch = va_arg(va, int);
+			input_insert_char(input, ch);
+			return(0);
+		}
 		case WCC_PROCESS_CHAR: {
 			int ch;
 			ch = va_arg(va, int);
@@ -173,33 +201,39 @@ static int input_save_buffer(struct input_s *input)
  */
 static int input_process_char(struct input_s *input, int ch)
 {
-	char *str;
-
 	switch (ch) {
-		case KC_BACKSPACE:
+		case KC_BACKSPACE: {
 			input_delete_char(input);
 			break;
-		case KC_UP:
+		}
+		case KC_UP: {
+			char *str;
 			if ((str = queue_previous(input->history)) || (str = queue_last(input->history)))
 				input_print(input, str, -1);
 			break;
-		case KC_DOWN:
+		}
+		case KC_DOWN: {
+			char *str;
 			if ((str = queue_next(input->history)) || (str = queue_first(input->history)))
 				input_print(input, str, -1);
 			break;
-		case KC_RIGHT:
+		}
+		case KC_RIGHT: {
 			if (input->i < input->end)
 				input->i++;
 			break;
-		case KC_LEFT:
+		}
+		case KC_LEFT: {
 			if (input->i > 0)
 				input->i--;
 			break;
-		default:
+		}
+		default: {
 			if ((ch < 0x20) || (ch > 0xff))
 				return(1);
 			input_insert_char(input, (char) ch);
-			break;	
+			break;
+		}
 	}
 	return(0);
 }
