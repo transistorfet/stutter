@@ -31,7 +31,8 @@
 #define WCC_LAST_WIDGET		0x27
 
 #define WCC_SCROLL		0x30
-#define WCC_PROCESS_CHAR	0x31
+#define WCC_INSERT_CHAR		0x31
+#define WCC_PROCESS_CHAR	0x32
 
 struct widget_s;
 
