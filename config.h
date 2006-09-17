@@ -108,6 +108,7 @@
 	BIND_KEY("\x11", "base.previous", "")	\
 	BIND_KEY("\x10", "base.scroll", "1")	\
 	BIND_KEY("\x19", "base.scroll", "-1")	\
+	BIND_KEY("\x0b", "fe.insert", "\x03")	\
 	BIND_KEY("\x09", "irc.complete", "")
 
 
