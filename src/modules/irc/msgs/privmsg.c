@@ -20,7 +20,7 @@ int irc_msg_privmsg(char *env, struct irc_msg *msg)
 	struct irc_channel *channel;
 
 	if (*msg->text == 0x01)
-		emit_signal("irc_dispatch_ctcp", NULL, msg);
+		emit_signal("irc.dispatch_ctcp", NULL, msg);
 	else {
 		if (!(channel = irc_find_channel(msg->server->channels, msg->params[0]))) {
 			if ((msg->params[0][0] == '#') || !(channel = irc_current_channel()))
