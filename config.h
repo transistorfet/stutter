@@ -136,11 +136,11 @@
 /*** IRC Module ***/
 
 #define IRC_HANDLERS()								\
-	ADD_HANDLER("irc_dispatch_msg", NULL, 10, irc_sig_dispatch_msg, NULL)	\
-	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
-	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
-	ADD_HANDLER("irc_dispatch_ctcp", NULL, 10, irc_msg_ctcp_version, NULL)	\
-	ADD_HANDLER("quit", NULL, 10, irc_sig_quit, NULL)
+	ADD_HANDLER("irc.dispatch_msg", NULL, 10, irc_sig_dispatch_msg, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_version, NULL)	\
+	ADD_HANDLER("fe.quit", NULL, 10, irc_sig_quit, NULL)
 
 #define IRC_COMMANDS()					\
 	ADD_COMMAND("complete", irc_cmd_complete)	\
