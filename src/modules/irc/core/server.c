@@ -31,7 +31,7 @@ static int server_initialized = 0;
 static linear_list_v(irc_server_node) server_list;
 
 static int irc_server_init_connection(struct irc_server *);
-static int irc_server_receive(struct irc_server *, network_t);
+static int irc_server_receive(struct irc_server *, fe_network_t);
 static int irc_server_rejoin_channel(struct irc_channel *, struct irc_server *);
 static int irc_server_flush_send_queue(struct irc_server *);
 
@@ -194,6 +194,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
+			// TODO emit a signal reporting the disconnect
 			if ((server->bitflags & IRC_SBF_RECONNECTING) || irc_server_reconnect(server))
 				return(NULL);
 			server->bitflags |= IRC_SBF_RECONNECTING;
@@ -351,7 +352,7 @@ static int irc_server_init_connection(struct irc_server *server)
  * Called by network when data is available from the given socket for
  * the given server.
  */
-static int irc_server_receive(struct irc_server *server, network_t net)
+static int irc_server_receive(struct irc_server *server, fe_network_t net)
 {
 	struct irc_msg *msg;
 

@@ -20,17 +20,17 @@
 #define NET_READ_BUFFER		512
 #endif
 
-struct network_s {
+struct fe_network_s {
 	int socket;
 	callback_t receiver;
 	void *ptr;
 	int read;
 	int length;
 	char buffer[NET_READ_BUFFER];
-	struct network_s *next;
+	struct fe_network_s *next;
 };
 
-static network_t net_list = NULL;
+static fe_network_t net_list = NULL;
 
 int init_net(void)
 {
@@ -43,7 +43,7 @@ int init_net(void)
 
 int release_net(void)
 {
-	network_t cur, tmp;
+	fe_network_t cur, tmp;
 
 	cur = net_list;
 	while (cur) {
@@ -61,17 +61,17 @@ int release_net(void)
 /**
  * Create a new network connection and connect to the server:port given.
  */
-network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
+fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
 {
 	int i, j;
 	int sockfd;
-	network_t net;
+	fe_network_t net;
 	struct hostent *host;
 	struct sockaddr_in saddr;
 
-	if (!(net = (network_t) memory_alloc(sizeof(struct network_s))))
+	if (!(net = (fe_network_t) memory_alloc(sizeof(struct fe_network_s))))
 		return(NULL);
-	memset(net, '\0', sizeof(struct network_s));
+	memset(net, '\0', sizeof(struct fe_network_s));
 	net->receiver = receiver;
 	net->ptr = ptr;
 
@@ -100,10 +100,10 @@ network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
 
 /**
  * Listen on the given port of connections and call the recevier callback
- * with the network_t of the connection and the given ptr.  The network_t
+ * with the fe_network_t of the connection and the given ptr.  The fe_network_t
  * associated with the server is returned or NULL on error.
  */
-network_t fe_net_listen(int port, callback_t receiver, void *ptr)
+fe_network_t fe_net_listen(int port, callback_t receiver, void *ptr)
 {
 	// TODO add server capabilities
 }
@@ -113,7 +113,7 @@ network_t fe_net_listen(int port, callback_t receiver, void *ptr)
  * callback and ptr.  If the given net is valid then 0 is returned
  * otherwise -1 is returned.
  */
-int fe_net_set_receiver(network_t net, callback_t receiver, void *ptr)
+int fe_net_set_receiver(fe_network_t net, callback_t receiver, void *ptr)
 {
 	if (!net)
 		return(-1);
@@ -125,10 +125,10 @@ int fe_net_set_receiver(network_t net, callback_t receiver, void *ptr)
 /**
  * Disconnect the given network connection.
  */
-void fe_net_disconnect(network_t net)
+void fe_net_disconnect(fe_network_t net)
 {
 	int i;
-	network_t cur, prev;
+	fe_network_t cur, prev;
 
 	if (!net)
 		return;
@@ -156,7 +156,7 @@ void fe_net_disconnect(network_t net)
  * Send the string of length size to the given network connection and
  * return the number of bytes written or -1 on error.
  */
-int fe_net_send(network_t net, char *msg, int size)
+int fe_net_send(fe_network_t net, char *msg, int size)
 {
 	int sent, count = 0;
 
@@ -177,7 +177,7 @@ int fe_net_send(network_t net, char *msg, int size)
  * Receive the given number of bytes, store them in the given msg buffer
  * and return the number of bytes read or -1 on error or disconnect.
  */ 
-int fe_net_receive(network_t net, char *msg, int size)
+int fe_net_receive(fe_network_t net, char *msg, int size)
 {
 	int i, j;
 	fd_set rd;
@@ -212,7 +212,7 @@ int fe_net_receive(network_t net, char *msg, int size)
  * size-1 (a null char is appended) and return the number of bytes
  * read or -1 on error or disconnect.
  */ 
-int fe_net_receive_str(network_t net, char *msg, int size, char ch)
+int fe_net_receive_str(fe_network_t net, char *msg, int size, char ch)
 {
 	int i;
 	fd_set rd;
@@ -258,7 +258,7 @@ int fe_net_receive_str(network_t net, char *msg, int size, char ch)
 int fe_net_handle_message(int socket, int condition, int error)
 {
 	fd_set rd;
-	network_t cur;
+	fe_network_t cur;
 	struct timeval timeout = { 0, 0 };
 
 	cur = net_list;
@@ -284,7 +284,7 @@ int fe_net_handle_message(int socket, int condition, int error)
 int fe_net_wait(float t)
 {
 	fd_set rd;
-	network_t cur;
+	fe_network_t cur;
 	int max, ret = 0;
 	struct timeval timeout;
 

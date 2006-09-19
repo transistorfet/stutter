@@ -23,7 +23,7 @@ struct irc_server {
 	char *address;
 	int port;
 
-	network_t net;
+	fe_network_t net;
 	time_t last_ping;
 	char nick[IRC_MAX_NICK];
 	queue_list_v(irc_msg) send_queue;
