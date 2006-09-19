@@ -221,7 +221,7 @@ void fe_refresh(void)
 
 void fe_quit(char *reason)
 {
-	emit_signal("quit", NULL, (void *) reason);
+	emit_signal("fe.quit", NULL, (void *) reason);
 }
 
 /*** Local Functions ***/

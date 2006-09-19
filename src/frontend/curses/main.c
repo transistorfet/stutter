@@ -43,8 +43,8 @@ int init_curses(void)
 	if (init_system())
 		return(-1);
 
-	add_signal("quit", 0);
-	signal_connect("quit", NULL, 0, (signal_t) handle_quit, NULL);
+	add_signal("fe.quit", 0);
+	signal_connect("fe.quit", NULL, 0, (signal_t) handle_quit, NULL);
 
 	LOAD_MODULES();
 	if (!(type = find_type("table")) || !(var = add_variable(NULL, type, "fe", 0, "")))
