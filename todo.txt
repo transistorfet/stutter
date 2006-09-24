@@ -1,16 +1,24 @@
 
-Signals:
-	* what if you store the channel struct pointer as the index?  there can be an irc-specific
-	  method of finding the channel by assuming the index of an "irc-print" signal (or whatever it
-	  will be called) is a channel struct but it would still need a method of searching all signal
-	  handlers for "irc-print" for the current window pointer stored as the signal handler's
-	  parameter.
-	* a window handler connecting to a signal emitted for a particular window so that it can
-	  free memory when that window is destroyed for example (server registering for its status
-	  window and if a command like /close causes that window to be destroyed, the server disconnects
-	  and frees all resources it uses)
-
 Structural Issues:
+	* how will you handle network sockets together with pipes in the curses frontend?
+	* how will you implement network ready signals? should there be one signal fe.ready for both network
+	  and execute descriptors?  should read and write readiness be differentiated?  should the network
+	  (and execute) functions add the signal handler for you if you give it the handler function?
+	* the current/select functions can use the context as a partial type name lookup such that there
+	  are special context names which correspond to special object "superclasses" such as 'frame' and
+	  'input'.  Then when you specify something like 'frame' as the context, it means a general type of
+	  widget.  ???
+	* should you make the format parser function take a format_string_s pointer with the buffer and
+	  array already set and with the max values so that it takes fewer arguments
+	* should there be a way to allocate additional memory along with a format in order to allocate the
+	  node along with the format for scroll.c and if not, should scroll.c be converted to use the inline
+	  queue functions?
+	* is there a better name for scroll.c?
+
+---------------
+
+	* you can't have linear lists inside of linear lists because the traverse macro doesn't work inside
+	  of itself!  you get a structure has not member 'head' error.
 	* how will you do timers?  they have to be implemented through the frontend.  Should a timeout
 	  cause a signal to be emitted?  a callback (stored in the timer struct) to be called?  Could make
 	  an 'events' system.
@@ -26,16 +34,15 @@ Structural Issues:
 	  to have a event/message/something signal handler for that pointer.
 	* standardize the interpretation of the create type function parameters (the format string should
 	  only ever contain a description of the arguments and should never be an argument itself)
+	* should the stringify and evaluate type functions take a parameter (string or number?) to specify
+	  the "type" of operation?  This for example, would let you get the real value and formatted value
+	  of a format type or to specify the context of evaluation to avoid the /parse issue. 
 
-	* the current/select functions can use the context as a partial type name lookup such that there
-	  are special context names which correspond to special object "superclasses" such as 'frame' and
-	  'input'.  Then when you specify something like 'frame' as the context, it means a general type of
-	  widget.  ???
-	* should you make the format parser function take a format_string_s pointer with the buffer and
-	  array already set and with the max values so that it takes fewer arguments
 	* how can you specify to a scroll widget which parser to use to parse the attributes out of strings
 	  printed to that widget.
-	* how will you draw the cursor? draw it yourself using a reverse colour attribute?
+	* should we change fe_read to return an int instead of char *?
+	* how will you draw the cursor? draw it yourself using a reverse colour attribute in the widget
+	  refresh itself (thus it would be cross platform)?
 	* should colour schemes be largely frontend dependant?  we still need a way to specify colours.
 	  one way could be to have variables in the frontend for various event/properties (standardized
 	  across all frontends) with the value as a frontend-specific value which the frontend can recognize
@@ -44,25 +51,29 @@ Structural Issues:
 	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
 	  specific or will it be through the variable system in which case a widget would be a variable
 	  of the "widget" type.
+	* should you add a bunch of variables to the frontends which return common environment variables
+	  and values such as the homedir and the current user's username?  should there also be a way to
+	  access environment variables through a function and how would that be supported?
 
-	* should the stringify and evaluate type functions take a parameter (string or number?) to specify
-	  the "type" of operation?  This for example, would let you get the real value and formatted value
-	  of a format type or to specify the context of evaluation to avoid the /parse issue. 
-	* what can be used as the index for network ready signals?  The network_t itself?  can we make
-	  network signals better than the network callback we have now?
-	* should we add a parent field to the variable?
-	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages?)
-	* should we add a mechanism to signals that allows for signals to "inherit" from others so that
-	  when a signal is emitted (irc channel) it also triggers another signal (like "general_msg") or
-	  something which might making logging easier?  Can this be implemented as just a signal handler
-	  that emits another signal in which case you can set the priority level at which the 'inherited'
-	  signal is called (put the handler in signal.c even)?
-	* change network_t to fe_network_t???
+	* what if you store the channel struct pointer as the index?  there can be an irc-specific
+	  method of finding the channel by assuming the index of an "irc-print" signal (or whatever it
+	  will be called) is a channel struct but it would still need a method of searching all signal
+	  handlers for "irc-print" for the current window pointer stored as the signal handler's
+	  parameter.
+	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages? instead of just
+	  dispatching select messages like privmsg and notice (which would require a rewrite of the message
+	  handlers to check for an outbound message))
 
 	* should the libs/ be moved to the root dir (since the primary issue was all the headers but now
 	  that they are all inside include/stutter/ they wont conflict with system headers).
 	* can we fix the /parse issue by making it take the string as a param instead and have a signal
 	  handler that is called when the key is pressed that acutally get the input and calls parse?
+	* a window handler connecting to a signal emitted for a particular window so that it can
+	  free memory when that window is destroyed for example (server registering for its status
+	  window and if a command like /close causes that window to be destroyed, the server disconnects
+	  and frees all resources it uses)
+	* can the config.h file be broken up somehow so that each module has it's own configs or is that
+	  just generally a bad idea?
 
 Bugs:
 	* when you connect and get a nick collision, it should either prompt you or change your nick auto
@@ -77,19 +88,24 @@ Bugs:
 	  can still type and the statusbar updates.
 	* when you quit sometimes it says broken pipe
 	* history may not be working properly in the long run (it may fill up and stop) but look into it
+	* the bold_test string only displays white in bold even though the other colours can be bolded
+	* when a character that is displayed with 2 characters is entered (such as ^C) the cursor is only
+	  moved one character forward so when you enter more characters, they show up in further to the left
+	  than expected
 
 General:
 
+	* review use of signals and error printing
+	* revise dispatch to handle messages better during a reconnect
+	* add ping timeout code to reconnect if the connection is idle (if it isn't already added)
 	* fix format so that it recognizes a closing ^C and restores the original colours
-	* add cursor drawing to input by just drawing that character in reverse colours and getting the
-	  curses terminal to turn off the cursor (what about multiple possible cursors on the screen)
 
 	* we can use fe_resize to resize the root widget for a surface thus taking care of the resize issue.
 	  Where would the resize take place?  During refresh?  
-	* make a frontend/exec.h or frontend/execute.h implementation that is capable of running processes
-	  in the background such that the input is available asyncronously.
-	* change fe_read to return an int instead of char *
 	* make user.c store the user names in a sorted list (linear_insert_sorted ??)
+	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
+
+-----------
 
 	* MAKE SURE all message handlers don't clobber the message!
 	* fix all hash_init and hash_rehash instances to check for memory allocation failure
@@ -125,10 +141,9 @@ General:
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
 
-	* make common format.c more general in the format that it parses (specifiable parser function?)
+	* make common/format.c more general in the format that it parses (specifiable parser function?)
 	* move include files into an include/ directory inside of each module's directory (and then same
 	  for frontends)
-	* make a more cross platform way of getting ceratin values like username and user's homedir
 	* make a configuration/compilation script that builds the makefiles
 	* modify user.c and channel.c to use a hash table instead of the linear list
 	* rewrite msg.c using va_args instead of making an array and use sprintf
