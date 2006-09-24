@@ -20,40 +20,26 @@
 #include <stutter/lib/debug.h>
 #include <stutter/lib/memory.h>
 #include "net.h"
+#include "desc.h"
 
-#ifndef NET_READ_BUFFER
-#define NET_READ_BUFFER		512
-#endif
+static struct fe_descriptor_list_s *net_list;
 
-struct fe_network_s {
-	int socket;
-	callback_t receiver;
-	void *ptr;
-	int read;
-	int length;
-	char buffer[NET_READ_BUFFER];
-	struct fe_network_s *next;
-};
-
-static fe_network_t net_list = NULL;
+static void fe_net_free_socket(struct fe_descriptor_s *);
 
 int init_net(void)
 {
+	if (net_list)
+		return(1);
+	if (!(net_list = fe_desc_create_list((destroy_t) fe_net_free_socket)))
+		return(-1);
 	return(0);
 }
 
 int release_net(void)
 {
-	fe_network_t cur, tmp;
-
-	cur = net_list;
-	while (cur) {
-		tmp = cur->next;
-		shutdown(cur->socket, 2);
-		close(cur->socket);
-		memory_free(cur);
-		cur = tmp;
-	}
+	if (!net_list)
+		return(1);
+	fe_desc_destroy_list(net_list);
 	return(0);
 }
 
@@ -63,16 +49,9 @@ int release_net(void)
 fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
 {
 	int i, j;
-	int sockfd;
-	fe_network_t net;
 	struct hostent *host;
 	struct sockaddr_in saddr;
-
-	if (!(net = (fe_network_t) memory_alloc(sizeof(struct fe_network_s))))
-		return(NULL);
-	memset(net, '\0', sizeof(struct fe_network_s));
-	net->receiver = receiver;
-	net->ptr = ptr;
+	struct fe_descriptor_s *desc;
 
 	if (!(host = gethostbyname(server)))
 		return(NULL);
@@ -80,18 +59,20 @@ fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *p
 	saddr.sin_family = AF_INET;
 	saddr.sin_port = htons(port);
 
-	if ((net->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if (!(desc = fe_desc_create(net_list, 0)))
 		return(NULL);
-	for (j = 0;host->h_addr_list[j];j++) {
-		saddr.sin_addr = *((struct in_addr *) host->h_addr_list[j]);
-		for (i = 0;i < NET_ATTEMPTS;i++) {
-			if (connect(net->socket, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0) {
-				net->next = net_list;
-				net_list = net;
-				return(net);
+	if ((desc->read = socket(AF_INET, SOCK_STREAM, 0)) >= 0) {
+		for (j = 0;host->h_addr_list[j];j++) {
+			saddr.sin_addr = *((struct in_addr *) host->h_addr_list[j]);
+			for (i = 0;i < NET_ATTEMPTS;i++) {
+				if (connect(desc->read, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0) {
+					signal_connect("fe.read_ready", desc, 10, receiver, ptr);
+					return(desc);
+				}
 			}
 		}
 	}
+	fe_desc_destroy(net_list, desc);
 	return(NULL);
 }
 
@@ -110,58 +91,37 @@ fe_network_t fe_net_listen(int port, callback_t receiver, void *ptr)
  * callback and ptr.  If the given net is valid then 0 is returned
  * otherwise -1 is returned.
  */
-int fe_net_set_receiver(fe_network_t net, callback_t receiver, void *ptr)
+int fe_net_set_receiver(fe_network_t desc, callback_t receiver, void *ptr)
 {
-	if (!net)
+	if (!desc)
 		return(-1);
-	net->receiver = receiver;
-	net->ptr = ptr;
+	// TODO ???
 	return(0);
 }
 
 /**
  * Disconnect the given network connection.
  */
-void fe_net_disconnect(fe_network_t net)
+void fe_net_disconnect(fe_network_t desc)
 {
-	int i;
-	fe_network_t cur, prev;
-
-	if (!net)
+	if (!desc)
 		return;
-
-	cur = net_list;
-	prev = NULL;
-	while (cur) {
-		if (cur == net) {
-			if (prev)
-				prev->next = cur->next;
-			else
-				net_list = cur->next;
-			break;
-		}
-		prev = cur;
-		cur = cur->next;
-	}
-
-	shutdown(net->socket, SHUT_RDWR);
-	close(net->socket);
-	memory_free(net);
+	fe_desc_destroy(net_list, desc);
 }
 
 /**
  * Send the string of length size to the given network connection and
  * return the number of bytes written or -1 on error.
  */
-int fe_net_send(fe_network_t net, char *msg, int size)
+int fe_net_send(fe_network_t desc, char *msg, int size)
 {
 	int sent, count = 0;
 
-	if (!net)
+	if (!desc)
 		return(0);
 	DEBUG_LOG("raw.out", msg);
 	do {
-		if ((sent = send(net->socket, (void *) msg, size, 0)) < 0)
+		if ((sent = send(desc->read, (void *) msg, size, 0)) < 0)
 			return(-1);
 		else if (!sent)
 			return(0);
@@ -174,26 +134,26 @@ int fe_net_send(fe_network_t net, char *msg, int size)
  * Receive the given number of bytes, store them in the given msg buffer
  * and return the number of bytes read or -1 on error or disconnect.
  */ 
-int fe_net_receive(fe_network_t net, char *msg, int size)
+int fe_net_receive(fe_network_t desc, char *msg, int size)
 {
 	int i, j;
 	fd_set rd;
 	struct timeval timeout = { 0, 0 };
 
-	if (!net)
+	if (!desc)
 		return(-1);
 
 	size--;
 	for (i = 0;i < size;i++) {
-		if (net->read >= net->length)
+		if (desc->read_pos >= desc->read_length)
 			break;
-		msg[i] = net->buffer[net->read++];
+		msg[i] = desc->read_buffer[desc->read_pos++];
 	}
 
 	if (i < size) {
 		FD_ZERO(&rd);
-		FD_SET(net->socket, &rd);
-		if (select(net->socket + 1, &rd, NULL, NULL, &timeout) && ((j = recv(net->socket, &msg[i], size - i, 0)) > 0))
+		FD_SET(desc->read, &rd);
+		if (select(desc->read + 1, &rd, NULL, NULL, &timeout) && ((j = recv(desc->read, &msg[i], size - i, 0)) > 0))
 			i += j;
 		if (j <= 0)
 			return(-1);
@@ -209,20 +169,20 @@ int fe_net_receive(fe_network_t net, char *msg, int size)
  * size-1 (a null char is appended) and return the number of bytes
  * read or -1 on error or disconnect.
  */ 
-int fe_net_receive_str(fe_network_t net, char *msg, int size, char ch)
+int fe_net_receive_str(fe_network_t desc, char *msg, int size, char ch)
 {
 	int i;
 	fd_set rd;
 	struct timeval timeout = { 0, 0 };
 
-	if (!net)
+	if (!desc)
 		return(-1);
 
 	size--;
 	for (i = 0;i < size;i++) {
-		if (net->read >= net->length) {
+		if (desc->read_pos >= desc->read_length) {
 			FD_ZERO(&rd);
-			FD_SET(net->socket, &rd);
+			FD_SET(desc->read, &rd);
 			// TODO if either of these fail, we return a partial message which the server
 			//	doesn't check for and can't deal with so what we really need to do is
 			//	copy what we've read (in msg) to the buffer and return 0 but what
@@ -231,15 +191,15 @@ int fe_net_receive_str(fe_network_t net, char *msg, int size, char ch)
 			//	as a msg that hasn't been fully recieved.  We could send a signal to report
 			//	the error somehow (which raises the question of should we do (and how would
 			//	we do) socket specific signals.
-			if (!select(net->socket + 1, &rd, NULL, NULL, &timeout)) {
+			if (!select(desc->read + 1, &rd, NULL, NULL, &timeout)) {
 				msg[i + 1] = '\0';
 				return(i);
 			}
-			if ((net->length = recv(net->socket, net->buffer, NET_READ_BUFFER, 0)) <= 0)
+			if ((desc->read_length = recv(desc->read, desc->read_buffer, DESC_READ_BUFFER, 0)) <= 0)
 				return(-1);
-			net->read = 0;
+			desc->read_pos = 0;
 		}
-		msg[i] = net->buffer[net->read++];
+		msg[i] = desc->read_buffer[desc->read_pos++];
 		if (msg[i] == ch)
 			break;
 	}
@@ -249,52 +209,12 @@ int fe_net_receive_str(fe_network_t net, char *msg, int size, char ch)
 	return(i);
 }
 
-/**
- * Wait for input on all sockets and STDIN for the time given in seconds and return
- * 0 if the time expires or the number of sockets that had input.
- */
-int fe_net_wait(float t)
+/*** Local Functions ***/
+
+static void fe_net_free_socket(struct fe_descriptor_s *desc)
 {
-	fd_set rd;
-	fe_network_t cur;
-	int max, ret = 0;
-	struct timeval timeout;
-
-	/** Check the buffer of each connection to see if any messages are waiting
-	    and return when each connection gets a chance to read one message so that
-	    we can refresh the screen and check for keyboard input to remain responsive */
-	for (cur = net_list;cur;cur = cur->next) {
-		if (cur->read < cur->length) {
-			cur->receiver(cur->ptr, cur);
-			ret++;
-		}
-	}
-	if (ret)
-		return(ret);
-
-	/** Check each connection's socket for input using select */
-	timeout.tv_sec = (int) t;
-	timeout.tv_usec = (int) ((t - timeout.tv_sec) * 1000000);
-
-	FD_ZERO(&rd);
-	FD_SET(0, &rd);
-	max = 0;
-	for (cur = net_list;cur;cur = cur->next) {
-		FD_SET(cur->socket, &rd);
-		if (cur->socket > max)
-			max = cur->socket;
-	}
-
-	if ((ret = select(max + 1, &rd, NULL, NULL, &timeout)) == -1) {
-		// TODO what do we do in the case of a socket error?
-		return(-1);
-	}
-
-	for (cur = net_list;cur;cur = cur->next) {
-		if ((cur->read < cur->length) || (cur->receiver && FD_ISSET(cur->socket, &rd)))
-			cur->receiver(cur->ptr, cur);
-	}
-	return(ret);
+	shutdown(desc->read, 2);
+	close(desc->read);
 }
 
 

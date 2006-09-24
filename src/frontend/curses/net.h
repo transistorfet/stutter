@@ -4,15 +4,15 @@
  * Description:		Network Interface Manager Header
  */
 
-#ifndef _SIMPLE_NET_H
-#define _SIMPLE_NET_H
+#ifndef _CURSES_NET_H
+#define _CURSES_NET_H
 
 #include <stutter/lib/globals.h>
+#include "desc.h"
 
 #define NET_ATTEMPTS		3
 
-struct fe_network_s;
-typedef struct fe_network_s *fe_network_t;
+typedef struct fe_descriptor_s *fe_network_t;
 
 int init_net(void);
 int release_net(void);

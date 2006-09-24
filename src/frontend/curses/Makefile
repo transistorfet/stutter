@@ -6,6 +6,8 @@ TARGET = $(ROOT)/bin/stutter
 OBJS =	main.o \
 	fe.o \
 	net.o \
+	desc.o \
+	execute.o \
 	terminal.o \
 	../common/cmds/insert.o \
 	../common/core/widget.o \
