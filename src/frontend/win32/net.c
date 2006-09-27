@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <winsock.h>
 
+#include <stutter/signal.h>
 #include <stutter/lib/debug.h>
 #include <stutter/lib/memory.h>
 #include "net.h"
@@ -22,8 +23,6 @@
 
 struct fe_network_s {
 	int socket;
-	callback_t receiver;
-	void *ptr;
 	int read;
 	int length;
 	char buffer[NET_READ_BUFFER];
@@ -38,6 +37,7 @@ int init_net(void)
 
 	if (WSAStartup(0x0101, &tmp))
 		return(-1);
+	add_signal("fe.read_ready", 0);
 	return(0);
 }
 
@@ -54,6 +54,7 @@ int release_net(void)
 		cur = tmp;
 	}
 
+	remove_signal("fe.read_ready");
 	WSACleanup();
 	return(0);
 }
@@ -61,7 +62,7 @@ int release_net(void)
 /**
  * Create a new network connection and connect to the server:port given.
  */
-fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
+fe_network_t fe_net_connect(char *server, int port)
 {
 	int i, j;
 	int sockfd;
@@ -72,8 +73,6 @@ fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *p
 	if (!(net = (fe_network_t) memory_alloc(sizeof(struct fe_network_s))))
 		return(NULL);
 	memset(net, '\0', sizeof(struct fe_network_s));
-	net->receiver = receiver;
-	net->ptr = ptr;
 
 	// TODO call inet_addr first
 	if (!(host = gethostbyname(server)))
@@ -103,23 +102,9 @@ fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *p
  * with the fe_network_t of the connection and the given ptr.  The fe_network_t
  * associated with the server is returned or NULL on error.
  */
-fe_network_t fe_net_listen(int port, callback_t receiver, void *ptr)
+fe_network_t fe_net_listen(int port)
 {
 	// TODO add server capabilities
-}
-
-/**
- * Set the receiver callback of the given network connection to the given
- * callback and ptr.  If the given net is valid then 0 is returned
- * otherwise -1 is returned.
- */
-int fe_net_set_receiver(fe_network_t net, callback_t receiver, void *ptr)
-{
-	if (!net)
-		return(-1);
-	net->receiver = receiver;
-	net->ptr = ptr;
-	return(0);
 }
 
 /**
@@ -269,60 +254,12 @@ int fe_net_handle_message(int socket, int condition, int error)
 			FD_ZERO(&rd);
 			FD_SET(socket, &rd);
 			while ((cur->read < cur->length) || select(socket + 1, &rd, NULL, NULL, &timeout))
-				cur->receiver(cur->ptr, cur);
+				emit_signal("fe.read_ready", cur, cur);
 			return(0);
 		}
 		cur = cur->next;
 	}
 	return(-1);
-}
-
-/**
- * Wait for input on all sockets and STDIN for the time given in seconds and return
- * 0 if the time expires or the number of sockets that had input.
- */
-int fe_net_wait(float t)
-{
-	fd_set rd;
-	fe_network_t cur;
-	int max, ret = 0;
-	struct timeval timeout;
-
-	/** Check the buffer of each connection to see if any messages are waiting
-	    and return when each connection gets a chance to read one message so that
-	    we can refresh the screen and check for keyboard input to remain responsive */
-	for (cur = net_list;cur;cur = cur->next) {
-		if (cur->read < cur->length) {
-			cur->receiver(cur->ptr, cur);
-			ret++;
-		}
-	}
-	if (ret)
-		return(ret);
-
-	/** Check each connection's socket for input using select */
-	timeout.tv_sec = (int) t;
-	timeout.tv_usec = (int) ((t - timeout.tv_sec) * 1000000);
-
-	FD_ZERO(&rd);
-	FD_SET(0, &rd);
-	max = 0;
-	for (cur = net_list;cur;cur = cur->next) {
-		FD_SET(cur->socket, &rd);
-		if (cur->socket > max)
-			max = cur->socket;
-	}
-
-	if ((ret = select(max + 1, &rd, NULL, NULL, &timeout)) == -1) {
-		// TODO what do we do in the case of a socket error?
-		return(-1);
-	}
-
-	for (cur = net_list;cur;cur = cur->next) {
-		if ((cur->read < cur->length) || (cur->receiver && FD_ISSET(cur->socket, &rd)))
-			cur->receiver(cur->ptr, cur);
-	}
-	return(ret);
 }
 
 
