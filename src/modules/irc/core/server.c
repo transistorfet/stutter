@@ -31,7 +31,7 @@ static int server_initialized = 0;
 static linear_list_v(irc_server_node) server_list;
 
 static int irc_server_init_connection(struct irc_server *);
-static int irc_server_receive(struct irc_server *, fe_network_t);
+static int irc_server_receive(struct irc_server *, fe_network_t, fe_network_t);
 static int irc_server_rejoin_channel(struct irc_channel *, struct irc_server *);
 static int irc_server_flush_send_queue(struct irc_server *);
 
@@ -169,7 +169,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 		queue_append_node_v(server->send_queue, queue, msg);
 	}
 	else {
-		if (server && msg && (size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
+		if (server && server->net && msg && (size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
 			ret = fe_net_send(server->net, buffer, size);
 		// TODO should we dispatch messages here instead?
 		irc_destroy_msg(msg);
@@ -194,8 +194,13 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
-			// TODO emit a signal reporting the disconnect
-			if ((server->bitflags & IRC_SBF_RECONNECTING) || irc_server_reconnect(server))
+			util_emit_str("irc.error", NULL, ERR_MSG_SERVER_DISCONNECTED, server->address);
+			if (server->bitflags & IRC_SBF_RECONNECTING) {
+				fe_net_disconnect(server->net);
+				server->net = NULL;
+				return(NULL);
+			}
+			else if (irc_server_reconnect(server))
 				return(NULL);
 			server->bitflags |= IRC_SBF_RECONNECTING;
 		}
@@ -335,8 +340,9 @@ static int irc_server_init_connection(struct irc_server *server)
 	int ret = 0;
 	struct irc_msg *msg;
 
-	if (!(server->net = fe_net_connect(server->address, server->port, (callback_t) irc_server_receive, server)))
+	if (!(server->net = fe_net_connect(server->address, server->port)))
 		return(-1);
+	signal_connect("fe.read_ready", server->net, 10, (signal_t) irc_server_receive, server);
 
 	if ((msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)) && !irc_send_msg(server, msg)
 	    && (msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")) && !irc_send_msg(server, msg)) {
@@ -352,7 +358,7 @@ static int irc_server_init_connection(struct irc_server *server)
  * Called by network when data is available from the given socket for
  * the given server.
  */
-static int irc_server_receive(struct irc_server *server, fe_network_t net)
+static int irc_server_receive(struct irc_server *server, fe_network_t desc, fe_network_t net)
 {
 	struct irc_msg *msg;
 
