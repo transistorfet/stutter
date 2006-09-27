@@ -5,6 +5,8 @@
  * Description:		IRC Message Receiver/Dispatcher
  */
 
+#include <string.h>
+
 #include CONFIG_H
 #include <stutter/modules/irc.h>
 
@@ -12,6 +14,10 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 {
 	switch (msg->cmd) {
 		case 001:
+			/** Some servers have a limit to the nick length so
+			    make sure we are using the right nick */
+			if (strcmp(msg->server->nick, msg->params[0]))
+				irc_change_nick(msg->server, msg->params[0]);
 		case 002:
 		case 003:
 		case 004:
@@ -32,6 +38,8 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 			return(irc_msg_current(IRC_FMT_WHOISSPECIAL, msg));
 		case IRC_RPL_ENDOFWHOIS:
 			return(0);
+		case IRC_ERR_NOSUCHNICK:
+			return(irc_msg_current(IRC_FMT_NOSUCHNICK, msg));
 		case IRC_MSG_MODE:
 			return(irc_msg_mode(env, msg));
 		case IRC_MSG_NOTICE:
