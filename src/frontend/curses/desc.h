@@ -15,7 +15,6 @@
 #endif
 
 struct fe_descriptor_s {
-	linear_node_v(fe_descriptor_s) dl;
 	int read;
 	int write;
 	int error;
@@ -26,7 +25,9 @@ struct fe_descriptor_s {
 
 struct fe_descriptor_list_s {
 	destroy_t destroy;
-	linear_list_v(fe_descriptor_s) dl;
+	int size;
+	int next_space;
+	struct fe_descriptor_s **descs;
 	linear_node_v(fe_descriptor_list_s) ll;
 };
 

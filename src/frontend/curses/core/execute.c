@@ -7,18 +7,20 @@
 
 
 #include <string.h>
-
+#include <signal.h>
 #include <unistd.h>
 
 #include <stutter/lib/memory.h>
-#include "net.h"
 #include "desc.h"
+
+#define EXECUTE_MAX_PARAMS		64
 
 typedef struct fe_descriptor_s *fe_execute_t;
 
 static struct fe_descriptor_list_s *exec_list;
 
 static void fe_exec_free_handle(struct fe_descriptor_s *);
+static void fe_exec_sig_child(int);
 
 int init_execute(void)
 {
@@ -26,6 +28,7 @@ int init_execute(void)
 		return(1);
 	if (!(exec_list = fe_desc_create_list((destroy_t) fe_exec_free_handle)))
 		return(-1);
+	signal(SIGCHLD, fe_exec_sig_child);
 	return(0);
 }
 
@@ -40,28 +43,50 @@ int release_execute(void)
 /**
  * Execute the given command and return a reference to the running program.
  */
-fe_execute_t fe_execute_open(const char *cmd, int bitflags)
+fe_execute_t fe_execute_open(char *cmd, int bitflags)
 {
-	int pid;
+	int i, j;
 	struct fe_descriptor_s *desc;
-	int read_pipe[2], write_pipe[2], error_pipe[2];
+	char *argv[EXECUTE_MAX_PARAMS];
+	int pid, read_pipe[2], write_pipe[2], error_pipe[2];
 
 	if (pipe(read_pipe) || pipe(write_pipe) || pipe(error_pipe)) {
-		// TODO there was an error creating the pipes
+		/** An error occurred when creating the pipes so close any that
+		    where successfully opened and return */
+		if (read_pipe[0] != -1) {
+			close(read_pipe[0]);
+			close(read_pipe[1]);
+		}
+		if (write_pipe[0] != -1) {
+			close(write_pipe[0]);
+			close(write_pipe[1]);
+		}
+		if (error_pipe[0] != -1) {
+			close(error_pipe[0]);
+			close(error_pipe[1]);
+		}
 		return(NULL);
 	}
 
 	if ((pid = fork()) == -1) {
-		// TODO fork failed; close pipes
+		/** The fork failed so close all pipes and return */
+		close(read_pipe[0]);
+		close(read_pipe[1]);
+		close(write_pipe[0]);
+		close(write_pipe[1]);
+		close(error_pipe[0]);
+		close(error_pipe[1]);
 		return(NULL);
 	}
 	else if (pid == 0) {
 		extern int release_desc(void);
 
+		/** Set the stdio descriptors to be the appropriate pipes
+		    that we just created */
+		dup2(read_pipe[1], 1);
+		dup2(write_pipe[0], 0);
+		dup2(error_pipe[1], 2);
 		/** Close all open descriptors */
-		dup2(read_pipe[0], 0);
-		dup2(write_pipe[1], 1);
-		dup2(error_pipe[1], 1);
 		close(read_pipe[0]);
 		close(read_pipe[1]);
 		close(write_pipe[0]);
@@ -70,19 +95,32 @@ fe_execute_t fe_execute_open(const char *cmd, int bitflags)
 		close(error_pipe[1]);
 		release_desc();
 
-		// TODO do exec
-		execlp(cmd, cmd, NULL);
+		// TODO parse cmd.  should cmd be const?
+		// HOLY CRAP does the memory for the params need to be alloc'd so that
+		//		it is around later??
+		argv[0] = cmd;
+		for (i = 0, j = 1;cmd[i] != '\0';i++) {
+			if (cmd[i] == ' ') {
+				cmd[i++] = '\0';
+				while ((cmd[i] != '\0') && (cmd[i] == ' '))
+					i++;
+				argv[j++] = &cmd[i];
+			}
+		}
+		argv[j] = NULL;
+		execvp(argv[0], argv);
 		/** If exec() returns then an error occured */
+		printf("Error occured while executing command\n");
 		exit(-1);
 	}
 	else {
 		if (!(desc = fe_desc_create(exec_list, 0)))
 			return(NULL);
-		close(read_pipe[0]);
-		close(write_pipe[1]);
+		close(read_pipe[1]);
+		close(write_pipe[0]);
 		close(error_pipe[1]);
-		desc->read = read_pipe[1];
-		desc->write = write_pipe[0];
+		desc->read = read_pipe[0];
+		desc->write = write_pipe[1];
 		desc->error = error_pipe[0];
 		return(desc);
 	}
@@ -201,5 +239,18 @@ static void fe_exec_free_handle(struct fe_descriptor_s *desc)
 {
 	if (desc->read != -1)
 		close(desc->read);
+	if (desc->write != -1)
+		close(desc->write);
+	if (desc->error != -1)
+		close(desc->error);
 }
+
+static void fe_exec_sig_child(int sig)
+{
+	int status;
+
+	// TODO will this always work or can this cause the progam to lockup?
+	wait(&status);
+}
+
 

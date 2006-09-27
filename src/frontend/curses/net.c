@@ -17,10 +17,14 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 
+#include <stutter/signal.h>
 #include <stutter/lib/debug.h>
 #include <stutter/lib/memory.h>
-#include "net.h"
 #include "desc.h"
+
+#define NET_ATTEMPTS		3
+
+typedef struct fe_descriptor_s *fe_network_t;
 
 static struct fe_descriptor_list_s *net_list;
 
@@ -61,12 +65,14 @@ fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *p
 
 	if (!(desc = fe_desc_create(net_list, 0)))
 		return(NULL);
+	desc->write = -1;
+	desc->error = -1;
 	if ((desc->read = socket(AF_INET, SOCK_STREAM, 0)) >= 0) {
 		for (j = 0;host->h_addr_list[j];j++) {
 			saddr.sin_addr = *((struct in_addr *) host->h_addr_list[j]);
 			for (i = 0;i < NET_ATTEMPTS;i++) {
 				if (connect(desc->read, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0) {
-					signal_connect("fe.read_ready", desc, 10, receiver, ptr);
+					signal_connect("fe.read_ready", desc, 10, (signal_t) receiver, ptr);
 					return(desc);
 				}
 			}
