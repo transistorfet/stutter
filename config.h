@@ -51,7 +51,7 @@
 #define IRC_FMT_JOIN			"%B [%@] Joined %P1: %N (%H)"
 #define IRC_FMT_KICK			"%B [%@] %P2 was kicked from %P1 by %N (%M)"
 #define IRC_FMT_KICK_SELF		"%B [%@] You were kicked from %P1 by %N (%M)"
-#define IRC_FMT_MODE			"%B Mode on %P1: %P2 %P3 %P4 %P5 %P6 %P7 %P8"
+#define IRC_FMT_MODE			"%B Mode on %P1 by %n: %P2 %P3 %P4 %P5 %P6 %P7 %P8"
 //#define IRC_FMT_NAMES			"$banner Users on <channel>%P3</channel>: <msg>%T</msg>"
 //#define IRC_FMT_NAMES			"${fe.colour.status}$banner Users on %P3: %M"
 #define IRC_FMT_NAMES			"%B Users on %P3: %M"
@@ -62,7 +62,7 @@
 #define IRC_FMT_PING			"%B [%@] Ping received from %N (%H)"
 #define IRC_FMT_PING_REPLY		"%B [%@] Ping reply from %N (%M)"
 #define IRC_FMT_PRIVATE_MSG		"-[%@ %N]- %M"
-#define IRC_FMT_PRIVATE_MSG_SELF	"-${fe.bold}[${fe.bold}%@ %n -> %N${fe.bold}]${fe.bold}- %M"
+#define IRC_FMT_PRIVATE_MSG_SELF	"-${fe.bold}[${fe.bold}%@ %n -> %P1${fe.bold}]${fe.bold}- %M"
 #define IRC_FMT_PUBLIC_MSG		"[%@ %N] %M"
 #define IRC_FMT_PUBLIC_MSG_SELF		"${fe.bold}[${fe.bold}%@ %n${fe.bold}]${fe.bold} %M"
 #define IRC_FMT_QUIT			"%B [%@] Quit: %N (%M)"
@@ -73,6 +73,7 @@
 #define IRC_FMT_WHOISIDLE		"%B [Whois %P2] %P3 %M"
 #define IRC_FMT_WHOISCHANNELS		"%B [Whois %P2] Channels : %M"
 #define IRC_FMT_WHOISSPECIAL		"%B %M"
+#define IRC_FMT_NOSUCHNICK		"%B %P1 %M"
 
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 #define IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION
@@ -123,6 +124,7 @@
 	ADD_COMMAND("clear", base_cmd_clear)		\
 	ADD_COMMAND("clearline", base_cmd_clearline)	\
 	ADD_COMMAND("echo", base_cmd_echo)		\
+	ADD_COMMAND("exec", base_cmd_exec)		\
 	ADD_COMMAND("get", base_cmd_get)		\
 	ADD_COMMAND("next", base_cmd_next)		\
 	ADD_COMMAND("parse", base_cmd_parse)		\
