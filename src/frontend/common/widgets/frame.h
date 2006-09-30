@@ -1,11 +1,11 @@
 /*
- * Header Name:		statusbar.h
+ * Header Name:		frame.h
  * Version:		0.1
- * Description:		Status Bar Widget Header
+ * Description:		Frame Widget Header
  */
 
-#ifndef _COMMON_WIDGETS_STATUSBAR_H
-#define _COMMON_WIDGETS_STATUSBAR_H
+#ifndef _COMMON_WIDGETS_FRAME_H
+#define _COMMON_WIDGETS_FRAME_H
 
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
