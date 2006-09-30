@@ -22,7 +22,9 @@
 #include <stutter/lib/memory.h>
 #include "desc.h"
 
-#define NET_ATTEMPTS		3
+#ifndef FE_NET_ATTEMPTS
+#define FE_NET_ATTEMPTS		3
+#endif
 
 typedef struct fe_descriptor_s *fe_network_t;
 
@@ -50,7 +52,7 @@ int release_net(void)
 /**
  * Create a new network connection and connect to the server:port given.
  */
-fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *ptr)
+fe_network_t fe_net_connect(char *server, int port)
 {
 	int i, j;
 	struct hostent *host;
@@ -70,11 +72,9 @@ fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *p
 	if ((desc->read = socket(AF_INET, SOCK_STREAM, 0)) >= 0) {
 		for (j = 0;host->h_addr_list[j];j++) {
 			saddr.sin_addr = *((struct in_addr *) host->h_addr_list[j]);
-			for (i = 0;i < NET_ATTEMPTS;i++) {
-				if (connect(desc->read, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0) {
-					signal_connect("fe.read_ready", desc, 10, (signal_t) receiver, ptr);
+			for (i = 0;i < FE_NET_ATTEMPTS;i++) {
+				if (connect(desc->read, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0)
 					return(desc);
-				}
 			}
 		}
 	}
@@ -87,22 +87,9 @@ fe_network_t fe_net_connect(char *server, int port, callback_t receiver, void *p
  * with the fe_network_t of the connection and the given ptr.  The fe_network_t
  * associated with the server is returned or NULL on error.
  */
-fe_network_t fe_net_listen(int port, callback_t receiver, void *ptr)
+fe_network_t fe_net_listen(int port)
 {
 	// TODO add server capabilities
-}
-
-/**
- * Set the receiver callback of the given network connection to the given
- * callback and ptr.  If the given net is valid then 0 is returned
- * otherwise -1 is returned.
- */
-int fe_net_set_receiver(fe_network_t desc, callback_t receiver, void *ptr)
-{
-	if (!desc)
-		return(-1);
-	// TODO ???
-	return(0);
 }
 
 /**
