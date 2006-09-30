@@ -18,7 +18,6 @@
 #include <stutter/lib/globals.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
-#include "net.h"
 
 extern struct surface_s *terminal;
 

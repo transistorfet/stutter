@@ -20,11 +20,13 @@
 #include <stutter/lib/globals.h>
 #include <stutter/frontend/widget.h>
 
-#include "net.h"
 #include "desc.h"
 #include "terminal.h"
 
 int exit_flag = 1;
+
+extern int init_net(void);
+extern int release_net(void);
 
 extern int init_execute(void);
 extern int release_execute(void);
