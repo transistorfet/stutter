@@ -38,6 +38,11 @@ struct fe_descriptor_list_s *fe_desc_create_list(destroy_t);
 int fe_desc_destroy_list(struct fe_descriptor_list_s *);
 struct fe_descriptor_s *fe_desc_create(struct fe_descriptor_list_s *, int);
 int fe_desc_destroy(struct fe_descriptor_list_s *, struct fe_descriptor_s *);
+
+int fe_desc_write(struct fe_descriptor_s *, char *, int);
+int fe_desc_read(struct fe_descriptor_s *, char *, int);
+int fe_desc_read_str(struct fe_descriptor_s *, char *, int, char);
+
 int fe_desc_wait(float);
 
 #endif

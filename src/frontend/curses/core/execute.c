@@ -21,6 +21,7 @@ static struct fe_descriptor_list_s *exec_list;
 
 static void fe_exec_free_handle(struct fe_descriptor_s *);
 static void fe_exec_sig_child(int);
+static int fe_exec_parse_args(char *, char **, int);
 
 int init_execute(void)
 {
@@ -45,7 +46,6 @@ int release_execute(void)
  */
 fe_execute_t fe_execute_open(char *cmd, int bitflags)
 {
-	int i, j;
 	struct fe_descriptor_s *desc;
 	char *argv[EXECUTE_MAX_PARAMS];
 	int pid, read_pipe[2], write_pipe[2], error_pipe[2];
@@ -95,19 +95,7 @@ fe_execute_t fe_execute_open(char *cmd, int bitflags)
 		close(error_pipe[1]);
 		release_desc();
 
-		// TODO parse cmd.  should cmd be const?
-		// HOLY CRAP does the memory for the params need to be alloc'd so that
-		//		it is around later??
-		argv[0] = cmd;
-		for (i = 0, j = 1;cmd[i] != '\0';i++) {
-			if (cmd[i] == ' ') {
-				cmd[i++] = '\0';
-				while ((cmd[i] != '\0') && (cmd[i] == ' '))
-					i++;
-				argv[j++] = &cmd[i];
-			}
-		}
-		argv[j] = NULL;
+		fe_exec_parse_args(cmd, argv, EXECUTE_MAX_PARAMS);
 		execvp(argv[0], argv);
 		/** If exec() returns then an error occured */
 		printf("Error occured while executing command\n");
@@ -142,18 +130,7 @@ void fe_execute_close(fe_execute_t desc)
  */
 int fe_execute_send(fe_execute_t desc, char *buffer, int len)
 {
-	int sent, count = 0;
-
-	if (!desc)
-		return(0);
-	do {
-		if ((sent = write(desc->read, (void *) buffer, len)) < 0)
-			return(-1);
-		else if (!sent)
-			return(0);
-		count += sent;
-	} while (count < len);
-	return(count);
+	return(fe_desc_write(desc, buffer, len));
 }
 
 /**
@@ -162,75 +139,17 @@ int fe_execute_send(fe_execute_t desc, char *buffer, int len)
  */ 
 int fe_execute_receive(fe_execute_t desc, char *buffer, int len)
 {
-	int i, j;
-	fd_set rd;
-	struct timeval timeout = { 0, 0 };
-
-	if (!desc)
-		return(-1);
-
-	len--;
-	for (i = 0;i < len;i++) {
-		if (desc->read_pos >= desc->read_length)
-			break;
-		buffer[i] = desc->read_buffer[desc->read_pos++];
-	}
-
-	if (i < len) {
-		FD_ZERO(&rd);
-		FD_SET(desc->read, &rd);
-		if (select(desc->read + 1, &rd, NULL, NULL, &timeout) && ((j = read(desc->read, &buffer[i], len - i)) > 0))
-			i += j;
-		if (j <= 0)
-			return(-1);
-	}
-
-	buffer[i] = '\0';
-	return(i);
+	return(fe_desc_read(desc, buffer, len));
 }
 
 /**
- * Receive a string from the network connection up to a maximum of
+ * Receive a string from the descriptor up to a maximum of
  * len-1 (a null char is appended) and return the number of bytes
  * read or -1 on error or disconnect.
  */ 
 int fe_execute_receive_str(fe_execute_t desc, char *buffer, int len, char ch)
 {
-	int i;
-	fd_set rd;
-	struct timeval timeout = { 0, 0 };
-
-	if (!desc)
-		return(-1);
-
-	len--;
-	for (i = 0;i < len;i++) {
-		if (desc->read_pos >= desc->read_length) {
-			FD_ZERO(&rd);
-			FD_SET(desc->read, &rd);
-			// TODO if either of these fail, we return a partial message which the server
-			//	doesn't check for and can't deal with so what we really need to do is
-			//	copy what we've read (in buffer) to the buffer and return 0 but what
-			//	if the buffer is bigger than the buffer?
-			// TODO what about a socket error of some sorts too.  That doesn't really count
-			//	as a buffer that hasn't been fully recieved.  We could send a signal to report
-			//	the error somehow (which raises the question of should we do (and how would
-			//	we do) socket specific signals.
-			if (!select(desc->read + 1, &rd, NULL, NULL, &timeout)) {
-				buffer[i + 1] = '\0';
-				return(i);
-			}
-			if ((desc->read_length = read(desc->read, desc->read_buffer, DESC_READ_BUFFER)) <= 0)
-				return(-1);
-			desc->read_pos = 0;
-		}
-		buffer[i] = desc->read_buffer[desc->read_pos++];
-		if (buffer[i] == ch)
-			break;
-	}
-
-	buffer[i + 1] = '\0';
-	return(i);
+	return(fe_desc_read_str(desc, buffer, len, ch));
 }
 
 /*** Local Functions ***/
@@ -251,6 +170,26 @@ static void fe_exec_sig_child(int sig)
 
 	// TODO will this always work or can this cause the progam to lockup?
 	wait(&status);
+}
+
+static int fe_exec_parse_args(char *cmd, char **argv, int max_args)
+{
+	int i, j;
+
+	// TODO parse cmd.  should cmd be const?
+	argv[0] = cmd;
+	for (i = 0, j = 1;cmd[i] != '\0';i++) {
+		if (cmd[i] == ' ') {
+			cmd[i++] = '\0';
+			while ((cmd[i] != '\0') && (cmd[i] == ' '))
+				i++;
+			argv[j++] = &cmd[i];
+			if (j >= max_args)
+				break;
+		}
+	}
+	argv[j] = NULL;
+	return(0);
 }
 
 
