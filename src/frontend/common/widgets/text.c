@@ -133,7 +133,7 @@ int scroll_print(struct scroll_s *scroll, const char *str, int len)
 		scroll->cur_line++;
 
 	// TODO should you be able to allocate the format and node together?
-	if (!(format = create_format_string(str)))
+	if (!(format = create_format_string(str, 0)))
 		return(-1);
 	if (!(node = (struct scroll_entry_s *) memory_alloc(sizeof(struct scroll_entry_s))))
 		return(-1);
