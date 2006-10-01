@@ -248,7 +248,7 @@ static struct key_map_s *key_add_context(char *context)
 		return(NULL);
 	hash_add_node_v(context_list, cl, node, context_hash_m(context_list, context));
 	if (hash_load_v(context_list) > KEY_LOAD_FACTOR)
-		hash_rehash_v(context_list, cl, (hash_size_v(context_list) * 1.75), key_hash_m(context_list, cur->context));
+		hash_rehash_v(context_list, cl, (hash_size_v(context_list) * 1.75), key_hash_m(context_list, cur->context), NULL);
 	return(node);
 }
 
@@ -296,7 +296,7 @@ static void keymap_add_key(struct key_map_s *map, char key, struct key_s *node)
 {
 	hash_add_node_v(map->kl, kl, node, key_hash_m(map->kl, key));
 	if (hash_load_v(map->kl) > KEY_LOAD_FACTOR)
-		hash_rehash_v(map->kl, kl, (hash_size_v(map->kl) * 1.75), key_hash_m(map->kl, cur->ch));
+		hash_rehash_v(map->kl, kl, (hash_size_v(map->kl) * 1.75), key_hash_m(map->kl, cur->ch), NULL);
 }
 
 /**

@@ -132,7 +132,7 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct type
         
 		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
 		if (hash_load_v(table->vl) > VARIABLE_LOAD_FACTOR)
-			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * 1.75), variable_hash_m(table->vl, cur->data.name, strlen(cur->data.name)));
+			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * 1.75), variable_hash_m(table->vl, cur->data.name, strlen(cur->data.name)), NULL);
 		return(&node->data);
 	}
 	else if (name[len] != '\0') {

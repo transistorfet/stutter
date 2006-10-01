@@ -79,7 +79,7 @@ struct type_s *add_type(char *name, int bitflags, type_create_t create, type_des
 	node->type.evaluate = evaluate;
 	hash_add_node_v(type_list, tl, node, type_hash_m(type_list, name));
 	if (hash_load_v(type_list) > TYPE_LOAD_FACTOR)
-		hash_rehash_v(type_list, tl, (hash_size_v(type_list) * 1.75), type_hash_m(type_list, node->type.name));
+		hash_rehash_v(type_list, tl, (hash_size_v(type_list) * 1.75), type_hash_m(type_list, cur->type.name), NULL);
 	return(&node->type);
 }
 

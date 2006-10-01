@@ -71,7 +71,7 @@ int add_signal(char *name, int bitflags)
 	node->data.handlers = NULL;
 	hash_add_node_v(signal_list, sl, node, signal_hash_m(signal_list, name));
 	if (hash_load_v(signal_list) > SIGNAL_LOAD_FACTOR)
-		hash_rehash_v(signal_list, sl, (hash_size_v(signal_list) * 1.75), signal_hash_m(signal_list, node->data.name));
+		hash_rehash_v(signal_list, sl, (hash_size_v(signal_list) * 1.75), signal_hash_m(signal_list, cur->data.name), NULL);
 	return(0);
 }
 
