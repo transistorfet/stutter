@@ -142,6 +142,7 @@
 	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
 	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
 	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_version, NULL)	\
+	ADD_HANDLER("base.exec_output", NULL, 10, irc_sig_exec, NULL)		\
 	ADD_HANDLER("fe.quit", NULL, 10, irc_sig_quit, NULL)
 
 #define IRC_COMMANDS()					\

@@ -1,7 +1,5 @@
 
 FRONTEND = curses
-#FRONTEND = gtk
-#FRONTEND = simple
 MODULES = $(ROOT)/src/modules/base/modbase.a \
 	  $(ROOT)/src/modules/irc/modirc.a
 
