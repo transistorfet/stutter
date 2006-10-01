@@ -111,7 +111,7 @@ typedef unsigned int (*hash_t)(void *);
 	}								\
 }
 
-#define hash_rehash_v(list, field, newsize, hash_func) {						\
+#define hash_rehash_v(list, field, newsize, hash_func, failed_body) {					\
 	int i, hash, oldsize;										\
 	typeof((list).table) newtable;									\
 	typeof((list).table[0]) cur;									\
@@ -126,13 +126,16 @@ typedef unsigned int (*hash_t)(void *);
 			while (cur) {									\
 				tmp = cur->field.next;							\
 				hash = hash_func;							\
-				cur->field.next = newtable[hash];						\
+				cur->field.next = newtable[hash];					\
 				newtable[hash] = cur;							\
 				cur = tmp;								\
 			}										\
 		}											\
 		memory_free((list).table);								\
-		(list).table = newtable;									\
+		(list).table = newtable;								\
+	}												\
+	else {												\
+		failed_body;										\
 	}												\
 }
 
@@ -154,13 +157,8 @@ typedef unsigned int (*hash_t)(void *);
 
 #define hash_size_v(list)		(list).size
 #define hash_entries_v(list)		(list).entries
-#define hash_load_v(list)		( hash_entries_v(list) / hash_size_v(list) )
-
-#define hash_add_node_and_grow_v(list, field, node, name, hashfunc) {	\
-	hash_add_node_v(list, field, node, hashfunc(list, name));	\
-	if (hash_load_v(list) > HASH_LOAD_FACTOR)			\
-		hash_rehash_v(list, field, (hash_size_v(list) * HASH_GROW_FACTOR), hashfunc(list, node->name));		\
-}
+#define hash_load_v(list)		( ((float) hash_entries_v(list)) / ((float) hash_size_v(list)) )
+#define hash_is_initialized_v(list)	( (list).table )
 
 /*** Hash Functions ***/
 
@@ -245,7 +243,7 @@ static inline int hash_add_node(struct hash_table_s *table, void *key, void *ptr
 	node->ptr = ptr;
 	hash_add_node_v(table->list, list, node, table->hash(key) % hash_size_v(table->list));
 	if (hash_load_v(table->list) > HASH_LOAD_FACTOR)
-		hash_rehash_v(table->list, list, (hash_size_v(table->list) * 1.75), table->hash(key) % hash_size_v(table->list));
+		hash_rehash_v(table->list, list, (hash_size_v(table->list) * 1.75), table->hash(key) % hash_size_v(table->list), NULL);
 	return(0);
 }
 
