@@ -8,6 +8,7 @@ OBJS =	init.o \
 	cmds/clear.o \
 	cmds/clearline.o \
 	cmds/echo.o \
+	cmds/exec.o \
 	cmds/get.o \
 	cmds/next.o \
 	cmds/parse.o \

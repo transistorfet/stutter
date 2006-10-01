@@ -55,6 +55,7 @@ int init_base(void)
 	struct type_s *type;
 
 	add_signal("base.error", 0);
+	add_signal("base.exec_output", 0);
 
 	/* Add Signal Handlers */
 	for (i = 0;base_handlers[i].name;i++)
@@ -109,6 +110,8 @@ int release_base(void)
 
 	for (i = 0;base_handlers[i].name;i++)
 		signal_disconnect(base_handlers[i].name, base_handlers[i].index, (signal_t) base_handlers[i].func, base_handlers[i].ptr);
+
+	remove_signal("base.exec_output");
 	remove_signal("base.error");
 	return(0);
 }
