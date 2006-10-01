@@ -55,6 +55,7 @@ int irc_msg_ctcp_version(char *, void *, struct irc_msg *);
 
 /* Signal Handlers */
 int irc_sig_dispatch_msg(char *, int, struct irc_msg *);
+int irc_sig_exec(void *, void *, char *);
 int irc_sig_quit(void *, void *, char *);
 
 /* Utils */

@@ -41,6 +41,7 @@ OBJS =	init.o \
 	msgs/ctcp/ping.o \
 	msgs/ctcp/version.o \
 	sigs/dispatch.o \
+	sigs/exec.o \
 	sigs/quit.o \
 	utils/current.o \
 	utils/format.o
