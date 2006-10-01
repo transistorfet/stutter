@@ -1,24 +1,13 @@
 
 Structural Issues:
-	* how will you handle network sockets together with pipes in the curses frontend?
-	* how will you implement network ready signals? should there be one signal fe.ready for both network
-	  and execute descriptors?  should read and write readiness be differentiated?  should the network
-	  (and execute) functions add the signal handler for you if you give it the handler function?
 	* the current/select functions can use the context as a partial type name lookup such that there
 	  are special context names which correspond to special object "superclasses" such as 'frame' and
 	  'input'.  Then when you specify something like 'frame' as the context, it means a general type of
 	  widget.  ???
-	* should you make the format parser function take a format_string_s pointer with the buffer and
-	  array already set and with the max values so that it takes fewer arguments
-	* should there be a way to allocate additional memory along with a format in order to allocate the
-	  node along with the format for scroll.c and if not, should scroll.c be converted to use the inline
-	  queue functions?
 	* is there a better name for scroll.c?
 
 ---------------
 
-	* you can't have linear lists inside of linear lists because the traverse macro doesn't work inside
-	  of itself!  you get a structure has not member 'head' error.
 	* how will you do timers?  they have to be implemented through the frontend.  Should a timeout
 	  cause a signal to be emitted?  a callback (stored in the timer struct) to be called?  Could make
 	  an 'events' system.
@@ -86,7 +75,6 @@ Bugs:
 	  nick
 	* the windows version sometimes hangs up when printing the motd and wont change the display but you
 	  can still type and the statusbar updates.
-	* when you quit sometimes it says broken pipe
 	* history may not be working properly in the long run (it may fill up and stop) but look into it
 	* the bold_test string only displays white in bold even though the other colours can be bolded
 	* when a character that is displayed with 2 characters is entered (such as ^C) the cursor is only
@@ -94,7 +82,6 @@ Bugs:
 	  than expected
 
 General:
-
 	* review use of signals and error printing
 	* revise dispatch to handle messages better during a reconnect
 	* add ping timeout code to reconnect if the connection is idle (if it isn't already added)
@@ -141,6 +128,7 @@ General:
 	* add an unalias command that removes a command only so long as it has the form of an alias (has
 	  the function twice above as the callback)
 
+	* do better parsing of arguments in execute.c
 	* make common/format.c more general in the format that it parses (specifiable parser function?)
 	* move include files into an include/ directory inside of each module's directory (and then same
 	  for frontends)
