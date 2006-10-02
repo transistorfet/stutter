@@ -61,8 +61,7 @@ struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitfla
 		return(NULL);
 	node->user.nick = create_string(nick);
 	node->user.bitflags = bitflags;
-	linear_add_node_v(list->ul, ul, node);
-
+	linear_add_node_sorted_v(list->ul, ul, node, (strcmp(cur->user.nick, nick) > 0));
 	return(&node->user);
 }
 
