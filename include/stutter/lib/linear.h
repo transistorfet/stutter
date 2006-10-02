@@ -34,6 +34,27 @@
 	(list).head = (node);				\
 }
 
+#define linear_add_node_sorted_v(list, field, node, compare) {		\
+	typeof((list).head) cur;					\
+	typeof((list).head) prev;					\
+	prev = NULL;							\
+	cur = (list).head;						\
+	while (cur) {							\
+		if (compare)						\
+			break;						\
+		prev = cur;						\
+		cur = cur->field.next;					\
+	}								\
+	(node)->field.prev = prev;					\
+	(node)->field.next = cur;					\
+	if (prev)							\
+		prev->field.next = (node);				\
+	else								\
+		(list).head = (node);					\
+	if (cur)							\
+		cur->field.prev = (node);				\
+}
+
 #define linear_remove_node_v(list, field, node) {			\
 	if ((node)->field.prev)						\
 		(node)->field.prev->field.next = (node)->field.next;	\
