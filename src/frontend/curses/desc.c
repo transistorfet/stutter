@@ -8,6 +8,7 @@
 
 #include <string.h>
 
+#include <errno.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -50,6 +51,29 @@ int release_desc(void)
 		}
 		memory_free(cur->descs);
 		memory_free(cur);
+	);
+	return(0);
+}
+
+/**
+ * Close all descriptors without closing the connection.  This function
+ * is called by the child process created after a fork.
+ */
+int fe_desc_close_all(void)
+{
+	int i;
+
+	linear_destroy_list_v(desc_lists, ll,
+		for (i = 0;i < cur->size;i++) {
+			if (cur->descs[i]) {
+				if (cur->descs[i]->read != -1)
+					close(cur->descs[i]->read);
+				if (cur->descs[i]->write != -1)
+					close(cur->descs[i]->write);
+				if (cur->descs[i]->error != -1)
+					close(cur->descs[i]->error);
+			}
+		}
 	);
 	return(0);
 }

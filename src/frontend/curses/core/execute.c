@@ -79,8 +79,6 @@ fe_execute_t fe_execute_open(char *cmd, int bitflags)
 		return(NULL);
 	}
 	else if (pid == 0) {
-		extern int release_desc(void);
-
 		/** Set the stdio descriptors to be the appropriate pipes
 		    that we just created */
 		dup2(read_pipe[1], 1);
@@ -93,7 +91,7 @@ fe_execute_t fe_execute_open(char *cmd, int bitflags)
 		close(write_pipe[1]);
 		close(error_pipe[0]);
 		close(error_pipe[1]);
-		release_desc();
+		fe_desc_close_all();
 
 		fe_exec_parse_args(cmd, argv, EXECUTE_MAX_PARAMS);
 		execvp(argv[0], argv);

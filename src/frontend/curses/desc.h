@@ -33,6 +33,7 @@ struct fe_descriptor_list_s {
 
 int init_desc(void);
 int release_desc(void);
+int fe_desc_close_all(void);
 
 struct fe_descriptor_list_s *fe_desc_create_list(destroy_t);
 int fe_desc_destroy_list(struct fe_descriptor_list_s *);
