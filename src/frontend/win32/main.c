@@ -26,6 +26,9 @@ HINSTANCE this_instance;
 char *WinName = "Stutter";
 struct variable_table_s *fe_table;
 
+extern int init_execute(void);
+extern int release_execute(void);
+
 extern int init_frontend(void);
 extern int release_frontend(void);
 
@@ -61,6 +64,8 @@ int init_windows(void)
 	if (init_system()) 
 		return(-1);
 	if (init_net())
+		return(-1);
+	if (init_execute())
 		return(-1);
 
 	add_signal("fe.quit", 0);
@@ -101,6 +106,7 @@ int release_windows(void)
 {
 	release_terminal();
 	release_frontend();
+	release_execute();
 	release_net();
 	release_system();
 	return(0);
@@ -177,8 +183,8 @@ LRESULT CALLBACK windows_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM
 			struct terminal_s *terminal;
 
 			if (terminal = terminal_find(hwnd)) {
-				terminal_resizing(terminal, (RECT *) lparam, wparam);
-				// TODO cause a resize/update of widgets
+				if (terminal_resizing(terminal, (RECT *) lparam, wparam))
+					; // TODO cause a resize/update of widgets
 				InvalidateRect(hwnd, NULL, 1);
 			}
 			break;
