@@ -24,7 +24,7 @@ int terminal_control(struct terminal_s *, int, ...);
 
 int terminal_free(struct terminal_s *);
 void terminal_refresh(struct terminal_s *);
-void terminal_resizing(struct terminal_s *, RECT *, int);
+int terminal_resizing(struct terminal_s *, RECT *, int);
 int terminal_convert_char(int);
 struct terminal_s *terminal_find(HWND);
 HWND terminal_get_window(struct terminal_s *);

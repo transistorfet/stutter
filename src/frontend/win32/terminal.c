@@ -308,9 +308,11 @@ void terminal_refresh(struct terminal_s *terminal)
  * Process the resizing message so that the window is always an even number of
  * characters wide and high.
  */
-void terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
+int terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 {
 	RECT size;
+	int ret = 0;
+	int width, height;
 
 	size.top = 0;
 	size.left = 0;
@@ -325,8 +327,12 @@ void terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 	rect->right += size.right;
 	rect->bottom += size.bottom;
 
-	terminal->surface.width = (rect->right - rect->left) / terminal->charx;
-	terminal->surface.height = (rect->bottom - rect->top) / terminal->chary;
+	width = (rect->right - rect->left) / terminal->charx;
+	height = (rect->bottom - rect->top) / terminal->chary;
+	if ((terminal->surface.width != width) || (terminal->surface.height != height))
+		ret = 1;
+	terminal->surface.width = width;
+	terminal->surface.height = height;
 
 	if (terminal->surface.x >= terminal->surface.width)
 		terminal->surface.x = terminal->surface.width - 1;
@@ -344,6 +350,7 @@ void terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 		rect->bottom = rect->top + (terminal->surface.height * terminal->chary);
 
 	AdjustWindowRectEx(rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
+	return(ret);
 }
 
 /**
