@@ -120,6 +120,7 @@
 	ADD_HANDLER("base.error", NULL, 10, base_sig_print, NULL)
 
 #define BASE_COMMANDS()					\
+	ADD_COMMAND("alias", base_cmd_alias)		\
 	ADD_COMMAND("bind", base_cmd_bind)		\
 	ADD_COMMAND("clear", base_cmd_clear)		\
 	ADD_COMMAND("clearline", base_cmd_clearline)	\

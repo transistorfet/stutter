@@ -4,10 +4,12 @@ ROOT = ../../..
 
 LIB_TARGET = modbase.a
 OBJS =	init.o \
+	cmds/alias.o \
 	cmds/bind.o \
 	cmds/clear.o \
 	cmds/clearline.o \
 	cmds/echo.o \
+	cmds/evaluate.o \
 	cmds/exec.o \
 	cmds/get.o \
 	cmds/next.o \
