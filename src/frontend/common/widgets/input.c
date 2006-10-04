@@ -189,7 +189,7 @@ static int input_save_buffer(struct input_s *input)
 
 	input->buffer[input->end] = '\0';
 	if (str = create_string(input->buffer))
-		queue_append(input->history, str);
+		queue_prepend(input->history, str);
 	input->history->current = NULL;
 	return(0);
 }
@@ -208,13 +208,13 @@ static int input_process_char(struct input_s *input, int ch)
 		}
 		case KC_UP: {
 			char *str;
-			if ((str = queue_previous(input->history)) || (str = queue_last(input->history)))
+			if ((str = queue_next(input->history)) || (str = queue_first(input->history)))
 				input_print(input, str, -1);
 			break;
 		}
 		case KC_DOWN: {
 			char *str;
-			if ((str = queue_next(input->history)) || (str = queue_first(input->history)))
+			if ((str = queue_previous(input->history)) || (str = queue_last(input->history)))
 				input_print(input, str, -1);
 			break;
 		}
