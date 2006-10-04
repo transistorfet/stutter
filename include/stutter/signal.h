@@ -14,9 +14,13 @@
 
 #define SIG_BF_USE_WILDCARD_INDEX	0x0001
 
+#define SIG_HBF_NODE_LOCKED		0x0001
+#define SIG_HBF_PURGE			0x0002
+
 typedef int (*signal_t)(void *, void *, void *);
 
 struct signal_handler_s {
+	int bitflags;
 	void *index;
 	int priority;
 	signal_t func;
