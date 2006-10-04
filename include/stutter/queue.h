@@ -33,6 +33,8 @@
 #define queue_prepend_node_v(list, field, node) {	\
 	(node)->field.next = (list).head;		\
 	(node)->field.prev = NULL;			\
+	if ((list).head)				\
+		(list).head->field.prev = (node);	\
 	(list).head = (node);				\
 	if (!(list).tail)				\
 		(list).tail = (node);			\
@@ -172,7 +174,7 @@ static inline int queue_append(struct queue_s *queue, void *ptr)
 {
 	struct queue_node_s *node;
 
-	if (queue->max && (queue_size_v(queue->q) + 1 > queue->max))
+	if (queue->max && (queue_size_v(queue->q) >= queue->max))
 		return(1);
 	if (!(node = (struct queue_node_s *) memory_alloc(sizeof(struct queue_node_s))))
 		return(-1);
