@@ -34,6 +34,7 @@ static int signal_initialized = 0;
 static hash_list_v(signal_node_s) signal_list;
 
 static void signal_destroy_node(struct signal_node_s *);
+static int signal_remove_handlers(struct signal_node_s *, int, void *, signal_t, void *);
 
 int init_signal(void)
 {
@@ -99,7 +100,8 @@ int remove_signal(char *name)
  */
 int emit_signal(char *name, void *index, void *ptr)
 {
-	int calls = 0;
+	int ret;
+	int calls = 0, purge = 0;
 	struct signal_node_s *node;
 	struct signal_handler_s *cur;
 
@@ -110,11 +112,18 @@ int emit_signal(char *name, void *index, void *ptr)
 	while (cur) {
 		if (cur->index == index || (!cur->index && (node->data.bitflags & SIG_BF_USE_WILDCARD_INDEX))) {
 			calls++;
-			if (cur->func(cur->ptr, index, ptr) == SIGNAL_STOP_EMIT)
+			cur->bitflags |= SIG_HBF_NODE_LOCKED;
+			ret = cur->func(cur->ptr, index, ptr);
+			cur->bitflags &= ~SIG_HBF_NODE_LOCKED;
+			if (cur->bitflags & SIG_HBF_PURGE)
+				purge = 1;
+			if (ret == SIGNAL_STOP_EMIT)
 				break;
 		}
 		cur = cur->next;
 	}
+	if (purge)
+		signal_remove_handlers(node, 0, NULL, NULL, NULL);
 	return(calls);
 }
 
@@ -137,6 +146,7 @@ int signal_connect(char *name, void *index, int priority, signal_t func, void *p
 		return(-1);
 	if (!(handler = memory_alloc(sizeof(struct signal_handler_s))))
 		return(-1);
+	handler->bitflags = 0;
 	handler->index = index;
 	handler->priority = priority;
 	handler->func = func;
@@ -177,31 +187,12 @@ int signal_connect(char *name, void *index, int priority, signal_t func, void *p
  */
 int signal_disconnect(char *name, void *index, signal_t func, void *ptr)
 {
-	int disconnected = 0;
 	struct signal_node_s *node;
-	struct signal_handler_s *cur, *prev, *tmp;
 
 	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
 	if (!node)
 		return(-1);
-	prev = NULL;
-	cur = node->data.handlers;
-	while (cur) {
-		if ((cur->index == index) && (!func || (cur->func == func)) && (!ptr || (cur->ptr == ptr))) {
-			if (prev)
-				prev->next = tmp = cur->next;
-			else
-				node->data.handlers = tmp = cur->next;
-			memory_free(cur);
-			disconnected++;
-			cur = tmp;
-		}
-		else {
-			prev = cur;
-			cur = cur->next;
-		}
-	}
-	return(disconnected);
+	return(signal_remove_handlers(node, 1, index, func, ptr));
 }
 
 
@@ -222,5 +213,44 @@ static void signal_destroy_node(struct signal_node_s *node)
 		cur = tmp;
 	}
 	memory_free(node);
+}
+
+/**
+ * Remove all handlers from the given node that have the purge flag set or
+ * if match is non-zero, that have the given index, the given function
+ * (or if NULL is given then any function), and that match the given pointer
+ * (or if NULL is given then any pointer).  The number of handlers remove is
+ * returned.
+ */
+static int signal_remove_handlers(struct signal_node_s *node, int match, void *index, signal_t func, void *ptr)
+{
+	int disconnected = 0;
+	struct signal_handler_s *cur, *prev, *tmp;
+
+	prev = NULL;
+	cur = node->data.handlers;
+	while (cur) {
+		if ((cur->bitflags & SIG_HBF_PURGE) || (match && (cur->index == index) && (!func || (cur->func == func)) && (!ptr || (cur->ptr == ptr)))) {
+			disconnected++;
+			if (cur->bitflags & SIG_HBF_NODE_LOCKED) {
+				cur->bitflags |= SIG_HBF_PURGE;
+				prev = cur;
+				cur = cur->next;
+			}
+			else {
+				if (prev)
+					prev->next = tmp = cur->next;
+				else
+					node->data.handlers = tmp = cur->next;
+				memory_free(cur);
+				cur = tmp;
+			}
+		}
+		else {
+			prev = cur;
+			cur = cur->next;
+		}
+	}
+	return(disconnected);
 }
 
