@@ -73,7 +73,7 @@
 #define IRC_FMT_WHOISIDLE		"%B [Whois %P2] %P3 %M"
 #define IRC_FMT_WHOISCHANNELS		"%B [Whois %P2] Channels : %M"
 #define IRC_FMT_WHOISSPECIAL		"%B %M"
-#define IRC_FMT_NOSUCHNICK		"%B %P1 %M"
+#define IRC_FMT_NOSUCHNICK		"%B %P2 %M"
 
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 #define IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION

@@ -75,7 +75,6 @@ Bugs:
 	  nick
 	* the windows version sometimes hangs up when printing the motd and wont change the display but you
 	  can still type and the statusbar updates.
-	* history may not be working properly in the long run (it may fill up and stop) but look into it
 	* the bold_test string only displays white in bold even though the other colours can be bolded
 	* when a character that is displayed with 2 characters is entered (such as ^C) the cursor is only
 	  moved one character forward so when you enter more characters, they show up in further to the left
@@ -89,15 +88,16 @@ General:
 
 	* we can use fe_resize to resize the root widget for a surface thus taking care of the resize issue.
 	  Where would the resize take place?  During refresh?  
-	* make user.c store the user names in a sorted list (linear_insert_sorted ??)
 	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
 
 -----------
 
 	* MAKE SURE all message handlers don't clobber the message!
-	* fix all hash_init and hash_rehash instances to check for memory allocation failure
 	* make an unknown ctcp message handler
 	* add print handlers for the irc.error and base.error signals
+	* implement execute.c for win32
+	* make an include for the common frontend commands, utils, etc like the module includes
+	* test that if you disconnect, sending a message will cause a reconnect
 
 	* report when a command fails
 	* add something (a signal emitted by net perhaps) so that net can print messages, particularily a
@@ -120,20 +120,15 @@ General:
 	* add home/end functions to be keybound
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
 	* add a query feature so that you can talk to other users with your own window
+	* add unalias command
 
-	* add a type with an evaluate function that takes a string (stored) and a string in args, merges
-	  them, and parses/evaluates it as a command
-	* add an alias command which creates a new command with the given name using the above command as
-	  the function and the args string as the string parameter (to become env)
-	* add an unalias command that removes a command only so long as it has the form of an alias (has
-	  the function twice above as the callback)
-
+	* generalize the evaluate code in parse.c, source.c, key.c, and evaluate.c
 	* do better parsing of arguments in execute.c
 	* make common/format.c more general in the format that it parses (specifiable parser function?)
 	* move include files into an include/ directory inside of each module's directory (and then same
 	  for frontends)
 	* make a configuration/compilation script that builds the makefiles
-	* modify user.c and channel.c to use a hash table instead of the linear list
+	* modify channel.c to use a hash table instead of the linear list?
 	* rewrite msg.c using va_args instead of making an array and use sprintf
 	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
 	  addresses)
@@ -148,13 +143,14 @@ General:
 	* optimize for space and speed (re-evaluate things).
 	* add the slab allocator
 	* catch the ^C signal to cancel a connect
-	* rewrite the simple frontend
+	* rewrite the simple frontend?
 
 Features:
 	* logging plugin
 	* winamp control and display plugin
 	* add dcc support
 	* ability to reorder windows
+	* skins for frontends
 
 	* scripting support (possible scripts/applets could be random picture displayer, system monitor,
 	  RSS, etc) (google desktop)
