@@ -21,6 +21,7 @@ int irc_cmd_complete(char *, char *);
 int irc_cmd_ctcp(char *, char *);
 int irc_cmd_disconnect(char *, char *);
 int irc_cmd_join(char *, char *);
+int irc_cmd_kick(char *, char *);
 int irc_cmd_leave(char *, char *);
 int irc_cmd_me(char *, char *);
 int irc_cmd_mode(char *, char *);
@@ -29,11 +30,13 @@ int irc_cmd_names(char *, char *);
 int irc_cmd_nick(char *, char *);
 int irc_cmd_notice(char *, char *);
 int irc_cmd_ping(char *, char *);
+int irc_cmd_query(char *, char *);
 int irc_cmd_reconnect(char *, char *);
 int irc_cmd_say(char *, char *);
 int irc_cmd_server(char *, char *);
 int irc_cmd_topic(char *, char *);
 int irc_cmd_whois(char *, char *);
+int irc_cmd_whowas(char *, char *);
 
 /* Messages */
 int irc_msg_current(char *, struct irc_msg *);

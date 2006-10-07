@@ -8,6 +8,7 @@ OBJS =	init.o \
 	cmds/ctcp.o \
 	cmds/disconnect.o \
 	cmds/join.o \
+	cmds/kick.o \
 	cmds/leave.o \
 	cmds/me.o \
 	cmds/mode.o \
@@ -16,11 +17,13 @@ OBJS =	init.o \
 	cmds/nick.o \
 	cmds/notice.o \
 	cmds/ping.o \
+	cmds/query.o \
 	cmds/reconnect.o \
 	cmds/say.o \
 	cmds/server.o \
 	cmds/topic.o \
 	cmds/whois.o \
+	cmds/whowas.o \
 	core/msg.o \
 	core/user.o \
 	core/channel.o \
