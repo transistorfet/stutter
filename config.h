@@ -51,7 +51,7 @@
 #define IRC_FMT_JOIN			"%B [%@] Joined %P1: %N (%H)"
 #define IRC_FMT_KICK			"%B [%@] %P2 was kicked from %P1 by %N (%M)"
 #define IRC_FMT_KICK_SELF		"%B [%@] You were kicked from %P1 by %N (%M)"
-#define IRC_FMT_MODE			"%B Mode on %P1 by %n: %P2 %P3 %P4 %P5 %P6 %P7 %P8"
+#define IRC_FMT_MODE			"%B Mode on %P1 by %N: %P2 %P3 %P4 %P5 %P6 %P7 %P8"
 //#define IRC_FMT_NAMES			"$banner Users on <channel>%P3</channel>: <msg>%T</msg>"
 //#define IRC_FMT_NAMES			"${fe.colour.status}$banner Users on %P3: %M"
 #define IRC_FMT_NAMES			"%B Users on %P3: %M"
@@ -73,6 +73,7 @@
 #define IRC_FMT_WHOISIDLE		"%B [Whois %P2] %P3 %M"
 #define IRC_FMT_WHOISCHANNELS		"%B [Whois %P2] Channels : %M"
 #define IRC_FMT_WHOISSPECIAL		"%B %M"
+#define IRC_FMT_WHOWASUSER		"%B [Whowas %P2 (%P3@%P4)] Realname : %M"
 #define IRC_FMT_NOSUCHNICK		"%B %P2 %M"
 
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
@@ -93,6 +94,7 @@
 #define ERR_MSG_SERVER_DISCONNECTED	"Error: Disconnected from %s"
 #define ERR_MSG_RECONNECT_ERROR		"Error: Unable to reconnect to %s"
 #define ERR_MSG_JOIN_ERROR		"Error: Unable to create channel resources after joining %s"
+#define ERR_MSG_QUERY_ERROR		"Error: Unable to create query resources for %s"
 
 #define LOAD_MODULES()			\
 	init_base();			\
@@ -131,6 +133,7 @@
 	ADD_COMMAND("parse", base_cmd_parse)		\
 	ADD_COMMAND("previous", base_cmd_previous)	\
 	ADD_COMMAND("quit", base_cmd_quit)		\
+	ADD_COMMAND("redirect", base_cmd_redirect)	\
 	ADD_COMMAND("remove", base_cmd_remove)		\
 	ADD_COMMAND("scroll", base_cmd_scroll)		\
 	ADD_COMMAND("set", base_cmd_set)		\
@@ -151,6 +154,7 @@
 	ADD_COMMAND("ctcp", irc_cmd_ctcp)		\
 	ADD_COMMAND("disconnect", irc_cmd_disconnect)	\
 	ADD_COMMAND("join", irc_cmd_join)		\
+	ADD_COMMAND("kick", irc_cmd_kick)		\
 	ADD_COMMAND("leave", irc_cmd_leave)		\
 	ADD_COMMAND("me", irc_cmd_me)			\
 	ADD_COMMAND("mode", irc_cmd_mode)		\
@@ -160,11 +164,13 @@
 	ADD_COMMAND("notice", irc_cmd_notice)		\
 	ADD_COMMAND("part", irc_cmd_leave)		\
 	ADD_COMMAND("ping", irc_cmd_ping)		\
+	ADD_COMMAND("query", irc_cmd_query)		\
 	ADD_COMMAND("reconnect", irc_cmd_reconnect)	\
 	ADD_COMMAND("say", irc_cmd_say)			\
 	ADD_COMMAND("server", irc_cmd_server)		\
 	ADD_COMMAND("topic", irc_cmd_topic)		\
 	ADD_COMMAND("whois", irc_cmd_whois)		\
+	ADD_COMMAND("whowas", irc_cmd_whowas)		\
 	ADD_COMMAND("", irc_cmd_say)
 
 
