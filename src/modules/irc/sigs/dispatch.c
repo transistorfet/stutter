@@ -38,6 +38,10 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 			return(irc_msg_current(IRC_FMT_WHOISSPECIAL, msg));
 		case IRC_RPL_ENDOFWHOIS:
 			return(0);
+		case IRC_RPL_WHOWASUSER:
+			return(irc_msg_current(IRC_FMT_WHOWASUSER, msg));
+		case IRC_RPL_ENDOFWHOWAS:
+			return(0);
 		case IRC_ERR_NOSUCHNICK:
 			return(irc_msg_current(IRC_FMT_NOSUCHNICK, msg));
 		case IRC_MSG_MODE:
