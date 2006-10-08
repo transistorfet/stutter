@@ -88,8 +88,7 @@ int init_base(void)
 
 	if (!(type = base_load_wildcard()) || !type->create)
 		return(-1);
-	add_variable(NULL, type, "path", 0, "%s", ";base;irc");
-
+	add_variable(NULL, type, PATH_VARIABLE_NAME, 0, "%s", DEFAULT_PATH);
 
 	/* Load Command Type */
 	if (!(type = base_load_command()) || !type->create)
