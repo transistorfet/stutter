@@ -11,7 +11,8 @@
 #define FE_NAMESPACE			"fe"
 #define BASE_NAMESPACE			"base"
 #define IRC_NAMESPACE			"irc"
-#define VARIABLE_PATH			"irc;base"
+#define DEFAULT_PATH			";irc;base"
+#define PATH_VARIABLE_NAME		"path"
 
 /* Frontend Values */
 #define FE_STATUSBAR			"$&fe.statusbar"
@@ -25,7 +26,6 @@
 #define BASE_DATE			"%d-%b"
 #define BASE_TIMESTAMP			"%d-%b:%H:%M"
 #define BASE_DEFAULT_SET_TYPE		"string"
-#define BASE_PARSE_PATH_VARIABLE	"path"
 
 /* IRC Module Values */
 #define IRC_DEFAULT_PORT		6667
@@ -79,9 +79,8 @@
 #define IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 #define IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION
 
-#define ERR_MSG_UNKNOWN_COMMAND		"*** Unknown Command"
 
-/* General Values */
+/*** General Values ***/
 #define COMMAND_PREFIX			"/"
 #define DEFAULT_COMMAND			""
 #define NAME_SEPARATOR			'.'
@@ -90,11 +89,14 @@
 
 #define DOT_FILE			"~/.stutterrc"
 
+#define ERR_MSG_UNKNOWN_COMMAND		"Error: Unknown Command, %s"
 #define ERR_MSG_UNABLE_TO_OPEN_FILE	"Error: Unable to open the file, %s"
 #define ERR_MSG_SERVER_DISCONNECTED	"Error: Disconnected from %s"
 #define ERR_MSG_RECONNECT_ERROR		"Error: Unable to reconnect to %s"
 #define ERR_MSG_JOIN_ERROR		"Error: Unable to create channel resources after joining %s"
 #define ERR_MSG_QUERY_ERROR		"Error: Unable to create query resources for %s"
+
+/*** Modules ***/
 
 #define LOAD_MODULES()			\
 	init_base();			\
@@ -173,11 +175,10 @@
 	ADD_COMMAND("whowas", irc_cmd_whowas)		\
 	ADD_COMMAND("", irc_cmd_say)
 
+/*** Global Initialization ***/
 
 #define STUTTER_INIT(argc, argv) {				\
-	struct variable_s *var;					\
-	if (var = find_variable(NULL, "base.source"))		\
-		var->type->evaluate(var->value, DOT_FILE);	\
+	util_execute_command("base.source", DOT_FILE);		\
 }
 
 #endif

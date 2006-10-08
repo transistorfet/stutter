@@ -12,6 +12,7 @@ int util_convert_key(char *, char *, int);
 int util_expand_str(char *, char *, int);
 int util_expand_variable(char *, char *, int, int *);
 int util_emit_str(char *, void *, char *, ...);
+int util_execute_command(char *, char *);
 
 #endif
 

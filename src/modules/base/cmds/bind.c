@@ -34,7 +34,7 @@ int base_cmd_bind(char *env, char *args)
 	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
 		return(-1);
 
-	if (!(var = index_variable(NULL, BASE_PARSE_PATH_VARIABLE, name)) && !(var = find_variable(NULL, name))) {
+	if (!(var = index_variable(NULL, PATH_VARIABLE_NAME, name)) && !(var = find_variable(NULL, name))) {
 		if (snprintf(buffer, STRING_SIZE, "Error: %s variable not found.", name) >= 0)
 			fe_print(window, buffer);
 		return(-1);

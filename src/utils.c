@@ -179,3 +179,21 @@ int util_emit_str(char *name, void *index, char *fmt, ...)
 	return(emit_signal(name, index, buffer));
 }
 
+/**
+ * Execute the given command (without the command prefix) by looking up the
+ * first space-delimited word as a variable and calling the evalute function
+ * of that variable passing it the rest of the command string.  If an error
+ * occurs then -1 is returned otherwise 0 is returned.
+ */
+int util_execute_command(char *cmd, char *str)
+{
+	struct variable_s *var;
+
+	if (!(var = index_variable(NULL, PATH_VARIABLE_NAME, cmd)))
+		var = find_variable(NULL, cmd);
+	if (!var || !var->type->evaluate)
+		return(-1);
+	var->type->evaluate(var->value, str);
+	return(0);
+}
+
