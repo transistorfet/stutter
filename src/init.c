@@ -1,8 +1,8 @@
 /*
- * Module Name:		main.c
+ * Module Name:		init.c
  * Version:		0.1
  * Module Requirements:	key ; type ; signal ; variable
- * Description:		IRC Client
+ * Description:		System Initialization
  */
 
 #include CONFIG_H
