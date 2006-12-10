@@ -21,12 +21,13 @@ int base_cmd_evaluate(char *env, char *args)
 
 	strncpy(buffer, env, STRING_SIZE);
 	str = strncat(buffer, args, STRING_SIZE);
-	if (!strncmp(str, COMMAND_PREFIX, strlen(COMMAND_PREFIX)))
-		str = &str[strlen(COMMAND_PREFIX)];
+	if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
+		str = &str[strlen(BASE_COMMAND_PREFIX)];
 	get_param_m(str, cmd, ' ');
 
-	if (util_execute_command(cmd, str))
-		util_emit_str("base.error", NULL, ERR_MSG_UNKNOWN_COMMAND, cmd);
+	if (util_evaluate_command(cmd, str)) {
+		BASE_ERROR_JOINPOINT(ERR_MSG_UNKNOWN_COMMAND, cmd)
+	}
 	return(0);
 }
 

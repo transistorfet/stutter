@@ -23,13 +23,14 @@ int base_cmd_source(char *env, char *args)
 	char buffer[STRING_SIZE];
 
 	get_param_m(args, str, ' ');
+	// TODO replace this getenv with something that can get you a home dir on windows too
 	if ((*str == '~') && (cmd = getenv("HOME"))) {
 		snprintf(buffer, STRING_SIZE, "%s%s", cmd, &str[1]);
 		str = buffer;
 	}
 
 	if (!(fptr = fopen(str, "r"))) {
-		util_emit_str("base.error", NULL, ERR_MSG_UNABLE_TO_OPEN_FILE, str);
+		BASE_ERROR_JOINPOINT(ERR_MSG_UNABLE_TO_OPEN_FILE, cmd)
 		return(-1);
 	}
 
@@ -37,11 +38,12 @@ int base_cmd_source(char *env, char *args)
 		if (cmd = strpbrk(str, "\n\r"))
 			*cmd = '\0';
 		if (*str != '\0') {
-			if (!strncmp(str, COMMAND_PREFIX, strlen(COMMAND_PREFIX)))
-				str = &str[strlen(COMMAND_PREFIX)];
+			if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
+				str = &str[strlen(BASE_COMMAND_PREFIX)];
 			get_param_m(str, cmd, ' ');
-			if (util_execute_command(cmd, str))
-				util_emit_str("base.error", NULL, ERR_MSG_UNKNOWN_COMMAND, cmd);
+			if (util_evaluate_command(cmd, str)) {
+				BASE_ERROR_JOINPOINT(ERR_MSG_UNKNOWN_COMMAND, cmd)
+			}
 		}
 	}
 	fclose(fptr);

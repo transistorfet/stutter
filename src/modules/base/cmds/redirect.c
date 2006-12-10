@@ -24,7 +24,7 @@ int base_cmd_redirect(char *env, char *args)
 	get_param_m(args, target, ' ');
 
 	if (*args != '\0') {
-		util_emit_str("base.error", NULL, "redirect: Invalid parameters\n");
+		BASE_ERROR_JOINPOINT("redirect: Invalid parameters\n");
 		return(-1);
 	}
 	else if (!strcmp(target, "none")) {
@@ -43,7 +43,7 @@ int base_cmd_redirect(char *env, char *args)
 			fe_print(window, buffer);
 	}
 	else {
-		util_emit_str("base.error", NULL, "redirect: Invalid target location\n");
+		BASE_ERROR_JOINPOINT("redirect: Invalid target location\n");
 		return(-1);
 	}
 	return(0);

@@ -23,18 +23,19 @@ int base_cmd_parse(char *env, char *args)
 	if (!(input = fe_current_widget("input", NULL)))
 		return(-1);
 	str = fe_read(input, buffer, STRING_SIZE);
-	if (*str == '\0')
-		return(-1);
 
-	if (!strncmp(str, COMMAND_PREFIX, strlen(COMMAND_PREFIX))) {
-		str = &str[strlen(COMMAND_PREFIX)];
+	if (*str == '\0')
+		return(0);
+	if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX))) {
+		str = &str[strlen(BASE_COMMAND_PREFIX)];
 		get_param_m(str, cmd, ' ');
 	}
 	else
-		cmd = DEFAULT_COMMAND;
+		cmd = BASE_NULL_COMMAND;
 
-	if (util_execute_command(cmd, str))
-		util_emit_str("base.error", NULL, ERR_MSG_UNKNOWN_COMMAND, cmd);
+	if (util_evaluate_command(cmd, str)) {
+		BASE_ERROR_JOINPOINT(ERR_MSG_UNKNOWN_COMMAND, cmd)
+	}
 	fe_clear(input);
 
 	return(0);
