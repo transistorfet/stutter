@@ -185,7 +185,7 @@ int util_emit_str(char *name, void *index, char *fmt, ...)
  * of that variable passing it the rest of the command string.  If an error
  * occurs then -1 is returned otherwise 0 is returned.
  */
-int util_execute_command(char *cmd, char *str)
+int util_evaluate_command(char *cmd, char *str)
 {
 	struct variable_s *var;
 
