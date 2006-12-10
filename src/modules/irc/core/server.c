@@ -102,7 +102,7 @@ int irc_server_reconnect(struct irc_server *server)
 	);
 
 	if (irc_server_init_connection(server)) {
-		util_emit_str("irc.error", NULL, ERR_MSG_RECONNECT_ERROR, server->address);
+		IRC_ERROR_JOINPOINT(ERR_MSG_RECONNECT_ERROR, server->address)
 		fe_net_disconnect(server->net);
 		server->net = NULL;
 		return(-1);
@@ -194,7 +194,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
-			util_emit_str("irc.error", NULL, ERR_MSG_SERVER_DISCONNECTED, server->address);
+			IRC_ERROR_JOINPOINT(ERR_MSG_SERVER_DISCONNECTED, server->address)
 			if (server->bitflags & IRC_SBF_RECONNECTING) {
 				fe_net_disconnect(server->net);
 				server->net = NULL;

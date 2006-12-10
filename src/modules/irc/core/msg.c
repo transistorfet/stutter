@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
+#include CONFIG_H
 #include <stutter/utils.h>
 #include <stutter/modules/irc/msg.h>
 
@@ -92,11 +93,11 @@ struct irc_msg *irc_create_msg(short cmd, char *nick, char *host, short num_para
 		params[j] = va_arg(va, char *);
 	if (info = msg_get_command(cmd)) {
 		if (num_params < info->min_params) {
-			util_emit_str("irc.error", NULL, "IRC message, %s, doesn't have enough parameters", info->name);
+			IRC_ERROR_JOINPOINT("Error: IRC message, %s, doesn't have enough parameters", info->name)
 			return(NULL);
 		}
 		else if (info->max_params && (num_params > info->max_params)) {
-			util_emit_str("irc.error", NULL, "IRC message, %s, has too many parameters", info->name);
+			IRC_ERROR_JOINPOINT("Error: IRC message, %s, has too many parameters", info->name)
 			return(NULL);
 		}
 	}

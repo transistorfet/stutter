@@ -5,6 +5,7 @@
  * Description:		Query Channel Command
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
@@ -27,7 +28,7 @@ int irc_cmd_query(char *env, char *args)
 	else {
 		if (window)
 			fe_destroy_widget(window);
-		util_emit_str("irc.error", NULL, ERR_MSG_QUERY_ERROR, name);
+		IRC_ERROR_JOINPOINT(ERR_MSG_QUERY_ERROR, name)
 		return(-1);
 	}
 	return(0);
