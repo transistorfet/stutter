@@ -74,7 +74,6 @@ int init_curses(void)
 
 	if (type = find_type("format"))
 		add_variable(fe_table, type, "statusbar", 0, "%s", FE_STATUSBAR_DEFAULT);
-	BIND_KEYS();
 
 	if (init_desc())
 		return(-1);
@@ -92,6 +91,7 @@ int init_curses(void)
 int release_curses(void)
 {
 	RELEASE_MODULES();
+
 	release_frontend();
 	release_terminal();
 	release_execute();

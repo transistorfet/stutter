@@ -3,7 +3,7 @@
 ROOT = ..
 
 LIB_TARGET = main.a
-OBJS =	main.o \
+OBJS =	init.o \
 	key.o \
 	type.o \
 	utils.o \

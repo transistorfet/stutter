@@ -16,15 +16,17 @@
 #include <stutter/lib/globals.h>
 #include <stutter/modules/irc.h>
 
-static struct handler_prototype_s irc_handlers[] = {
+DEFINE_HANDLER_LIST(irc_handlers,
 	IRC_HANDLERS()
-	{ NULL, NULL, 0, NULL, NULL }
-};
+);
 
-static struct command_prototype_s irc_commands[] = {
+DEFINE_COMMAND_LIST(irc_commands,
 	IRC_COMMANDS()
-	{ NULL, NULL, NULL }
-};
+);
+
+DEFINE_KEY_LIST(irc_keys,
+	IRC_BINDINGS()
+);
 
 static struct variable_s *irc_table;
 
@@ -36,8 +38,7 @@ int init_irc(void)
 	add_signal("irc.error", 0);
 	init_irc_server();
 
-	for (i = 0;irc_handlers[i].name;i++)
-		signal_connect(irc_handlers[i].name, irc_handlers[i].index, irc_handlers[i].priority, (signal_t) irc_handlers[i].func, irc_handlers[i].ptr);
+	ADD_HANDLER_LIST(irc_handlers);
 
 	if (!(type = find_type("table")) || !(irc_table = add_variable(NULL, type, "irc", 0, "")))
 		return(-1);
@@ -51,10 +52,10 @@ int init_irc(void)
 	add_variable(irc_table->value, type, "current_nick", 0, "%r%p", irc_stringify_nick, NULL);
 	add_variable(irc_table->value, type, "current_channel", 0, "%r%p", irc_stringify_channel, NULL);
 
-	if (!(type = find_type("command")) || !type->create)
-		return(-1);
-	for (i = 0;irc_commands[i].name;i++)
-		add_variable(irc_table->value, type, irc_commands[i].name, 0, "%r%p", irc_commands[i].func, irc_commands[i].ptr);
+	ADD_COMMAND_LIST(irc_table, irc_commands);
+	ADD_KEY_LIST(irc_keys);
+
+	IRC_INIT_JOINPOINT(irc_table)
 
 	return(0);
 }
@@ -64,12 +65,13 @@ int release_irc(void)
 	int i = 0;
 	struct type_s *type;
 
+	IRC_RELEASE_JOINPOINT(irc_table)
+
 	/** Remove the whole variable table */
 	irc_table->bitflags &= ~VAR_BF_NO_REMOVE;
 	remove_variable(NULL, NULL, "irc");
 
-	for (i = 0;irc_handlers[i].name;i++)
-		signal_disconnect(irc_handlers[i].name, irc_handlers[i].index, (signal_t) irc_handlers[i].func, irc_handlers[i].ptr);
+	REMOVE_HANDLER_LIST(irc_handlers);
 
 	release_irc_server();
 	remove_signal("irc.error");
