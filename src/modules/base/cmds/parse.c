@@ -34,7 +34,7 @@ int base_cmd_parse(char *env, char *args)
 		cmd = BASE_NULL_COMMAND;
 
 	if (util_evaluate_command(cmd, str)) {
-		BASE_ERROR_JOINPOINT(ERR_MSG_UNKNOWN_COMMAND, cmd)
+		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	fe_clear(input);
 

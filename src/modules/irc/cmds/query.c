@@ -28,7 +28,7 @@ int irc_cmd_query(char *env, char *args)
 	else {
 		if (window)
 			fe_destroy_widget(window);
-		IRC_ERROR_JOINPOINT(ERR_MSG_QUERY_ERROR, name)
+		IRC_ERROR_JOINPOINT(IRC_ERR_QUERY_ERROR, name)
 		return(-1);
 	}
 	return(0);

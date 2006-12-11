@@ -26,7 +26,7 @@ int base_cmd_evaluate(char *env, char *args)
 	get_param_m(str, cmd, ' ');
 
 	if (util_evaluate_command(cmd, str)) {
-		BASE_ERROR_JOINPOINT(ERR_MSG_UNKNOWN_COMMAND, cmd)
+		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	return(0);
 }

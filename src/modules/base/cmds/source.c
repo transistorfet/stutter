@@ -30,7 +30,7 @@ int base_cmd_source(char *env, char *args)
 	}
 
 	if (!(fptr = fopen(str, "r"))) {
-		BASE_ERROR_JOINPOINT(ERR_MSG_UNABLE_TO_OPEN_FILE, cmd)
+		BASE_ERROR_JOINPOINT(BASE_ERR_UNABLE_TO_OPEN_FILE, cmd)
 		return(-1);
 	}
 
@@ -42,7 +42,7 @@ int base_cmd_source(char *env, char *args)
 				str = &str[strlen(BASE_COMMAND_PREFIX)];
 			get_param_m(str, cmd, ' ');
 			if (util_evaluate_command(cmd, str)) {
-				BASE_ERROR_JOINPOINT(ERR_MSG_UNKNOWN_COMMAND, cmd)
+				BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 			}
 		}
 	}
