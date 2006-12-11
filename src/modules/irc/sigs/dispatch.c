@@ -16,8 +16,10 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 		case 001:
 			/** Some servers have a limit to the nick length so
 			    make sure we are using the right nick */
-			if (strcmp(msg->server->nick, msg->params[0]))
-				irc_change_nick(msg->server, msg->params[0]);
+			if (strcmp(msg->server->nick, msg->params[0])) {
+				strncpy(msg->server->nick, msg->params[0], IRC_MAX_NICK - 1);
+				msg->server->nick[IRC_MAX_NICK - 1] = '\0';
+			}
 		case 002:
 		case 003:
 		case 004:
