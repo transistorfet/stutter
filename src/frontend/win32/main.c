@@ -22,6 +22,10 @@
 #include "net.h"
 #include "terminal.h"
 
+DEFINE_KEY_LIST(fe_keys,
+	FE_BINDINGS()
+);
+
 HINSTANCE this_instance;
 char *WinName = "Stutter";
 struct variable_table_s *fe_table;
@@ -93,7 +97,7 @@ int init_windows(void)
 
 	if (type = find_type("format"))
 		add_variable(fe_table, type, "statusbar", 0, "%s", FE_STATUSBAR_DEFAULT);
-	BIND_KEYS();
+	ADD_KEY_LIST(fe_keys);
 
 	if (init_terminal())
 		return(-1);

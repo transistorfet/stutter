@@ -23,6 +23,10 @@
 #include "desc.h"
 #include "terminal.h"
 
+DEFINE_KEY_LIST(fe_keys,
+	FE_BINDINGS()
+);
+
 int exit_flag = 1;
 
 extern int init_net(void);
@@ -74,6 +78,7 @@ int init_curses(void)
 
 	if (type = find_type("format"))
 		add_variable(fe_table, type, "statusbar", 0, "%s", FE_STATUSBAR_DEFAULT);
+	ADD_KEY_LIST(fe_keys);
 
 	if (init_desc())
 		return(-1);
