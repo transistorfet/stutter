@@ -102,7 +102,7 @@ int irc_server_reconnect(struct irc_server *server)
 	);
 
 	if (irc_server_init_connection(server)) {
-		IRC_ERROR_JOINPOINT(ERR_MSG_RECONNECT_ERROR, server->address)
+		IRC_ERROR_JOINPOINT(IRC_ERR_RECONNECT_ERROR, server->address)
 		fe_net_disconnect(server->net);
 		server->net = NULL;
 		return(-1);
@@ -194,7 +194,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
-			IRC_ERROR_JOINPOINT(ERR_MSG_SERVER_DISCONNECTED, server->address)
+			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, server->address)
 			if (server->bitflags & IRC_SBF_RECONNECTING) {
 				fe_net_disconnect(server->net);
 				server->net = NULL;
@@ -283,17 +283,11 @@ int irc_leave_channel(struct irc_server *server, char *name)
  */
 int irc_change_nick(struct irc_server *server, char *nick)
 {
-	int ret;
 	struct irc_msg *msg;
 
 	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, nick)))
 		return(-1);
-	ret = irc_send_msg(server, msg);
-	if (!ret) {
-		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
-		server->nick[IRC_MAX_NICK - 1] = '\0';
-	}
-	return(ret);
+	return(irc_send_msg(server, msg));
 }
 
 /**
