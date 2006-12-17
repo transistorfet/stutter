@@ -68,7 +68,7 @@
 	DO_NOTHING();
 
 #define DEFAULT_BASE_ERROR_JOINPOINT(...)	\
-	EMIT_STRING("base.error", NULL, __VA_ARGS__);
+	ERROR_JOINPOINT("base.error", __VA_ARGS__)
 
 /*** START OF DEFAULT ASSIGNMENTS ***/
 #ifndef BASE_NAMESPACE
