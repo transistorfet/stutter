@@ -19,6 +19,7 @@
 	release_base();
 
 #include <stutter/config-def.h>
+#include <stutter/frontend/config-def.h>
 #include <stutter/modules/base/config-def.h>
 #include <stutter/modules/irc/config-def.h>
 

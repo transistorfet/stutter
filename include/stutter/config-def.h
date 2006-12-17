@@ -1,6 +1,6 @@
 /*
  * Header Name:	config-def.h
- * Description:	Default Base Configuration Header
+ * Description:	Default Configuration Header
  */
 
 #ifndef _CONFIG_DEF_H
@@ -9,18 +9,6 @@
 #include <stutter/config-macros.h>
 
 #define DEFAULT_STUTTER_VERSION		"pre-0.3"
-
-/* Frontend Values */
-#define FE_STATUSBAR			"$&fe.statusbar"
-#define FE_STATUSBAR_DEFAULT		"${fe.inverse} $time $irc.current_nick on $irc.current_channel"
-#define FE_STATUS_BAR_HEIGHT		1
-#define FE_WINDOW_LOG_SIZE		1000
-#define FE_WINDOW_WRAP_STRING		"        "
-
-#define FE_BINDINGS()				\
-	BIND_KEY("\x0b", "fe.insert", "\x03")
-
-/*** General Values ***/
 
 #define DEFAULT_PATH_VARIABLE_NAME	"path"
 #define DEFAULT_NAME_SEPARATOR		'.'
@@ -40,10 +28,13 @@
 /*** Joinpoints ***/
 
 #define DEFAULT_SYSTEM_INIT_JOINPOINT()		\
-	DO_NOTHING();
+	DO_NOTHING()
 
 #define DEFAULT_SYSTEM_RELEASE_JOINPOINT()	\
-	DO_NOTHING();
+	DO_NOTHING()
+
+#define ERROR_JOINPOINT(name, ...)	\
+	EMIT_STRING(name, NULL, __VA_ARGS__)
 
 /*** Global Initialization ***/
 
