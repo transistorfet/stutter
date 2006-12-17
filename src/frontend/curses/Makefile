@@ -7,6 +7,7 @@ OBJS =	main.o \
 	fe.o \
 	net.o \
 	desc.o \
+	timer.o \
 	execute.o \
 	terminal.o \
 	../common/cmds/insert.o \
