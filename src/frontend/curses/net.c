@@ -18,6 +18,7 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 
+#include CONFIG_H
 #include <stutter/signal.h>
 #include <stutter/lib/debug.h>
 #include <stutter/lib/memory.h>
@@ -76,10 +77,12 @@ fe_network_t fe_net_connect(char *server, int port)
 			for (i = 0;i < FE_NET_ATTEMPTS;i++) {
 				if (connect(desc->read, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0)
 					return(desc);
+				FE_NET_ERROR_JOINPOINT(FE_NET_ERR_RETRYING, server)
 			}
 		}
 	}
 	fe_desc_destroy(net_list, desc);
+	FE_NET_ERROR_JOINPOINT(FE_NET_ERR_FAILED_TO_CONNECT, server)
 	return(NULL);
 }
 

@@ -11,6 +11,7 @@
 #include <windows.h>
 #include <winsock.h>
 
+#include CONFIG_H
 #include <stutter/signal.h>
 #include <stutter/lib/debug.h>
 #include <stutter/lib/memory.h>
@@ -92,8 +93,10 @@ fe_network_t fe_net_connect(char *server, int port)
 				net_list = net;
 				return(net);
 			}
+			FE_NET_ERROR_JOINPOINT(FE_NET_ERR_RETRYING, server)
 		}
 	}
+	FE_NET_ERROR_JOINPOINT(FE_NET_ERR_FAILED_TO_CONNECT, server)
 	return(NULL);
 }
 
