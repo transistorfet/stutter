@@ -16,6 +16,7 @@
 #include <stutter/lib/linear.h>
 #include <stutter/lib/globals.h>
 #include <stutter/frontend/net.h>
+#include <stutter/frontend/timer.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/server.h>
 #include <stutter/modules/irc/channel.h>
@@ -28,12 +29,14 @@ struct irc_server_node {
 };
 
 static int server_initialized = 0;
+static fe_timer_t irc_ping_watchdog_timer;
 static linear_list_v(irc_server_node) server_list;
 
 static int irc_server_init_connection(struct irc_server *);
 static int irc_server_receive(struct irc_server *, fe_network_t, fe_network_t);
 static int irc_server_rejoin_channel(struct irc_channel *, struct irc_server *);
 static int irc_server_flush_send_queue(struct irc_server *);
+static int irc_server_ping_watchdog(fe_timer_t, void *, void *);
 
 int init_irc_server(void)
 {
@@ -42,6 +45,8 @@ int init_irc_server(void)
 	linear_init_v(server_list);
 	add_signal("irc.dispatch_msg", SIG_BF_USE_WILDCARD_INDEX);
 	add_signal("irc.dispatch_ctcp", SIG_BF_USE_WILDCARD_INDEX);
+	if (irc_ping_watchdog_timer = fe_timer_create(FE_TIMER_BF_PERIODIC, 60))
+		signal_connect("fe.timer_done", irc_ping_watchdog_timer, 10, irc_server_ping_watchdog, NULL);
 	server_initialized = 1;
 	return(0);
 }
@@ -50,6 +55,8 @@ int release_irc_server(void)
 {
 	struct irc_server_node *tmp, *cur;
 
+	if (irc_ping_watchdog_timer)
+		signal_disconnect("fe.timer_done", irc_ping_watchdog_timer, irc_server_ping_watchdog, NULL);
 	remove_signal("irc.dispatch_msg");
 	remove_signal("irc.dispatch_ctcp");
 	linear_destroy_list_v(server_list, sl,
@@ -173,6 +180,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 			ret = fe_net_send(server->net, buffer, size);
 		// TODO should we dispatch messages here instead?
 		irc_destroy_msg(msg);
+		server->last_ping = time(NULL);
 		if (ret != size)
 			return(-1);
 	}
@@ -219,6 +227,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 	if (!(msg = irc_unmarshal_msg(buffer)))
 		return(NULL);
 	msg->server = server;
+	server->last_ping = time(NULL);
 	return(msg);
 }
 
@@ -237,6 +246,7 @@ int irc_broadcast_msg(struct irc_msg *msg)
 	linear_traverse_list_v(server_list, sl,
 		if (new_msg = irc_duplicate_msg(msg))
 			ret = irc_send_msg(&cur->server, new_msg);
+		cur->server.last_ping = time(NULL);
 	);
 	irc_destroy_msg(msg);
 	return(ret);
@@ -340,6 +350,7 @@ static int irc_server_init_connection(struct irc_server *server)
 
 	if ((msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)) && !irc_send_msg(server, msg)
 	    && (msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")) && !irc_send_msg(server, msg)) {
+		server->last_ping = time(NULL);
 		return(0);
 	}
 	fe_net_disconnect(server->net);
@@ -375,12 +386,37 @@ static int irc_server_rejoin_channel(struct irc_channel *channel, struct irc_ser
 }
 
 /**
- * 
+ * Send all messages currently held in the send queue.
  */
 static int irc_server_flush_send_queue(struct irc_server *server)
 {
 	queue_destroy_v(server->send_queue, queue,
 		irc_send_msg(server, cur);
+	);
+	return(0);
+}
+
+/**
+ * Called periodically to check for a ping timeout.  If the last_ping time
+ * is greater than IRC_PING_WATCHDOG_TIMEOUT then the server is reconnected
+ * to.
+ */
+static int irc_server_ping_watchdog(fe_timer_t timer, void *ptr1, void *ptr2)
+{
+	time_t current_time;
+
+	current_time = time(NULL);
+	linear_traverse_list_v(server_list, sl,
+		if ((current_time - cur->server.last_ping) >= IRC_PING_WATCHDOG_TIMEOUT) {
+			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, cur->server.address)
+			if (cur->server.bitflags & IRC_SBF_RECONNECTING) {
+				fe_net_disconnect(cur->server.net);
+				cur->server.net = NULL;
+			}
+			else
+				irc_server_reconnect(&cur->server);
+			cur->server.bitflags |= IRC_SBF_RECONNECTING;
+		}
 	);
 	return(0);
 }
