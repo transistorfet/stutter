@@ -32,6 +32,9 @@ int exit_flag = 1;
 extern int init_net(void);
 extern int release_net(void);
 
+extern int init_timer(void);
+extern int release_timer(void);
+
 extern int init_execute(void);
 extern int release_execute(void);
 
@@ -42,6 +45,8 @@ extern int release_frontend(void);
 extern struct type_s *fe_common_load_command(void);
 extern int common_cmd_insert(struct widget_s *, char *);
 
+extern int fe_timer_check(void);
+
 struct variable_table_s *fe_table;
 static int handle_quit(char *, void *, char *);
 
@@ -51,6 +56,16 @@ int init_curses(void)
 	struct variable_s *var;
 
 	if (init_system())
+		return(-1);
+	if (init_desc())
+		return(-1);
+	if (init_net())
+		return(-1);
+	if (init_timer())
+		return(-1);
+	if (init_execute())
+		return(-1);
+	if (init_terminal())
 		return(-1);
 
 	add_signal("fe.quit", 0);
@@ -80,14 +95,6 @@ int init_curses(void)
 		add_variable(fe_table, type, "statusbar", 0, "%s", FE_STATUSBAR_DEFAULT);
 	ADD_KEY_LIST(fe_keys);
 
-	if (init_desc())
-		return(-1);
-	if (init_net())
-		return(-1);
-	if (init_execute())
-		return(-1);
-	if (init_terminal())
-		return(-1);
 	if (init_frontend())
 		return(-1);
 	return(0);
@@ -100,6 +107,7 @@ int release_curses(void)
 	release_frontend();
 	release_terminal();
 	release_execute();
+	release_timer();
 	release_net();
 	release_desc();
 	release_system();
@@ -130,6 +138,7 @@ main(int argc, char **argv)
 		fe_refresh();
 		terminal_refresh(terminal);
 		fe_desc_wait(1);
+		fe_timer_check();
 		if ((ch = terminal_read_char()) && process_key(ch) && (input = (struct widget_s *) fe_current_widget("input", NULL)))
 			widget_control(input, WCC_PROCESS_CHAR, ch);
 	}
