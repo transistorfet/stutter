@@ -33,6 +33,9 @@ struct variable_table_s *fe_table;
 extern int init_execute(void);
 extern int release_execute(void);
 
+extern int init_timer(void);
+extern int release_timer(void);
+
 extern int init_frontend(void);
 extern int release_frontend(void);
 
@@ -70,6 +73,8 @@ int init_windows(void)
 	if (init_net())
 		return(-1);
 	if (init_execute())
+		return(-1);
+	if (init_timer())
 		return(-1);
 
 	add_signal("fe.quit", 0);
@@ -110,6 +115,7 @@ int release_windows(void)
 {
 	release_terminal();
 	release_frontend();
+	release_timer();
 	release_execute();
 	release_net();
 	release_system();

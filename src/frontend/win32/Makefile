@@ -7,6 +7,7 @@ TARGET = $(ROOT)/bin/winstutter.exe
 OBJS =	main.o \
 	fe.o \
 	net.o \
+	timer.o \
 	execute.o \
 	terminal.o \
 	../common/cmds/insert.o \
