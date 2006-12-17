@@ -110,7 +110,9 @@ int fe_timer_check(void)
 
 	current_time = time(NULL);
 	for (cur = timer_list;cur;cur = cur->next) {
-		if (!(cur->bitflags & FE_TIMER_BF_EXPIRED) && ((current_time - cur->start) >= cur->interval)) {
+		if (cur->bitflags & FE_TIMER_BF_EXPIRED)
+			continue;
+		else if ((current_time - cur->start) >= cur->interval) {
 			cur->bitflags |= FE_TIMER_BF_EXPIRED;
 			emit_signal("fe.timer_done", cur, cur);
 			if (cur->bitflags & FE_TIMER_BF_PERIODIC)
@@ -126,8 +128,8 @@ int fe_timer_check(void)
 
 static void fe_timer_insert(struct fe_timer_s *timer)
 {
-	float expiration;
-	struct fe_timer_s *cur;
+	double expiration;
+	struct fe_timer_s *cur, *prev;
 
 	if (!timer_list) {
 		timer_list = timer;
@@ -135,18 +137,19 @@ static void fe_timer_insert(struct fe_timer_s *timer)
 		timer->prev = NULL;
 	}
 	else {
-		expiration = (float) time(NULL) + timer->interval;
-		for (cur = timer_list;cur;cur = cur->next) {
-			if (((float) cur->start + cur->interval) <= expiration) {
-				if (cur->prev)
-					cur->prev->next = timer;
-				else
-					timer_list = timer;
-				cur->prev = timer;
-				timer->next = cur;
+		expiration = timer->start + timer->interval;
+		for (prev = NULL, cur = timer_list;cur;prev = cur, cur = cur->next) {
+			if (expiration <= (cur->start + cur->interval))
 				break;
-			}
 		}
+		timer->prev = prev;
+		timer->next = cur;
+		if (prev)
+			prev->next = timer;
+		else
+			timer_list = timer;
+		if (cur)
+			cur->prev = timer;
 	}
 }
 
