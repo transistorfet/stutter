@@ -23,6 +23,7 @@ int base_cmd_parse(char *env, char *args)
 	if (!(input = fe_current_widget("input", NULL)))
 		return(-1);
 	str = fe_read(input, buffer, STRING_SIZE);
+	fe_clear(input);
 
 	if (*str == '\0')
 		return(0);
@@ -36,8 +37,6 @@ int base_cmd_parse(char *env, char *args)
 	if (util_evaluate_command(cmd, str)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
-	fe_clear(input);
-
 	return(0);
 }
 
