@@ -13,33 +13,14 @@
 
 /*** Modules ***/
 
-typedef int (*module_init_t)(void);
-typedef int (*module_release_t)(void);
-
-struct module_prototype_s {
-	module_init_t init;
-	module_release_t release;
-};
-
-#define STATIC_MODULE(name)	\
-	{ (module_init_t) init_##name, (module_release_t) release_##name },
-
-#define DEFINE_MODULE_LIST(name, list)			\
-	static struct module_prototype_s name[] = {	\
-		list					\
-		{ NULL, NULL }				\
-	}
-
-#define INIT_MODULE_LIST(list) {			\
-	int i;						\
-	for (i = 0;list[i].init;i++)			\
-		list[i].init();				\
+#define LOAD_MODULE(name) {			\
+	extern int init_##name(void);		\
+	init_##name();				\
 }
 
-#define RELEASE_MODULE_LIST(list) {			\
-	int i;						\
-	for (i = 0;list[i].release;i++)			\
-		list[i].release();			\
+#define RELEASE_MODULE(name) {			\
+	extern int release_##name(void);	\
+	release_##name();			\
 }
 
 /*** Types ***/

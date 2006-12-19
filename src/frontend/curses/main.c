@@ -71,7 +71,10 @@ int init_curses(void)
 	add_signal("fe.quit", 0);
 	signal_connect("fe.quit", NULL, 0, (signal_t) handle_quit, NULL);
 
-	LOAD_MODULES();
+	#undef MODULE
+	#define MODULE(name)	LOAD_MODULE(name)
+	MODULE_LIST()
+
 	if (!(type = find_type("table")) || !(var = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
 	fe_table = var->value;
@@ -102,7 +105,9 @@ int init_curses(void)
 
 int release_curses(void)
 {
-	RELEASE_MODULES();
+	#undef MODULE
+	#define MODULE(name)	RELEASE_MODULE(name)
+	MODULE_LIST()
 
 	release_frontend();
 	release_terminal();

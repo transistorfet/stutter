@@ -10,13 +10,9 @@
 
 #define BASE_DEFAULT_PATH		";irc;base"
 
-#define LOAD_MODULES()			\
-	init_base();			\
-	init_irc();
-
-#define RELEASE_MODULES()		\
-	release_irc();			\
-	release_base();
+#define MODULE_LIST() 		\
+	MODULE(base)		\
+	MODULE(irc)
 
 #include <stutter/config-def.h>
 #include <stutter/frontend/config-def.h>

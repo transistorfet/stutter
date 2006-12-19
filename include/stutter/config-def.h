@@ -19,11 +19,8 @@
 
 /*** Modules ***/
 
-#define DEFAULT_LOAD_MODULES()			\
-	init_base();
-
-#define DEFAULT_RELEASE_MODULES()		\
-	release_base();
+#define DEFAULT_MODULE_list()			\
+	MODULE(base);
 
 /*** Joinpoints ***/
 
@@ -63,13 +60,9 @@
 #define DOT_FILE \
 	DEFAULT_DOT_FILE
 #endif
-#ifndef LOAD_MODULES
-#define LOAD_MODULES() \
-	DEFAULT_LOAD_MODULES()
-#endif
-#ifndef RELEASE_MODULES
-#define RELEASE_MODULES() \
-	DEFAULT_RELEASE_MODULES()
+#ifndef MODULE_list
+#define MODULE_list() \
+	DEFAULT_MODULE_list()
 #endif
 #ifndef SYSTEM_INIT_JOINPOINT
 #define SYSTEM_INIT_JOINPOINT() \
