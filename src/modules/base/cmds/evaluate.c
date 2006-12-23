@@ -16,7 +16,6 @@
 int base_cmd_evaluate(char *env, char *args)
 {
 	char *str, *cmd;
-	struct variable_s *var;
 	char buffer[STRING_SIZE];
 
 	strncpy(buffer, env, STRING_SIZE);

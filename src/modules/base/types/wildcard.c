@@ -13,7 +13,7 @@
 #include <stutter/lib/memory.h>
 
 
-static struct variable_s *base_wildcard_index(char *, char *);
+static void *base_wildcard_index(char *, char *, struct type_s **);
 
 struct type_s *base_load_wildcard(void)
 {
@@ -31,29 +31,29 @@ struct type_s *base_load_wildcard(void)
 	));
 }
 
-static struct variable_s *base_wildcard_index(char *value, char *name)
+static void *base_wildcard_index(char *wildcard, char *name, struct type_s **type_ptr)
 {
 	int i = 0;
+	void *value;
 	char ch, *str;
-	struct variable_s *table, *variable;
 
-	if (!value)
+	if (!wildcard)
 		return(NULL);
-	str = value;
+	str = wildcard;
 	do {
-		if ((value[i] == ';') || (value[i] == '\0')) {
-			ch = value[i];
-			value[i] = '\0';
-			if (((*str == '\0') && (variable = find_variable(NULL, name))) || (variable = index_variable(NULL, str, name))) {
-				value[i] = ch;
-				return(variable);
+		if ((wildcard[i] == ';') || (wildcard[i] == '\0')) {
+			ch = wildcard[i];
+			wildcard[i] = '\0';
+			if (((*str == '\0') && (value = find_variable(NULL, name, type_ptr))) || (value = index_variable(NULL, str, name, type_ptr))) {
+				wildcard[i] = ch;
+				return(value);
 			}
 			if (ch != '\0') {
-				value[i] = ch;
-				str = &value[i + 1];
+				wildcard[i] = ch;
+				str = &wildcard[i + 1];
 			}
 		}
-	} while (value[i++] != '\0');
+	} while (wildcard[i++] != '\0');
 	return(NULL);
 }
 

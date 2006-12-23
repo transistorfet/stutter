@@ -77,6 +77,33 @@ struct handler_prototype_s {
 		signal_disconnect(list[i].name, list[i].index, (signal_t) list[i].func, list[i].ptr);	\
 }
 
+/*** Keys ***/
+
+struct key_prototype_s {
+	char *key;
+	char *var;
+	char *params;
+};
+
+#define BIND_KEY(key, var, params)	\
+	{ key, var, params },
+
+#define DEFINE_KEY_LIST(name, list)			\
+	static struct key_prototype_s name[] = {	\
+		list					\
+		{ NULL, NULL, NULL }			\
+	}
+
+#define ADD_KEY_LIST(list) {				\
+	int i;						\
+	void *value;					\
+	struct type_s *type;				\
+	for (i = 0;list[i].key;i++) {			\
+		if (value = find_variable(NULL, list[i].var, &type))	\
+			bind_key(NULL, list[i].key, value, type, create_string(list[i].params));	\
+	}						\
+}
+
 /*** Commands ***/
 
 struct command_prototype_s {
@@ -103,31 +130,8 @@ struct command_prototype_s {
 								\
 	if ((type = find_type("command")) && type->create) {	\
 		for (i = 0;list[i].name;i++)			\
-			add_variable(table->value, type, list[i].name, 0, "%r%p", list[i].func, list[i].ptr);	\
+			add_variable(table, type, list[i].name, 0, "%r%p", list[i].func, list[i].ptr);	\
 	}							\
-}
-
-/*** Keys ***/
-
-struct key_prototype_s {
-	char *key;
-	char *var;
-	char *params;
-};
-
-#define BIND_KEY(key, var, params)	\
-	{ key, var, params },
-
-#define DEFINE_KEY_LIST(name, list)			\
-	static struct key_prototype_s name[] = {	\
-		list					\
-		{ NULL, NULL, NULL }			\
-	}
-
-#define ADD_KEY_LIST(list) {				\
-	int i;						\
-	for (i = 0;list[i].key;i++)			\
-		bind_key(NULL, list[i].key, find_variable(NULL, list[i].var), create_string(list[i].params));	\
 }
 
 #endif

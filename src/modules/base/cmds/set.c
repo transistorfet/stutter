@@ -22,7 +22,6 @@ int base_cmd_set(char *env, char *args)
 	char *name;
 	void *window;
 	struct type_s *type;
-	struct variable_s *var;
 	char buffer[STRING_SIZE];
 	char *type_name = BASE_DEFAULT_SET_TYPE;
 
@@ -41,7 +40,7 @@ int base_cmd_set(char *env, char *args)
 			fe_print(window, buffer);
 		return(-1);
 	}
-	else if (!(var = add_variable(NULL, type, name, 0, "%s", args))) {
+	else if (!(add_variable(NULL, type, name, 0, "%s", args))) {
 		fe_print(window, "Error setting variable.");
 		return(-1);
 	}

@@ -12,15 +12,14 @@
 #include <stutter/lib/globals.h>
 
 struct type_s;
-struct variable_s;
 
-typedef int (*type_traverse_func_t)(struct variable_s *, void *);
+typedef int (*type_traverse_func_t)(void *, struct type_s *, void *);
 
 typedef void *(*type_create_t)(void *, char *, va_list);
 typedef void (*type_destroy_t)(void *);
-typedef struct variable_s *(*type_add_t)(void *, struct type_s *, char *, int, char *, va_list);
+typedef void *(*type_add_t)(void *, struct type_s *, char *, int, char *, va_list);
 typedef int (*type_remove_t)(void *, struct type_s *, char *);
-typedef struct variable_s *(*type_index_t)(void *, char *);
+typedef void *(*type_index_t)(void *, char *, struct type_s **);
 typedef int (*type_traverse_t)(void *, type_traverse_func_t, struct type_s *, void *);
 typedef int (*type_stringify_t)(void *, char *, int);
 typedef int (*type_evaluate_t)(void *, char *);

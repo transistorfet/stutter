@@ -19,11 +19,12 @@
 
 int base_cmd_bind(char *env, char *args)
 {
+	void *value;
 	void *window;
-	char *context = NULL;
 	char *key, *name;
+	struct type_s *type;
+	char *context = NULL;
 	char buffer[STRING_SIZE];
-	struct variable_s *table, *var;
 
 	trim_whitespace_m(args);
 	if (*args == '-')
@@ -31,18 +32,15 @@ int base_cmd_bind(char *env, char *args)
 	get_param_m(args, key, ' ');
 	get_param_m(args, name, ' ');
 
-	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
-		return(-1);
-
-	if (!(var = index_variable(NULL, PATH_VARIABLE_NAME, name)) && !(var = find_variable(NULL, name))) {
-		if (snprintf(buffer, STRING_SIZE, "Error: %s variable not found.", name) >= 0)
-			fe_print(window, buffer);
+	if (!(value = index_variable(NULL, PATH_VARIABLE_NAME, name, &type)) && !(value = find_variable(NULL, name, &type))) {
+		BASE_ERROR_JOINPOINT(BASE_ERR_VARIABLE_NOT_FOUND, name);
 		return(-1);
 	}
-
-	if ((util_convert_key(key, buffer, STRING_SIZE) < 0) || bind_key(context, buffer, var, create_string(args)))
-		fe_print(window, "Error binding key");
-	else {
+	else if ((util_convert_key(key, buffer, STRING_SIZE) < 0) || bind_key(context, buffer, value, type, create_string(args))) {
+		BASE_ERROR_JOINPOINT(BASE_ERR_BINDING_FAILED, key);
+		return(-1);
+	}
+	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
 		snprintf(buffer, STRING_SIZE, "Key %s bound to %s %s", key, name, args);
 		fe_print(window, buffer);
 	}

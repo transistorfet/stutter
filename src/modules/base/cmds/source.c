@@ -19,7 +19,6 @@ int base_cmd_source(char *env, char *args)
 {
 	FILE *fptr;
 	char *str, *cmd;
-	struct variable_s *var;
 	char buffer[STRING_SIZE];
 
 	get_param_m(args, str, ' ');

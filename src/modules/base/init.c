@@ -32,7 +32,7 @@ DEFINE_KEY_LIST(base_keys,
 	BASE_BINDINGS()
 );
 
-static struct variable_s *base_table;
+static void *base_table;
 
 int init_base(void)
 {
@@ -69,12 +69,15 @@ int init_base(void)
 int release_base(void)
 {
 	int i = 0;
+	struct type_s *type;
 
 	BASE_RELEASE_JOINPOINT(base_table)
 
 	/** Remove the whole variable table */
-	base_table->bitflags &= ~VAR_BF_NO_REMOVE;
-	remove_variable(NULL, NULL, "base");
+	if (type = find_type("table")) {
+		add_variable(NULL, type, "base", 0, "");
+		remove_variable(NULL, type, "base");
+	}
 
 	REMOVE_HANDLER_LIST(base_handlers);
 

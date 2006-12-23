@@ -66,8 +66,11 @@ int util_convert_key(char *str, char *buffer, int max)
 			i += util_escape_char(&str[++i], &buffer[j++]);
 		}
 		else if (str[i] == '^') {
-			if ((str[++i] >= 0x41) && (str[i] <= 0x5f))
+			i++;
+			if ((str[i] >= 0x41) && (str[i] <= 0x5f))
 				buffer[j++] = str[i] - 0x40;
+			else if ((str[i] >= 0x61) && (str[i] <= 0x7a))
+				buffer[j++] = str[i] - 0x60;
 		}
 		else
 			buffer[j++] = str[i];
@@ -187,13 +190,14 @@ int util_emit_str(char *name, void *index, char *fmt, ...)
  */
 int util_evaluate_command(char *cmd, char *str)
 {
-	struct variable_s *var;
+	void *value;
+	struct type_s *type;
 
-	if (!(var = index_variable(NULL, PATH_VARIABLE_NAME, cmd)))
-		var = find_variable(NULL, cmd);
-	if (!var || !var->type->evaluate)
+	if (!(value = index_variable(NULL, PATH_VARIABLE_NAME, cmd, &type)))
+		value = find_variable(NULL, cmd, &type);
+	if (!type || !type->evaluate)
 		return(-1);
-	var->type->evaluate(var->value, str);
+	type->evaluate(value, str);
 	return(0);
 }
 

@@ -28,7 +28,7 @@ DEFINE_KEY_LIST(irc_keys,
 	IRC_BINDINGS()
 );
 
-static struct variable_s *irc_table;
+static void *irc_table;
 
 int init_irc(void)
 {
@@ -45,12 +45,12 @@ int init_irc(void)
 
 	if (!(type = find_type("string")) || !type->create)
 		return(-1);
-	add_variable(irc_table->value, type, "version", 0, "%s", IRC_VERSION_RESPONSE);
+	add_variable(irc_table, type, "version", 0, "%s", IRC_VERSION_RESPONSE);
 
 	if (!(type = find_type("status")) || !type->create)
 		return(-1);
-	add_variable(irc_table->value, type, "current_nick", 0, "%r%p", irc_stringify_nick, NULL);
-	add_variable(irc_table->value, type, "current_channel", 0, "%r%p", irc_stringify_channel, NULL);
+	add_variable(irc_table, type, "current_nick", 0, "%r%p", irc_stringify_nick, NULL);
+	add_variable(irc_table, type, "current_channel", 0, "%r%p", irc_stringify_channel, NULL);
 
 	ADD_COMMAND_LIST(irc_table, irc_commands);
 	ADD_KEY_LIST(irc_keys);
@@ -68,8 +68,10 @@ int release_irc(void)
 	IRC_RELEASE_JOINPOINT(irc_table)
 
 	/** Remove the whole variable table */
-	irc_table->bitflags &= ~VAR_BF_NO_REMOVE;
-	remove_variable(NULL, NULL, "irc");
+	if (type = find_type("table")) {
+		add_variable(NULL, type, "irc", 0, "");
+		remove_variable(NULL, type, "irc");
+	}
 
 	REMOVE_HANDLER_LIST(irc_handlers);
 

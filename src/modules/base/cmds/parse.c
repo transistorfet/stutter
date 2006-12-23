@@ -17,7 +17,6 @@ int base_cmd_parse(char *env, char *args)
 {
 	void *input;
 	char *str, *cmd;
-	struct variable_s *var;
 	char buffer[STRING_SIZE];
 
 	if (!(input = fe_current_widget("input", NULL)))

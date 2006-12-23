@@ -18,25 +18,25 @@
 
 int base_cmd_get(char *env, char *args)
 {
-	int i;
+	int i, ret;
 	char *name;
 	void *window;
-	struct variable_s *var;
 	char buffer[STRING_SIZE];
 
-	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
-		return(-1);
 	get_param_m(args, name, ' ');
-	if (!(var = find_variable(NULL, name)) || !var->type->stringify) {
-		fe_print(window, "Variable is undefined.");
+	i = snprintf(buffer, STRING_SIZE, "Variable: %s = ", name);
+	ret = stringify_variable(NULL, name, &buffer[i], STRING_SIZE - i);
+
+	if (ret == VAR_ERR_NOT_FOUND) {
+		BASE_ERROR_JOINPOINT(BASE_ERR_VARIABLE_NOT_FOUND, name)
 		return(-1);
 	}
-	else {
-		i = snprintf(buffer, STRING_SIZE, "Variable: %s = ", name);
-		if (var->type->stringify(var->value, &buffer[i], STRING_SIZE - i) < 0)
-			snprintf(buffer, STRING_SIZE, "Error stringifying variable, %s.", name);
-		fe_print(window, buffer);
+	else if (ret < 0) {
+		BASE_ERROR_JOINPOINT(BASE_ERR_STRINGIFY_FAILED, name)
+		return(-1);
 	}
+	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL)))
+		fe_print(window, buffer);
 	return(0);
 }
 

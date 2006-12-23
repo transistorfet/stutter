@@ -1,14 +1,14 @@
 /*
  * Module Name:		key.c
  * Version:		0.1
- * Module Requirements:	variable ; hash ; memory ; string
+ * Module Requirements:	type ; hash ; memory ; string
  * Description:		Key Manager
  */
 
 #include <string.h>
 
 #include <stutter/key.h>
-#include <stutter/variable.h>
+#include <stutter/type.h>
 #include <stutter/lib/hash.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/string.h>
@@ -47,7 +47,10 @@ struct key_s {
 	short ch;
 	short bitflags;
 	union key_data_u {
-		struct variable_s *variable;
+		struct key_variable_s {
+			void *value;
+			struct type_s *type;
+		} variable;
 		struct key_map_s *submap;
 	} data;
 	string_t args;
@@ -94,17 +97,21 @@ int release_key(void)
  * Associate the given variable and arguments  with the given
  * key sequence under the given context.  If the key cannot be bound,
  * -1 will be returned.  If the key sequence is already bound, the
- * old binding will be destroyed and replace with the given variable
- * and arguments.  A 0 is returned on success.
+ * old binding will be destroyed and replace with the given value/type
+ * pair and arguments.  A 0 is returned on success.
  */
-int bind_key(char *context, char *str, struct variable_s *variable, string_t args)
+int bind_key(char *context, char *str, void *value, struct type_s *type, string_t args)
 {
 	int i;
-	struct key_s *key, *cur_key;
+	union key_data_u data;
+	struct key_s *cur_key;
 	struct key_map_s *map, *cur_map;
 
-	if ((*str == '\0') || !variable || !variable->type->evaluate)
+	if ((*str == '\0') || !type || !type->evaluate)
 		return(-1);
+	data.variable.value = value;
+	data.variable.type = type;
+
 	if (!(cur_map = context ? key_find_context(context) : current_root) && !(cur_map = key_add_context(context)))
 		return(-1);
 	for (i = 0;str[i] != '\0';i++) {
@@ -112,9 +119,9 @@ int bind_key(char *context, char *str, struct variable_s *variable, string_t arg
 		if (str[i + 1] == '\0') {
 			if (!cur_key) {
 				/* Create a new terminating key entry */
-				if (!(key = create_key(str[i], 0, (union key_data_u) variable, args)))
+				if (!(cur_key = create_key(str[i], 0, data, args)))
 					return(-1);
-				keymap_add_key(cur_map, str[i], key);
+				keymap_add_key(cur_map, str[i], cur_key);
 			}
 			else if (cur_key->bitflags & KEY_KBF_SUBMAP) {
 				/* Fail (Don't overwrite a submap with a single key) */
@@ -125,7 +132,7 @@ int bind_key(char *context, char *str, struct variable_s *variable, string_t arg
 				if (cur_key->args)
 					destroy_string(cur_key->args);
 				cur_key->bitflags = 0;
-				cur_key->data.variable = variable;
+				cur_key->data = data;
 				cur_key->ch = str[i];
 				cur_key->args = args;
 			}
@@ -135,11 +142,11 @@ int bind_key(char *context, char *str, struct variable_s *variable, string_t arg
 				/* Create a new submap */
 				if (!(map = create_key_map(NULL, KEY_INITIAL_SUBMAP)))
 					return(-1);
-				if (!(key = create_key(str[i], KEY_KBF_SUBMAP, (union key_data_u) map, NULL))) {
+				if (!(cur_key = create_key(str[i], KEY_KBF_SUBMAP, (union key_data_u) map, NULL))) {
 					destroy_key_map(map);
 					return(-1);
 				}
-				keymap_add_key(cur_map, str[i], key);
+				keymap_add_key(cur_map, str[i], cur_key);
 			}
 			else if (!(cur_key->bitflags & KEY_KBF_SUBMAP)) {
 				/* Overwrite this key with a new submap */
@@ -215,7 +222,7 @@ int process_key(int ch)
 	else {
 		if (!(args = duplicate_string(node->args)))
 			return(-1);
-		node->data.variable->type->evaluate(node->data.variable->value, args);
+		node->data.variable.type->evaluate(node->data.variable.value, args);
 		destroy_string(args);
 		current_map = current_root;
 	}

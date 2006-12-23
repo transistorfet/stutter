@@ -11,6 +11,8 @@
 #include <stutter/lib/string.h>
 #include <stutter/lib/memory.h>
 
+#define VAR_ERR_NOT_FOUND	-10
+
 #define VAR_BF_NO_MODIFY	0x0001
 #define VAR_BF_NO_REMOVE	0x0002
 
@@ -29,10 +31,10 @@ int release_variable(void);
 struct variable_table_s *create_variable_table(void);
 int destroy_variable_table(struct variable_table_s *);
 
-struct variable_s *add_variable(struct variable_table_s *, struct type_s *, char *, int, char *, ...);
-struct variable_s *add_variable_real(struct variable_table_s *, struct type_s *, char *, int, char *, va_list);
+void *add_variable(struct variable_table_s *, struct type_s *, char *, int, char *, ...);
+void *add_variable_real(struct variable_table_s *, struct type_s *, char *, int, char *, va_list);
 int remove_variable(struct variable_table_s *, struct type_s *, char *);
-struct variable_s *find_variable(struct variable_table_s *, char *);
+void *find_variable(struct variable_table_s *, char *, struct type_s **);
 int traverse_variable_table(struct variable_table_s *, struct type_s *, type_traverse_func_t, void *);
 
 /**
@@ -47,13 +49,14 @@ int traverse_variable_table(struct variable_table_s *, struct type_s *, type_tra
  * or NULL on error.
  * 
  */
-static inline struct variable_s *index_variable(struct variable_table_s *table, char *name, char *index)
+static inline void *index_variable(struct variable_table_s *table, char *name, char *index, struct type_s **type_ptr)
 {
-	struct variable_s *variable;
+	void *value;
+	struct type_s *type;
 
-	if (!(variable = find_variable(table, name)) || !variable->type->index)
+	if (!(value = find_variable(table, name, &type)) || !type || !type->index)
 		return(NULL);
-	return(variable->type->index(variable->value, index));
+	return(type->index(value, index, type_ptr));
 }
 
 /**
@@ -64,14 +67,28 @@ static inline struct variable_s *index_variable(struct variable_table_s *table, 
  */
 static inline int stringify_variable(struct variable_table_s *table, char *name, char *buffer, int max)
 {
-	struct variable_s *variable;
+	void *value;
+	struct type_s *type;
 
-	if (!(variable = find_variable(table, name)) || !variable->type->stringify)
-		return(-1);
-	return(variable->type->stringify(variable->value, buffer, max));
+	if (!(value = find_variable(table, name, &type)) || !type->stringify)
+		return(VAR_ERR_NOT_FOUND);
+	return(type->stringify(value, buffer, max));
 }
 
+/**
+ * Find the variable in the given table (or the root table if NULL) with the
+ * given name and evaluate it using the given args string.  The value
+ * returned by the evaluation is returned.
+ */
+static inline int evaluate_variable(struct variable_table_s *table, char *name, char *args)
+{
+	void *value;
+	struct type_s *type;
 
+	if (!(value = find_variable(table, name, &type)) || !type->stringify)
+		return(VAR_ERR_NOT_FOUND);
+	return(type->evaluate(value, args));
+}
 
 #endif
 

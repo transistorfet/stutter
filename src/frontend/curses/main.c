@@ -53,7 +53,6 @@ static int handle_quit(char *, void *, char *);
 int init_curses(void)
 {
 	struct type_s *type;
-	struct variable_s *var;
 
 	if (init_system())
 		return(-1);
@@ -75,9 +74,8 @@ int init_curses(void)
 	#define MODULE(name)	LOAD_MODULE(name)
 	MODULE_LIST()
 
-	if (!(type = find_type("table")) || !(var = add_variable(NULL, type, "fe", 0, "")))
+	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
-	fe_table = var->value;
 
 	if (!(type = fe_common_load_command()))
 		return(-1);

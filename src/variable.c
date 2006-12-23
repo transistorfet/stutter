@@ -85,7 +85,7 @@ int destroy_variable_table(struct variable_table_s *table)
 /**
  * This is a wrapper for add_variable_real.
  */
-struct variable_s *add_variable(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, ...)
+void *add_variable(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, ...)
 {
 	va_list va;
 
@@ -106,7 +106,7 @@ struct variable_s *add_variable(struct variable_table_s *table, struct type_s *t
  * invalid, or the function fails, NULL is returned.  Otherwise the pointer to the
  * variable is returned.
  */
-struct variable_s *add_variable_real(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, va_list va)
+void *add_variable_real(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, va_list va)
 {
 	int len;
 	struct variable_node_s *node;
@@ -133,7 +133,7 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct type
 		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
 		if (hash_load_v(table->vl) > VARIABLE_LOAD_FACTOR)
 			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * 1.75), variable_hash_m(table->vl, cur->data.name, strlen(cur->data.name)), NULL);
-		return(&node->data);
+		return(node->data.value);
 	}
 	else if (name[len] != '\0') {
 		if (!node->data.type->add)
@@ -141,10 +141,11 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct type
 		return(node->data.type->add(node->data.value, type, &name[len + 1], bitflags, str, va));
 	}
 	else if ((!type || (node->data.type == type)) && !(node->data.bitflags & VAR_BF_NO_MODIFY)) {
+		node->data.bitflags = bitflags;
 		if (!node->data.type->create)
 			return(NULL);
 		node->data.value = node->data.type->create(node->data.value, str, va);
-		return(&node->data);
+		return(node->data.value);
 	}
 	else
 		return(NULL);
@@ -175,7 +176,7 @@ int remove_variable(struct variable_table_s *table, struct type_s *type, char *n
 		hash_remove_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
 		if (!node)
 			return(-1);
-		if (node->data.bitflags & VAR_BF_NO_REMOVE) {
+		if ((node->data.bitflags & VAR_BF_NO_REMOVE) || (type && (node->data.type != type))) {
 			// TODO is this bad to remove the node and then re-add it?
 			hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
 			return(1);
@@ -194,7 +195,7 @@ int remove_variable(struct variable_table_s *table, struct type_s *type, char *n
  * the using variable_root.  A pointer to the variable is returned or NULL on
  * error.
  */
-struct variable_s *find_variable(struct variable_table_s *table, char *name)
+void *find_variable(struct variable_table_s *table, char *name, struct type_s **type_ptr)
 {
 	int len;
 	struct variable_node_s *node;
@@ -209,10 +210,13 @@ struct variable_s *find_variable(struct variable_table_s *table, char *name)
 	else if (name[len] != '\0') {
 		if (!node->data.type->index)
 			return(NULL);
-		return(node->data.type->index(node->data.value, &name[len + 1]));
+		return(node->data.type->index(node->data.value, &name[len + 1], type_ptr));
 	}
-	else
-		return(&node->data);
+	else {
+		if (type_ptr)
+			*type_ptr = node->data.type;
+		return(node->data.value);
+	}
 }
 
 /**
@@ -232,7 +236,7 @@ int traverse_variable_table(struct variable_table_s *table, struct type_s *type,
 		table = variable_root;
 
 	hash_traverse_list_v(table->vl, vl,
-		if ((cur->data.type == type) && (ret = func(&cur->data, ptr)))
+		if ((cur->data.type == type) && (ret = func(cur->data.value, cur->data.type, ptr)))
 			return(ret);
 	);
 	return(0);

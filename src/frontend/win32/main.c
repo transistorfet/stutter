@@ -50,7 +50,6 @@ int init_windows(void)
 {
 	WNDCLASSEX winclass;
 	struct type_s *type;
-	struct variable_s *var;
 
 	winclass.cbSize = sizeof(WNDCLASSEX);
 	winclass.hInstance = this_instance;
@@ -84,9 +83,8 @@ int init_windows(void)
 	#define MODULE(name)	LOAD_MODULE(name)
 	MODULE_LIST()
 
-	if (!(type = find_type("table")) || !(var = add_variable(NULL, type, "fe", 0, "")))
+	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
-	fe_table = var->value;
 
 	if (!(type = fe_common_load_command()))
 		return(-1);
