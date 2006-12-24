@@ -7,6 +7,8 @@
 #ifndef _STUTTER_UTILS_H
 #define _STUTTER_UTILS_H
 
+int util_atoi(char *, int);
+int util_itoa(int, char *, int);
 int util_escape_char(char *, char *);
 int util_convert_key(char *, char *, int);
 int util_expand_str(char *, char *, int);

@@ -18,6 +18,72 @@
 #define MAX_NAME		64
 
 /**
+ * Convert a string of the given radix to an interger.
+ */
+int util_atoi(char *str, int radix)
+{
+	int i = -1, ret = 0, mul = 1;
+
+	if (!str)
+		return(0);
+
+	while (str[++i] == ' ' || str[i] == '\t' || str[i] == '\n')
+		if (str[i] == '\0')
+			return(0);
+
+	if (str[i] == '-') {
+		mul = -1;
+		i++;
+	}
+
+	for (;str[i] != '\0';i++) {
+		ret *= radix;
+		if (str[i] >= 0x30 && str[i] <= 0x39)
+			ret += (str[i] - 0x30);
+		else if (str[i] >= 0x41 && str[i] <= 0x5a)
+			ret += (str[i] - 0x37);
+		else if (str[i] >= 0x61 && str[i] <= 0x7a)
+			ret += (str[i] - 0x57);
+		else
+			break;
+	}
+	return(ret * mul);
+}
+
+/**
+ * Convert a number to a string with the given radix.  The number of
+ * characters written into the string is returned.
+ */
+int util_itoa(int num, char *str, int radix)
+{
+	int i = -1, mul;
+
+	if (!str)
+		return(0);
+
+	if ((radix == 10) && (num < 0)) {
+		str[++i] = '-';
+		num *= -1;
+	}
+
+	mul = radix;
+	while ((num / mul) != 0)
+		mul *= radix;
+	mul /= radix;
+
+	do {
+		str[++i] = (num / mul) + 0x30;
+		if (str[i] > 0x39)
+			str[i] += 0x07;
+		num -= (num / mul) * mul;
+		mul /= radix;
+	} while (mul != 0);
+	str[++i] = '\0';
+
+	return(i);
+}
+
+/**
  * Convert the charcter escape sequence (assuming str starts after the escape
  * character) and stores the character in buffer[0].  The number of characters
  * read as a sequence from str is returned
