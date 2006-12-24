@@ -10,7 +10,7 @@
 #include <stutter/lib/memory.h>
 #include <stutter/frontend/widget.h>
 
-int common_cmd_insert(struct widget_s *widget, char *args)
+int fe_common_cmd_insert(struct widget_s *widget, char *args)
 {
 	if ((*args == '\0') || (!widget && !(widget = fe_current_widget("input", NULL))))
 		return(-1);
