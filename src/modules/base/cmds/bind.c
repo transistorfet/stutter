@@ -36,7 +36,7 @@ int base_cmd_bind(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_VARIABLE_NOT_FOUND, name);
 		return(-1);
 	}
-	else if ((util_convert_key(key, buffer, STRING_SIZE) < 0) || bind_key(context, buffer, value, type, create_string(args))) {
+	else if ((util_convert_key(key, buffer, STRING_SIZE) < 0) || bind_key(context, buffer, value, type, args)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_BINDING_FAILED, key);
 		return(-1);
 	}

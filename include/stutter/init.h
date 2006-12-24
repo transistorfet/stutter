@@ -100,7 +100,7 @@ struct key_prototype_s {
 	struct type_s *type;				\
 	for (i = 0;list[i].key;i++) {			\
 		if (value = find_variable(NULL, list[i].var, &type))	\
-			bind_key(NULL, list[i].key, value, type, create_string(list[i].params));	\
+			bind_key(NULL, list[i].key, value, type, list[i].params);	\
 	}						\
 }
 
@@ -130,7 +130,7 @@ struct command_prototype_s {
 								\
 	if ((type = find_type("command")) && type->create) {	\
 		for (i = 0;list[i].name;i++)			\
-			add_variable(table, type, list[i].name, 0, "%r%p", list[i].func, list[i].ptr);	\
+			add_variable(table, type, list[i].name, 0, "callback,pointer", list[i].func, list[i].ptr);	\
 	}							\
 }
 

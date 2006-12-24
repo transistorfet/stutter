@@ -26,7 +26,7 @@ int base_cmd_alias(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_VARIABLE_NOT_FOUND, "command")
 		return(-1);
 	}
-	else if (!(str = create_string(args)) || !(add_variable(NULL, type, name, 0, "callback,string", base_cmd_evaluate, str))) {
+	else if (!(str = create_string("%s", args)) || !(add_variable(NULL, type, name, 0, "callback,string", base_cmd_evaluate, str))) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_ALIAS_FAILED, name)
 		return(-1);
 	}

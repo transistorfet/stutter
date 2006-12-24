@@ -100,14 +100,14 @@ int release_key(void)
  * old binding will be destroyed and replace with the given value/type
  * pair and arguments.  A 0 is returned on success.
  */
-int bind_key(char *context, char *str, void *value, struct type_s *type, string_t args)
+int bind_key(char *context, char *str, void *value, struct type_s *type, char *args)
 {
 	int i;
 	union key_data_u data;
 	struct key_s *cur_key;
 	struct key_map_s *map, *cur_map;
 
-	if ((*str == '\0') || !type || !type->evaluate)
+	if ((*str == '\0') || !type || !type->evaluate || !(args = create_string("%s", args)))
 		return(-1);
 	data.variable.value = value;
 	data.variable.type = type;
@@ -316,7 +316,7 @@ static struct key_map_s *create_key_map(char *context, int size)
 
 	if (!(map = (struct key_map_s *) memory_alloc(sizeof(struct key_map_s))))
 		return(NULL);
-	map->context = context ? create_string(context) : NULL;
+	map->context = context ? create_string("%s", context) : NULL;
 	hash_init_v(map->kl, size);
 	return(map);
 }

@@ -188,7 +188,7 @@ static int input_save_buffer(struct input_s *input)
 	char *str;
 
 	input->buffer[input->end] = '\0';
-	if (str = create_string(input->buffer))
+	if (str = create_string("%s", input->buffer))
 		queue_prepend(input->history, str);
 	input->history->current = NULL;
 	return(0);

@@ -23,7 +23,7 @@ int irc_msg_topic(char *env, struct irc_msg *msg)
 
 	if (channel->topic)
 		destroy_string(channel->topic);
-	channel->topic = create_string(msg->text);
+	channel->topic = create_string("%s", msg->text);
 
 	if (irc_format_msg(msg, IRC_FMT_TOPIC, buffer, STRING_SIZE) < 0)
 		return(-1);

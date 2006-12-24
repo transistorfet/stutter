@@ -59,7 +59,7 @@ struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitfla
 
 	if (!list || !(node = (struct irc_user_node *) memory_alloc(sizeof(struct irc_user_node))))
 		return(NULL);
-	node->user.nick = create_string(nick);
+	node->user.nick = create_string("%s", nick);
 	node->user.bitflags = bitflags;
 	linear_add_node_sorted_v(list->ul, ul, node, (strcmp(cur->user.nick, nick) > 0));
 	return(&node->user);
@@ -114,7 +114,7 @@ int irc_change_user_nick(struct irc_user_list *list, char *oldnick, char *newnic
 	if (!node)
 		return(1);
 	destroy_string(node->user.nick);
-	node->user.nick = create_string(newnick);
+	node->user.nick = create_string("%s", newnick);
 	return(0);
 }
 
