@@ -17,11 +17,11 @@ int base_cmd_parse(char *env, char *args)
 {
 	void *input;
 	char *str, *cmd;
-	char buffer[STRING_SIZE];
+	char buffer[FE_INPUT_BUFFER_SIZE];
 
 	if (!(input = fe_current_widget("input", NULL)))
 		return(-1);
-	str = fe_read(input, buffer, STRING_SIZE);
+	str = fe_read(input, buffer, FE_INPUT_BUFFER_SIZE);
 	fe_clear(input);
 
 	if (*str == '\0')
