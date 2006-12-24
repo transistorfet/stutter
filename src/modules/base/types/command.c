@@ -37,7 +37,7 @@ struct type_s *base_load_command(void)
 	));
 }
 
-static void *base_command_create(void *value, char *str, va_list va)
+static void *base_command_create(void *value, char *params, va_list va)
 {
 	void *ptr;
 	callback_t func;
@@ -46,7 +46,7 @@ static void *base_command_create(void *value, char *str, va_list va)
 	if (value)
 		base_command_destroy(value);
 
-	if (strncmp(str, "%r%", 3) || ((str[3] != 'p') && (str[3] != 's') && (str[3] != 'd') && (str[3] != 'c')) || (str[4] != '\0'))
+	if (strncmp(params, "callback,", 9) || strchr(&params[9], ','))
 		return(NULL);
 	if (!(command = (struct base_command_s *) memory_alloc(sizeof(struct base_command_s))))
 		return(NULL);

@@ -50,13 +50,13 @@ int init_base(void)
 
 	if (!(type = find_type("time")) || !type->create)
 		return(-1);
-	add_variable(NULL, type, "time", 0, "%s", BASE_TIME_FORMAT);
-	add_variable(NULL, type, "date", 0, "%s", BASE_DATE_FORMAT);
-	add_variable(NULL, type, "timestamp", 0, "%s", BASE_TIMESTAMP_FORMAT);
+	add_variable(NULL, type, "time", 0, "string", BASE_TIME_FORMAT);
+	add_variable(NULL, type, "date", 0, "string", BASE_DATE_FORMAT);
+	add_variable(NULL, type, "timestamp", 0, "string", BASE_TIMESTAMP_FORMAT);
 
 	if (!(type = find_type("wildcard")) || !type->create)
 		return(-1);
-	add_variable(NULL, type, PATH_VARIABLE_NAME, 0, "%s", BASE_DEFAULT_PATH);
+	add_variable(NULL, type, PATH_VARIABLE_NAME, 0, "string", BASE_DEFAULT_PATH);
 
 	ADD_COMMAND_LIST(base_table, base_commands);
 	ADD_KEY_LIST(base_keys);

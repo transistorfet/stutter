@@ -19,7 +19,7 @@ struct type_s *base_load_time(void)
 	return(add_type(
 		"time",
 		0,
-		(type_create_t) recreate_string_real,
+		(type_create_t) type_recreate_string,
 		(type_destroy_t) destroy_string,
 		NULL,
 		NULL,

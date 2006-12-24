@@ -45,12 +45,12 @@ int init_irc(void)
 
 	if (!(type = find_type("string")) || !type->create)
 		return(-1);
-	add_variable(irc_table, type, "version", 0, "%s", IRC_VERSION_RESPONSE);
+	add_variable(irc_table, type, "version", 0, "string", IRC_VERSION_RESPONSE);
 
 	if (!(type = find_type("status")) || !type->create)
 		return(-1);
-	add_variable(irc_table, type, "current_nick", 0, "%r%p", irc_stringify_nick, NULL);
-	add_variable(irc_table, type, "current_channel", 0, "%r%p", irc_stringify_channel, NULL);
+	add_variable(irc_table, type, "current_nick", 0, "stringify,null", irc_stringify_nick, NULL);
+	add_variable(irc_table, type, "current_channel", 0, "stringify,null", irc_stringify_channel, NULL);
 
 	ADD_COMMAND_LIST(irc_table, irc_commands);
 	ADD_KEY_LIST(irc_keys);

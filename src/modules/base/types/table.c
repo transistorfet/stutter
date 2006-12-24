@@ -31,9 +31,9 @@ struct type_s *base_load_table(void)
 	));
 }
 
-static void *base_table_create(void *value, char *str, va_list va)
+static void *base_table_create(void *value, char *params, va_list va)
 {
-	if (*str != '\0')
+	if (*params != '\0')
 		return(NULL);
 	else if (value)
 		return(value);

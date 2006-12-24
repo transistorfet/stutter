@@ -35,7 +35,7 @@ int base_cmd_set(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_TYPE_NOT_FOUND, type_name)
 		return(-1);
 	}
-	else if (!(add_variable(NULL, type, name, 0, "%s", args))) {
+	else if (!(add_variable(NULL, type, name, 0, "string", args))) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_SET_FAILED, name)
 		return(-1);
 	}

@@ -39,14 +39,14 @@ struct type_s *fe_common_load_command(void)
 	));
 }
 
-static void *fe_common_command_create(void *value, char *str, va_list va)
+static void *fe_common_command_create(void *value, char *params, va_list va)
 {
 	struct fe_common_command_s *command;
 
 	if (value)
 		fe_common_command_destroy(value);
 
-	if (strcmp(str, "(widget * string -> int) * widget"))
+	if (strcmp(params, "callback,widget"))
 		return(NULL);
 	if (!(command = (struct fe_common_command_s *) memory_alloc(sizeof(struct fe_common_command_s))))
 		return(NULL);

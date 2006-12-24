@@ -16,7 +16,7 @@ struct type_s *base_load_string(void)
 	return(add_type(
 		"string",
 		0,
-		(type_create_t) recreate_string_real,
+		(type_create_t) type_recreate_string,
 		(type_destroy_t) destroy_string,
 		NULL,
 		NULL,

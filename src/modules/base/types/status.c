@@ -44,14 +44,14 @@ struct type_s *base_load_status(void)
 
 /*** Local Functions ***/
 
-static void *base_status_create(void *value, char *str, va_list va)
+static void *base_status_create(void *value, char *params, va_list va)
 {
 	struct base_status_s *status;
 
 	if (value)
 		base_status_destroy(value);
 
-	if (strcmp(str, "%r%p"))
+	if (strncmp(params, "stringify,", 10) || strchr(&params[10], ','))
 		return(NULL);
 
 	if (!(status = (struct base_status_s *) memory_alloc(sizeof(struct base_status *))))
