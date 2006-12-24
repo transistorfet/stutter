@@ -60,6 +60,8 @@ static void terminal_set_attribs(struct terminal_s *, attrib_t);
 
 int init_terminal(void)
 {
+	struct type_s *type;
+
 	if (terminal)
 		return(1);
 	linear_init_v(terminal_list);
@@ -160,6 +162,7 @@ int terminal_print(struct terminal_s *terminal, char *str, int length)
 	char buffer[STRING_SIZE];
 	if (length == -1)
 		length = strlen(str);
+	terminal_set_attribs(terminal, terminal->attrib);
 	TextOut(terminal->context, terminal->surface.x * terminal->charx, terminal->surface.y * terminal->chary, str, length);
 	terminal->surface.x += (length % terminal->surface.width);
 	terminal->surface.y += (length / terminal->surface.width);
@@ -175,9 +178,10 @@ int terminal_print(struct terminal_s *terminal, char *str, int length)
 void terminal_clear(struct terminal_s *terminal, short x, short y, short width, short height)
 {
 	int i;
-	char buffer[512];
+	char buffer[STRING_SIZE];
 
 	// TODO replace this with FillRect(terminal_context, &rect, HBRUSH?)
+	terminal_set_attribs(terminal, terminal->attrib);
 	if (!width)
 		width = terminal->surface.width - x;
 	if (!height)
@@ -202,7 +206,8 @@ void terminal_move(struct terminal_s *terminal, short x, short y)
 }
 
 /**
- *
+ * Perform the given command on the given terminal using the given
+ * parameters.
  */
 int terminal_control(struct terminal_s *terminal, int cmd, ...)
 {
@@ -228,7 +233,6 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 				terminal->attrib.fg = attrib->fg;
 			if (attrib->bg != -1)
 				terminal->attrib.bg = attrib->bg;
-			terminal_set_attribs(terminal, terminal->attrib);
 			return(0);
 		}
 		case SCC_MODIFY_ATTRIB: {
@@ -243,7 +247,6 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			arg = va_arg(va, int);
 			if (arg != -1)
 				terminal->attrib.bg = arg;
-			terminal_set_attribs(terminal, terminal->attrib);
 			return(0);
 		}
 		case SCC_RESIZE: {
