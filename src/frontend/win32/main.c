@@ -18,9 +18,21 @@
 #include <stutter/lib/string.h>
 #include <stutter/lib/globals.h>
 #include <stutter/frontend/widget.h>
+#include <stutter/frontend/common.h>
 
 #include "net.h"
 #include "terminal.h"
+
+int handle_quit(char *, void *, char *);
+
+DEFINE_TYPE_LIST(fe_types,
+	ADD_TYPE(fe_common_load_colour)
+	ADD_TYPE(fe_common_load_command)
+);
+
+DEFINE_HANDLER_LIST(fe_handlers,
+	ADD_HANDLER("fe.quit", NULL, 0, handle_quit, NULL)
+);
 
 DEFINE_KEY_LIST(fe_keys,
 	FE_BINDINGS()
@@ -39,11 +51,6 @@ extern int release_timer(void);
 extern int init_frontend(void);
 extern int release_frontend(void);
 
-// TODO put these in an include file somewhere
-extern struct type_s *fe_common_load_command(void);
-extern int common_cmd_insert(struct widget_s *, char *);
-
-int handle_quit(char *, void *, char *);
 LRESULT CALLBACK windows_callback(HWND, UINT, WPARAM, LPARAM);
 
 int init_windows(void)
@@ -69,15 +76,17 @@ int init_windows(void)
 		return(-1);
 	if (init_system()) 
 		return(-1);
+
+	add_signal("fe.quit", 0);
+	ADD_TYPE_LIST(fe_types);
+	ADD_HANDLER_LIST(fe_handlers);
+
 	if (init_net())
 		return(-1);
 	if (init_execute())
 		return(-1);
 	if (init_timer())
 		return(-1);
-
-	add_signal("fe.quit", 0);
-	signal_connect("fe.quit", NULL, 0, (signal_t) handle_quit, NULL);
 
 	#undef MODULE
 	#define MODULE(name)	LOAD_MODULE(name)
@@ -86,9 +95,9 @@ int init_windows(void)
 	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
 
-	if (!(type = fe_common_load_command()))
+	if (!(type = find_type("command:fe")))
 		return(-1);
-	add_variable(fe_table, type, "insert", 0, "callback,widget", common_cmd_insert, NULL);
+	add_variable(fe_table, type, "insert", 0, "callback,widget", fe_common_cmd_insert, NULL);
 
 	if (!(type = find_type("string")))
 		return(-1);

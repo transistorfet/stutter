@@ -1,7 +1,7 @@
 /*
  * Module Name:		terminal.c
  * Version:		0.1
- * Module Requirements:	(none)
+ * Module Requirements:	type ; variable ; memory
  * System Requirements:	Curses Library
  * Description:		Curses Terminal Manager
  */
@@ -11,6 +11,8 @@
 #include <stdarg.h>
 
 #include CONFIG_H
+#include <stutter/type.h>
+#include <stutter/variable.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/linear.h>
 #include <stutter/frontend/surface.h>
@@ -42,12 +44,10 @@ struct surface_type_s terminal_type = {
 static void terminal_set_attribs(attrib_t);
 static inline int terminal_convert_colour(int);
 
-/**
- * Initialize the terminal and return 0 on success.
- */
 int init_terminal(void)
 {
 	int i, j;
+	struct type_s *type;
 
 	if (terminal)
 		return(1);
@@ -68,12 +68,13 @@ int init_terminal(void)
 
 	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
 		return(-1);
+	if (type = find_type("colour:fe")) {
+		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal->attrib.fg);
+		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal->attrib.bg);
+	}
 	return(0);
 }
 
-/**
- * Release all terminal resources and return 0 on success.
- */
 int release_terminal(void)
 {
 	endwin();

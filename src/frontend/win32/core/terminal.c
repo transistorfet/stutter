@@ -2,7 +2,7 @@
  * Module Name:		terminal.c
  * Version:		0.1
  * Interface:		surface
- * Module Requirements:	memory ; linear ; surface
+ * Module Requirements:	type ; variable ; memory ; linear ; surface
  * System Requirements:	Windows OS
  * Description:		Windows Terminal Manager
  */
@@ -13,6 +13,8 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <stutter/type.h>
+#include <stutter/variable.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/linear.h>
 #include <stutter/frontend/surface.h>
@@ -56,9 +58,6 @@ struct surface_type_s terminal_type = {
 
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
 
-/**
- * Initialize the terminal and return 0 on success.
- */
 int init_terminal(void)
 {
 	if (terminal)
@@ -73,25 +72,20 @@ int init_terminal(void)
 
 	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
 		return(-1);
+	if (type = find_type("colour:fe")) {
+		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal->attrib.fg);
+		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal->attrib.bg);
+	}
 	return(0);
 }
 
-/**
- * Release all terminal resources and return 0 on success.
- */
 int release_terminal(void)
 {
-/*
-	linear_destroy_list_v(terminal_list, list,
-		// TODO terminal_destroy will attempt to remove it from the list?
-		terminal_destroy(cur);
-	);
-*/
 	return(0);
 }
 
 /**
- *
+ * Create a new terminal of the given dimensions.
  */
 struct terminal_s *terminal_create(struct terminal_s *parent, short width, short height, int bitflags)
 {
@@ -146,10 +140,11 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 }
 
 /**
- *
+ * Destroy the given terminal
  */
 int terminal_destroy(struct terminal_s *terminal)
 {
+	/** Cause a destroy message to be sent to the terminal's window */
 	DestroyWindow(terminal->window);
 	return(0);
 }

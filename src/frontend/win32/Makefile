@@ -12,6 +12,7 @@ OBJS =	main.o \
 	terminal.o \
 	../common/cmds/insert.o \
 	../common/core/widget.o \
+	../common/types/colour.o \
 	../common/types/command.o \
 	../common/utils/format.o \
 	../common/widgets/frame.o \

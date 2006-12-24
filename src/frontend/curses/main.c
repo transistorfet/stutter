@@ -19,9 +19,21 @@
 #include <stutter/lib/string.h>
 #include <stutter/lib/globals.h>
 #include <stutter/frontend/widget.h>
+#include <stutter/frontend/common.h>
 
 #include "desc.h"
 #include "terminal.h"
+
+static int handle_quit(char *, void *, char *);
+
+DEFINE_TYPE_LIST(fe_types,
+	ADD_TYPE(fe_common_load_colour)
+	ADD_TYPE(fe_common_load_command)
+);
+
+DEFINE_HANDLER_LIST(fe_handlers,
+	ADD_HANDLER("fe.quit", NULL, 0, handle_quit, NULL)
+);
 
 DEFINE_KEY_LIST(fe_keys,
 	FE_BINDINGS()
@@ -41,14 +53,9 @@ extern int release_execute(void);
 extern int init_frontend(void);
 extern int release_frontend(void);
 
-// TODO put these in an include file somewhere
-extern struct type_s *fe_common_load_command(void);
-extern int common_cmd_insert(struct widget_s *, char *);
-
 extern int fe_timer_check(void);
 
 struct variable_table_s *fe_table;
-static int handle_quit(char *, void *, char *);
 
 int init_curses(void)
 {
@@ -56,6 +63,11 @@ int init_curses(void)
 
 	if (init_system())
 		return(-1);
+
+	add_signal("fe.quit", 0);
+	ADD_TYPE_LIST(fe_types);
+	ADD_HANDLER_LIST(fe_handlers);
+
 	if (init_desc())
 		return(-1);
 	if (init_net())
@@ -64,11 +76,6 @@ int init_curses(void)
 		return(-1);
 	if (init_execute())
 		return(-1);
-	if (init_terminal())
-		return(-1);
-
-	add_signal("fe.quit", 0);
-	signal_connect("fe.quit", NULL, 0, (signal_t) handle_quit, NULL);
 
 	#undef MODULE
 	#define MODULE(name)	LOAD_MODULE(name)
@@ -77,9 +84,9 @@ int init_curses(void)
 	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
 
-	if (!(type = fe_common_load_command()))
+	if (!(type = find_type("command:fe")))
 		return(-1);
-	add_variable(fe_table, type, "insert", 0, "callback,widget", common_cmd_insert, NULL);
+	add_variable(fe_table, type, "insert", 0, "callback,widget", fe_common_cmd_insert, NULL);
 
 	if (!(type = find_type("string")))
 		return(-1);
@@ -96,6 +103,8 @@ int init_curses(void)
 		add_variable(fe_table, type, "statusbar", 0, "string", FE_STATUSBAR_DEFAULT);
 	ADD_KEY_LIST(fe_keys);
 
+	if (init_terminal())
+		return(-1);
 	if (init_frontend())
 		return(-1);
 	return(0);
