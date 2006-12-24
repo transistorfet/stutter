@@ -21,9 +21,9 @@ int base_cmd_set(char *env, char *args)
 	int j = 0;
 	char *name;
 	void *window;
-	struct type_s *type;
+	char *type_name = NULL;
 	char buffer[STRING_SIZE];
-	char *type_name = BASE_DEFAULT_SET_TYPE;
+	struct type_s *type = NULL;
 
 	trim_whitespace_m(args);
 	if (*args == '-')
@@ -31,7 +31,7 @@ int base_cmd_set(char *env, char *args)
 	get_param_m(args, name, ' ');
 
 	trim_whitespace_m(args);
-	if (!(type = find_type(type_name)) || !type->create) {
+	if (type_name && (!(type = find_type(type_name)) || !type->create)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_TYPE_NOT_FOUND, type_name)
 		return(-1);
 	}
