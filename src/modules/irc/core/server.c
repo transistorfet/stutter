@@ -306,14 +306,27 @@ int irc_change_nick(struct irc_server *server, char *nick)
  */
 int irc_private_msg(struct irc_server *server, char *name, char *text)
 {
-	int ret;
+	char ch;
+	int i = 0, j = 0;
 	struct irc_msg *msg;
+	int name_len, text_len, ret;
 
-	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, text)))
-		return(-1);
-	msg->server = server;
-	emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
-	return(irc_send_msg(server, msg));
+	name_len = strlen(name);
+	text_len = strlen(text);
+	do {
+		i = j;
+		j = ((j + 488 - name_len) < text_len) ? (j + 488 - name_len) : text_len;
+		ch = text[j];
+		text[j] = '\0';
+		if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, &text[i])))
+			return(-1);
+		text[j] = ch;
+		msg->server = server;
+		emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+		if (ret = irc_send_msg(server, msg) < 0)
+			return(ret);
+	} while (j < text_len);
+	return(0);
 }
 
 /**
@@ -323,14 +336,26 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
  */
 int irc_notice(struct irc_server *server, char *name, char *text)
 {
-	int ret;
+	char ch;
+	int i = 0, j = 0;
 	struct irc_msg *msg;
+	int name_len, text_len, ret;
 
-	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, text)))
-		return(-1);
-	msg->server = server;
-	emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
-	return(irc_send_msg(server, msg));
+	name_len = strlen(name);
+	text_len = strlen(text);
+	do {
+		i = j;
+		j = ((j + 488 - name_len) < text_len) ? (j + 488 - name_len) : text_len;
+		ch = text[j];
+		text[j] = '\0';
+		if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, &text[i])))
+			return(-1);
+		msg->server = server;
+		emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+		if (ret = irc_send_msg(server, msg))
+			return(ret);
+	} while (j < text_len);
+	return(0);
 }
 
 /*** Local Functions ***/
