@@ -23,17 +23,15 @@ int base_cmd_remove(char *env, char *args)
 	char buffer[STRING_SIZE];
 
 	get_param_m(args, name, ' ');
-	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
+	if (remove_variable(NULL, NULL, name)) {
+		BASE_ERROR_JOINPOINT(BASE_ERR_REMOVE_FAILED, name)
 		return(-1);
-	if (!remove_variable(NULL, NULL, name)) {
+	}
+	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
 		if (snprintf(buffer, STRING_SIZE, "Variable %s removed.", name) >= 0)
 			fe_print(window, buffer);
-		return(0);
 	}
-	else {
-		fe_print(window, "Error removing variable.");
-		return(-1);
-	}
+	return(0);
 }
 
 

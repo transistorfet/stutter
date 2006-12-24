@@ -41,8 +41,8 @@ int base_cmd_bind(char *env, char *args)
 		return(-1);
 	}
 	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
-		snprintf(buffer, STRING_SIZE, "Key %s bound to %s %s", key, name, args);
-		fe_print(window, buffer);
+		if (snprintf(buffer, STRING_SIZE, "Key %s bound to %s %s", key, name, args) >= 0)
+			fe_print(window, buffer);
 	}
 	return(0);
 }

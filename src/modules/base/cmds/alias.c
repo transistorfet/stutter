@@ -19,21 +19,18 @@ int base_cmd_alias(char *env, char *args)
 	struct type_s *type;
 	char buffer[STRING_SIZE];
 
-	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
-		return(-1);
 	trim_whitespace_m(args);
 	get_param_m(args, name, ' ');
 
 	if (!(type = find_type("command")) || !type->create) {
-		if (snprintf(buffer, STRING_SIZE, "Error: Command type not found.") >= 0)
-			fe_print(window, buffer);
+		BASE_ERROR_JOINPOINT(BASE_ERR_VARIABLE_NOT_FOUND, "command")
 		return(-1);
 	}
-	else if (!(str = create_string(args)) || !(add_variable(NULL, type, name, 0, "%r%s", base_cmd_evaluate, str))) {
-		fe_print(window, "Error setting alias.");
+	else if (!(str = create_string(args)) || !(add_variable(NULL, type, name, 0, "callback,string", base_cmd_evaluate, str))) {
+		BASE_ERROR_JOINPOINT(BASE_ERR_ALIAS_FAILED, name)
 		return(-1);
 	}
-	else {
+	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
 		if (snprintf(buffer, STRING_SIZE, "Alias: %s <= %s", name, args) >= 0)
 			fe_print(window, buffer);
 	}

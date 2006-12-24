@@ -25,10 +25,6 @@ int base_cmd_set(char *env, char *args)
 	char buffer[STRING_SIZE];
 	char *type_name = BASE_DEFAULT_SET_TYPE;
 
-
-	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
-		return(-1);
-
 	trim_whitespace_m(args);
 	if (*args == '-')
 		split_string_m(&args[1], type_name, args, ' ');
@@ -36,15 +32,14 @@ int base_cmd_set(char *env, char *args)
 
 	trim_whitespace_m(args);
 	if (!(type = find_type(type_name)) || !type->create) {
-		if (snprintf(buffer, STRING_SIZE, "Error: Type %s not found.", type_name) >= 0)
-			fe_print(window, buffer);
+		BASE_ERROR_JOINPOINT(BASE_ERR_TYPE_NOT_FOUND, type_name)
 		return(-1);
 	}
 	else if (!(add_variable(NULL, type, name, 0, "%s", args))) {
-		fe_print(window, "Error setting variable.");
+		BASE_ERROR_JOINPOINT(BASE_ERR_SET_FAILED, name)
 		return(-1);
 	}
-	else {
+	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
 		if (snprintf(buffer, STRING_SIZE, "Variable: %s <= %s", name, args) >= 0)
 			fe_print(window, buffer);
 	}
