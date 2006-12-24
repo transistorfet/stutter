@@ -18,8 +18,6 @@
 
 #define WINDOW_MAX_WRAP		20
 
-#define WINDOW_MAX_LINES	100
-
 struct widget_type_s scroll_type = {
 	"scrolling-window",
 	0,
@@ -40,7 +38,7 @@ int scroll_init(struct scroll_s *scroll)
 	if (!scroll->widget.parent)
 		return(-1);
 	scroll->cur_line = 0;
-	scroll->max_lines = WINDOW_MAX_LINES;
+	scroll->max_lines = FE_WINDOW_LOG_SIZE;
 	queue_init_v(scroll->log);
 	return(0);
 }

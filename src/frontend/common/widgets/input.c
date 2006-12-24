@@ -8,6 +8,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include CONFIG_H
 #include <stutter/lib/queue.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/string.h>
@@ -16,9 +17,6 @@
 #include <stutter/frontend/keycodes.h>
 #include "input.h"
 #include "window.h"
-
-#define INPUT_MAX_BUFFER		1024
-#define INPUT_MAX_HISTORY		100
 
 struct widget_type_s input_type = {
 	"input",
@@ -40,13 +38,13 @@ static int input_process_char(struct input_s *, int);
 
 int input_init(struct input_s *input)
 {
-	if (!(input->buffer = (char *) memory_alloc(INPUT_MAX_BUFFER)))
+	if (!(input->buffer = (char *) memory_alloc(FE_INPUT_BUFFER_SIZE)))
 		return(-1);
 	input->i = 0;
 	input->end = 0;
-	input->max = INPUT_MAX_BUFFER;
+	input->max = FE_INPUT_BUFFER_SIZE;
 
-	if (!(input->history = create_queue(INPUT_MAX_HISTORY, (destroy_t) destroy_string))) {
+	if (!(input->history = create_queue(FE_INPUT_HISTORY_SIZE, (destroy_t) destroy_string))) {
 		memory_free(input->buffer);
 		return(-1);
 	}
