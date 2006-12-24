@@ -33,6 +33,7 @@ int base_cmd_previous(char *, char *);
 int base_cmd_scroll(char *, char *);
 int base_cmd_set(char *, char *);
 int base_cmd_source(char *, char *);
+int base_cmd_unbind(char *, char *);
 
 /* Signal Handlers */
 int base_sig_print(void *, void *, char *);

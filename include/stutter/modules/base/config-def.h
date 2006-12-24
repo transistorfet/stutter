@@ -29,6 +29,7 @@
 #define DEFAULT_BASE_ERR_BINDING_FAILED		"Error binding key %s"
 #define DEFAULT_BASE_ERR_REMOVE_FAILED		"Error removing variable %s"
 #define DEFAULT_BASE_ERR_SET_FAILED		"Error setting variable %s"
+#define DEFAULT_BASE_ERR_UNBINDING_FAILED	"Error unbinding key %s"
 
 #define DEFAULT_BASE_TYPES()		\
 	ADD_TYPE(base_load_command)	\
@@ -67,7 +68,8 @@
 	ADD_COMMAND("remove", base_cmd_remove)		\
 	ADD_COMMAND("scroll", base_cmd_scroll)		\
 	ADD_COMMAND("set", base_cmd_set)		\
-	ADD_COMMAND("source", base_cmd_source)
+	ADD_COMMAND("source", base_cmd_source)		\
+	ADD_COMMAND("unbind", base_cmd_unbind)
 
 #define DEFAULT_BASE_INIT_JOINPOINT(table)	\
 	DO_NOTHING();
@@ -150,6 +152,10 @@
 #ifndef BASE_ERR_SET_FAILED
 #define BASE_ERR_SET_FAILED \
 	DEFAULT_BASE_ERR_SET_FAILED
+#endif
+#ifndef BASE_ERR_UNBINDING_FAILED
+#define BASE_ERR_UNBINDING_FAILED \
+	DEFAULT_BASE_ERR_UNBINDING_FAILED
 #endif
 #ifndef BASE_TYPES
 #define BASE_TYPES() \
