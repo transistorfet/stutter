@@ -193,8 +193,8 @@ int util_evaluate_command(char *cmd, char *str)
 	void *value;
 	struct type_s *type;
 
-	if (!(value = index_variable(NULL, PATH_VARIABLE_NAME, cmd, &type)))
-		value = find_variable(NULL, cmd, &type);
+	if (!(value = index_variable(NULL, PATH_VARIABLE_NAME, cmd, &type)) && !(value = find_variable(NULL, cmd, &type)))
+		return(-1);
 	if (!type || !type->evaluate)
 		return(-1);
 	type->evaluate(value, str);
