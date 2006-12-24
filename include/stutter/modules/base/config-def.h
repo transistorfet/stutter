@@ -19,12 +19,16 @@
 #define DEFAULT_BASE_COMMAND_PREFIX		"/"
 #define DEFAULT_BASE_NULL_COMMAND		""
 
-#define DEFAULT_BASE_ERR_UNKNOWN_COMMAND	"Error: Unknown Command, %s"
-#define DEFAULT_BASE_ERR_UNABLE_TO_OPEN_FILE	"Error: Unable to open the file, %s"
+#define DEFAULT_BASE_ERR_UNKNOWN_COMMAND	"Error: Unknown Command %s"
+#define DEFAULT_BASE_ERR_UNABLE_TO_OPEN_FILE	"Error: Unable to open the file %s"
 #define DEFAULT_BASE_ERR_VARIABLE_NOT_FOUND	"Error: %s variable not found"
+#define DEFAULT_BASE_ERR_TYPE_NOT_FOUND		"Error: %s type not found"
 #define DEFAULT_BASE_ERR_STRINGIFY_FAILED	"Error stringifying variable %s"
 #define DEFAULT_BASE_ERR_EVALUATE_FAILED	"Error evaluating variable %s"
+#define DEFAULT_BASE_ERR_ALIAS_FAILED		"Error creating alias %s"
 #define DEFAULT_BASE_ERR_BINDING_FAILED		"Error binding key %s"
+#define DEFAULT_BASE_ERR_REMOVE_FAILED		"Error removing variable %s"
+#define DEFAULT_BASE_ERR_SET_FAILED		"Error setting variable %s"
 
 #define DEFAULT_BASE_TYPES()		\
 	ADD_TYPE(base_load_command)	\
@@ -119,6 +123,10 @@
 #define BASE_ERR_VARIABLE_NOT_FOUND \
 	DEFAULT_BASE_ERR_VARIABLE_NOT_FOUND
 #endif
+#ifndef BASE_ERR_TYPE_NOT_FOUND
+#define BASE_ERR_TYPE_NOT_FOUND \
+	DEFAULT_BASE_ERR_TYPE_NOT_FOUND
+#endif
 #ifndef BASE_ERR_STRINGIFY_FAILED
 #define BASE_ERR_STRINGIFY_FAILED \
 	DEFAULT_BASE_ERR_STRINGIFY_FAILED
@@ -127,9 +135,21 @@
 #define BASE_ERR_EVALUATE_FAILED \
 	DEFAULT_BASE_ERR_EVALUATE_FAILED
 #endif
+#ifndef BASE_ERR_ALIAS_FAILED
+#define BASE_ERR_ALIAS_FAILED \
+	DEFAULT_BASE_ERR_ALIAS_FAILED
+#endif
 #ifndef BASE_ERR_BINDING_FAILED
 #define BASE_ERR_BINDING_FAILED \
 	DEFAULT_BASE_ERR_BINDING_FAILED
+#endif
+#ifndef BASE_ERR_REMOVE_FAILED
+#define BASE_ERR_REMOVE_FAILED \
+	DEFAULT_BASE_ERR_REMOVE_FAILED
+#endif
+#ifndef BASE_ERR_SET_FAILED
+#define BASE_ERR_SET_FAILED \
+	DEFAULT_BASE_ERR_SET_FAILED
 #endif
 #ifndef BASE_TYPES
 #define BASE_TYPES() \
