@@ -14,6 +14,9 @@
 	MODULE(base)		\
 	MODULE(irc)
 
+#define ERROR_JOINPOINT(name, ...)	\
+	PRINT_TO_CURRENT(__VA_ARGS__)
+
 #include <stutter/config-def.h>
 #include <stutter/frontend/config-def.h>
 #include <stutter/modules/base/config-def.h>

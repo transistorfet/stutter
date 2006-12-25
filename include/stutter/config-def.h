@@ -30,7 +30,7 @@
 #define DEFAULT_SYSTEM_RELEASE_JOINPOINT()	\
 	DO_NOTHING()
 
-#define ERROR_JOINPOINT(name, ...)	\
+#define DEFAULT_ERROR_JOINPOINT(name, ...)	\
 	EMIT_STRING(name, NULL, __VA_ARGS__)
 
 /*** Global Initialization ***/
@@ -71,6 +71,10 @@
 #ifndef SYSTEM_RELEASE_JOINPOINT
 #define SYSTEM_RELEASE_JOINPOINT() \
 	DEFAULT_SYSTEM_RELEASE_JOINPOINT()
+#endif
+#ifndef ERROR_JOINPOINT
+#define ERROR_JOINPOINT(name, ...) \
+	DEFAULT_ERROR_JOINPOINT(name, __VA_ARGS__)
 #endif
 #ifndef STUTTER_INIT
 #define STUTTER_INIT(argc, argv) \
