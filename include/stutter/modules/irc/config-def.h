@@ -80,6 +80,7 @@
 	ADD_COMMAND("complete", irc_cmd_complete)	\
 	ADD_COMMAND("ctcp", irc_cmd_ctcp)		\
 	ADD_COMMAND("disconnect", irc_cmd_disconnect)	\
+	ADD_COMMAND("endquery", irc_cmd_endquery)	\
 	ADD_COMMAND("join", irc_cmd_join)		\
 	ADD_COMMAND("kick", irc_cmd_kick)		\
 	ADD_COMMAND("leave", irc_cmd_leave)		\

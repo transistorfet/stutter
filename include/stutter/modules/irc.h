@@ -20,6 +20,7 @@ int release_irc(void);
 int irc_cmd_complete(char *, char *);
 int irc_cmd_ctcp(char *, char *);
 int irc_cmd_disconnect(char *, char *);
+int irc_cmd_endquery(char *, char *);
 int irc_cmd_join(char *, char *);
 int irc_cmd_kick(char *, char *);
 int irc_cmd_leave(char *, char *);
