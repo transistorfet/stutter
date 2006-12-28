@@ -9,12 +9,14 @@
 #include <stutter/config-macros.h>
 
 #define DEFAULT_FE_STATUSBAR			"$&fe.statusbar"
-#define DEFAULT_FE_STATUSBAR_DEFAULT		"${fe.inverse} $time $irc.current_nick on $irc.current_channel"
+#define DEFAULT_FE_STATUSBAR_DEFAULT		"${fe.theme.statusbar} $time"
 #define DEFAULT_FE_STATUS_BAR_HEIGHT		1
 #define DEFAULT_FE_WINDOW_LOG_SIZE		1000
 #define DEFAULT_FE_WINDOW_WRAP_STRING		"        "
 #define DEFAULT_FE_INPUT_BUFFER_SIZE		1024
 #define DEFAULT_FE_INPUT_HISTORY_SIZE		200
+
+#define DEFAULT_FE_COLOURMAP_SIZE		32
 
 #define DEFAULT_FE_NET_ERR_RETRYING		"Error: Failed to connect to %s, Retrying..."
 #define DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT	"Error: Failed to connect to %s"
@@ -55,6 +57,10 @@
 #ifndef FE_INPUT_HISTORY_SIZE
 #define FE_INPUT_HISTORY_SIZE \
 	DEFAULT_FE_INPUT_HISTORY_SIZE
+#endif
+#ifndef FE_COLOURMAP_SIZE
+#define FE_COLOURMAP_SIZE \
+	DEFAULT_FE_COLOURMAP_SIZE
 #endif
 #ifndef FE_NET_ERR_RETRYING
 #define FE_NET_ERR_RETRYING \
