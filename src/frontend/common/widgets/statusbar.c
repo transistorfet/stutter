@@ -88,9 +88,7 @@ int statusbar_print(struct statusbar_s *statusbar, const char *str, int len)
 
 void statusbar_clear(struct statusbar_s *statusbar)
 {
-	surface_control_m(statusbar->window.surface, SCC_MODIFY_ATTRIB, SA_INVERSE, -1, -1);
 	surface_clear_m(statusbar->window.surface, statusbar->window.x, statusbar->window.y, statusbar->window.width, statusbar->window.height);
-	surface_control_m(statusbar->window.surface, SCC_MODIFY_ATTRIB, SA_NORMAL, -1, -1);
 }
 
 int statusbar_read(struct statusbar_s *statusbar, char *buffer, int max)
