@@ -52,6 +52,6 @@ OBJS =	init.o \
 
 include $(ROOT)/rules.mk
 
-init.o: $(CONFIG_H)
+init.o: $(CONFIG_H) $(ROOT)/include/stutter/modules/irc/config-def.h
 $(CONFIG_H):
 
