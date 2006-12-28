@@ -12,26 +12,31 @@
 #define SA_INVERSE		0x02
 #define SA_BLINK		0x04
 
-#define SA_METHOD		0xf0000000
-#define SA_SET			0x00000000
-#define SA_RESET		0x10000000
-#define SA_OR			0x20000000
-#define SA_TOGGLE		0x30000000
+#define SA_METHOD_SET		0x00
+#define SA_METHOD_RESET		0x01
+#define SA_METHOD_OR		0x02
+#define SA_METHOD_TOGGLE	0x03
 
-#define SA_BLACK		0x000000
-#define SA_RED			0xFF0000
-#define SA_GREEN		0x00FF00
-#define SA_YELLOW		0xFFFF00
-#define SA_BLUE			0x0000FF
-#define SA_MAGENTA		0xFF00FF
-#define SA_CYAN			0x00FFFF
-#define SA_WHITE		0xFFFFFF
+#define SC_ENC_RGBA		0x01
+#define SC_ENC_MAPPING		0x02
 
-#define SA_ORANGE		0xFF7F00
-#define SA_PINK			0xFF007F
-#define SA_BROWN		0x7F7F00
-#define SA_GREY			0x7F7F7F
-#define SA_TURQUOISE		0x007F7F
+#define SC_MAP_DEFAULT_COLOUR	0
+#define SC_MAP_CURRENT_COLOUR	-1
+
+#define SC_RGBA_BLACK		0x000000
+#define SC_RGBA_RED		0xFF0000
+#define SC_RGBA_GREEN		0x00FF00
+#define SC_RGBA_YELLOW		0xFFFF00
+#define SC_RGBA_BLUE		0x0000FF
+#define SC_RGBA_MAGENTA		0xFF00FF
+#define SC_RGBA_CYAN		0x00FFFF
+#define SC_RGBA_WHITE		0xFFFFFF
+
+#define SC_RGBA_ORANGE		0xFF7F00
+#define SC_RGBA_PINK		0xFF007F
+#define SC_RGBA_BROWN		0x7F7F00
+#define SC_RGBA_GREY		0x7F7F7F
+#define SC_RGBA_TURQUOISE	0x007F7F
 
 #define SCC_GET_ATTRIB		0x0010
 #define SCC_SET_ATTRIB		0x0020
@@ -43,10 +48,16 @@
 #define surface_get_width_m(surface)		( ((struct surface_s *) surface)->width )
 #define surface_get_height_m(surface)		( ((struct surface_s *) surface)->height )
 
+typedef struct colour_s {
+	char enc;
+	int colour;
+} colour_t;
+
 typedef struct attrib_s {
-	int fg;
-	int bg;
-	int attrib;
+	char method;
+	short style;
+	colour_t fg;
+	colour_t bg;
 } attrib_t;
 
 typedef surface_s;
@@ -93,19 +104,19 @@ struct surface_s {
 
 /*** Miscellaneous Macros and Inline Functions ***/
 
-static inline int surface_modify_attrib(int org, int mod)
+static inline short surface_modify_style(char method, short org, short mod)
 {
-	switch (mod & SA_METHOD) {
-		case SA_SET:
-			return(mod & ~SA_METHOD);
-		case SA_RESET:
-			return(org & ~(mod & ~SA_METHOD));
-		case SA_OR:
-			return(org | (mod & ~SA_METHOD));
-		case SA_TOGGLE:
-			return(org ^ (mod & ~SA_METHOD));
+	switch (method) {
+		case SA_METHOD_SET:
+			return(mod);
+		case SA_METHOD_RESET:
+			return(org & ~mod);
+		case SA_METHOD_OR:
+			return(org | mod);
+		case SA_METHOD_TOGGLE:
+			return(org ^ mod);
 		default:
-			return(mod & ~SA_METHOD);
+			return(mod);
 	}
 }
 
