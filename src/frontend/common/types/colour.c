@@ -10,7 +10,7 @@
 #include <stutter/type.h>
 #include <stutter/utils.h>
 #include <stutter/lib/string.h>
-#include <stutter/modules/base.h>
+#include <stutter/frontend/surface.h>
 
 static void *fe_common_colour_create(void *, char *, va_list);
 static int fe_common_colour_stringify(void *, char *, int);
@@ -36,13 +36,25 @@ struct type_s *fe_common_load_colour(void)
 static void *fe_common_colour_create(void *value, char *params, va_list va)
 {
 	char *str;
+	colour_t *colour;
 
 	if (!strcmp(params, "pointer"))
 		return(va_arg(va, void *));
+	else if (!value)
+		return(NULL);
 	else if (!strcmp(params, "string")) {
 		str = va_arg(va, char *);
-		if ((str[0] == '#') && (strlen(str) == 7))
-			*((int *) value) = util_atoi(&str[1], 16);
+		colour = (colour_t *) value;
+		if (str[0] == '#') {
+			if  (strlen(str) == 7) {
+				colour->enc = SC_ENC_RGBA;
+				colour->colour = util_atoi(&str[1], 16);
+			}
+		}
+		else {
+			colour->enc = SC_ENC_MAPPING;
+			colour->colour = util_atoi(str, 10);
+		}
 	}
 	return(value);
 }
