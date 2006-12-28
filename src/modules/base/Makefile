@@ -11,6 +11,7 @@ OBJS =	init.o \
 	cmds/echo.o \
 	cmds/evaluate.o \
 	cmds/exec.o \
+	cmds/expand.o \
 	cmds/get.o \
 	cmds/next.o \
 	cmds/parse.o \
@@ -32,4 +33,7 @@ OBJS =	init.o \
 	types/wildcard.o
 
 include $(ROOT)/rules.mk
+
+init.o: $(CONFIG_H) $(ROOT)/include/stutter/modules/base/config-def.h
+$(CONFIG_H):
 

@@ -23,6 +23,7 @@ int base_cmd_clearline(char *, char *);
 int base_cmd_echo(char *, char *);
 int base_cmd_evaluate(char *, char *);
 int base_cmd_exec(char *, char *);
+int base_cmd_expand(char *, char *);
 int base_cmd_get(char *, char *);
 int base_cmd_next(char *, char *);
 int base_cmd_parse(char *, char *);
