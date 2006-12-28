@@ -11,9 +11,6 @@
 #include <stutter/frontend/surface.h>
 #include "format.h"
 
-static int format_colours[] = { 0x7F7F7F, 0x000000, 0x00007F, 0x007F00, 0x7F0000, 0x007F7F, 0x7F007F, 0x7F7F00,
-				0xFFFF00, 0x00FF00, 0x00FFFF, 0xFF0000, 0x0000FF, 0xFF00FF, 0x7F7F7F, 0xFFFFFF };
-
 static int format_string_parse(const char *, struct format_string_s *, int, int);
 
 /**
@@ -81,44 +78,55 @@ static int format_string_parse(const char *str, struct format_string_s *format, 
 		switch (str[i]) {
 			case 0x02: {
 				format->styles[k].index = j;
-				format->styles[k].attrib.attrib = SA_TOGGLE | SA_BOLD;
-				format->styles[k].attrib.fg = -1;
-				format->styles[k].attrib.bg = -1;
+				format->styles[k].attrib.method = SA_METHOD_TOGGLE;
+				format->styles[k].attrib.style = SA_BOLD;
+				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
+				format->styles[k].attrib.fg.colour = SC_MAP_CURRENT_COLOUR;
+				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
+				format->styles[k].attrib.bg.colour = SC_MAP_CURRENT_COLOUR;
 				i++;
 				if (++k >= styles_max)
 					k--;
 				break;
 			}
 			case 0x03: {
-				int fg, bg = -1;
+				int fg, bg = SC_MAP_CURRENT_COLOUR;
 
-				if (++i && !is_number_char_m(str[i]))
-					break;
-				fg = str[i++] - 0x30;
-				if (is_number_char_m(str[i]))
-					fg = (fg * 10) + (str[i++] - 0x30);
-				fg = format_colours[(fg >= 16) ? fg / 16 : fg];
-
-				if ((str[i] == ',') && ++i && is_number_char_m(str[i])) {
-					bg = str[i++] - 0x30;
+				++i;
+				if (!is_number_char_m(str[i])) {
+					format->styles[k].attrib.fg.colour = SC_MAP_DEFAULT_COLOUR;
+					format->styles[k].attrib.bg.colour = SC_MAP_DEFAULT_COLOUR;
+				}
+				else {
+					fg = str[i++] - 0x30;
 					if (is_number_char_m(str[i]))
-						bg = (bg * 10) + (str[i++] - 0x30);
-					bg = format_colours[(bg >= 16) ? bg / 16 : bg];
+						fg = (fg * 10) + (str[i++] - 0x30);
+                
+					if ((str[i] == ',') && ++i && is_number_char_m(str[i])) {
+						bg = str[i++] - 0x30;
+						if (is_number_char_m(str[i]))
+							bg = (bg * 10) + (str[i++] - 0x30);
+					}
+					format->styles[k].attrib.fg.colour = fg;
+					format->styles[k].attrib.bg.colour = bg;
 				}
 				format->styles[k].index = j;
-				format->styles[k].attrib.attrib = SA_OR;
-				format->styles[k].attrib.fg = fg;
-				format->styles[k].attrib.bg = bg;
+				format->styles[k].attrib.method = SA_METHOD_OR;
+				format->styles[k].attrib.style = 0;
+				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
+				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
 				if (++k >= styles_max)
 					k--;
 				break;
 			}
 			case 0x0F: {
 				format->styles[k].index = j;
-				format->styles[k].attrib.attrib = SA_SET | SA_NORMAL;
-				// TODO is this supposed to reset the colour too?
-				format->styles[k].attrib.fg = -1;
-				format->styles[k].attrib.bg = -1;
+				format->styles[k].attrib.method = SA_METHOD_SET;
+				format->styles[k].attrib.style = SA_NORMAL;
+				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
+				format->styles[k].attrib.fg.colour = SC_MAP_DEFAULT_COLOUR;
+				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
+				format->styles[k].attrib.bg.colour = SC_MAP_DEFAULT_COLOUR;
 				i++;
 				if (++k >= styles_max)
 					k--;
@@ -126,9 +134,12 @@ static int format_string_parse(const char *str, struct format_string_s *format, 
 			}
 			case 0x16: {
 				format->styles[k].index = j;
-				format->styles[k].attrib.attrib = SA_TOGGLE | SA_INVERSE;
-				format->styles[k].attrib.fg = -1;
-				format->styles[k].attrib.bg = -1;
+				format->styles[k].attrib.method = SA_METHOD_TOGGLE;
+				format->styles[k].attrib.style = SA_INVERSE;
+				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
+				format->styles[k].attrib.fg.colour = SC_MAP_CURRENT_COLOUR;
+				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
+				format->styles[k].attrib.bg.colour = SC_MAP_CURRENT_COLOUR;
 				i++;
 				if (++k >= styles_max)
 					k--;
