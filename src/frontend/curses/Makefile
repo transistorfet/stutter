@@ -13,8 +13,10 @@ OBJS =	main.o \
 	../common/cmds/insert.o \
 	../common/core/colourmap.o \
 	../common/core/widget.o \
+	../common/types/attrib.o \
 	../common/types/colour.o \
 	../common/types/command.o \
+	../common/types/style.o \
 	../common/utils/format.o \
 	../common/widgets/frame.o \
 	../common/widgets/input.o \

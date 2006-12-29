@@ -28,6 +28,8 @@ static int handle_quit(char *, void *, char *);
 
 DEFINE_TYPE_LIST(fe_types,
 	ADD_TYPE(fe_common_load_colour)
+	ADD_TYPE(fe_common_load_style)
+	ADD_TYPE(fe_common_load_attrib)
 	ADD_TYPE(fe_common_load_command)
 );
 
@@ -83,6 +85,7 @@ int init_curses(void)
 
 	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
+	add_variable(fe_table, type, "theme", 0, "");
 
 	if (!(type = find_type("command:fe")))
 		return(-1);
@@ -90,14 +93,18 @@ int init_curses(void)
 
 	if (!(type = find_type("string")))
 		return(-1);
-	add_variable(fe_table, type, "bold", 0, "string", "\x02");
-	add_variable(fe_table, type, "normal", 0, "string", "");
-	add_variable(fe_table, type, "flash", 0, "string", "");
-	add_variable(fe_table, type, "inverse", 0, "string", "\x16");
-	add_variable(fe_table, type, "colour", 0, "string", "\x03");
-
 	add_variable(fe_table, type, "colour_test", 0, "string", "\x03\x30K0 \x03\x31K1 \x03\x32K2 \x03\x33K3 \x03\x34K4 \x03\x35K5 \x03\x36K6 \x03\x37K7 \x03\x38K8 \x03\x39K9 \x03\x31\x30K10 \x03\x31\x31K11 \x03\x31\x32K12 \x03\x31\x33K13 \x03\x31\x34K14 \x03\x31\x35K15");
 	add_variable(fe_table, type, "bold_test", 0, "string", "\x02\x03\x30K0 \x03\x31K1 \x03\x32K2 \x03\x33K3 \x03\x34K4 \x03\x35K5 \x03\x36K6 \x03\x37K7 \x03\x38K8 \x03\x39K9 \x03\x31\x30K10 \x03\x31\x31K11 \x03\x31\x32K12 \x03\x31\x33K13 \x03\x31\x34K14 \x03\x31\x35K15");
+
+	if (!(type = find_type("attrib:fe")))
+		return(-1);
+	add_variable(fe_table, type, "theme.bracket", 0, "string", FE_THEME_BRACKET);
+	add_variable(fe_table, type, "theme.error", 0, "string", FE_THEME_ERROR);
+	add_variable(fe_table, type, "theme.message", 0, "string", FE_THEME_MESSAGE);
+	add_variable(fe_table, type, "theme.nick", 0, "string", FE_THEME_NICK);
+	add_variable(fe_table, type, "theme.status", 0, "string", FE_THEME_STATUS);
+	add_variable(fe_table, type, "theme.statusbar", 0, "string", FE_THEME_STATUSBAR);
+	add_variable(fe_table, type, "theme.topic", 0, "string", FE_THEME_TOPIC);
 
 	if (type = find_type("format"))
 		add_variable(fe_table, type, "statusbar", 0, "string", FE_STATUSBAR_DEFAULT);
