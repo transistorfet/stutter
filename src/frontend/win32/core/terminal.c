@@ -253,7 +253,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			enc = va_arg(va, int);
 			arg = va_arg(va, int);
 			if ((enc != SC_ENC_MAPPING) || (arg != SC_MAP_CURRENT_COLOUR)) {
-				terminal->attrib.bg.enc = enc;
+				terminal->attrib.fg.enc = enc;
 				terminal->attrib.fg.colour = arg;
 			}
 			enc = va_arg(va, int);
@@ -450,7 +450,7 @@ static inline int terminal_convert_colour(colour_t colour)
 {
 	if (colour.enc == SC_ENC_MAPPING)
 		colour.colour = colourmap_get_colour(NULL, SC_ENC_RGBA, colour.colour);
-	else if (enc != SC_ENC_RGBA)
+	else if (colour.enc != SC_ENC_RGBA)
 		return(0);
 	return(RGB( (colour.colour & 0xff0000) >> 16, (colour.colour & 0xff00) >> 8, (colour.colour & 0xff) ));
 }
