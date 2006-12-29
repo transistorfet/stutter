@@ -11,6 +11,7 @@ OBJS =	main.o \
 	execute.o \
 	terminal.o \
 	../common/cmds/insert.o \
+	../common/core/colourmap.o \
 	../common/core/widget.o \
 	../common/types/colour.o \
 	../common/types/command.o \

@@ -2,7 +2,7 @@
  * Module Name:		terminal.c
  * Version:		0.1
  * Interface:		surface
- * Module Requirements:	type ; variable ; memory ; linear ; surface
+ * Module Requirements:	type ; variable ; memory ; linear ; surface ; colourmap
  * System Requirements:	Windows OS
  * Description:		Windows Terminal Manager
  */
@@ -19,6 +19,7 @@
 #include <stutter/lib/linear.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
+#include <stutter/frontend/common/colourmap.h>
 #include "terminal.h"
 
 #define TERMINAL_DEFAULT_WIDTH		80
@@ -30,6 +31,7 @@ struct terminal_s {
 	struct surface_s surface;
 	short charx;
 	short chary;
+	attrib_t def_attrib;
 	attrib_t attrib;
 	HWND window;
 	HDC context;
@@ -44,6 +46,7 @@ struct terminal_s *terminal;
 static HFONT terminal_font;
 static HFONT terminal_bold_font;
 static linear_list_v(terminal_s) terminal_list;
+static attrib_t terminal_def_attrib = { 0, SA_NORMAL, { SC_ENC_RGBA, SC_RGBA_WHITE }, { SC_ENC_RGBA, SC_RGBA_BLACK } };
 
 struct surface_type_s terminal_type = {
 	"windows-terminal",
@@ -57,6 +60,7 @@ struct surface_type_s terminal_type = {
 };
 
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
+static inline int terminal_convert_colour(colour_t);
 
 int init_terminal(void)
 {
@@ -72,11 +76,13 @@ int init_terminal(void)
 //	terminal_font = CreateFont(TERMINAL_DEFAULT_FONT_SIZE, 0, 0, 0, FW_NORMAL, 0, 0, 0, 0, 0, 0, 0, FIXED_PITCH, "system");
 //	terminal_bold_font = CreateFont(TERMINAL_DEFAULT_FONT_SIZE, 0, 0, 0, FW_BOLD, 0, 0, 0, 0, 0, 0, 0, FIXED_PITCH, "system");
 
+	if (init_colourmap())
+		return(-1);
 	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
 		return(-1);
 	if (type = find_type("colour:fe")) {
-		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal->attrib.fg);
-		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal->attrib.bg);
+		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal->def_attrib.fg);
+		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal->def_attrib.bg);
 	}
 	return(0);
 }
@@ -132,7 +138,8 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 	terminal->chary = tm.tmHeight + tm.tmExternalLeading;
 	ReleaseDC(terminal->window, hdc);
 
-	terminal_control(terminal, SCC_MODIFY_ATTRIB, SA_NORMAL, SA_WHITE, SA_BLACK);
+	terminal->def_attrib = terminal_def_attrib;
+	terminal_control(terminal, SCC_MODIFY_ATTRIB, SA_METHOD_SET, SA_NORMAL, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR);
 	terminal_control(terminal, SCC_RESIZE, terminal->surface.width, terminal->surface.height);
 
 	ShowWindow(terminal->window, SW_RESTORE);
@@ -228,25 +235,33 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			attrib = va_arg(va, attrib_t *);
 			if (!attrib)
 				return(-1);
-			terminal->attrib.attrib = surface_modify_attrib(terminal->attrib.attrib, attrib->attrib);
-			if (attrib->fg != -1)
+			terminal->attrib.style = surface_modify_style(attrib->method, terminal->attrib.style, attrib->style);
+			if ((attrib->fg.enc != SC_ENC_MAPPING) || (attrib->fg.colour != SC_MAP_CURRENT_COLOUR))
 				terminal->attrib.fg = attrib->fg;
-			if (attrib->bg != -1)
+			if ((attrib->bg.enc != SC_ENC_MAPPING) || (attrib->bg.colour != SC_MAP_CURRENT_COLOUR))
 				terminal->attrib.bg = attrib->bg;
 			return(0);
 		}
 		case SCC_MODIFY_ATTRIB: {
+			int method, enc;
 			int arg;
 
+			method = va_arg(va, int);
 			arg = va_arg(va, int);
-			if (arg != -1)
-				terminal->attrib.attrib = surface_modify_attrib(terminal->attrib.attrib, arg);
+			terminal->attrib.method = 0;
+			terminal->attrib.style = surface_modify_style(method, terminal->attrib.style, arg);
+			enc = va_arg(va, int);
 			arg = va_arg(va, int);
-			if (arg != -1)
-				terminal->attrib.fg = arg;
+			if ((enc != SC_ENC_MAPPING) || (arg != SC_MAP_CURRENT_COLOUR)) {
+				terminal->attrib.bg.enc = enc;
+				terminal->attrib.fg.colour = arg;
+			}
+			enc = va_arg(va, int);
 			arg = va_arg(va, int);
-			if (arg != -1)
-				terminal->attrib.bg = arg;
+			if ((enc != SC_ENC_MAPPING) || (arg != SC_MAP_CURRENT_COLOUR)) {
+				terminal->attrib.bg.enc = enc;
+				terminal->attrib.bg.colour = arg;
+			}
 			return(0);
 		}
 		case SCC_RESIZE: {
@@ -403,14 +418,19 @@ int terminal_get_number(void)
  */
 static void terminal_set_attribs(struct terminal_s *terminal, attrib_t attrib)
 {
-	int fg, bg;
+	colour_t fg, bg;
 
-	if (attrib.attrib & SA_BOLD)
+	if ((attrib.fg.enc == SC_ENC_MAPPING) && (attrib.fg.colour == SC_MAP_DEFAULT_COLOUR))
+		attrib.fg = terminal->def_attrib.fg;
+	if ((attrib.bg.enc == SC_ENC_MAPPING) && (attrib.bg.colour == SC_MAP_DEFAULT_COLOUR))
+		attrib.bg = terminal->def_attrib.bg;
+
+	if (attrib.style & SA_BOLD)
 		SelectObject(terminal->context, terminal_bold_font);
 	else
 		SelectObject(terminal->context, terminal_font);
 
-	if (attrib.attrib & SA_INVERSE) {
+	if (attrib.style & SA_INVERSE) {
 		bg = attrib.fg;
 		fg = attrib.bg;
 	}
@@ -419,8 +439,20 @@ static void terminal_set_attribs(struct terminal_s *terminal, attrib_t attrib)
 		bg = attrib.bg;
 	}
 
-	SetTextColor(terminal->context, RGB( (fg & 0xff0000) >> 16, (fg & 0xff00) >> 8, (fg & 0xff) ));
-	SetBkColor(terminal->context, RGB( (bg & 0xff0000) >> 16, (bg & 0xff00) >> 8, (bg & 0xff) ));
+	SetTextColor(terminal->context, terminal_convert_colour(fg));
+	SetBkColor(terminal->context, terminal_convert_colour(bg));
+}
+
+/**
+ * Convert the given colour and encoding into an RGB colour
+ */
+static inline int terminal_convert_colour(colour_t colour)
+{
+	if (colour.enc == SC_ENC_MAPPING)
+		colour.colour = colourmap_get_colour(NULL, SC_ENC_RGBA, colour.colour);
+	else if (enc != SC_ENC_RGBA)
+		return(0);
+	return(RGB( (colour.colour & 0xff0000) >> 16, (colour.colour & 0xff00) >> 8, (colour.colour & 0xff) ));
 }
 
 
