@@ -13,8 +13,10 @@
 int fe_common_cmd_insert(char *, char *);
 
 /* Types */
+struct type_s *fe_common_load_attrib(void);
 struct type_s *fe_common_load_colour(void);
 struct type_s *fe_common_load_command(void);
+struct type_s *fe_common_load_style(void);
 
 #endif
 
