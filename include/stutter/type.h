@@ -44,6 +44,17 @@ struct type_s *add_type(char *, int, type_create_t, type_destroy_t, type_add_t, 
 int remove_type(char *);
 struct type_s *find_type(char *);
 
+/**
+ * Call the create function for the given type with the given parameters.
+ */
+static inline void *type_create(struct type_s *type, void *value, char *params, ...)
+{
+	va_list va;
+
+	va_start(va, params);
+	return(type->create(value, params, va));
+}
+
 #endif
 
 
