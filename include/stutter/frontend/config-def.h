@@ -18,6 +18,14 @@
 
 #define DEFAULT_FE_COLOURMAP_SIZE		32
 
+#define DEFAULT_FE_THEME_BRACKET		",,bold"
+#define DEFAULT_FE_THEME_ERROR			"default"
+#define DEFAULT_FE_THEME_MESSAGE		"default"
+#define DEFAULT_FE_THEME_NICK			"default"
+#define DEFAULT_FE_THEME_STATUS			"default"
+#define DEFAULT_FE_THEME_STATUSBAR		",,inverse"
+#define DEFAULT_FE_THEME_TOPIC			"default"
+
 #define DEFAULT_FE_NET_ERR_RETRYING		"Error: Failed to connect to %s, Retrying..."
 #define DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT	"Error: Failed to connect to %s"
 
@@ -61,6 +69,34 @@
 #ifndef FE_COLOURMAP_SIZE
 #define FE_COLOURMAP_SIZE \
 	DEFAULT_FE_COLOURMAP_SIZE
+#endif
+#ifndef FE_THEME_BRACKET
+#define FE_THEME_BRACKET \
+	DEFAULT_FE_THEME_BRACKET
+#endif
+#ifndef FE_THEME_ERROR
+#define FE_THEME_ERROR \
+	DEFAULT_FE_THEME_ERROR
+#endif
+#ifndef FE_THEME_MESSAGE
+#define FE_THEME_MESSAGE \
+	DEFAULT_FE_THEME_MESSAGE
+#endif
+#ifndef FE_THEME_NICK
+#define FE_THEME_NICK \
+	DEFAULT_FE_THEME_NICK
+#endif
+#ifndef FE_THEME_STATUS
+#define FE_THEME_STATUS \
+	DEFAULT_FE_THEME_STATUS
+#endif
+#ifndef FE_THEME_STATUSBAR
+#define FE_THEME_STATUSBAR \
+	DEFAULT_FE_THEME_STATUSBAR
+#endif
+#ifndef FE_THEME_TOPIC
+#define FE_THEME_TOPIC \
+	DEFAULT_FE_THEME_TOPIC
 #endif
 #ifndef FE_NET_ERR_RETRYING
 #define FE_NET_ERR_RETRYING \
