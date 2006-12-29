@@ -12,8 +12,8 @@
 #include <stutter/lib/string.h>
 #include <stutter/frontend/surface.h>
 
-static void *fe_common_colour_create(void *, char *, va_list);
-static int fe_common_colour_stringify(void *, char *, int);
+static void *fe_common_colour_create(colour_t *, char *, va_list);
+static int fe_common_colour_stringify(colour_t *, char *, int);
 
 struct type_s *fe_common_load_colour(void)
 {
@@ -33,10 +33,9 @@ struct type_s *fe_common_load_colour(void)
 
 /*** Local Functions ***/
 
-static void *fe_common_colour_create(void *value, char *params, va_list va)
+static void *fe_common_colour_create(colour_t *value, char *params, va_list va)
 {
 	char *str;
-	colour_t *colour;
 
 	if (!strcmp(params, "pointer"))
 		return(va_arg(va, void *));
@@ -44,24 +43,32 @@ static void *fe_common_colour_create(void *value, char *params, va_list va)
 		return(NULL);
 	else if (!strcmp(params, "string")) {
 		str = va_arg(va, char *);
-		colour = (colour_t *) value;
-		if (str[0] == '#') {
+		if (str[0] == '\0') {
+			value->enc = SC_ENC_MAPPING;
+			value->colour = SC_MAP_CURRENT_COLOUR;
+		}
+		else if (str[0] == '#') {
 			if  (strlen(str) == 7) {
-				colour->enc = SC_ENC_RGBA;
-				colour->colour = util_atoi(&str[1], 16);
+				value->enc = SC_ENC_RGBA;
+				value->colour = util_atoi(&str[1], 16);
 			}
 		}
+		else if ((str[0] >= 0x30) && (str[0] <= 0x39)) {
+			value->enc = SC_ENC_MAPPING;
+			value->colour = util_atoi(str, 10);
+		}
 		else {
-			colour->enc = SC_ENC_MAPPING;
-			colour->colour = util_atoi(str, 10);
+			// TODO check for colour names here
+			value->enc = SC_ENC_MAPPING;
+			value->colour = SC_MAP_DEFAULT_COLOUR;
 		}
 	}
 	return(value);
 }
 
-static int fe_common_colour_stringify(void *value, char *buffer, int max)
+static int fe_common_colour_stringify(colour_t *value, char *buffer, int max)
 {
-	return(snprintf(buffer, max, "#%06X", *((int *) value)));
+	return(snprintf(buffer, max, "#%06X", value->colour));
 }
 
 
