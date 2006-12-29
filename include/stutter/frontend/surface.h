@@ -48,6 +48,8 @@
 #define surface_get_width_m(surface)		( ((struct surface_s *) surface)->width )
 #define surface_get_height_m(surface)		( ((struct surface_s *) surface)->height )
 
+typedef short style_t;
+
 typedef struct colour_s {
 	char enc;
 	int colour;
@@ -55,7 +57,7 @@ typedef struct colour_s {
 
 typedef struct attrib_s {
 	char method;
-	short style;
+	style_t style;
 	colour_t fg;
 	colour_t bg;
 } attrib_t;
