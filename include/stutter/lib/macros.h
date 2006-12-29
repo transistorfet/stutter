@@ -80,6 +80,24 @@
 #define is_number_char_m(ch)	\
 	( ((ch) >= 0x30) && ((ch) <= 0x39) )
 
+/**
+ * Copy the given string to the given buffer converting to lower case up to the
+ * given max or until the given ch is reached.
+ */
+static inline int strcpy_lcase(char *str, char *buffer, int max, char ch)
+{
+	int i;
+
+	for (i = 0;(str[i] != '\0') && (str[i] != ch);i++) {
+		if ((str[i] >= 0x41) && (str[i] <= 0x5a))
+			buffer[i] = str[i] + 0x20;
+		else
+			buffer[i] = str[i];
+	}
+	buffer[i++] = '\0';
+	return(i);
+}
+
 #endif
 
 
