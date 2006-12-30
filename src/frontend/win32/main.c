@@ -96,6 +96,7 @@ int init_windows(void)
 
 	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
+	add_variable(fe_table, type, "theme", 0, "");
 
 	if (!(type = find_type("command:fe")))
 		return(-1);
@@ -159,7 +160,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR argv, int WinMode
 	}
 
 	#ifdef STUTTER_INIT
-	//STUTTER_INIT(argc, argv);
+	STUTTER_INIT(argc, argv);
 	#endif
 
 	/*** Main Loop ***/
