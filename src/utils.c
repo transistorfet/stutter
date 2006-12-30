@@ -20,7 +20,7 @@
 /**
  * Convert a string of the given radix to an interger.
  */
-int util_atoi(char *str, int radix)
+int util_atoi(const char *str, int radix)
 {
 	int i = -1, ret = 0, mul = 1;
 
@@ -84,11 +84,47 @@ int util_itoa(int num, char *str, int radix)
 }
 
 /**
+ * Encode the given data of the given size into the given character buffer in
+ * an ASCII format up to the given maxiumum number of characters.  If the data
+ * cannot be encoded within the given max size of characters then -1 will be
+ * returned.  Otherwise the number of characters written to the buffer is
+ * returned.
+ */
+int util_encode_bytes(unsigned char *data, int size, char *buffer, int max)
+{
+	int i, j;
+
+	if (size * 2 > max)
+		return(-1);
+	for (i = 0, j = 0;i < size;i++, j++) {
+		buffer[j] = ((data[i] & 0xf0) >> 4) + 0x30;
+		buffer[++j] = (data[i] & 0x0f) + 0x30;
+	}
+	return(j);
+}
+
+/**
+ * Decode the given string that was encoded using util_encode_bytes into the
+ * binary data it represents and store it at the given data address up to the
+ * given maximum number of bytes.  If the data cannot fit within the given
+ * maximum then -1 will be returned.  Otherwise the given number of characters
+ * in the string read is returned.
+ */
+int util_decode_bytes(const char *str, unsigned char *data, int max)
+{
+	int i, j;
+
+	for (i = 0, j = 0;(str[i] != '\0') && (j < max);i++, j++)
+		data[j] = ((str[i] - 0x30) << 4) + (str[++i] - 0x30);
+	return(i);
+}
+
+/**
  * Convert the charcter escape sequence (assuming str starts after the escape
  * character) and stores the character in buffer[0].  The number of characters
  * read as a sequence from str is returned
  */
-int util_escape_char(char *str, char *buffer)
+int util_escape_char(const char *str, char *buffer)
 {
 	if (*str == '\0')
 		return(0);
@@ -120,7 +156,7 @@ int util_escape_char(char *str, char *buffer)
  * Convert the given key sequence representation into the sequence of
  * actual characters expected from the terminal.
  */
-int util_convert_key(char *str, char *buffer, int max)
+int util_convert_key(const char *str, char *buffer, int max)
 {
 	int i, j = 0;
 
@@ -156,7 +192,7 @@ int util_convert_key(char *str, char *buffer, int max)
  * buffer.  If a & follows the $ then the stringified string is
  * recursively expanded.
  */
-int util_expand_str(char *fmt, char *buffer, int max)
+int util_expand_str(const char *fmt, char *buffer, int max)
 {
 	int i;
 	int j = 0;
@@ -185,7 +221,7 @@ int util_expand_str(char *fmt, char *buffer, int max)
  * name in str is added to the value it points to.  The given str may
  * start with the '$' char or may start just after it.
  */
-int util_expand_variable(char *str, char *buffer, int max, int *str_count)
+int util_expand_variable(const char *str, char *buffer, int max, int *str_count)
 {
 	int k;
 	char delim;
