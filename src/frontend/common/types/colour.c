@@ -12,6 +12,25 @@
 #include <stutter/lib/string.h>
 #include <stutter/frontend/surface.h>
 
+static char *fe_common_colours[] = {
+	"white",
+	"black",
+	"blue",
+	"green",
+	"red",
+	"cyan",
+	"magenta",
+	"yellow",
+	"bright yellow",
+	"bright green",
+	"bright cyan",
+	"bright red",
+	"bright blue",
+	"bright magenta",
+	"grey",
+	"bright white"
+};
+
 static void *fe_common_colour_create(colour_t *, char *, va_list);
 static int fe_common_colour_stringify(colour_t *, char *, int);
 
@@ -35,6 +54,7 @@ struct type_s *fe_common_load_colour(void)
 
 static void *fe_common_colour_create(colour_t *value, char *params, va_list va)
 {
+	int i;
 	char *str;
 
 	if (!strcmp(params, "pointer"))
@@ -58,9 +78,19 @@ static void *fe_common_colour_create(colour_t *value, char *params, va_list va)
 			value->colour = util_atoi(str, 10);
 		}
 		else {
-			// TODO check for colour names here
 			value->enc = SC_ENC_MAPPING;
-			value->colour = SC_MAP_DEFAULT_COLOUR;
+			if (!strcmp(str, "default"))
+				value->colour = SC_MAP_DEFAULT_COLOUR;
+			else if (!strcmp(str, "current"))
+				value->colour = SC_MAP_CURRENT_COLOUR;
+			else {
+				for (i = 0;i < 16;i++) {
+					if (!strcmp(str, fe_common_colours[i])) {
+						value->colour = i;
+						break;
+					}
+				}
+			}
 		}
 	}
 	return(value);
@@ -68,7 +98,12 @@ static void *fe_common_colour_create(colour_t *value, char *params, va_list va)
 
 static int fe_common_colour_stringify(colour_t *value, char *buffer, int max)
 {
-	return(snprintf(buffer, max, "#%06X", value->colour));
+	if (value->enc == SC_ENC_RGBA)
+		return(snprintf(buffer, max, "#%06X", value->colour));
+	else if (value->enc == SC_ENC_MAPPING)
+		return(snprintf(buffer, max, "%d", value->colour));
+	else
+		return(0);
 }
 
 
