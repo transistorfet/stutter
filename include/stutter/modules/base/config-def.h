@@ -41,6 +41,7 @@
 
 #define DEFAULT_BASE_BINDINGS()			\
 	BIND_KEY("\n", "base.parse", "")	\
+	BIND_KEY("\x03", "base.quit", "")	\
 	BIND_KEY("\x18", "base.next", "")	\
 	BIND_KEY("\x15", "base.clearline", "")	\
 	BIND_KEY("\x11", "base.previous", "")	\
