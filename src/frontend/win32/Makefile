@@ -10,19 +10,7 @@ OBJS =	main.o \
 	core/timer.o \
 	core/execute.o \
 	core/terminal.o \
-	../common/cmds/insert.o \
-	../common/core/colourmap.o \
-	../common/core/widget.o \
-	../common/types/attrib.o \
-	../common/types/colour.o \
-	../common/types/command.o \
-	../common/types/style.o \
-	../common/utils/format.o \
-	../common/widgets/frame.o \
-	../common/widgets/input.o \
-	../common/widgets/scroll.o \
-	../common/widgets/window.o \
-	../common/widgets/statusbar.o \
+	$(ROOT)/src/frontend/common/fecommon.a \
 	$(MODULES) \
 	$(ROOT)/src/main.a
 
