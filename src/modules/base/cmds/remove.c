@@ -27,7 +27,7 @@ int base_cmd_remove(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_REMOVE_FAILED, name)
 		return(-1);
 	}
-	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
+	else if ((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL))) {
 		if (snprintf(buffer, SMALL_STRING_SIZE, "Variable %s removed.", name) >= 0)
 			fe_print(window, buffer);
 	}

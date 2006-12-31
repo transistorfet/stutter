@@ -33,7 +33,7 @@ int base_cmd_unbind(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNBINDING_FAILED, args);
 		return(-1);
 	}
-	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
+	else if ((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL))) {
 		if (snprintf(buffer, SMALL_STRING_SIZE, "Key %s is not longer bound", args) >= 0)
 			fe_print(window, buffer);
 	}

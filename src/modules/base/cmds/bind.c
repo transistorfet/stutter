@@ -40,7 +40,7 @@ int base_cmd_bind(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_BINDING_FAILED, key);
 		return(-1);
 	}
-	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
+	else if ((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL))) {
 		if (snprintf(buffer, SMALL_STRING_SIZE, "Key %s bound to %s %s", key, name, args) >= 0)
 			fe_print(window, buffer);
 	}

@@ -35,7 +35,7 @@ int base_cmd_get(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_STRINGIFY_FAILED, name)
 		return(-1);
 	}
-	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL)))
+	else if ((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL)))
 		fe_print(window, buffer);
 	return(0);
 }

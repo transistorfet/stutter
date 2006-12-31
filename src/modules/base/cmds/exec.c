@@ -19,8 +19,8 @@ int base_cmd_exec(char *env, char *args)
 	void *window;
 	fe_execute_t exec;
 
-	if (!(window = fe_current_widget("window", NULL)))
-		window = fe_first_widget("window", NULL);
+	if (!(window = fe_current_widget("text", NULL)))
+		window = fe_first_widget("text", NULL);
 	trim_whitespace_m(args);
 	if (args[0] == '-') {
 		get_param_m(args, flags, ' ');

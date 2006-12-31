@@ -24,9 +24,9 @@ int irc_cmd_query(char *env, char *args)
 		return(-1);
 
 	if (channel = irc_find_channel(server->channels, name))
-		fe_select_widget("window", NULL, channel->window);
-	else if ((window = fe_create_widget("irc", "window", NULL, NULL)) && (channel = irc_add_channel(server->channels, name, window, server)))
-		fe_select_widget("window", NULL, window);
+		fe_select_widget("text", NULL, channel->window);
+	else if ((window = fe_create_widget("irc", "text", NULL, NULL)) && (channel = irc_add_channel(server->channels, name, window, server)))
+		fe_select_widget("text", NULL, window);
 	else {
 		if (window)
 			fe_destroy_widget(window);

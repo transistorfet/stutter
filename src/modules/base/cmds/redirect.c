@@ -17,7 +17,7 @@ int base_cmd_redirect(char *env, char *args)
 	char *name, *target;
 	char buffer[SMALL_STRING_SIZE];
 
-	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
+	if (!(window = fe_current_widget("text", NULL)) && !(window = fe_first_widget("text", NULL)))
 		return(-1);
 	trim_whitespace_m(args);
 	get_param_m(args, name, ' ');

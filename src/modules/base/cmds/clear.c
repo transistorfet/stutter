@@ -15,7 +15,7 @@ int base_cmd_clear(char *env, char *args)
 {
 	void *window;
 
-	if (!(window = fe_current_widget("window", NULL)) && !(window = fe_first_widget("window", NULL)))
+	if (!(window = fe_current_widget("text", NULL)) && !(window = fe_first_widget("text", NULL)))
 		return(-1);
 	fe_clear(window);
 	return(0);
