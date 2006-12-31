@@ -15,7 +15,7 @@
  */
 int irc_msg_notice(char *env, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (*msg->text == 0x01)
@@ -23,7 +23,7 @@ int irc_msg_notice(char *env, struct irc_msg *msg)
 	else {
 		if (!(channel = irc_current_channel()))
 			return(-1);
-		if (irc_format_msg(msg, msg->nick ? IRC_FMT_NOTICE : IRC_FMT_NOTICE_SELF, buffer, STRING_SIZE) < 0)
+		if (irc_format_msg(msg, msg->nick ? IRC_FMT_NOTICE : IRC_FMT_NOTICE_SELF, buffer, LARGE_STRING_SIZE) < 0)
 			return(-1);
 		if (channel != msg->server->status)
 			fe_print(msg->server->status->window, buffer);

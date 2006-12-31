@@ -38,7 +38,7 @@ int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 	char *tmp;
 	time_t current_time;
 	struct tm *timestamp;
-	char value[STRING_SIZE];
+	char value[SMALL_STRING_SIZE];
 	struct irc_server *server;
 	struct irc_channel *channel;
 
@@ -100,7 +100,7 @@ int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 			}
 		}
 		else if (fmt[i] == '$') {
-			if (util_expand_variable(&fmt[i], value, STRING_SIZE, &i) > 0)
+			if (util_expand_variable(&fmt[i], value, SMALL_STRING_SIZE, &i) > 0)
 				j += irc_format_msg(msg, value, &buffer[j], max - j + 1);
 		}
 		else

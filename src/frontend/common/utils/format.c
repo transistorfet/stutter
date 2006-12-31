@@ -21,14 +21,14 @@
  */
 struct format_string_s *create_format_string(struct variable_table_s *theme, const char *str, int size)
 {
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 	struct format_string_s tmp;
 	struct format_string_s *format;
 	struct format_style_s styles[FE_FORMAT_MAX_STYLES];
 
 	tmp.str = buffer;
 	tmp.styles = styles;
-	if (parse_format_string(theme, str, &tmp, STRING_SIZE, FE_FORMAT_MAX_STYLES))
+	if (parse_format_string(theme, str, &tmp, LARGE_STRING_SIZE, FE_FORMAT_MAX_STYLES))
 		return(NULL);
 	if (!size)
 		size = sizeof(struct format_string_s);

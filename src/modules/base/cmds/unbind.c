@@ -23,18 +23,18 @@ int base_cmd_unbind(char *env, char *args)
 	void *window;
 	struct type_s *type;
 	char *context = NULL;
-	char buffer[STRING_SIZE];
+	char buffer[SMALL_STRING_SIZE];
 
 	trim_whitespace_m(args);
 	if (*args == '-')
 		split_string_m(&args[1], context, args, ' ');
 
-	if ((util_convert_key(args, buffer, STRING_SIZE) < 0) || unbind_key(context, buffer)) {
+	if ((util_convert_key(args, buffer, SMALL_STRING_SIZE) < 0) || unbind_key(context, buffer)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNBINDING_FAILED, args);
 		return(-1);
 	}
 	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
-		if (snprintf(buffer, STRING_SIZE, "Key %s is not longer bound", args) >= 0)
+		if (snprintf(buffer, SMALL_STRING_SIZE, "Key %s is not longer bound", args) >= 0)
 			fe_print(window, buffer);
 	}
 	return(0);

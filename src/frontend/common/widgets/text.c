@@ -59,7 +59,7 @@ int scroll_refresh(struct scroll_s *scroll)
 	attrib_t attrib;
 	int x, y, width, height;
 	int i, j, k, max, limit;
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 	struct surface_s *surface;
 	struct scroll_entry_s *cur;
 	int indices[WINDOW_MAX_WRAP];
@@ -85,7 +85,7 @@ int scroll_refresh(struct scroll_s *scroll)
 		limit = width;
 		format.str = buffer;
 		format.styles = styles;
-		if (parse_format_string(fe_theme, cur->str, &format, STRING_SIZE, FE_FORMAT_MAX_STYLES))
+		if (parse_format_string(fe_theme, cur->str, &format, LARGE_STRING_SIZE, FE_FORMAT_MAX_STYLES))
 			continue;
 		for (i = j = 0;j < WINDOW_MAX_WRAP;j++) {
 			indices[j] = scroll_wrap_string(&format.str[i], limit);

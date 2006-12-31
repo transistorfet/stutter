@@ -16,9 +16,9 @@
 int base_cmd_expand(char *env, char *args)
 {
 	char *str, *cmd;
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 
-	if (util_expand_str(args, buffer, STRING_SIZE) < 0)
+	if (util_expand_str(args, buffer, LARGE_STRING_SIZE) < 0)
 		return(-1);
 	str = buffer;
 	if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))

@@ -15,7 +15,7 @@
  */
 int irc_msg_topic(char *env, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, ((msg->cmd == IRC_MSG_TOPIC) ? msg->params[0] : msg->params[1]))))
@@ -25,7 +25,7 @@ int irc_msg_topic(char *env, struct irc_msg *msg)
 		destroy_string(channel->topic);
 	channel->topic = create_string("%s", msg->text);
 
-	if (irc_format_msg(msg, IRC_FMT_TOPIC, buffer, STRING_SIZE) < 0)
+	if (irc_format_msg(msg, IRC_FMT_TOPIC, buffer, LARGE_STRING_SIZE) < 0)
 		return(-1);
 	fe_print(channel->window, buffer);
 	return(0);

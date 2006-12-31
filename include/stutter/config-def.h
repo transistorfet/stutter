@@ -13,9 +13,16 @@
 #define DEFAULT_PATH_VARIABLE_NAME	"path"
 #define DEFAULT_NAME_SEPARATOR		'.'
 
+#define DEFAULT_LARGE_STRING_SIZE	1024
 #define DEFAULT_STRING_SIZE		512
+#define DEFAULT_SMALL_STRING_SIZE	128
+#define DEFAULT_NAME_STRING_SIZE	64
 
+#ifdef WIN32
+#define DEFAULT_DOT_FILE		"stutterrc"
+#else
 #define DEFAULT_DOT_FILE		"~/.stutterrc"
+#endif
 
 /*** Modules ***/
 
@@ -52,9 +59,25 @@
 #define NAME_SEPARATOR \
 	DEFAULT_NAME_SEPARATOR
 #endif
+#ifndef LARGE_STRING_SIZE
+#define LARGE_STRING_SIZE \
+	DEFAULT_LARGE_STRING_SIZE
+#endif
 #ifndef STRING_SIZE
 #define STRING_SIZE \
 	DEFAULT_STRING_SIZE
+#endif
+#ifndef SMALL_STRING_SIZE
+#define SMALL_STRING_SIZE \
+	DEFAULT_SMALL_STRING_SIZE
+#endif
+#ifndef NAME_STRING_SIZE
+#define NAME_STRING_SIZE \
+	DEFAULT_NAME_STRING_SIZE
+#endif
+#ifndef DOT_FILE
+#define DOT_FILE \
+	DEFAULT_DOT_FILE
 #endif
 #ifndef DOT_FILE
 #define DOT_FILE \

@@ -17,13 +17,13 @@ int irc_msg_names(char *env, struct irc_msg *msg)
 {
 	int bitflags;
 	char *str, *name;
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[2])) && !(channel = irc_current_channel()))
 		return(-1);
 
-	if (irc_format_msg(msg, IRC_FMT_NAMES, buffer, STRING_SIZE) < 0)
+	if (irc_format_msg(msg, IRC_FMT_NAMES, buffer, LARGE_STRING_SIZE) < 0)
 		return(-1);
 	fe_print(channel->window, buffer);
 

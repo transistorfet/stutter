@@ -166,7 +166,6 @@ int terminal_print(struct terminal_s *terminal, char *str, int length)
 {
 	int i;
 	char *tmp;
-	char buffer[STRING_SIZE];
 	if (length == -1)
 		length = strlen(str);
 	terminal_set_attribs(terminal, terminal->attrib);
@@ -194,7 +193,7 @@ void terminal_clear(struct terminal_s *terminal, short x, short y, short width, 
 	if (!height)
 		height = terminal->surface.height - y;
 
-	for (i = 0;i <= width;i++)
+	for (i = 0;(i <= width) && (i < STRING_SIZE);i++)
 		buffer[i] = ' ';
 
 	for (i = 0;i < height;i++) {

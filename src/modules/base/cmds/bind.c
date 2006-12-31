@@ -24,7 +24,7 @@ int base_cmd_bind(char *env, char *args)
 	char *key, *name;
 	struct type_s *type;
 	char *context = NULL;
-	char buffer[STRING_SIZE];
+	char buffer[SMALL_STRING_SIZE];
 
 	trim_whitespace_m(args);
 	if (*args == '-')
@@ -36,12 +36,12 @@ int base_cmd_bind(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_VARIABLE_NOT_FOUND, name);
 		return(-1);
 	}
-	else if ((util_convert_key(key, buffer, STRING_SIZE) < 0) || bind_key(context, buffer, value, type, args)) {
+	else if ((util_convert_key(key, buffer, SMALL_STRING_SIZE) < 0) || bind_key(context, buffer, value, type, args)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_BINDING_FAILED, key);
 		return(-1);
 	}
 	else if ((window = fe_current_widget("window", NULL)) || (window = fe_first_widget("window", NULL))) {
-		if (snprintf(buffer, STRING_SIZE, "Key %s bound to %s %s", key, name, args) >= 0)
+		if (snprintf(buffer, SMALL_STRING_SIZE, "Key %s bound to %s %s", key, name, args) >= 0)
 			fe_print(window, buffer);
 	}
 	return(0);
