@@ -5,11 +5,11 @@ ROOT = ../../..
 TARGET = $(ROOT)/bin/winstutter.exe
 
 OBJS =	main.o \
-	fe.o \
-	net.o \
-	timer.o \
-	execute.o \
-	terminal.o \
+	core/fe.o \
+	core/net.o \
+	core/timer.o \
+	core/execute.o \
+	core/terminal.o \
 	../common/cmds/insert.o \
 	../common/core/colourmap.o \
 	../common/core/widget.o \
