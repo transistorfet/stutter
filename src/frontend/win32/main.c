@@ -20,8 +20,8 @@
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/common.h>
 
-#include "net.h"
-#include "terminal.h"
+#include "core/net.h"
+#include "core/terminal.h"
 
 int handle_quit(char *, void *, char *);
 

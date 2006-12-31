@@ -21,8 +21,8 @@
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/common.h>
 
-#include "desc.h"
-#include "terminal.h"
+#include "core/desc.h"
+#include "core/terminal.h"
 
 static int handle_quit(char *, void *, char *);
 
