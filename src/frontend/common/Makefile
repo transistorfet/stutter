@@ -1,0 +1,22 @@
+
+
+ROOT = ../../..
+
+LIB_TARGET = fecommon.a
+OBJS =	cmds/insert.o \
+	core/colourmap.o \
+	core/widget.o \
+	types/attrib.o \
+	types/colour.o \
+	types/command.o \
+	types/style.o \
+	utils/format.o \
+	widgets/frame.o \
+	widgets/input.o \
+	widgets/scroll.o \
+	widgets/statusbar.o \
+	widgets/window.o
+
+include $(ROOT)/rules.mk
+
+
