@@ -58,6 +58,7 @@ extern int release_frontend(void);
 extern int fe_timer_check(void);
 
 struct variable_table_s *fe_table;
+struct variable_table_s *fe_theme;
 
 int init_curses(void)
 {
@@ -85,7 +86,7 @@ int init_curses(void)
 
 	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
 		return(-1);
-	add_variable(fe_table, type, "theme", 0, "");
+	fe_theme = add_variable(fe_table, type, "theme", 0, "");
 
 	if (!(type = find_type("command:fe")))
 		return(-1);
@@ -98,13 +99,17 @@ int init_curses(void)
 
 	if (!(type = find_type("attrib:fe")))
 		return(-1);
-	add_variable(fe_table, type, "theme.bracket", 0, "string", FE_THEME_BRACKET);
-	add_variable(fe_table, type, "theme.error", 0, "string", FE_THEME_ERROR);
-	add_variable(fe_table, type, "theme.message", 0, "string", FE_THEME_MESSAGE);
-	add_variable(fe_table, type, "theme.nick", 0, "string", FE_THEME_NICK);
-	add_variable(fe_table, type, "theme.status", 0, "string", FE_THEME_STATUS);
-	add_variable(fe_table, type, "theme.statusbar", 0, "string", FE_THEME_STATUSBAR);
-	add_variable(fe_table, type, "theme.topic", 0, "string", FE_THEME_TOPIC);
+	add_variable(fe_theme, type, "bracket", 0, "string", FE_THEME_BRACKET);
+	add_variable(fe_theme, type, "channel", 0, "string", FE_THEME_CHANNEL);
+	add_variable(fe_theme, type, "default", 0, "string", FE_THEME_DEFAULT);
+	add_variable(fe_theme, type, "error", 0, "string", FE_THEME_ERROR);
+	add_variable(fe_theme, type, "message", 0, "string", FE_THEME_MESSAGE);
+	add_variable(fe_theme, type, "nick", 0, "string", FE_THEME_NICK);
+	add_variable(fe_theme, type, "server", 0, "string", FE_THEME_SERVER);
+	add_variable(fe_theme, type, "status", 0, "string", FE_THEME_STATUS);
+	add_variable(fe_theme, type, "statusbar", 0, "string", FE_THEME_STATUSBAR);
+	add_variable(fe_theme, type, "timestamp", 0, "string", FE_THEME_TIMESTAMP);
+	add_variable(fe_theme, type, "topic", 0, "string", FE_THEME_TOPIC);
 
 	if (type = find_type("format"))
 		add_variable(fe_table, type, "statusbar", 0, "string", FE_STATUSBAR_DEFAULT);
