@@ -285,6 +285,18 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			SetWindowPos(terminal->window, NULL, 0, 0, size.right - size.left, size.bottom - size.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
 			return(0);
 		}
+		case SCC_MOVE_CURSOR: {
+			int x, y;
+			x = va_arg(va, int);
+			y = va_arg(va, int);
+			x = (x < terminal->surface.width) ? x : terminal->surface.width - 1;
+			y = (y < terminal->surface.height) ? y : terminal->surface.height - 1;
+			terminal->attrib.style ^= SA_INVERSE;
+			terminal_set_attribs(terminal, terminal->attrib);
+			TextOut(terminal->context, x * terminal->charx, y * terminal->chary, " ", 1);
+			terminal->attrib.style ^= SA_INVERSE;
+			return(0);
+		}
 		default:
 			break;
 	}

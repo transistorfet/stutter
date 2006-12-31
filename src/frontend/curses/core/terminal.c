@@ -64,7 +64,6 @@ int init_terminal(void)
 		}
 	}
 	raw();
-	curs_set(0);
 	keypad(stdscr, TRUE);
 	noecho();
 	scrollok(stdscr, 1);
@@ -202,6 +201,13 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 				terminal->attrib.bg.enc = enc;
 				terminal->attrib.bg.colour = arg;
 			}
+			return(0);
+		}
+		case SCC_MOVE_CURSOR: {
+			int x, y;
+			x = va_arg(va, int);
+			y = va_arg(va, int);
+			move(y, x);
 			return(0);
 		}
 		default:

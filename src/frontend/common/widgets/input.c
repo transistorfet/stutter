@@ -69,10 +69,7 @@ int input_refresh(struct input_s *input)
 	surface_move_m(input->window.surface, input->window.x, input->window.y);
 	i = input->i - input->window.width + 1;
 	surface_print_m(input->window.surface, &input->buffer[(i >= 0) ? i : 0], (input->end >= input->window.width) ? input->window.width - 1 : -1);
-	surface_move_m(input->window.surface, ( (input->i >= input->window.width) ? input->window.width - 1 : input->i ), input->window.y);
-	surface_control_m(input->window.surface, SCC_MODIFY_ATTRIB, SA_METHOD_TOGGLE, SA_INVERSE, SC_ENC_MAPPING, SC_MAP_CURRENT_COLOUR, SC_ENC_MAPPING, SC_MAP_CURRENT_COLOUR);
-	surface_print_m(input->window.surface, " ", 1);
-	surface_control_m(input->window.surface, SCC_MODIFY_ATTRIB, SA_METHOD_TOGGLE, SA_INVERSE, SC_ENC_MAPPING, SC_MAP_CURRENT_COLOUR, SC_ENC_MAPPING, SC_MAP_CURRENT_COLOUR);
+	surface_control_m(input->window.surface, SCC_MOVE_CURSOR, ( (input->i >= input->window.width) ? input->window.width - 1 : input->i ), input->window.y);
 	return(0);
 }
 
