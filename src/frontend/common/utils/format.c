@@ -1,17 +1,17 @@
 /*
  * Module Name:		format.c
  * Version:		0.1
- * Module Requirements:	memory ; surface
+ * Module Requirements:	type ; variable ; memory ; surface
  * Description:		Format String Parser
  */
 
 #include CONFIG_H
+#include <stutter/type.h>
+#include <stutter/variable.h>
 #include <stutter/lib/memory.h>
 #include <stutter/lib/macros.h>
 #include <stutter/frontend/surface.h>
 #include "format.h"
-
-static int format_string_parse(const char *, struct format_string_s *, int, int);
 
 /**
  * Parse the given string into a string without special attribute characters
@@ -19,17 +19,16 @@ static int format_string_parse(const char *, struct format_string_s *, int, int)
  * become active.  A pointer to the parsed string structure is returned or
  * NULL is returned on error.
  */
-struct format_string_s *create_format_string(const char *str, int size)
+struct format_string_s *create_format_string(struct variable_table_s *theme, const char *str, int size)
 {
 	char buffer[STRING_SIZE];
-	int i, num_styles, length;
 	struct format_string_s tmp;
 	struct format_string_s *format;
-	struct format_style_s styles[FORMAT_MAX_STYLES];
+	struct format_style_s styles[FE_FORMAT_MAX_STYLES];
 
 	tmp.str = buffer;
 	tmp.styles = styles;
-	if ((num_styles = format_string_parse(str, &tmp, STRING_SIZE, FORMAT_MAX_STYLES)))
+	if (parse_format_string(theme, str, &tmp, STRING_SIZE, FE_FORMAT_MAX_STYLES))
 		return(NULL);
 	if (!size)
 		size = sizeof(struct format_string_s);
@@ -60,8 +59,6 @@ int copy_format_string(struct format_string_s *src, struct format_string_s *dest
 	return(0);
 }
 
-/*** Local Functions ***/
-
 /**
  * Parse the given string for special style attribute characters.  The string
  * with the special characters removed is copied into the given buffer up to
@@ -70,79 +67,37 @@ int copy_format_string(struct format_string_s *src, struct format_string_s *dest
  * the given int pointer, length, unless it is NULL.  The number of styles used
  * is returned or -1 is returned on error.
  */
-static int format_string_parse(const char *str, struct format_string_s *format, int buffer_max, int styles_max)
+int parse_format_string(struct variable_table_s *theme, const char *str, struct format_string_s *format, int buffer_max, int styles_max)
 {
 	int i = 0, j = 0, k = 0;
 
 	while (str[i] != '\0') {
 		switch (str[i]) {
-			case 0x02: {
-				format->styles[k].index = j;
-				format->styles[k].attrib.method = SA_METHOD_TOGGLE;
-				format->styles[k].attrib.style = SA_BOLD;
-				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
-				format->styles[k].attrib.fg.colour = SC_MAP_CURRENT_COLOUR;
-				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
-				format->styles[k].attrib.bg.colour = SC_MAP_CURRENT_COLOUR;
+			case 0x01: {
 				i++;
+				format->styles[k].index = j;
+				i += util_decode_bytes(&str[i], (unsigned char *) &format->styles[k].attrib, sizeof(attrib_t));
 				if (++k >= styles_max)
 					k--;
 				break;
 			}
-			case 0x03: {
-				int fg, bg = SC_MAP_CURRENT_COLOUR;
+			case 0x12: {
+				int ni;
+				void *value;
+				struct type_s *type;
+				char name[NAME_STRING_SIZE];
 
-				++i;
-				if (!is_number_char_m(str[i])) {
-					format->styles[k].attrib.fg.colour = SC_MAP_DEFAULT_COLOUR;
-					format->styles[k].attrib.bg.colour = SC_MAP_DEFAULT_COLOUR;
-				}
-				else {
-					fg = str[i++] - 0x30;
-					if (is_number_char_m(str[i]))
-						fg = (fg * 10) + (str[i++] - 0x30);
-                
-					if ((str[i] == ',') && ++i && is_number_char_m(str[i])) {
-						bg = str[i++] - 0x30;
-						if (is_number_char_m(str[i]))
-							bg = (bg * 10) + (str[i++] - 0x30);
-					}
-					format->styles[k].attrib.fg.colour = fg;
-					format->styles[k].attrib.bg.colour = bg;
-				}
-				format->styles[k].index = j;
-				format->styles[k].attrib.method = SA_METHOD_OR;
-				format->styles[k].attrib.style = 0;
-				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
-				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
-				if (++k >= styles_max)
-					k--;
-				break;
-			}
-			case 0x0F: {
-				format->styles[k].index = j;
-				format->styles[k].attrib.method = SA_METHOD_SET;
-				format->styles[k].attrib.style = SA_NORMAL;
-				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
-				format->styles[k].attrib.fg.colour = SC_MAP_DEFAULT_COLOUR;
-				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
-				format->styles[k].attrib.bg.colour = SC_MAP_DEFAULT_COLOUR;
 				i++;
-				if (++k >= styles_max)
-					k--;
-				break;
-			}
-			case 0x16: {
-				format->styles[k].index = j;
-				format->styles[k].attrib.method = SA_METHOD_TOGGLE;
-				format->styles[k].attrib.style = SA_INVERSE;
-				format->styles[k].attrib.fg.enc = SC_ENC_MAPPING;
-				format->styles[k].attrib.fg.colour = SC_MAP_CURRENT_COLOUR;
-				format->styles[k].attrib.bg.enc = SC_ENC_MAPPING;
-				format->styles[k].attrib.bg.colour = SC_MAP_CURRENT_COLOUR;
+				for (ni = 0;(ni < NAME_STRING_SIZE) && (str[i] != 0x12);i++, ni++)
+					name[ni] = str[i];
+				name[ni] = '\0';
 				i++;
-				if (++k >= styles_max)
-					k--;
+				if ((value = find_variable(theme, name, &type)) && type && !strcmp(type->name, "attrib:fe")) {
+					format->styles[k].attrib = *((attrib_t *) value);
+					format->styles[k].index = j;
+					if (++k >= styles_max)
+						k--;
+				}
 				break;
 			}
 			default: {
@@ -158,5 +113,6 @@ static int format_string_parse(const char *str, struct format_string_s *format, 
 	format->num_styles = k;
 	return(0);
 }
+
 
 
