@@ -1,8 +1,8 @@
 /*
- * Widget Name:		scroll.c
+ * Widget Name:		text.c
  * Version:		0.1
  * Module Requirements:	queue ; memory ; surface ; window
- * Description:		Scrolling Window Widget
+ * Description:		Text Window Widget
  */
 
 #include <string.h>
@@ -13,47 +13,47 @@
 #include <stutter/lib/memory.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
-#include "scroll.h"
+#include "text.h"
 #include "../utils/format.h"
 
-#define WINDOW_MAX_WRAP		20
+#define TEXT_MAX_WRAP		20
 
-struct widget_type_s scroll_type = {
-	"scrolling-window",
+struct widget_type_s text_type = {
+	"text:window",
 	0,
-	sizeof(struct scroll_s),
-	(widget_init_t) scroll_init,
-	(widget_release_t) scroll_release,
-	(widget_refresh_t) scroll_refresh,
-	(widget_print_t) scroll_print,
-	(widget_clear_t) scroll_clear,
-	(widget_read_t) scroll_read,
-	(widget_control_t) scroll_control
+	sizeof(struct text_s),
+	(widget_init_t) text_init,
+	(widget_release_t) text_release,
+	(widget_refresh_t) text_refresh,
+	(widget_print_t) text_print,
+	(widget_clear_t) text_clear,
+	(widget_read_t) text_read,
+	(widget_control_t) text_control
 };
 
 extern struct variable_table_s *fe_theme;
 
-static int scroll_wrap_string(char *, int);
+static int text_wrap_string(char *, int);
 
-int scroll_init(struct scroll_s *scroll)
+int text_init(struct text_s *text)
 {
-	if (!scroll->widget.parent)
+	if (!text->widget.parent)
 		return(-1);
-	scroll->cur_line = 0;
-	scroll->max_lines = FE_WINDOW_LOG_SIZE;
-	queue_init_v(scroll->log);
+	text->cur_line = 0;
+	text->max_lines = FE_WINDOW_LOG_SIZE;
+	queue_init_v(text->log);
 	return(0);
 }
 
-int scroll_release(struct scroll_s *scroll)
+int text_release(struct text_s *text)
 {
-	queue_destroy_v(scroll->log, log,
+	queue_destroy_v(text->log, log,
 		memory_free(cur);
 	);
 	return(0);
  }
 
-int scroll_refresh(struct scroll_s *scroll)
+int text_refresh(struct text_s *text)
 {
 	int line = 0;
 	attrib_t attrib;
@@ -61,22 +61,22 @@ int scroll_refresh(struct scroll_s *scroll)
 	int i, j, k, max, limit;
 	char buffer[LARGE_STRING_SIZE];
 	struct surface_s *surface;
-	struct scroll_entry_s *cur;
-	int indices[WINDOW_MAX_WRAP];
+	struct text_entry_s *cur;
+	int indices[TEXT_MAX_WRAP];
 	struct format_string_s format;
 	struct format_style_s styles[FE_FORMAT_MAX_STYLES];
 
-	widget_control(scroll->widget.parent, WCC_GET_SURFACE, &surface);
-	widget_control(scroll->widget.parent, WCC_GET_SIZE, &width, &height);
-	widget_control(scroll->widget.parent, WCC_GET_POSITION, &x, &y);
+	widget_control(text->widget.parent, WCC_GET_SURFACE, &surface);
+	widget_control(text->widget.parent, WCC_GET_SIZE, &width, &height);
+	widget_control(text->widget.parent, WCC_GET_POSITION, &x, &y);
 
 	line = height;
 	surface_clear_m(surface, x, y, width, height);
 	surface_move_m(surface, x, y + line);
 
-	if (!(cur = queue_first_v(scroll->log)))
+	if (!(cur = queue_first_v(text->log)))
 		return(0);
-	for (j = 0;j < scroll->cur_line;j++) {
+	for (j = 0;j < text->cur_line;j++) {
 		if (!(cur = queue_next_v(log, cur)))
 			return(0);
 	}
@@ -87,15 +87,15 @@ int scroll_refresh(struct scroll_s *scroll)
 		format.styles = styles;
 		if (parse_format_string(fe_theme, cur->str, &format, LARGE_STRING_SIZE, FE_FORMAT_MAX_STYLES))
 			continue;
-		for (i = j = 0;j < WINDOW_MAX_WRAP;j++) {
-			indices[j] = scroll_wrap_string(&format.str[i], limit);
+		for (i = j = 0;j < TEXT_MAX_WRAP;j++) {
+			indices[j] = text_wrap_string(&format.str[i], limit);
 			if (indices[j] == -1)
 				break;
 			if (!j)
 				limit = width - strlen(FE_WINDOW_WRAP_STRING);
 			i += indices[j];
 		}
-		max = (j == WINDOW_MAX_WRAP) ? j : j + 1;
+		max = (j == TEXT_MAX_WRAP) ? j : j + 1;
 
 		line -= max;
 		surface_control_m(surface, SCC_GET_ATTRIB, &attrib);
@@ -126,60 +126,60 @@ int scroll_refresh(struct scroll_s *scroll)
 	return(0);
 }
 
-int scroll_print(struct scroll_s *scroll, const char *str, int len)
+int text_print(struct text_s *text, const char *str, int len)
 {
-	struct scroll_entry_s *node;
+	struct text_entry_s *node;
 	struct format_string_s *format;
 
-	if (!scroll || !str)
+	if (!text || !str)
 		return(-1);
 	if (len == -1)
 		len = strlen(str);
 	/** If the scroll is not at the bottom then make sure the screen doesn't move */
-	if (scroll->cur_line && (scroll->cur_line < scroll->max_lines))
-		scroll->cur_line++;
+	if (text->cur_line && (text->cur_line < text->max_lines))
+		text->cur_line++;
 
-	if (!(node = (struct scroll_entry_s *) memory_alloc(sizeof(struct scroll_entry_s) + len + 1)))
+	if (!(node = (struct text_entry_s *) memory_alloc(sizeof(struct text_entry_s) + len + 1)))
 		return(-1);
-	node->str = (char *) (((size_t) node) + sizeof(struct scroll_entry_s));
+	node->str = (char *) (((size_t) node) + sizeof(struct text_entry_s));
 	strncpy(node->str, str, len);
 	node->str[len] = '\0';
 
-	queue_prepend_node_v(scroll->log, log, node);
+	queue_prepend_node_v(text->log, log, node);
 
 	return(len);
 }
 
-void scroll_clear(struct scroll_s *scroll)
+void text_clear(struct text_s *text)
 {
 	struct queue_s *log;
 
-	if (!scroll)
+	if (!text)
 		return;
-	queue_destroy_v(scroll->log, log,
+	queue_destroy_v(text->log, log,
 		memory_free(cur);
 	);
 }
 
-int scroll_read(struct scroll_s *scroll, char *buffer, int max)
+int text_read(struct text_s *text, char *buffer, int max)
 {
 	return(-1);
 }
 
-int scroll_control(struct scroll_s *scroll, int cmd, va_list va)
+int text_control(struct text_s *text, int cmd, va_list va)
 {
 	switch (cmd) {
 		case WCC_SCROLL: {
 			int amount;
 
 			amount = va_arg(va, int);
-			scroll->cur_line += amount;
-			if (scroll->cur_line < 0) {
-				scroll->cur_line = 0;
+			text->cur_line += amount;
+			if (text->cur_line < 0) {
+				text->cur_line = 0;
 				return(-1);
 			}
-			else if (scroll->cur_line > queue_size_v(scroll->log)) {
-				scroll->cur_line = queue_size_v(scroll->log);
+			else if (text->cur_line > queue_size_v(text->log)) {
+				text->cur_line = queue_size_v(text->log);
 				return(-1);
 			}
 			return(0);
@@ -197,7 +197,7 @@ int scroll_control(struct scroll_s *scroll, int cmd, va_list va)
  * in two given the maximum length of a each line.  If the line does not
  * need to be broken up, 0 is returned.
  */
-static int scroll_wrap_string(char *str, int limit)
+static int text_wrap_string(char *str, int limit)
 {
 	int i;
 

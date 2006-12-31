@@ -1,11 +1,11 @@
 /*
- * Header Name:		scroll.h
+ * Header Name:		text.h
  * Version:		0.1
- * Description:		Scrolling Window Header
+ * Description:		Text Window Header
  */
 
-#ifndef _COMMON_WIDGETS_SCROLL_H
-#define _COMMON_WIDGETS_SCROLL_H
+#ifndef _COMMON_WIDGETS_TEXT_H
+#define _COMMON_WIDGETS_TEXT_H
 
 #include <stdarg.h>
 
@@ -13,27 +13,27 @@
 #include <stutter/frontend/surface.h>
 #include "../utils/format.h"
 
-struct scroll_entry_s {
+struct text_entry_s {
 	char *str;
-	queue_node_v(scroll_entry_s) log;
+	queue_node_v(text_entry_s) log;
 };
 
-struct scroll_s {
+struct text_s {
 	struct widget_s widget;
 	int cur_line;
 	int max_lines;
-	queue_list_v(scroll_entry_s) log;
+	queue_list_v(text_entry_s) log;
 };
 
-extern struct widget_type_s scroll_type;
+extern struct widget_type_s text_type;
 
-int scroll_init(struct scroll_s *);
-int scroll_release(struct scroll_s *);
-int scroll_refresh(struct scroll_s *);
-int scroll_print(struct scroll_s *, const char *, int);
-void scroll_clear(struct scroll_s *);
-int scroll_read(struct scroll_s *, char *, int);
-int scroll_control(struct scroll_s *, int, va_list);
+int text_init(struct text_s *);
+int text_release(struct text_s *);
+int text_refresh(struct text_s *);
+int text_print(struct text_s *, const char *, int);
+void text_clear(struct text_s *);
+int text_read(struct text_s *, char *, int);
+int text_control(struct text_s *, int, va_list);
 
 #endif
 
