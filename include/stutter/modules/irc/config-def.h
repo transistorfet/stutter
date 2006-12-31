@@ -53,8 +53,8 @@
 #define DEFAULT_IRC_FMT_WHOISCHANNELS		"\022status\022%B [Whois \022nick\022%P2\022status\022] Channels : \022channel\022%M"
 #define DEFAULT_IRC_FMT_WHOISSPECIAL		"\022status\022%B %M"
 #define DEFAULT_IRC_FMT_WHOWASUSER		"\022status\022%B [Whowas \022nick\022%P2\022status\022 (%P3@%P4)] Realname : %M"
-#define DEFAULT_IRC_FMT_NICKNAMEINUSE		"\022error\022%B [\022timestamp\022%@\022status\022] \022nick\022%P2: \022status\022%M"
-#define DEFAULT_IRC_FMT_NOSUCHNICK		"\022error\022%B [\022timestamp\022%@\022status\022] \022nick\022%P2: \022status\022%M"
+#define DEFAULT_IRC_FMT_NICKNAMEINUSE		"\022error\022%B [\022timestamp\022%@\022error\022] \022nick\022%P2: \022error\022%M"
+#define DEFAULT_IRC_FMT_NOSUCHNICK		"\022error\022%B [\022timestamp\022%@\022error\022] \022nick\022%P2: \022error\022%M"
 
 #define DEFAULT_IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 #define DEFAULT_IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION
