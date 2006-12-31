@@ -46,6 +46,8 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 			return(0);
 		case IRC_ERR_NOSUCHNICK:
 			return(irc_msg_current(IRC_FMT_NOSUCHNICK, msg));
+		case IRC_ERR_NICKNAMEINUSE:
+			return(irc_msg_inuse(env, msg));
 		case IRC_MSG_MODE:
 			return(irc_msg_mode(env, msg));
 		case IRC_MSG_NOTICE:

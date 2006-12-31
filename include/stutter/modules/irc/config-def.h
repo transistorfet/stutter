@@ -12,7 +12,7 @@
 #define DEFAULT_IRC_DEFAULT_NICK		"CaptainPants"
 
 #define DEFAULT_IRC_LOG_SIZE			100
-#define DEFAULT_IRC_MAX_NICK			20
+#define DEFAULT_IRC_MAX_NICK			32
 #define DEFAULT_IRC_MAX_STRING			512
 #define DEFAULT_IRC_PING_WATCHDOG_TIMEOUT	300
 
@@ -53,6 +53,7 @@
 #define DEFAULT_IRC_FMT_WHOISCHANNELS		"\022status\022%B [Whois \022nick\022%P2\022status\022] Channels : \022channel\022%M"
 #define DEFAULT_IRC_FMT_WHOISSPECIAL		"\022status\022%B %M"
 #define DEFAULT_IRC_FMT_WHOWASUSER		"\022status\022%B [Whowas \022nick\022%P2\022status\022 (%P3@%P4)] Realname : %M"
+#define DEFAULT_IRC_FMT_NICKNAMEINUSE		"\022error\022%B [\022timestamp\022%@\022status\022] \022nick\022%P2: \022status\022%M"
 #define DEFAULT_IRC_FMT_NOSUCHNICK		"\022error\022%B [\022timestamp\022%@\022status\022] \022nick\022%P2: \022status\022%M"
 
 #define DEFAULT_IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
@@ -273,6 +274,10 @@
 #ifndef IRC_FMT_WHOWASUSER
 #define IRC_FMT_WHOWASUSER \
 	DEFAULT_IRC_FMT_WHOWASUSER
+#endif
+#ifndef IRC_FMT_NICKNAMEINUSE
+#define IRC_FMT_NICKNAMEINUSE \
+	DEFAULT_IRC_FMT_NICKNAMEINUSE
 #endif
 #ifndef IRC_FMT_NOSUCHNICK
 #define IRC_FMT_NOSUCHNICK \

@@ -31,6 +31,7 @@ OBJS =	init.o \
 	core/server.o \
 	msgs/current.o \
 	msgs/default.o \
+	msgs/inuse.o \
 	msgs/join.o \
 	msgs/kick.o \
 	msgs/mode.o \
