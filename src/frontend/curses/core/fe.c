@@ -21,9 +21,9 @@
 
 extern struct surface_s *terminal;
 
+extern struct widget_type_s text_type;
 extern struct widget_type_s frame_type;
 extern struct widget_type_s input_type;
-extern struct widget_type_s scroll_type;
 extern struct widget_type_s window_type;
 extern struct widget_type_s statusbar_type;
 
@@ -67,7 +67,7 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 {
 	struct window_s *window;
 
-	if (strcmp(type, "window") || !(window = (struct window_s *) create_widget(&scroll_type, id, frame)))
+	if (strcmp(type, "window") || !(window = (struct window_s *) create_widget(&text_type, id, frame)))
 		return(NULL);
 	widget_control(frame, WCC_ADD_WIDGET, window);
 	return(window);
