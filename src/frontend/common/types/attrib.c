@@ -121,30 +121,20 @@ static void *fe_common_attrib_index(attrib_t *value, char *name, struct type_s *
 static int fe_common_attrib_stringify(attrib_t *value, char *buffer, int max)
 {
 	int i = 0;
-	int no_fg = 1;
+	int no_bg = 1;
 
-	if ((value->style == SA_NORMAL) && ((max - i) >= 2)
-	    && ((value->fg.enc == SC_ENC_MAPPING) && (value->fg.colour != SC_MAP_CURRENT_COLOUR))
-	    && ((value->bg.enc == SC_ENC_MAPPING) && (value->bg.colour != SC_MAP_CURRENT_COLOUR)))
-		buffer[i++] = '\x0f';
-	else {
-		if ((value->style & SA_BOLD) && ((max - i) >= 2))
-			buffer[i++] = '\x02';
-		if ((value->style & SA_INVERSE) && ((max - i) >= 2))
-			buffer[i++] = '\x16';
+	if ((value->fg.enc != SC_ENC_MAPPING) || (value->fg.colour != SC_MAP_CURRENT_COLOUR))
+		i += colour_type->stringify(&value->fg, buffer, max);
+	if ((value->bg.enc != SC_ENC_MAPPING) || (value->bg.colour != SC_MAP_CURRENT_COLOUR)) {
+		no_bg = 0;
+		buffer[i++] =',';
+		i += colour_type->stringify(&value->bg, &buffer[i], max - i);
 	}
-	if ((value->fg.enc == SC_ENC_MAPPING) && (value->fg.colour != SC_MAP_CURRENT_COLOUR)) {
-		if ((i += snprintf(&buffer[i], max - i, "\x03%0.2d", value->fg.colour)) < 0)
-			return(-1);
-		no_fg = 0;
-	}
-	if ((value->bg.enc == SC_ENC_MAPPING) && (value->bg.colour != SC_MAP_CURRENT_COLOUR)) {
-		if (no_fg)
-			i += snprintf(&buffer[i], max - i, "\x03%0.2d", value->bg.colour);
-		else
-			i += snprintf(&buffer[i], max - i, ",%0.2d", value->bg.colour);
-		if (i < 0)
-			return(-1);
+	if (value->style != SA_NORMAL) {
+		if (no_bg)
+			buffer[i++] =',';
+		buffer[i++] =',';
+		i += style_type->stringify(&value->style, &buffer[i], max - i);
 	}
 	buffer[i] = '\0';
 	return(i);
