@@ -53,7 +53,7 @@ static void *fe_common_attrib_create(attrib_t *value, char *params, va_list va)
 {
 	int i;
 	char *str;
-	char buffer[TINY_STRING_SIZE];
+	char buffer[SMALL_STRING_SIZE];
 
 	if (!value && !(value = memory_alloc(sizeof(attrib_t))))
 		return(NULL);
@@ -68,11 +68,11 @@ static void *fe_common_attrib_create(attrib_t *value, char *params, va_list va)
 			value->bg.colour = SC_MAP_DEFAULT_COLOUR;
 		}
 		else {
-			i = strcpy_lcase(str, buffer, TINY_STRING_SIZE, ',');
+			i = strcpy_lcase(str, buffer, SMALL_STRING_SIZE, ',');
 			type_create(colour_type, &value->fg, "string", buffer);
-			i += strcpy_lcase(&str[i], buffer, TINY_STRING_SIZE, ',');
+			i += strcpy_lcase(&str[i], buffer, SMALL_STRING_SIZE, ',');
 			type_create(colour_type, &value->bg, "string", buffer);
-			i += strcpy_lcase(&str[i], buffer, TINY_STRING_SIZE, ',');
+			i += strcpy_lcase(&str[i], buffer, SMALL_STRING_SIZE, ',');
 			type_create(style_type, &value->style, "string", buffer);
 		}
 	}
