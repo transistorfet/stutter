@@ -63,7 +63,8 @@ int init_terminal(void)
 			}
 		}
 	}
-	cbreak();
+	raw();
+	curs_set(0);
 	keypad(stdscr, TRUE);
 	noecho();
 	scrollok(stdscr, 1);
