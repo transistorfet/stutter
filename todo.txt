@@ -1,6 +1,8 @@
 
-	* make a default colour record in terminal.c which is used if a different colour for the terminal is
-	  not set (as well as being the colour used when a terminal is created)
+	* make all the colour mappings reassignable
+	* split errors into multiple categories such as CRITICAL, MAJOR, MINOR, ???
+	* go through all printed strings and allow them to contain variables (and thus themed colours).
+
 	* extract the fe.c stuff into a new single widget that can contain the frame, statusbar, and input
 	* decide on the behaviour for next/prev/current/etc in fe.c
 
@@ -8,9 +10,6 @@
 	  such that there is a seperate list for each type but the same macros used for each type.
 
 	* go through everything and add lots of joinpoints
-	* think in general about how to enable/disable/configure everything dynamically and/or statically.
-	  Can you use the configuration system and joinpoints perhaps to make all configuration selectable
-	  between static and dynamic control?
 
 	* make a common way of initializing a widget (an array of option name/value pairs perhaps)
 	* how can you control a list widget such as a users list where names are added and deleted?  should
@@ -43,15 +42,9 @@ Structural Issues:
 	  where the pointer may be used multiple times but still needs to be destroyed, a simple refcount
 	  can be used in the pointer and the destroy func.
 
-	* how can you specify to a scroll widget which parser to use to parse the attributes out of strings
-	  printed to that widget.
 	* should we change fe_read to return an int instead of char *?
 	* how will you draw the cursor? draw it yourself using a reverse colour attribute in the widget
 	  refresh itself (thus it would be cross platform)?
-	* should colour schemes be largely frontend dependant?  we still need a way to specify colours.
-	  one way could be to have variables in the frontend for various event/properties (standardized
-	  across all frontends) with the value as a frontend-specific value which the frontend can recognize
-	  and then strings printed to the frontend can use the variables (eg. "${fe.error}ERROR: ...${fe.fg}")
 	* use the type system for widget types.  A widget is created from a type and subwidgets are added
 	* how will widgets (like statusbar) be added, stored, accessed?  Will it be entirely frontend
 	  specific or will it be through the variable system in which case a widget would be a variable
@@ -94,32 +87,30 @@ Bugs:
 
 General:
 	* revise dispatch to handle messages better during a reconnect
-	* fix format so that it recognizes a closing ^C and restores the original colours
+	* move the commmon/utils headers to the include/ dir
 
 	* add scroll message handlers to the win32 frontend and use joinpoints to define the behaviour
 	* make an init.c file for frontends with the init_frontend and release_frontend code
 	* we can use fe_resize to resize the root widget for a surface thus taking care of the resize issue.
 	  Where would the resize take place?  During refresh?  
 	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
-	* emit a signal from the frontend instead of calling process_char() directly from the frontend (or
-	  should you make this a joinpoint?  should you make all fe signal emits into joinpoints?
+	* make the calling of process_char() a joinpoint?
 
 	* MAKE SURE all message handlers don't clobber the message! (CTCP messages do)
 	* make an unknown ctcp message handler
 	* implement execute.c for win32
-	* make an include for the common frontend commands, utils, etc like the module includes
 	* add a function fe_prompt(char *prompt, char *buffer, int max) that prompts the user for input
 	  by some appropriate frontend method (to be used for example to prompt yes or no when quitting)
 	* add a flag option to the quit command that causes it to prompt yes/no before quitting
 
-	* add a handler for irc message 433 (Nickname in use) which automagically changes the nick
 	* report when a command fails
 	* fix up error handling in net.c and server.c
-	* make the MODE msg handler update the channel and user mode bits
-	* add a timer response type and make an email checker timed event
-	* add irc variables and types in a similar fashion to the colour type in the frontend
 	* add error messages to commands and stuff that fail giving the reason for failure (this should
 	  either be directly printed or use a different error joinpoint).
+	* add a timer response type and make an email checker timed event
+	* add a handler for irc message 433 (Nickname in use) which automagically changes the nick
+	* make the MODE msg handler update the channel and user mode bits
+	* add irc variables and types in a similar fashion to the colour type in the frontend
 
 	* add dcc support
 	* have an "activity" status indicator in the status bar so you know when stuff has been said and
@@ -133,9 +124,9 @@ General:
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
 	* add unalias command
 
+	* make ping to milliseconds
 	* make a directory of configs for runtime configuration files
 	* do better parsing of arguments in execute.c
-	* make common/format.c more general in the format that it parses (specifiable parser function?)
 	* move include files into an include/ directory inside of each module's directory (and then same
 	  for frontends) (??? is this really a good idea?)
 	* make a configuration/compilation script that builds the makefiles
@@ -144,6 +135,8 @@ General:
 	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
 	  addresses)
 	* add a function to key.c to get the current binding of a key sequence (without processing)
+	* make the common frontend stuff into a library that is compiled seperately
+	* can you make the frontend colour type common colour names system a little nicer and fuller?
 
 	* unify the naming patterns for variables and frontend widgets, etc.
 	* can we fix the handling of the no remove flag in variables so that is doesn't remove the node
