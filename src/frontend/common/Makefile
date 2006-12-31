@@ -13,8 +13,9 @@ OBJS =	cmds/insert.o \
 	utils/format.o \
 	widgets/frame.o \
 	widgets/input.o \
-	widgets/scroll.o \
+	widgets/region.o \
 	widgets/statusbar.o \
+	widgets/text.o \
 	widgets/window.o
 
 include $(ROOT)/rules.mk
