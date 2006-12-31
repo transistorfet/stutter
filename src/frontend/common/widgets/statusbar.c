@@ -30,6 +30,8 @@ struct widget_type_s statusbar_type = {
 	(widget_control_t) statusbar_control
 };
 
+extern struct variable_table_s *fe_theme;
+
 int statusbar_init(struct statusbar_s *statusbar)
 {
 	window_init((struct window_s *) statusbar);
@@ -48,28 +50,30 @@ int statusbar_refresh(struct statusbar_s *statusbar)
 {
 	int i, k;
 	attrib_t attrib;
+	char str[STRING_SIZE];
 	char buffer[STRING_SIZE];
-	struct format_string_s *format;
+	struct format_string_s format;
+	struct format_style_s styles[FE_FORMAT_MAX_STYLES];
 
 	surface_control_m(statusbar->window.surface, SCC_GET_ATTRIB, &attrib);
 	surface_clear_m(statusbar->window.surface, statusbar->window.x, statusbar->window.y, statusbar->window.width, statusbar->window.height);
-	// TODO can you make this use an unallocated parsed format string??
-	if ((util_expand_str(statusbar->text, buffer, STRING_SIZE) >= 0) && (format = create_format_string(buffer, 0))) {
+	format.str = str;
+	format.styles = styles;
+	if ((util_expand_str(statusbar->text, buffer, STRING_SIZE) >= 0) && !(parse_format_string(fe_theme, buffer, &format, STRING_SIZE, FE_FORMAT_MAX_STYLES))) {
 		surface_move_m(statusbar->window.surface, statusbar->window.x, statusbar->window.y);
-		for (i = 0, k = 0;k < format->num_styles;k++) {
-			if (format->styles[k].index >= statusbar->window.width)
+		for (i = 0, k = 0;k < format.num_styles;k++) {
+			if (format.styles[k].index >= statusbar->window.width)
 				break;
-			surface_print_m(statusbar->window.surface, &format->str[i], format->styles[k].index - i);
-			surface_control_m(statusbar->window.surface, SCC_SET_ATTRIB, &format->styles[k].attrib);
-			i = format->styles[k].index;
+			surface_print_m(statusbar->window.surface, &format.str[i], format.styles[k].index - i);
+			surface_control_m(statusbar->window.surface, SCC_SET_ATTRIB, &format.styles[k].attrib);
+			i = format.styles[k].index;
 		}
-		surface_print_m(statusbar->window.surface, &format->str[i], ((format->length >= statusbar->window.width) ? statusbar->window.width : format->length ) - i);
-		if (format->length < statusbar->window.width) {
-			for (i = 0;(i < (statusbar->window.width - format->length)) && (i < STRING_SIZE);i++)
+		surface_print_m(statusbar->window.surface, &format.str[i], ((format.length >= statusbar->window.width) ? statusbar->window.width : format.length ) - i);
+		if (format.length < statusbar->window.width) {
+			for (i = 0;(i < (statusbar->window.width - format.length)) && (i < STRING_SIZE);i++)
 				buffer[i] = ' ';
 			surface_print_m(statusbar->window.surface, buffer, i);
 		}
-		destroy_format_string(format);
 	}
 	surface_control_m(statusbar->window.surface, SCC_SET_ATTRIB, &attrib);
 	return(0);

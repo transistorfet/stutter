@@ -31,6 +31,8 @@ struct widget_type_s scroll_type = {
 	(widget_control_t) scroll_control
 };
 
+extern struct variable_table_s *fe_theme;
+
 static int scroll_wrap_string(char *, int);
 
 int scroll_init(struct scroll_s *scroll)
@@ -57,9 +59,12 @@ int scroll_refresh(struct scroll_s *scroll)
 	attrib_t attrib;
 	int x, y, width, height;
 	int i, j, k, max, limit;
+	char buffer[STRING_SIZE];
 	struct surface_s *surface;
 	struct scroll_entry_s *cur;
 	int indices[WINDOW_MAX_WRAP];
+	struct format_string_s format;
+	struct format_style_s styles[FE_FORMAT_MAX_STYLES];
 
 	widget_control(scroll->widget.parent, WCC_GET_SURFACE, &surface);
 	widget_control(scroll->widget.parent, WCC_GET_SIZE, &width, &height);
@@ -78,8 +83,12 @@ int scroll_refresh(struct scroll_s *scroll)
 
 	while (line >= 0) {
 		limit = width;
+		format.str = buffer;
+		format.styles = styles;
+		if (parse_format_string(fe_theme, cur->str, &format, STRING_SIZE, FE_FORMAT_MAX_STYLES))
+			continue;
 		for (i = j = 0;j < WINDOW_MAX_WRAP;j++) {
-			indices[j] = scroll_wrap_string(&cur->format->str[i], limit);
+			indices[j] = scroll_wrap_string(&format.str[i], limit);
 			if (indices[j] == -1)
 				break;
 			if (!j)
@@ -92,22 +101,22 @@ int scroll_refresh(struct scroll_s *scroll)
 		surface_control_m(surface, SCC_GET_ATTRIB, &attrib);
 		for (i = j = 0;(j < max) && (line + j < 0);j++)
 			i += indices[j];
-		for (k = 0;(k < cur->format->num_styles) && (cur->format->styles[k].index < i);k++)
-			surface_control_m(surface, SCC_SET_ATTRIB, &cur->format->styles[k].attrib);
+		for (k = 0;(k < format.num_styles) && (format.styles[k].index < i);k++)
+			surface_control_m(surface, SCC_SET_ATTRIB, &format.styles[k].attrib);
 		for (;j < max;j++) {
 			surface_move_m(surface, x, y + line + j);
 			if (j)
 				surface_print_m(surface, FE_WINDOW_WRAP_STRING, -1);
 			if (indices[j] == -1)
-				limit = cur->format->length;
+				limit = format.length;
 			else
 				limit = indices[j] + i;
-			for (;(k < cur->format->num_styles) && (cur->format->styles[k].index < limit);k++) {
-				surface_print_m(surface, &cur->format->str[i], cur->format->styles[k].index - i);
-				surface_control_m(surface, SCC_SET_ATTRIB, &cur->format->styles[k].attrib);
-				i = cur->format->styles[k].index;
+			for (;(k < format.num_styles) && (format.styles[k].index < limit);k++) {
+				surface_print_m(surface, &format.str[i], format.styles[k].index - i);
+				surface_control_m(surface, SCC_SET_ATTRIB, &format.styles[k].attrib);
+				i = format.styles[k].index;
 			}
-			surface_print_m(surface, &cur->format->str[i], limit - i);
+			surface_print_m(surface, &format.str[i], limit - i);
 			i = limit;
 		}
 		surface_control_m(surface, SCC_SET_ATTRIB, &attrib);
@@ -130,12 +139,11 @@ int scroll_print(struct scroll_s *scroll, const char *str, int len)
 	if (scroll->cur_line && (scroll->cur_line < scroll->max_lines))
 		scroll->cur_line++;
 
-	// TODO should you be able to allocate the format and node together?
-	if (!(format = create_format_string(str, 0)))
+	if (!(node = (struct scroll_entry_s *) memory_alloc(sizeof(struct scroll_entry_s) + len + 1)))
 		return(-1);
-	if (!(node = (struct scroll_entry_s *) memory_alloc(sizeof(struct scroll_entry_s))))
-		return(-1);
-	node->format = format;
+	node->str = (char *) (((size_t) node) + sizeof(struct scroll_entry_s));
+	strncpy(node->str, str, len);
+	node->str[len] = '\0';
 
 	queue_prepend_node_v(scroll->log, log, node);
 

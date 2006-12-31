@@ -14,7 +14,7 @@
 #include "../utils/format.h"
 
 struct scroll_entry_s {
-	struct format_string_s *format;
+	char *str;
 	queue_node_v(scroll_entry_s) log;
 };
 
