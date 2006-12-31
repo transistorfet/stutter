@@ -4,12 +4,12 @@ ROOT = ../../..
 
 TARGET = $(ROOT)/bin/stutter
 OBJS =	main.o \
-	fe.o \
-	net.o \
-	desc.o \
-	timer.o \
-	execute.o \
-	terminal.o \
+	core/fe.o \
+	core/net.o \
+	core/desc.o \
+	core/timer.o \
+	core/execute.o \
+	core/terminal.o \
 	../common/cmds/insert.o \
 	../common/core/colourmap.o \
 	../common/core/widget.o \
