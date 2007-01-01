@@ -19,6 +19,9 @@
 #define DEFAULT_FE_COLOURMAP_SIZE		32
 #define DEFAULT_FE_FORMAT_MAX_STYLES		64
 
+#define DEFAULT_FE_NET_ERR_RETRYING		"Error: Failed to connect to %s, Retrying..."
+#define DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT	"Error: Failed to connect to %s"
+
 #define DEFAULT_FE_THEME_BRACKET		",,bold"
 #define DEFAULT_FE_THEME_CHANNEL		"default"
 #define DEFAULT_FE_THEME_DEFAULT		"default"
@@ -31,8 +34,24 @@
 #define DEFAULT_FE_THEME_TIMESTAMP		"default"
 #define DEFAULT_FE_THEME_TOPIC			"default"
 
-#define DEFAULT_FE_NET_ERR_RETRYING		"Error: Failed to connect to %s, Retrying..."
-#define DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT	"Error: Failed to connect to %s"
+#define DEFAULT_FE_COMMON_ATTRIBS()						\
+	ADD_FIXED_VARIABLE("theme.bracket", "string", FE_THEME_BRACKET)		\
+	ADD_FIXED_VARIABLE("theme.channel", "string", FE_THEME_CHANNEL)		\
+	ADD_FIXED_VARIABLE("theme.default", "string", FE_THEME_DEFAULT)		\
+	ADD_FIXED_VARIABLE("theme.error", "string", FE_THEME_ERROR)		\
+	ADD_FIXED_VARIABLE("theme.message", "string", FE_THEME_MESSAGE)		\
+	ADD_FIXED_VARIABLE("theme.nick", "string", FE_THEME_NICK)		\
+	ADD_FIXED_VARIABLE("theme.server", "string", FE_THEME_SERVER)		\
+	ADD_FIXED_VARIABLE("theme.status", "string", FE_THEME_STATUS)		\
+	ADD_FIXED_VARIABLE("theme.statusbar", "string", FE_THEME_STATUSBAR)	\
+	ADD_FIXED_VARIABLE("theme.timestamp", "string", FE_THEME_TIMESTAMP)	\
+	ADD_FIXED_VARIABLE("theme.topic", "string", FE_THEME_TOPIC)
+
+#define DEFAULT_FE_COMMON_COMMANDS()						\
+	ADD_FIXED_VARIABLE("insert", "callback,widget", fe_common_cmd_insert, NULL)
+
+#define DEFAULT_FE_COMMON_FORMATS()						\
+	ADD_FIXED_VARIABLE("statusbar", "string", FE_STATUSBAR_DEFAULT)
 
 #define DEFAULT_FE_BINDINGS()				\
 	BIND_KEY("\x0b", "fe.insert", "\x03")
@@ -79,6 +98,14 @@
 #define FE_FORMAT_MAX_STYLES \
 	DEFAULT_FE_FORMAT_MAX_STYLES
 #endif
+#ifndef FE_NET_ERR_RETRYING
+#define FE_NET_ERR_RETRYING \
+	DEFAULT_FE_NET_ERR_RETRYING
+#endif
+#ifndef FE_NET_ERR_FAILED_TO_CONNECT
+#define FE_NET_ERR_FAILED_TO_CONNECT \
+	DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT
+#endif
 #ifndef FE_THEME_BRACKET
 #define FE_THEME_BRACKET \
 	DEFAULT_FE_THEME_BRACKET
@@ -123,13 +150,17 @@
 #define FE_THEME_TOPIC \
 	DEFAULT_FE_THEME_TOPIC
 #endif
-#ifndef FE_NET_ERR_RETRYING
-#define FE_NET_ERR_RETRYING \
-	DEFAULT_FE_NET_ERR_RETRYING
+#ifndef FE_COMMON_ATTRIBS
+#define FE_COMMON_ATTRIBS() \
+	DEFAULT_FE_COMMON_ATTRIBS()
 #endif
-#ifndef FE_NET_ERR_FAILED_TO_CONNECT
-#define FE_NET_ERR_FAILED_TO_CONNECT \
-	DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT
+#ifndef FE_COMMON_COMMANDS
+#define FE_COMMON_COMMANDS() \
+	DEFAULT_FE_COMMON_COMMANDS()
+#endif
+#ifndef FE_COMMON_FORMATS
+#define FE_COMMON_FORMATS() \
+	DEFAULT_FE_COMMON_FORMATS()
 #endif
 #ifndef FE_BINDINGS
 #define FE_BINDINGS() \

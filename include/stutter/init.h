@@ -104,34 +104,65 @@ struct key_prototype_s {
 	}						\
 }
 
-/*** Commands ***/
+/*** Variables ***/
 
-struct command_prototype_s {
+#define INIT_ADD_VARIABLE		0x01
+#define INIT_FIND_TYPE			0x02
+
+struct variable_prototype_s {
+	int type;
 	char *name;
-	callback_t func;
-	void *ptr;
+	int bitflags;
+	char *params;
+	void *ptrs[4];
 };
 
-#define ADD_COMMAND(name, func)	\
-	{ name, (callback_t) func, NULL },
+#define ADD_VARIABLE(name, params, ...)			\
+	{ INIT_ADD_VARIABLE, name, 0, params, { __VA_ARGS__ } },
 
-#define ADD_COMMAND_ENV(name, func, env)	\
-	{ name, (callback_t) func, env },
+#define ADD_CONSTANT(name, params, ...)			\
+	{ INIT_ADD_VARIABLE, name, VAR_BF_NO_MODIFY | VAR_BF_NO_REMOVE, params, { __VA_ARGS__ } },
 
-#define DEFINE_COMMAND_LIST(name, list)			\
-	static struct command_prototype_s name[] = {	\
+#define ADD_FIXED_VARIABLE(name, params, ...)		\
+	{ INIT_ADD_VARIABLE, name, VAR_BF_NO_REMOVE, params, { __VA_ARGS__ } },
+
+#define ADD_COMMAND(name, func)				\
+	ADD_FIXED_VARIABLE(name, "callback,pointer", func, NULL)
+
+#define ADD_COMMAND_ENV(name, func, env)		\
+	ADD_FIXED_VARIABLE(name, "callback,pointer", func, env)
+
+#define DECLARE_TYPE(type, list)			\
+	{ INIT_FIND_TYPE, type, 0, NULL, NULL },	\
+	list
+
+#define DEFINE_VARIABLE_LIST(name, list)		\
+	static struct variable_prototype_s name[] = {	\
 		list					\
-		{ NULL, NULL, NULL }			\
+		{ 0, NULL, 0, NULL, NULL }		\
 	}
 
-#define ADD_COMMAND_LIST(table, list) {				\
-	int i;							\
-	struct type_s *type;					\
-								\
-	if ((type = find_type("command")) && type->create) {	\
-		for (i = 0;list[i].name;i++)			\
-			add_variable(table, type, list[i].name, 0, "callback,pointer", list[i].func, list[i].ptr);	\
-	}							\
+#define ADD_VARIABLE_LIST(table, list) {				\
+	int i;								\
+	struct type_s *type;						\
+									\
+	for (i = 0;list[i].type;i++) {					\
+		switch (list[i].type) {					\
+			case INIT_FIND_TYPE: {				\
+				if (!(type = find_type(list[i].name)) || !type->create) {	\
+					while (list[++i].type != INIT_FIND_TYPE) ;		\
+					i--;				\
+				}					\
+				break;					\
+			}						\
+			case INIT_ADD_VARIABLE: {			\
+				add_variable(table, type, list[i].name, list[i].bitflags, list[i].params, list[i].ptrs[0], list[i].ptrs[1], list[i].ptrs[2], list[i].ptrs[3]);	\
+				break;					\
+			}						\
+			default:					\
+				break;					\
+		}							\
+	}								\
 }
 
 #endif

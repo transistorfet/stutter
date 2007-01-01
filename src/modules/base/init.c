@@ -24,8 +24,18 @@ DEFINE_TYPE_LIST(base_types,
 	BASE_TYPES()
 );
 
-DEFINE_COMMAND_LIST(base_commands,
-	BASE_COMMANDS()
+DEFINE_VARIABLE_LIST(base_variables,
+	DECLARE_TYPE("time",
+		ADD_FIXED_VARIABLE("time", "string", BASE_TIME_FORMAT)
+		ADD_FIXED_VARIABLE("date", "string", BASE_DATE_FORMAT)
+		ADD_FIXED_VARIABLE("timestamp", "string", BASE_TIMESTAMP_FORMAT)
+	)
+	DECLARE_TYPE("wildcard",
+		ADD_FIXED_VARIABLE(PATH_VARIABLE_NAME, "string", BASE_DEFAULT_PATH)
+	)
+	DECLARE_TYPE("command",
+		BASE_COMMANDS()
+	)
 );
 
 DEFINE_KEY_LIST(base_keys,
@@ -48,17 +58,7 @@ int init_base(void)
 	if (!(type = find_type("table")) || !(base_table = add_variable(NULL, type, "base", VAR_BF_NO_REMOVE, "")))
 		return(-1);
 
-	if (!(type = find_type("time")) || !type->create)
-		return(-1);
-	add_variable(NULL, type, "time", 0, "string", BASE_TIME_FORMAT);
-	add_variable(NULL, type, "date", 0, "string", BASE_DATE_FORMAT);
-	add_variable(NULL, type, "timestamp", 0, "string", BASE_TIMESTAMP_FORMAT);
-
-	if (!(type = find_type("wildcard")) || !type->create)
-		return(-1);
-	add_variable(NULL, type, PATH_VARIABLE_NAME, 0, "string", BASE_DEFAULT_PATH);
-
-	ADD_COMMAND_LIST(base_table, base_commands);
+	ADD_VARIABLE_LIST(base_table, base_variables);
 	ADD_KEY_LIST(base_keys);
 
 	BASE_INIT_JOINPOINT(base_table)

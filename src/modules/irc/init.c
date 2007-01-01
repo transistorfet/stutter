@@ -20,8 +20,17 @@ DEFINE_HANDLER_LIST(irc_handlers,
 	IRC_HANDLERS()
 );
 
-DEFINE_COMMAND_LIST(irc_commands,
-	IRC_COMMANDS()
+DEFINE_VARIABLE_LIST(irc_variables,
+	DECLARE_TYPE("string",
+		ADD_FIXED_VARIABLE("version", "string", IRC_VERSION_RESPONSE)
+	)
+	DECLARE_TYPE("status",
+		ADD_FIXED_VARIABLE("current_nick", "stringify,null", irc_stringify_nick, NULL)
+		ADD_FIXED_VARIABLE("current_channel", "stringify,null", irc_stringify_channel, NULL)
+	)
+	DECLARE_TYPE("command",
+		IRC_COMMANDS()
+	)
 );
 
 DEFINE_KEY_LIST(irc_keys,
@@ -43,16 +52,7 @@ int init_irc(void)
 	if (!(type = find_type("table")) || !(irc_table = add_variable(NULL, type, "irc", 0, "")))
 		return(-1);
 
-	if (!(type = find_type("string")) || !type->create)
-		return(-1);
-	add_variable(irc_table, type, "version", 0, "string", IRC_VERSION_RESPONSE);
-
-	if (!(type = find_type("status")) || !type->create)
-		return(-1);
-	add_variable(irc_table, type, "current_nick", 0, "stringify,null", irc_stringify_nick, NULL);
-	add_variable(irc_table, type, "current_channel", 0, "stringify,null", irc_stringify_channel, NULL);
-
-	ADD_COMMAND_LIST(irc_table, irc_commands);
+	ADD_VARIABLE_LIST(irc_table, irc_variables);
 	ADD_KEY_LIST(irc_keys);
 
 	IRC_INIT_JOINPOINT(irc_table)
