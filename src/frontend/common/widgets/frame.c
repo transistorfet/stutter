@@ -77,14 +77,19 @@ int frame_control(struct frame_s *frame, int cmd, va_list va)
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
-			return(queue_append(frame->widgets, widget));
+			if (queue_append(frame->widgets, widget))
+				return(-1);
+			widget->parent = (struct widget_s *) frame;
+			return(0);
 		}
 		case WCC_REMOVE_WIDGET: {
 			struct widget_s *widget;
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
-			queue_delete(frame->widgets, widget);
+			queue_remove(frame->widgets, widget);
+			if (!queue_current(frame->widgets))
+				queue_first(frame->widgets);
 			return(0);
 		}
 		case WCC_CURRENT_WIDGET: {

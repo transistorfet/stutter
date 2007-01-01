@@ -92,6 +92,7 @@ int region_control(struct region_s *region, int cmd, va_list va)
 			if (!(node = (struct region_node_s *) memory_alloc(sizeof(struct region_node_s))))
 				return(-1);
 			node->widget = widget;
+			widget->parent = (struct widget_s *) region;
 			queue_append_node_v(region->widgets, widgets, node);
 			return(0);
 		}
@@ -105,7 +106,6 @@ int region_control(struct region_s *region, int cmd, va_list va)
 			while (node) {
 				if (node->widget == widget) {
 					queue_remove_node_v(region->widgets, widgets, node);
-					destroy_widget(node->widget);
 					memory_free(node);
 					return(0);
 				}
