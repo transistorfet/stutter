@@ -25,8 +25,10 @@ extern struct widget_type_s text_type;
 extern struct widget_type_s frame_type;
 extern struct widget_type_s input_type;
 extern struct widget_type_s window_type;
+extern struct widget_type_s region_type;
 extern struct widget_type_s statusbar_type;
 
+struct widget_s *root;
 struct widget_s *frame;
 struct widget_s *input;
 struct widget_s *statusbar;
@@ -48,18 +50,20 @@ int init_frontend(void)
 		return(-1);
 	widget_control(input, WCC_SET_SURFACE, terminal);
 
+	if (!(root = (struct widget_s *) create_widget(&region_type, "region", NULL)))
+		return(-1);
+	widget_control(root, WCC_SET_SURFACE, terminal);
+	widget_control(root, WCC_ADD_WIDGET, frame);
+	widget_control(root, WCC_ADD_WIDGET, statusbar);
+	widget_control(root, WCC_ADD_WIDGET, input);
+
 	fe_update_size();
 	return(0);
 }
 
 int release_frontend(void)
 {
-	if (input)
-		destroy_widget((struct widget_s *) input);
-	if (statusbar)
-		destroy_widget((struct widget_s *) statusbar);
-	if (frame)
-		destroy_widget((struct widget_s *) frame);
+	destroy_widget((struct widget_s *) root);
 	return(0);
 }
 
@@ -67,7 +71,7 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 {
 	struct window_s *window;
 
-	if (strcmp(type, "window") || !(window = (struct window_s *) create_widget(&text_type, id, frame)))
+	if (strcmp(type, "text") || !(window = (struct window_s *) create_widget(&text_type, id, frame)))
 		return(NULL);
 	widget_control(frame, WCC_ADD_WIDGET, window);
 	return(window);
@@ -75,7 +79,7 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 
 int fe_destroy_widget(void *widget)
 {
-	if ((widget == statusbar) || (widget == input))
+	if ((widget == root) || (widget == frame) || (widget == statusbar) || (widget == input))
 		return(-1);
 	widget_control(frame, WCC_REMOVE_WIDGET, widget);
 	return(0);
@@ -115,71 +119,51 @@ void *fe_current_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (!strcmp(context, "input"))
-		return(input);
-	else {
-		widget_control(frame, WCC_CURRENT_WIDGET, &widget, context, ref);
-		return(widget);
-	}
+	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_CURRENT_WIDGET, &widget, context))
+		return(NULL);
+	return(widget);
 }
 
 int fe_select_widget(char *context, void *ref, void *widget)
 {
-	if (!strcmp(context, "input"))
-		return(-1);
-	return(widget_control(frame, WCC_SELECT_WIDGET, context, ref, widget));
+	return(widget_control(ref ? (struct widget_s *) ref : root, WCC_SELECT_WIDGET, context, widget));
 }
 
 void *fe_next_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (!strcmp(context, "input"))
-		return(input);
-	else {
-		widget_control(frame, WCC_NEXT_WIDGET, &widget, context, ref);
-		return(widget);
-	}
-	return(NULL);
+	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_NEXT_WIDGET, &widget, context))
+		return(NULL);
+	return(widget);
 }
 
 void *fe_previous_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (!strcmp(context, "input"))
-		return(input);
-	else {
-		widget_control(frame, WCC_PREVIOUS_WIDGET, &widget, context, ref);
-		return(widget);
-	}
-	return(NULL);
+
+	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_PREVIOUS_WIDGET, &widget, context))
+		return(NULL);
+	return(widget);
 }
 
 void *fe_first_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (!strcmp(context, "input"))
-		return(input);
-	else {
-		widget_control(frame, WCC_FIRST_WIDGET, &widget, context, ref);
-		return(widget);
-	}
-	return(NULL);
+	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_FIRST_WIDGET, &widget, context))
+		return(NULL);
+	return(widget);
 }
 
 void *fe_last_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (!strcmp(context, "input"))
-		return(input);
-	else {
-		widget_control(frame, WCC_LAST_WIDGET, &widget, context, ref);
-		return(widget);
-	}
-	return(NULL);
+	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_LAST_WIDGET, &widget, context))
+		return(NULL);
+	return(widget);
 }
 
 
@@ -212,10 +196,12 @@ int fe_scroll(void *widget, int diff)
 
 void fe_refresh(void)
 {
-	fe_update_size();
-	widget_refresh_m(frame);
-	widget_refresh_m(statusbar);
-	widget_refresh_m(input);
+	int width, height;
+
+	widget_control(root, WCC_GET_SIZE, &width, &height);
+	if ((surface_get_width_m(terminal) != width) || (surface_get_height_m(terminal) != height))
+		fe_update_size();
+	widget_refresh_m(root);
 }
 
 void fe_quit(char *reason)
@@ -227,6 +213,9 @@ void fe_quit(char *reason)
 
 static void fe_update_size(void)
 {
+	// TODO replace this whole function with a call to modify size only to the root widget
+	widget_control(root, WCC_MODIFY_SIZE, surface_get_width_m(terminal), surface_get_height_m(terminal));
+	widget_control(root, WCC_MODIFY_POSITION, 0, 0);
 	widget_control(frame, WCC_MODIFY_SIZE, surface_get_width_m(terminal), surface_get_height_m(terminal) - 2);
 	widget_control(frame, WCC_MODIFY_POSITION, 0, 0);
 	widget_control(statusbar, WCC_MODIFY_SIZE, surface_get_width_m(terminal), 1);
