@@ -12,8 +12,8 @@ int base_cmd_previous(char *env, char *args)
 {
 	void *window;
 
-	if (window = fe_current_widget("text", NULL)) {
-		if (fe_previous_widget("text", window))
+	if (window = fe_current_widget("frame", NULL)) {
+		if (!fe_previous_widget("text", window))
 			fe_last_widget("text", window);
 	}
 	return(0);
