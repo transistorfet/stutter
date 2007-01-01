@@ -23,6 +23,7 @@
 #define WCC_MODIFY_SIZE		0x13
 #define WCC_GET_POSITION	0x14
 #define WCC_MODIFY_POSITION	0x15
+#define WCC_SET_WINDOW		0x16
 
 #define WCC_ADD_WIDGET		0x20
 #define WCC_REMOVE_WIDGET	0x21
@@ -78,12 +79,17 @@ struct widget_type_s {
 
 struct widget_s {
 	char *id;
+	int bitflags;
 	struct widget_type_s *type;
 	struct widget_s *parent;
 };
 
+int init_widget(void);
+int release_widget(void);
+
 struct widget_s *create_widget(struct widget_type_s *, char *, struct widget_s *, ...);
 int destroy_widget(struct widget_s *);
+struct widget_s *find_widget(char *);
 int widget_control(struct widget_s *, int, ...);
 
 #endif
