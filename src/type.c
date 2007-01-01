@@ -25,7 +25,7 @@
 #endif
 
 #define type_hash_m(list, str)			(sdbm_hash_icase(str) % hash_size_v(list))
-#define type_compare_m(str)			(!strcmp_icase(cur->type.name, name))
+#define type_compare_m(str)			(!strcmp_icase(cur->type.name, str))
 
 struct type_node_s {
 	struct type_s type;
