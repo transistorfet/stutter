@@ -10,7 +10,10 @@
 #include <stdarg.h>
 #include <stutter/frontend/surface.h>
 
-#define WT_DRAWING		0x20
+#define WT_DRAWING		0x0004
+#define WT_CONTAINER		0x1000
+#define WT_FRAME		0x1001
+#define WT_REGION		0x1002
 
 #define WCC_GET_CHAR		0x02
 
