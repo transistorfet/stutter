@@ -30,9 +30,6 @@ DEFINE_VARIABLE_LIST(base_variables,
 		ADD_FIXED_VARIABLE("date", "string", BASE_DATE_FORMAT)
 		ADD_FIXED_VARIABLE("timestamp", "string", BASE_TIMESTAMP_FORMAT)
 	)
-	DECLARE_TYPE("wildcard",
-		ADD_FIXED_VARIABLE(PATH_VARIABLE_NAME, "string", BASE_DEFAULT_PATH)
-	)
 	DECLARE_TYPE("command",
 		BASE_COMMANDS()
 	)
@@ -57,6 +54,10 @@ int init_base(void)
 
 	if (!(type = find_type("table")) || !(base_table = add_variable(NULL, type, "base", VAR_BF_NO_REMOVE, "")))
 		return(-1);
+
+	if (!(type = find_type("wildcard")) || !type->create)
+		return(-1);
+	add_variable(NULL, type, PATH_VARIABLE_NAME, 0, "string", BASE_DEFAULT_PATH);
 
 	ADD_VARIABLE_LIST(base_table, base_variables);
 	ADD_KEY_LIST(base_keys);
