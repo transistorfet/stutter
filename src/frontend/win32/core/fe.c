@@ -72,7 +72,7 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 {
 	struct window_s *window;
 
-	if (strcmp(type, "window") || !(window = (struct window_s *) create_widget(&text_type, id, frame)))
+	if (strcmp(type, "text") || !(window = (struct window_s *) create_widget(&text_type, id, frame)))
 		return(NULL);
 	widget_control(frame, WCC_ADD_WIDGET, window);
 	return(window);
