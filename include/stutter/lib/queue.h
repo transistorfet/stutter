@@ -209,6 +209,19 @@ static inline void *queue_pop(struct queue_s *queue)
 	return(ptr);
 }
 
+static inline void queue_remove(struct queue_s *queue, void *ptr)
+{
+	queue_traverse_v(queue->q, q,
+		if (cur->ptr == ptr) {
+			if (queue->current == cur)
+				queue->current = NULL;
+			queue_remove_node_v(queue->q, q, cur);
+			memory_free(cur);
+			break;
+		}
+	);
+}
+
 static inline void queue_delete(struct queue_s *queue, void *ptr)
 {
 	queue_traverse_v(queue->q, q,
@@ -216,6 +229,8 @@ static inline void queue_delete(struct queue_s *queue, void *ptr)
 			if (queue->current == cur)
 				queue->current = NULL;
 			queue_remove_node_v(queue->q, q, cur);
+			queue->destroy(cur->ptr);
+			memory_free(cur);
 			break;
 		}
 	);
