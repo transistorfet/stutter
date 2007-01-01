@@ -17,8 +17,8 @@
 #include "window.h"
 
 struct widget_type_s frame_type = {
-	"frame",
-	0,
+	"frame:window",
+	WT_FRAME,
 	sizeof(struct frame_s),
 	(widget_init_t) frame_init,
 	(widget_release_t) frame_release,
@@ -88,21 +88,42 @@ int frame_control(struct frame_s *frame, int cmd, va_list va)
 			return(0);
 		}
 		case WCC_CURRENT_WIDGET: {
-			struct widget_s **widget;
+			va_list args;
+			char *context;
+			struct widget_s *current, **widget;
+
+			args = va;
 			widget = va_arg(va, struct widget_s **);
-			if (!widget)
+			context = va_arg(va, char *);
+			if (!widget || !(current = (struct widget_s *) queue_current(frame->widgets)))
 				return(-1);
-			*widget = (struct widget_s *) queue_current(frame->widgets);
+			if (!widget_control_m(current, cmd, args) && *widget)
+				return(0);
+			else if (strstr(current->type->name, context))
+				*widget = current;
+			else
+				*widget = NULL;
 			return(0);
 		}
 		case WCC_SELECT_WIDGET: {
+			va_list args;
 			char *context;
-			struct widget_s *ref, *widget;
+			struct widget_s *widget;
+			struct queue_node_s *cur, *node;
+
+			args = va;
 			context = va_arg(va, char *);
-			ref = va_arg(va, struct widget_s *);
 			widget = va_arg(va, struct widget_s *);
-			if (frame->widgets->current = queue_find(frame->widgets, widget))
-				return(0);
+			node = queue_current_node(frame->widgets);
+			cur = queue_first_node(frame->widgets);
+			while (cur) {
+				if ((((struct widget_s *) cur->ptr) == widget) || !widget_control_m((struct widget_s *) cur->ptr, cmd, args)) {
+					frame->widgets->current = cur;
+					return(0);
+				}
+				cur = queue_next_node(frame->widgets);
+			}
+			frame->widgets->current = node;
 			return(-1);
 		}
 		case WCC_NEXT_WIDGET: {

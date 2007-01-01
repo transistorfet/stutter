@@ -18,7 +18,7 @@
 #include "../utils/format.h"
 
 struct widget_type_s statusbar_type = {
-	"statusbar",
+	"statusbar:window",
 	0,
 	sizeof(struct statusbar_s),
 	(widget_init_t) statusbar_init,

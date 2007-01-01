@@ -19,7 +19,7 @@
 #include "window.h"
 
 struct widget_type_s input_type = {
-	"input",
+	"input:window",
 	0,
 	sizeof(struct input_s),
 	(widget_init_t) input_init,
