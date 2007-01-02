@@ -165,6 +165,33 @@ struct variable_prototype_s {
 	}								\
 }
 
+/*** Commands ***/
+
+#define EVALUATE_COMMAND(cmd)		\
+	cmd,
+
+#define DEFINE_COMMAND_LIST(name, list)	\
+	static char *name[] = {		\
+		list			\
+		NULL			\
+	}
+
+#define EVALUATE_COMMAND_LIST(list) {					\
+	int i;								\
+	char *str, *cmd;						\
+	char buffer[STRING_SIZE];					\
+	for (i = 0;list[i];i++) {					\
+		strcpy(buffer, list[i]);				\
+		str = buffer;						\
+		if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))	\
+			str = &str[strlen(BASE_COMMAND_PREFIX)];	\
+		get_param_m(str, cmd, ' ');				\
+		if (util_evaluate_command(cmd, str)) {			\
+			BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)	\
+		}							\
+	}								\
+}
+
 #endif
 
 
