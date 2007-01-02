@@ -20,6 +20,7 @@ OBJS =	init.o \
 	cmds/redirect.o \
 	cmds/remove.o \
 	cmds/scroll.o \
+	cmds/select.o \
 	cmds/set.o \
 	cmds/source.o \
 	cmds/unbind.o \

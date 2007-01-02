@@ -32,6 +32,7 @@ int base_cmd_redirect(char *, char *);
 int base_cmd_remove(char *, char *);
 int base_cmd_previous(char *, char *);
 int base_cmd_scroll(char *, char *);
+int base_cmd_select(char *, char *);
 int base_cmd_set(char *, char *);
 int base_cmd_source(char *, char *);
 int base_cmd_unbind(char *, char *);
