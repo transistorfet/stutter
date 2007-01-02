@@ -18,17 +18,17 @@
 #define DEFAULT_BASE_COMMAND_PREFIX		"/"
 #define DEFAULT_BASE_NULL_COMMAND		""
 
-#define DEFAULT_BASE_ERR_UNKNOWN_COMMAND	"Error: Unknown Command %s"
-#define DEFAULT_BASE_ERR_UNABLE_TO_OPEN_FILE	"Error: Unable to open the file %s"
-#define DEFAULT_BASE_ERR_VARIABLE_NOT_FOUND	"Error: %s variable not found"
-#define DEFAULT_BASE_ERR_TYPE_NOT_FOUND		"Error: %s type not found"
-#define DEFAULT_BASE_ERR_STRINGIFY_FAILED	"Error stringifying variable %s"
-#define DEFAULT_BASE_ERR_EVALUATE_FAILED	"Error evaluating variable %s"
-#define DEFAULT_BASE_ERR_ALIAS_FAILED		"Error creating alias %s"
-#define DEFAULT_BASE_ERR_BINDING_FAILED		"Error binding key %s"
-#define DEFAULT_BASE_ERR_REMOVE_FAILED		"Error removing variable %s"
-#define DEFAULT_BASE_ERR_SET_FAILED		"Error setting variable %s"
-#define DEFAULT_BASE_ERR_UNBINDING_FAILED	"Error unbinding key %s"
+#define DEFAULT_BASE_ERR_UNKNOWN_COMMAND	"\022error\022Error: Unknown Command %s"
+#define DEFAULT_BASE_ERR_UNABLE_TO_OPEN_FILE	"\022error\022Error: Unable to open the file %s"
+#define DEFAULT_BASE_ERR_VARIABLE_NOT_FOUND	"\022error\022Error: %s variable not found"
+#define DEFAULT_BASE_ERR_TYPE_NOT_FOUND		"\022error\022Error: %s type not found"
+#define DEFAULT_BASE_ERR_STRINGIFY_FAILED	"\022error\022Error stringifying variable %s"
+#define DEFAULT_BASE_ERR_EVALUATE_FAILED	"\022error\022Error evaluating variable %s"
+#define DEFAULT_BASE_ERR_ALIAS_FAILED		"\022error\022Error creating alias %s"
+#define DEFAULT_BASE_ERR_BINDING_FAILED		"\022error\022Error binding key %s"
+#define DEFAULT_BASE_ERR_REMOVE_FAILED		"\022error\022Error removing variable %s"
+#define DEFAULT_BASE_ERR_SET_FAILED		"\022error\022Error setting variable %s"
+#define DEFAULT_BASE_ERR_UNBINDING_FAILED	"\022error\022Error unbinding key %s"
 
 #define DEFAULT_BASE_TYPES()		\
 	ADD_TYPE(base_load_command)	\
@@ -68,6 +68,7 @@
 	ADD_COMMAND("redirect", base_cmd_redirect)	\
 	ADD_COMMAND("remove", base_cmd_remove)		\
 	ADD_COMMAND("scroll", base_cmd_scroll)		\
+	ADD_COMMAND("select", base_cmd_select)		\
 	ADD_COMMAND("set", base_cmd_set)		\
 	ADD_COMMAND("source", base_cmd_source)		\
 	ADD_COMMAND("unbind", base_cmd_unbind)
@@ -80,6 +81,9 @@
 
 #define DEFAULT_BASE_ERROR_JOINPOINT(...)	\
 	ERROR_JOINPOINT("base.error", __VA_ARGS__)
+
+#define DEFAULT_BASE_OUPUT_JOINPOINT(...)	\
+	OUTPUT_JOINPOINT("base.output", __VA_ARGS__)
 
 /*** START OF DEFAULT ASSIGNMENTS ***/
 #ifndef BASE_NAMESPACE
@@ -181,6 +185,10 @@
 #ifndef BASE_ERROR_JOINPOINT
 #define BASE_ERROR_JOINPOINT(...) \
 	DEFAULT_BASE_ERROR_JOINPOINT(__VA_ARGS__)
+#endif
+#ifndef BASE_OUPUT_JOINPOINT
+#define BASE_OUPUT_JOINPOINT(...) \
+	DEFAULT_BASE_OUPUT_JOINPOINT(__VA_ARGS__)
 #endif
 /*** END OF DEFAULT ASSIGNMENTS ***/
 

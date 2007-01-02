@@ -19,8 +19,8 @@
 #define DEFAULT_FE_COLOURMAP_SIZE		32
 #define DEFAULT_FE_FORMAT_MAX_STYLES		64
 
-#define DEFAULT_FE_NET_ERR_RETRYING		"Error: Failed to connect to %s, Retrying..."
-#define DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT	"Error: Failed to connect to %s"
+#define DEFAULT_FE_NET_ERR_RETRYING		"\022error\022Error: Failed to connect to %s, Retrying..."
+#define DEFAULT_FE_NET_ERR_FAILED_TO_CONNECT	"\022error\022Error: Failed to connect to %s"
 
 #define DEFAULT_FE_THEME_BRACKET		",,bold"
 #define DEFAULT_FE_THEME_CHANNEL		"default"

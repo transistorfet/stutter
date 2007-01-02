@@ -59,10 +59,10 @@
 #define DEFAULT_IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 #define DEFAULT_IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION
 
-#define DEFAULT_IRC_ERR_SERVER_DISCONNECTED	"Error: Disconnected from %s"
-#define DEFAULT_IRC_ERR_RECONNECT_ERROR		"Error: Unable to reconnect to %s"
-#define DEFAULT_IRC_ERR_JOIN_ERROR		"Error: Unable to create channel resources after joining %s"
-#define DEFAULT_IRC_ERR_QUERY_ERROR		"Error: Unable to create query resources for %s"
+#define DEFAULT_IRC_ERR_SERVER_DISCONNECTED	"\022error\022Error: Disconnected from %s"
+#define DEFAULT_IRC_ERR_RECONNECT_ERROR		"\022error\022Error: Unable to reconnect to %s"
+#define DEFAULT_IRC_ERR_JOIN_ERROR		"\022error\022Error: Unable to create channel resources after joining %s"
+#define DEFAULT_IRC_ERR_QUERY_ERROR		"\022error\022Error: Unable to create query resources for %s"
 
 #define DEFAULT_IRC_BINDINGS()			\
 	BIND_KEY("\x09", "irc.complete", "")
@@ -109,6 +109,8 @@
 #define DEFAULT_IRC_ERROR_JOINPOINT(...)	\
 	ERROR_JOINPOINT("irc.error", __VA_ARGS__)
 
+#define DEFAULT_IRC_OUPUT_JOINPOINT(...)	\
+	OUTPUT_JOINPOINT("irc.output", __VA_ARGS__)
 
 /*** START OF DEFAULT ASSIGNMENTS ***/
 #ifndef IRC_DEFAULT_PORT
@@ -330,6 +332,10 @@
 #ifndef IRC_ERROR_JOINPOINT
 #define IRC_ERROR_JOINPOINT(...) \
 	DEFAULT_IRC_ERROR_JOINPOINT(__VA_ARGS__)
+#endif
+#ifndef IRC_OUPUT_JOINPOINT
+#define IRC_OUPUT_JOINPOINT(...) \
+	DEFAULT_IRC_OUPUT_JOINPOINT(__VA_ARGS__)
 #endif
 /*** END OF DEFAULT ASSIGNMENTS ***/
 

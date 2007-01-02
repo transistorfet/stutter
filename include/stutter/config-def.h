@@ -40,6 +40,9 @@
 #define DEFAULT_ERROR_JOINPOINT(name, ...)	\
 	EMIT_STRING(name, NULL, __VA_ARGS__)
 
+#define DEFAULT_OUTPUT_JOINPOINT(name, ...)	\
+	EMIT_STRING(name, NULL, __VA_ARGS__)
+
 /*** Global Initialization ***/
 
 #define DEFAULT_STUTTER_INIT(argc, argv) {			\
@@ -98,6 +101,10 @@
 #ifndef ERROR_JOINPOINT
 #define ERROR_JOINPOINT(name, ...) \
 	DEFAULT_ERROR_JOINPOINT(name, __VA_ARGS__)
+#endif
+#ifndef OUTPUT_JOINPOINT
+#define OUTPUT_JOINPOINT(name, ...) \
+	DEFAULT_OUTPUT_JOINPOINT(name, __VA_ARGS__)
 #endif
 #ifndef STUTTER_INIT
 #define STUTTER_INIT(argc, argv) \
