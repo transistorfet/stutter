@@ -38,6 +38,9 @@ static void fe_update_size(void);
 
 int init_frontend(void)
 {
+	if (init_widget())
+		return(-1);
+
 	if (!(frame = (struct widget_s *) create_widget(&frame_type, "frame", NULL)))
 		return(-1);
 	widget_control(frame, WCC_SET_SURFACE, terminal);
@@ -72,7 +75,9 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 {
 	struct window_s *window;
 
-	if (strcmp(type, "text") || !(window = (struct window_s *) create_widget(&text_type, id, frame)))
+	if (!parent)
+		return(NULL);
+	if (strcmp(type, "text") || !(window = (struct window_s *) create_widget(&text_type, id, (struct widget_s *) parent)))
 		return(NULL);
 	widget_control(frame, WCC_ADD_WIDGET, window);
 	return(window);
@@ -83,6 +88,7 @@ int fe_destroy_widget(void *widget)
 	if ((widget == root) || (widget == frame) || (widget == statusbar) || (widget == input))
 		return(-1);
 	widget_control(frame, WCC_REMOVE_WIDGET, widget);
+	destroy_widget(widget);
 	return(0);
 }
 
@@ -105,8 +111,7 @@ short fe_get_height(void *widget)
 
 void *fe_find_widget(char *id)
 {
-	// TODO fill in
-	return(NULL);
+	return(find_widget(id));
 }
 
 int fe_resize_widget(void *widget, int diffx, int diffy)
