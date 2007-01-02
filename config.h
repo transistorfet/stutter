@@ -9,7 +9,7 @@
 #include <stutter/config-macros.h>
 
 #define BASE_DEFAULT_PATH		";irc;base"
-#define FE_STATUSBAR_DEFAULT		"\022statusbar\022 $time $irc.current_nick on $irc.current_channel"
+#define FE_STATUSBAR_DEFAULT		"\022statusbar\022 $base.time $irc.current_nick on $irc.current_channel"
 
 #define MODULE_LIST() 		\
 	MODULE(base)		\
