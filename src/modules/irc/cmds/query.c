@@ -13,7 +13,7 @@
 int irc_cmd_query(char *env, char *args)
 {
 	char *name;
-	void *window;
+	void *window, *frame;
 	struct irc_server *server;
 	struct irc_channel *channel;
 
@@ -25,7 +25,9 @@ int irc_cmd_query(char *env, char *args)
 
 	if (channel = irc_find_channel(server->channels, name))
 		fe_select_widget("text", NULL, channel->window);
-	else if ((window = fe_create_widget("irc", "text", NULL, NULL)) && (channel = irc_add_channel(server->channels, name, window, server)))
+	else if ((frame = fe_current_widget("frame", NULL))
+	    && (window = fe_create_widget("irc", "text", name, frame))
+	    && (channel = irc_add_channel(server->channels, name, window, server)))
 		fe_select_widget("text", NULL, window);
 	else {
 		if (window)
