@@ -207,6 +207,8 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			int x, y;
 			x = va_arg(va, int);
 			y = va_arg(va, int);
+			x = (x < terminal->surface.width) ? ( (x >= 0) ? x : 0 ) : terminal->surface.width - 1;
+			y = (y < terminal->surface.height) ? ( (y >= 0) ? y : 0 ) : terminal->surface.height - 1;
 			move(y, x);
 			return(0);
 		}

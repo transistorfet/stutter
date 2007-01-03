@@ -289,8 +289,8 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			int x, y;
 			x = va_arg(va, int);
 			y = va_arg(va, int);
-			x = (x < terminal->surface.width) ? x : terminal->surface.width - 1;
-			y = (y < terminal->surface.height) ? y : terminal->surface.height - 1;
+			x = (x < terminal->surface.width) ? ( (x >= 0) ? x : 0 ) : terminal->surface.width - 1;
+			y = (y < terminal->surface.height) ? ( (y >= 0) ? y : 0 ) : terminal->surface.height - 1;
 			terminal->attrib.style ^= SA_INVERSE;
 			terminal_set_attribs(terminal, terminal->attrib);
 			TextOut(terminal->context, x * terminal->charx, y * terminal->chary, " ", 1);
