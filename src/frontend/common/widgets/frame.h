@@ -9,12 +9,13 @@
 
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
-#include "window.h"
+#include "container.h"
 
 struct frame_s {
-	struct window_s window;
-	struct queue_s *widgets;
+	struct container_s container;
 };
+
+#define FRAME_S(widget)	((struct frame_s *) widget)
 
 extern struct widget_type_s frame_type;
 

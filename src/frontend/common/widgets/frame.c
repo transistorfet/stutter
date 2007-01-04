@@ -14,10 +14,10 @@
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "frame.h"
-#include "window.h"
+#include "container.h"
 
 struct widget_type_s frame_type = {
-	"frame:window",
+	"frame:container:window",
 	WT_FRAME,
 	sizeof(struct frame_s),
 	(widget_init_t) frame_init,
@@ -31,15 +31,13 @@ struct widget_type_s frame_type = {
 
 int frame_init(struct frame_s *frame)
 {
-	if (!(frame->widgets = create_queue(0, (destroy_t) destroy_widget)))
-		return(-1);
+	container_init(CONTAINER_S(frame));
 	return(0);
 }
 
 int frame_release(struct frame_s *frame)
 {
-	if (frame && frame->widgets)
-		destroy_queue(frame->widgets);
+	container_release(CONTAINER_S(frame));
 	return(0);
  }
 
@@ -47,10 +45,10 @@ int frame_refresh(struct frame_s *frame)
 {
 	struct widget_s *widget;
 
-	if (widget = (struct widget_s *) queue_current(frame->widgets))
+	if (widget = (struct widget_s *) queue_current(CONTAINER_S(frame)->widgets))
 		widget_refresh_m(widget);
 	else
-		window_clear((struct window_s *) frame);
+		window_clear(WINDOW_S(frame));
 	return(0);
 }
 
@@ -72,99 +70,78 @@ int frame_read(struct frame_s *frame, char *buffer, int max)
 int frame_control(struct frame_s *frame, int cmd, va_list va)
 {
 	switch (cmd) {
-		case WCC_ADD_WIDGET: {
-			struct widget_s *widget;
-			widget = va_arg(va, struct widget_s *);
-			if (!widget)
-				return(-1);
-			if (queue_append(frame->widgets, widget))
-				return(-1);
-			widget->parent = (struct widget_s *) frame;
-			return(0);
-		}
-		case WCC_REMOVE_WIDGET: {
-			struct widget_s *widget;
-			widget = va_arg(va, struct widget_s *);
-			if (!widget)
-				return(-1);
-			queue_remove(frame->widgets, widget);
-			if (!queue_current(frame->widgets))
-				queue_first(frame->widgets);
-			return(0);
-		}
-		case WCC_CURRENT_WIDGET: {
-			va_list args;
-			char *context;
-			struct widget_s *current, **widget;
+		case WCC_SET_SURFACE: {
+			struct queue_node_s *cur;
+			struct surface_s *surface;
 
-			args = va;
-			widget = va_arg(va, struct widget_s **);
-			context = va_arg(va, char *);
-			if (!widget || !(current = (struct widget_s *) queue_current(frame->widgets)))
-				return(-1);
-			if (!widget_control_m(current, cmd, args) && *widget)
-				return(0);
-			else if (strstr(current->type->name, context))
-				*widget = current;
-			else
-				*widget = NULL;
-			return(0);
-		}
-		case WCC_SELECT_WIDGET: {
-			va_list args;
-			char *context;
-			struct widget_s *widget;
-			struct queue_node_s *cur, *node;
-
-			args = va;
-			context = va_arg(va, char *);
-			widget = va_arg(va, struct widget_s *);
-			node = queue_current_node(frame->widgets);
-			cur = queue_first_node(frame->widgets);
+			surface = va_arg(va, struct surface_s *);
+			WINDOW_S(frame)->surface = surface;
+			cur = queue_first_node(CONTAINER_S(frame)->widgets);
 			while (cur) {
-				if ((((struct widget_s *) cur->ptr) == widget) || !widget_control_m((struct widget_s *) cur->ptr, cmd, args)) {
-					frame->widgets->current = cur;
-					return(0);
-				}
-				cur = queue_next_node(frame->widgets);
+				widget_control(WIDGET_S(cur->ptr), WCC_SET_SURFACE, surface);
+				cur = queue_next_node(CONTAINER_S(frame)->widgets);
 			}
-			frame->widgets->current = node;
-			return(-1);
-		}
-		case WCC_NEXT_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
-				return(-1);
-			*widget = (struct widget_s *) queue_next(frame->widgets);
+			// TODO should this also cause a resize of everything?  at least if we are the root
 			return(0);
 		}
-		case WCC_PREVIOUS_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
-				return(-1);
-			*widget = (struct widget_s *) queue_previous(frame->widgets);
+		case WCC_SET_WINDOW: {
+			struct queue_node_s *cur;
+
+			window_control(WINDOW_S(frame), cmd, va);
+			cur = queue_first_node(CONTAINER_S(frame)->widgets);
+			while (cur) {
+				widget_control(WIDGET_S(cur->ptr), WCC_SET_WINDOW, WINDOW_S(frame)->x, WINDOW_S(frame)->y, WINDOW_S(frame)->width, WINDOW_S(frame)->height);
+				cur = queue_next_node(CONTAINER_S(frame)->widgets);
+			}
 			return(0);
 		}
-		case WCC_FIRST_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
-				return(-1);
-			*widget = (struct widget_s *) queue_first(frame->widgets);
+		case WCC_GET_MIN_MAX_SIZE: {
+			struct queue_node_s *cur;
+			widget_size_t *min, *max;
+			widget_size_t ch_min, ch_max;
+
+			min = va_arg(va, widget_size_t *);
+			max = va_arg(va, widget_size_t *);
+			if (min) {
+				min->width = 1;
+				min->height = 1;
+			}
+			if (max) {
+				max->width = -1;
+				max->height = -1;
+			}
+			cur = queue_first_node(CONTAINER_S(frame)->widgets);
+			while (cur) {
+				if (!widget_control(WIDGET_S(cur->ptr), WCC_GET_MIN_MAX_SIZE, &ch_min, &ch_max)) {
+					if (min) {
+						if (ch_min.width > min->width)
+							min->width = ch_min.width;
+						if (ch_min.height > min->height)
+							min->height = ch_min.height;
+					}
+					if (max) {
+						if ((ch_max.width != -1) && (ch_max.width < max->width))
+							max->width = ch_max.width;
+						if ((ch_max.height != -1) && (ch_max.height < max->height))
+							max->height = ch_max.height;
+					}
+				}
+				cur = queue_next_node(CONTAINER_S(frame)->widgets);
+			}
 			return(0);
 		}
-		case WCC_LAST_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
+		case WCC_ADD_WIDGET:
+		case WCC_INSERT_WIDGET: {
+			struct widget_s *widget;
+
+			if (container_control(CONTAINER_S(frame), cmd, va))
 				return(-1);
-			*widget = (struct widget_s *) queue_last(frame->widgets);
+			widget = va_arg(va, struct widget_s *);
+			widget_control(widget, WCC_SET_WINDOW, WINDOW_S(frame)->x, WINDOW_S(frame)->y, WINDOW_S(frame)->width, WINDOW_S(frame)->height);
 			return(0);
 		}
 		default:
-			return(window_control((struct window_s *) frame, cmd, va));
+			return(container_control(CONTAINER_S(frame), cmd, va));
 	}
 	return(-1);
 }
