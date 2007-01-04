@@ -11,6 +11,7 @@ OBJS =	cmds/insert.o \
 	types/command.o \
 	types/style.o \
 	utils/format.o \
+	widgets/container.o \
 	widgets/frame.o \
 	widgets/input.o \
 	widgets/region.o \
