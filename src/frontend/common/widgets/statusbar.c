@@ -34,7 +34,7 @@ extern struct variable_table_s *fe_theme;
 
 int statusbar_init(struct statusbar_s *statusbar)
 {
-	window_init((struct window_s *) statusbar);
+	window_init(WINDOW_S(statusbar));
 	statusbar->text = NULL;
 	return(0);
 }
@@ -43,6 +43,7 @@ int statusbar_release(struct statusbar_s *statusbar)
 {
 	if (statusbar->text)
 		destroy_string(statusbar->text);
+	window_release(WINDOW_S(statusbar));
 	return(0);
 }
 
@@ -103,6 +104,20 @@ int statusbar_read(struct statusbar_s *statusbar, char *buffer, int max)
 int statusbar_control(struct statusbar_s *statusbar, int cmd, va_list va)
 {
 	switch (cmd) {
+		case WCC_GET_MIN_MAX_SIZE: {
+			widget_size_t *min, *max;
+			min = va_arg(va, widget_size_t *);
+			max = va_arg(va, widget_size_t *);
+			if (min) {
+				min->width = 1;
+				min->height = 1;
+			}
+			if (max) {
+				max->width = -1;
+				max->height = (WINDOW_S(statusbar)->height > 0) ? WINDOW_S(statusbar)->height : 1;
+			}
+			return(0);
+		}
 		default:
 			return(window_control((struct window_s *) statusbar, cmd, va));
 	}

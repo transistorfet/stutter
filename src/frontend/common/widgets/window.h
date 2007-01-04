@@ -17,6 +17,8 @@ struct window_s {
 	struct surface_s *surface;
 };
 
+#define WINDOW_S(widget)	((struct window_s *) widget)
+
 extern struct widget_type_s window_type;
 
 int window_init(struct window_s *);

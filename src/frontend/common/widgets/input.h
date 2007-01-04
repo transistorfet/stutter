@@ -22,6 +22,8 @@ struct input_s {
 	struct queue_s *history;
 };
 
+#define INPUT_S(widget)	((struct input_s *) widget)
+
 extern struct widget_type_s input_type;
 
 int input_init(struct input_s *);

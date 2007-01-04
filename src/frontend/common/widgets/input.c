@@ -48,8 +48,7 @@ int input_init(struct input_s *input)
 		memory_free(input->buffer);
 		return(-1);
 	}
-
-	window_init((struct window_s *) input);
+	window_init(WINDOW_S(input));
 	return(0);
 }
 
@@ -57,19 +56,20 @@ int input_release(struct input_s *input)
 {
 	destroy_queue(input->history);
 	memory_free(input->buffer);
+	window_release(WINDOW_S(input));
 	return(0);
- }
+}
 
 int input_refresh(struct input_s *input)
 {
 	int i;
 
 	input->buffer[input->end] = '\0';
-	surface_clear_m(input->window.surface, input->window.x, input->window.y, input->window.width, input->window.height);
-	surface_move_m(input->window.surface, input->window.x, input->window.y);
-	i = input->i - input->window.width + 1;
-	surface_print_m(input->window.surface, &input->buffer[(i >= 0) ? i : 0], (input->end >= input->window.width) ? input->window.width - 1 : -1);
-	surface_control_m(input->window.surface, SCC_MOVE_CURSOR, ( (input->i >= input->window.width) ? input->window.width - 1 : input->i ), input->window.y);
+	surface_clear_m(WINDOW_S(input)->surface, WINDOW_S(input)->x, WINDOW_S(input)->y, WINDOW_S(input)->width, WINDOW_S(input)->height);
+	surface_move_m(WINDOW_S(input)->surface, WINDOW_S(input)->x, WINDOW_S(input)->y);
+	i = input->i - WINDOW_S(input)->width + 1;
+	surface_print_m(WINDOW_S(input)->surface, &input->buffer[(i >= 0) ? i : 0], (input->end >= WINDOW_S(input)->width) ? WINDOW_S(input)->width - 1 : -1);
+	surface_control_m(WINDOW_S(input)->surface, SCC_MOVE_CURSOR, ( (input->i >= WINDOW_S(input)->width) ? WINDOW_S(input)->width - 1 : input->i ), WINDOW_S(input)->y);
 	return(0);
 }
 
@@ -101,6 +101,20 @@ int input_read(struct input_s *input, char *buffer, int max)
 int input_control(struct input_s *input, int cmd, va_list va)
 {
 	switch (cmd) {
+		case WCC_GET_MIN_MAX_SIZE: {
+			widget_size_t *min, *max;
+			min = va_arg(va, widget_size_t *);
+			max = va_arg(va, widget_size_t *);
+			if (min) {
+				min->width = 1;
+				min->height = 1;
+			}
+			if (max) {
+				max->width = -1;
+				max->height = (WINDOW_S(input)->height > 0) ? WINDOW_S(input)->height : 1;
+			}
+			return(0);
+		}
 		case WCC_SCROLL: {
 			int i, amount;
 			char *str = NULL;
@@ -136,7 +150,7 @@ int input_control(struct input_s *input, int cmd, va_list va)
 			return(0);
 		}
 		default:
-			return(window_control((struct window_s *) input, cmd, va));
+			return(window_control(WINDOW_S(input), cmd, va));
 	}
 	return(-1);
 }

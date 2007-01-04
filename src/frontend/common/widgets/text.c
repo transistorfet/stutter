@@ -19,7 +19,7 @@
 #define TEXT_MAX_WRAP		20
 
 struct widget_type_s text_type = {
-	"text:window",
+	"text",
 	0,
 	sizeof(struct text_s),
 	(widget_init_t) text_init,
@@ -37,8 +37,6 @@ static int text_wrap_string(char *, int);
 
 int text_init(struct text_s *text)
 {
-	if (!text->widget.parent)
-		return(-1);
 	text->cur_line = 0;
 	text->max_lines = FE_WINDOW_LOG_SIZE;
 	queue_init_v(text->log);
@@ -57,7 +55,8 @@ int text_refresh(struct text_s *text)
 {
 	int line = 0;
 	attrib_t attrib;
-	int x, y, width, height;
+	widget_pos_t pos;
+	widget_size_t size;
 	int i, j, k, max, limit;
 	char buffer[LARGE_STRING_SIZE];
 	struct surface_s *surface;
@@ -66,13 +65,12 @@ int text_refresh(struct text_s *text)
 	struct format_string_s format;
 	struct format_style_s styles[FE_FORMAT_MAX_STYLES];
 
-	widget_control(text->widget.parent, WCC_GET_SURFACE, &surface);
-	widget_control(text->widget.parent, WCC_GET_SIZE, &width, &height);
-	widget_control(text->widget.parent, WCC_GET_POSITION, &x, &y);
+	widget_control(WIDGET_S(text)->parent, WCC_GET_SURFACE, &surface);
+	widget_control(WIDGET_S(text)->parent, WCC_GET_WINDOW, &pos, &size);
 
-	line = height;
-	surface_clear_m(surface, x, y, width, height);
-	surface_move_m(surface, x, y + line);
+	line = size.height;
+	surface_clear_m(surface, pos.x, pos.y, size.width, size.height);
+	surface_move_m(surface, pos.x, pos.y + line);
 
 	if (!(cur = queue_first_v(text->log)))
 		return(0);
@@ -82,7 +80,7 @@ int text_refresh(struct text_s *text)
 	}
 
 	while (line >= 0) {
-		limit = width;
+		limit = size.width;
 		format.str = buffer;
 		format.styles = styles;
 		if (parse_format_string(fe_theme, cur->str, &format, LARGE_STRING_SIZE, FE_FORMAT_MAX_STYLES))
@@ -92,7 +90,7 @@ int text_refresh(struct text_s *text)
 			if (indices[j] == -1)
 				break;
 			if (!j)
-				limit = width - strlen(FE_WINDOW_WRAP_STRING);
+				limit = size.width - strlen(FE_WINDOW_WRAP_STRING);
 			i += indices[j];
 		}
 		max = (j == TEXT_MAX_WRAP) ? j : j + 1;
@@ -104,7 +102,7 @@ int text_refresh(struct text_s *text)
 		for (k = 0;(k < format.num_styles) && (format.styles[k].index < i);k++)
 			surface_control_m(surface, SCC_SET_ATTRIB, &format.styles[k].attrib);
 		for (;j < max;j++) {
-			surface_move_m(surface, x, y + line + j);
+			surface_move_m(surface, pos.x, pos.y + line + j);
 			if (j)
 				surface_print_m(surface, FE_WINDOW_WRAP_STRING, -1);
 			if (indices[j] == -1)

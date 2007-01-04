@@ -19,6 +19,8 @@ struct statusbar_s {
 	string_t text;
 };
 
+#define STATUSBAR_S(widget)	((struct statusbar_s *) widget)
+
 extern struct widget_type_s statusbar_type;
 
 int statusbar_init(struct statusbar_s *);

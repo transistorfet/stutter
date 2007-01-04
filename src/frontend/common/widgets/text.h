@@ -25,6 +25,8 @@ struct text_s {
 	queue_list_v(text_entry_s) log;
 };
 
+#define TEXT_S(widget)	((struct text_s *) widget)
+
 extern struct widget_type_s text_type;
 
 int text_init(struct text_s *);

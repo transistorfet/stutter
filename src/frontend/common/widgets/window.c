@@ -29,6 +29,7 @@ struct widget_type_s window_type = {
 
 int window_init(struct window_s *window)
 {
+	window->surface = NULL;
 	return(0);
 }
 
@@ -72,41 +73,44 @@ int window_control(struct window_s *window, int cmd, va_list va)
 			window->surface = surface;
 			return(0);
 		}
-		case WCC_GET_SIZE: {
-			int *width, *height;
-			width = va_arg(va, int *);
-			height = va_arg(va, int *);
-			if (width)
-				*width = window->width;
-			if (height)
-				*height = window->height;
+		case WCC_GET_WINDOW: {
+			widget_pos_t *pos;
+			widget_size_t *size;
+			pos = va_arg(va, widget_pos_t *);
+			size = va_arg(va, widget_size_t *);
+			if (pos) {
+				pos->x = window->x;
+				pos->y = window->y;
+			}
+			if (size) {
+				size->width = window->width;
+				size->height = window->height;
+			}
+			return(0);
+		}
+		case WCC_SET_WINDOW: {
+			window->x = va_arg(va, int);
+			window->y = va_arg(va, int);
+			window->width = va_arg(va, int);
+			window->height = va_arg(va, int);
 			return(0);
 		}
 		case WCC_MODIFY_SIZE: {
 			int width, height;
+			struct widget_s *child;
+
+			child = va_arg(va, struct widget_s *);
 			width = va_arg(va, int);
 			height = va_arg(va, int);
-			if (width != -1)
-				window->width = width;
-			if (height != -1)
-				window->height = height;
-			if (window->x >= width)
-				window->x = width - 1;
-			if (window->y >= height)
-				window->y = height - 1;
-			return(0);
-		}
-		case WCC_GET_POSITION: {
-			int *x, *y;
-			x = va_arg(va, int *);
-			y = va_arg(va, int *);
-			if (x)
-				*x = window->x;
-			if (y)
-				*y = window->y;
-			return(0);
+			if (!child && !WIDGET_S(window)->parent)
+				return(-1);
+			if (!child)
+				return(widget_control(WIDGET_S(window)->parent, WCC_MODIFY_SIZE, window, width, height));
+			return(-1);
 		}
 		case WCC_MODIFY_POSITION: {
+			// TODO re-write this perhaps? or just get rid of it
+/*
 			int x, y, width, height;
 			x = va_arg(va, int);
 			y = va_arg(va, int);
@@ -120,6 +124,21 @@ int window_control(struct window_s *window, int cmd, va_list va)
 				window->x = x;
 			if (y != -1)
 				window->y = y;
+			return(0);
+*/
+		}
+		case WCC_GET_MIN_MAX_SIZE: {
+			widget_size_t *min, *max;
+			min = va_arg(va, widget_size_t *);
+			max = va_arg(va, widget_size_t *);
+			if (min) {
+				min->width = 1;
+				min->height = 1;
+			}
+			if (max) {
+				max->width = -1;
+				max->height = -1;
+			}
 			return(0);
 		}
 		default:
