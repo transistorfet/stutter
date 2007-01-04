@@ -15,30 +15,43 @@
 #define WT_FRAME		0x1001
 #define WT_REGION		0x1002
 
-#define WCC_GET_CHAR		0x02
+#define WCC_GET_CHAR		0x0002
 
-#define WCC_GET_SURFACE		0x10
-#define WCC_SET_SURFACE		0x11
-#define WCC_GET_SIZE		0x12
-#define WCC_MODIFY_SIZE		0x13
-#define WCC_GET_POSITION	0x14
-#define WCC_MODIFY_POSITION	0x15
-#define WCC_SET_WINDOW		0x16
+#define WCC_GET_SURFACE		0x0010
+#define WCC_SET_SURFACE		0x0011
+#define WCC_GET_WINDOW		0x0012
+#define WCC_SET_WINDOW		0x0013
+#define WCC_MODIFY_SIZE		0x0014
+#define WCC_MODIFY_POSITION	0x0015
+#define WCC_GET_MIN_MAX_SIZE	0x0016
 
-#define WCC_ADD_WIDGET		0x20
-#define WCC_REMOVE_WIDGET	0x21
-#define WCC_CURRENT_WIDGET	0x22
-#define WCC_SELECT_WIDGET	0x23
-#define WCC_NEXT_WIDGET		0x24
-#define WCC_PREVIOUS_WIDGET	0x25
-#define WCC_FIRST_WIDGET	0x26
-#define WCC_LAST_WIDGET		0x27
+#define WCC_ADD_WIDGET		0x0020
+#define WCC_INSERT_WIDGET	0x0021
+#define WCC_REMOVE_WIDGET	0x0022
+#define WCC_CURRENT_WIDGET	0x0023
+#define WCC_SELECT_WIDGET	0x0024
+#define WCC_NEXT_WIDGET		0x0025
+#define WCC_PREVIOUS_WIDGET	0x0026
+#define WCC_FIRST_WIDGET	0x0027
+#define WCC_LAST_WIDGET		0x0028
 
-#define WCC_SCROLL		0x30
-#define WCC_INSERT_CHAR		0x31
-#define WCC_PROCESS_CHAR	0x32
+#define WCC_SCROLL		0x0030
+#define WCC_INSERT_CHAR		0x0031
+#define WCC_PROCESS_CHAR	0x0032
+
+typedef struct widget_size_s {
+	short width;
+	short height;
+} widget_size_t;
+
+typedef struct widget_pos_s {
+	short x;
+	short y;
+} widget_pos_t;
 
 struct widget_s;
+
+#define WIDGET_S(widget)	((struct widget_s *) widget)
 
 #define widget_init_m(widget, bitflags)					\
 	((struct widget_s *) (widget))->type->init(((struct widget_s *) (widget)), bitflags)
