@@ -52,6 +52,17 @@
 	(list).size++;					\
 }
 
+#define queue_insert_node_v(list, field, after_node, node) {	\
+	(node)->field.prev = (after_node);			\
+	(node)->field.next = (after_node)->field.next;		\
+	if ((after_node)->field.next)				\
+		(after_node)->field.next->field.prev = (node);	\
+	(after_node)->field.next = (node);			\
+	if ((list).tail == (after_node))			\
+		(list).tail = (node);				\
+	(list).size++;						\
+}
+
 #define queue_shift_node_v(list, field, ptr) {		\
 	ptr = (list).head;				\
 	if ((list).head) {				\
@@ -180,6 +191,19 @@ static inline int queue_append(struct queue_s *queue, void *ptr)
 		return(-1);
 	node->ptr = ptr;
 	queue_append_node_v(queue->q, q, node);
+	return(0);
+}
+
+static inline int queue_insert(struct queue_s *queue, void *ptr)
+{
+	struct queue_node_s *node;
+
+	if (queue->max && (queue_size_v(queue->q) >= queue->max))
+		return(1);
+	if (!(node = (struct queue_node_s *) memory_alloc(sizeof(struct queue_node_s))))
+		return(-1);
+	node->ptr = ptr;
+	queue_insert_node_v(queue->q, q, queue->current, node);
 	return(0);
 }
 
