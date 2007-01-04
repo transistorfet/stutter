@@ -9,7 +9,7 @@
 #include <stutter/config-macros.h>
 
 #define DEFAULT_FE_STATUSBAR			"$&fe.statusbar"
-#define DEFAULT_FE_STATUSBAR_DEFAULT		"${fe.theme.statusbar} $time"
+#define DEFAULT_FE_STATUSBAR_DEFAULT		"\022statusbar\022 $base.time"
 #define DEFAULT_FE_STATUS_BAR_HEIGHT		1
 #define DEFAULT_FE_WINDOW_LOG_SIZE		1000
 #define DEFAULT_FE_WINDOW_WRAP_STRING		"        "
