@@ -23,6 +23,8 @@ struct region_s {
 	queue_list_v(region_node_s) widgets;
 };
 
+#define REGION_S(widget)	((struct region_s *) widget)
+
 extern struct widget_type_s region_type;
 
 int region_init(struct region_s *);
