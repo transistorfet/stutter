@@ -13,7 +13,6 @@
 #include <stutter/type.h>
 #include <stutter/signal.h>
 #include <stutter/variable.h>
-#include <stutter/lib/queue.h>
 #include <stutter/lib/string.h>
 #include <stutter/lib/globals.h>
 #include <stutter/frontend/widget.h>
@@ -33,8 +32,6 @@ struct widget_s *frame;
 struct widget_s *input;
 struct widget_s *statusbar;
 
-static void fe_update_size(void);
-
 int init_frontend(void)
 {
 	if (init_widget())
@@ -42,25 +39,21 @@ int init_frontend(void)
 
 	if (!(frame = (struct widget_s *) create_widget(&frame_type, "frame", NULL)))
 		return(-1);
-	widget_control(frame, WCC_SET_SURFACE, terminal);
 
 	if (!(statusbar = (struct widget_s *) create_widget(&statusbar_type, "statusbar", NULL)))
 		return(-1);
-	widget_control(statusbar, WCC_SET_SURFACE, terminal);
 	widget_print_m(statusbar, FE_STATUSBAR, -1);
 
 	if (!(input = (struct widget_s *) create_widget(&input_type, "input", NULL)))
 		return(-1);
-	widget_control(input, WCC_SET_SURFACE, terminal);
 
 	if (!(root = (struct widget_s *) create_widget(&region_type, "region", NULL)))
 		return(-1);
 	widget_control(root, WCC_SET_SURFACE, terminal);
+	widget_control(root, WCC_SET_WINDOW, 0, 0, surface_get_width_m(terminal), surface_get_height_m(terminal));
 	widget_control(root, WCC_ADD_WIDGET, frame);
 	widget_control(root, WCC_ADD_WIDGET, statusbar);
 	widget_control(root, WCC_ADD_WIDGET, input);
-
-	fe_update_size();
 	return(0);
 }
 
@@ -98,14 +91,20 @@ void *fe_get_parent(void *widget)
 
 short fe_get_width(void *widget)
 {
-	// TODO fill in
-	return(-1);
+	widget_size_t size;
+
+	if (widget_control(widget, WCC_GET_WINDOW, NULL, &size))
+		return(-1);
+	return(size.width);
 }
 
 short fe_get_height(void *widget)
 {
-	// TODO fill in
-	return(-1);
+	widget_size_t size;
+
+	if (widget_control(widget, WCC_GET_WINDOW, NULL, &size))
+		return(-1);
+	return(size.height);
 }
 
 void *fe_find_widget(char *id)
@@ -113,9 +112,12 @@ void *fe_find_widget(char *id)
 	return(find_widget(id));
 }
 
-int fe_resize_widget(void *widget, int diffx, int diffy)
+int fe_resize_widget(void *widget, int x, int y)
 {
-	// TODO fill in
+	if (widget && !widget_control(widget, WCC_MODIFY_SIZE, NULL, x, y))
+		return(0);
+	// TODO how do you know what size to resize the surface to?  should we just let
+	//	the root widget do that when it gets the MODIFY_SIZE command?
 	return(-1);
 }
 
@@ -201,32 +203,17 @@ int fe_scroll(void *widget, int diff)
 
 void fe_refresh(void)
 {
-	int width, height;
+	widget_size_t size;
 
-	widget_control(root, WCC_GET_SIZE, &width, &height);
-	if ((surface_get_width_m(terminal) != width) || (surface_get_height_m(terminal) != height))
-		fe_update_size();
+	widget_control(root, WCC_GET_WINDOW, NULL, &size);
+	if ((surface_get_width_m(terminal) != size.width) || (surface_get_height_m(terminal) != size.height))
+		widget_control(root, WCC_SET_WINDOW, 0, 0, surface_get_width_m(terminal), surface_get_height_m(terminal));
 	widget_refresh_m(root);
 }
 
 void fe_quit(char *reason)
 {
 	emit_signal("fe.quit", NULL, (void *) reason);
-}
-
-/*** Local Functions ***/
-
-static void fe_update_size(void)
-{
-	// TODO replace this whole function with a call to modify size only to the root widget
-	widget_control(root, WCC_MODIFY_SIZE, surface_get_width_m(terminal), surface_get_height_m(terminal));
-	widget_control(root, WCC_MODIFY_POSITION, 0, 0);
-	widget_control(frame, WCC_MODIFY_SIZE, surface_get_width_m(terminal), surface_get_height_m(terminal) - 2);
-	widget_control(frame, WCC_MODIFY_POSITION, 0, 0);
-	widget_control(statusbar, WCC_MODIFY_SIZE, surface_get_width_m(terminal), 1);
-	widget_control(statusbar, WCC_MODIFY_POSITION, 0, surface_get_height_m(terminal) - 2);
-	widget_control(input, WCC_MODIFY_SIZE, surface_get_width_m(terminal), 1);
-	widget_control(input, WCC_MODIFY_POSITION, 0, surface_get_height_m(terminal) - 1);
 }
 
 
