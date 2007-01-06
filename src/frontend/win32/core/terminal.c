@@ -104,12 +104,12 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 
 	if (!(terminal = memory_alloc(sizeof(struct terminal_s))))
 		return(NULL);
-	terminal->surface.type = &terminal_type;
-	terminal->surface.bitflags = bitflags;
-	terminal->surface.x = 0;
-	terminal->surface.y = 0;
-	terminal->surface.width = (width == -1) ? TERMINAL_DEFAULT_WIDTH : width;
-	terminal->surface.height = (height == -1) ? TERMINAL_DEFAULT_HEIGHT : height;
+	SURFACE_S(terminal)->type = &terminal_type;
+	SURFACE_S(terminal)->bitflags = bitflags;
+	SURFACE_S(terminal)->x = 0;
+	SURFACE_S(terminal)->y = 0;
+	SURFACE_S(terminal)->width = (width == -1) ? TERMINAL_DEFAULT_WIDTH : width;
+	SURFACE_S(terminal)->height = (height == -1) ? TERMINAL_DEFAULT_HEIGHT : height;
 
 	terminal->window = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
@@ -140,7 +140,7 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 
 	terminal->def_attrib = terminal_def_attrib;
 	terminal_control(terminal, SCC_MODIFY_ATTRIB, SA_METHOD_SET, SA_NORMAL, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR);
-	terminal_control(terminal, SCC_RESIZE, terminal->surface.width, terminal->surface.height);
+	terminal_control(terminal, SCC_RESIZE, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
 
 	ShowWindow(terminal->window, SW_RESTORE);
 	linear_add_node_v(terminal_list, list, terminal);
@@ -169,11 +169,11 @@ int terminal_print(struct terminal_s *terminal, char *str, int length)
 	if (length == -1)
 		length = strlen(str);
 	terminal_set_attribs(terminal, terminal->attrib);
-	TextOut(terminal->context, terminal->surface.x * terminal->charx, terminal->surface.y * terminal->chary, str, length);
-	terminal->surface.x += (length % terminal->surface.width);
-	terminal->surface.y += (length / terminal->surface.width);
-	if (terminal->surface.y > terminal->surface.height)
-		terminal->surface.y = terminal->surface.y % terminal->surface.height;
+	TextOut(terminal->context, SURFACE_S(terminal)->x * terminal->charx, SURFACE_S(terminal)->y * terminal->chary, str, length);
+	SURFACE_S(terminal)->x += (length % SURFACE_S(terminal)->width);
+	SURFACE_S(terminal)->y += (length / SURFACE_S(terminal)->width);
+	if (SURFACE_S(terminal)->y > SURFACE_S(terminal)->height)
+		SURFACE_S(terminal)->y = SURFACE_S(terminal)->y % SURFACE_S(terminal)->height;
 	return(0);
 }
 
@@ -189,9 +189,9 @@ void terminal_clear(struct terminal_s *terminal, short x, short y, short width, 
 	// TODO replace this with FillRect(terminal_context, &rect, HBRUSH?)
 	terminal_set_attribs(terminal, terminal->attrib);
 	if (!width)
-		width = terminal->surface.width - x;
+		width = SURFACE_S(terminal)->width - x;
 	if (!height)
-		height = terminal->surface.height - y;
+		height = SURFACE_S(terminal)->height - y;
 
 	for (i = 0;(i <= width) && (i < STRING_SIZE);i++)
 		buffer[i] = ' ';
@@ -207,8 +207,8 @@ void terminal_clear(struct terminal_s *terminal, short x, short y, short width, 
  */
 void terminal_move(struct terminal_s *terminal, short x, short y)
 {
-	terminal->surface.x = (x < terminal->surface.width) ? x : terminal->surface.width - 1;
-	terminal->surface.y = (y < terminal->surface.height) ? y : terminal->surface.height - 1;
+	SURFACE_S(terminal)->x = (x < SURFACE_S(terminal)->width) ? x : SURFACE_S(terminal)->width - 1;
+	SURFACE_S(terminal)->y = (y < SURFACE_S(terminal)->height) ? y : SURFACE_S(terminal)->height - 1;
 }
 
 /**
@@ -269,18 +269,18 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 
 			arg = va_arg(va, int);
 			if (arg != -1)
-				terminal->surface.width = arg;
+				SURFACE_S(terminal)->width = arg;
 			arg = va_arg(va, int);
 			if (arg != -1)
-				terminal->surface.height = arg;
-			if (terminal->surface.x >= terminal->surface.width)
-				terminal->surface.x = terminal->surface.width - 1;
-			if (terminal->surface.y >= terminal->surface.height)
-				terminal->surface.y = terminal->surface.height - 1;
+				SURFACE_S(terminal)->height = arg;
+			if (SURFACE_S(terminal)->x >= SURFACE_S(terminal)->width)
+				SURFACE_S(terminal)->x = SURFACE_S(terminal)->width - 1;
+			if (SURFACE_S(terminal)->y >= SURFACE_S(terminal)->height)
+				SURFACE_S(terminal)->y = SURFACE_S(terminal)->height - 1;
 			size.top = 0;
 			size.left = 0;
-			size.right = terminal->surface.width * terminal->charx;
-			size.bottom = terminal->surface.height * terminal->chary;
+			size.right = SURFACE_S(terminal)->width * terminal->charx;
+			size.bottom = SURFACE_S(terminal)->height * terminal->chary;
 			AdjustWindowRectEx(&size, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
 			SetWindowPos(terminal->window, NULL, 0, 0, size.right - size.left, size.bottom - size.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
 			return(0);
@@ -289,8 +289,8 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			int x, y;
 			x = va_arg(va, int);
 			y = va_arg(va, int);
-			x = (x < terminal->surface.width) ? ( (x >= 0) ? x : 0 ) : terminal->surface.width - 1;
-			y = (y < terminal->surface.height) ? ( (y >= 0) ? y : 0 ) : terminal->surface.height - 1;
+			x = (x < SURFACE_S(terminal)->width) ? ( (x >= 0) ? x : 0 ) : SURFACE_S(terminal)->width - 1;
+			y = (y < SURFACE_S(terminal)->height) ? ( (y >= 0) ? y : 0 ) : SURFACE_S(terminal)->height - 1;
 			terminal->attrib.style ^= SA_INVERSE;
 			terminal_set_attribs(terminal, terminal->attrib);
 			TextOut(terminal->context, x * terminal->charx, y * terminal->chary, " ", 1);
@@ -353,25 +353,25 @@ int terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 
 	width = (rect->right - rect->left) / terminal->charx;
 	height = (rect->bottom - rect->top) / terminal->chary;
-	if ((terminal->surface.width != width) || (terminal->surface.height != height))
+	if ((SURFACE_S(terminal)->width != width) || (SURFACE_S(terminal)->height != height))
 		ret = 1;
-	terminal->surface.width = width;
-	terminal->surface.height = height;
+	SURFACE_S(terminal)->width = width;
+	SURFACE_S(terminal)->height = height;
 
-	if (terminal->surface.x >= terminal->surface.width)
-		terminal->surface.x = terminal->surface.width - 1;
-	if (terminal->surface.y >= terminal->surface.height)
-		terminal->surface.y = terminal->surface.height - 1;
+	if (SURFACE_S(terminal)->x >= SURFACE_S(terminal)->width)
+		SURFACE_S(terminal)->x = SURFACE_S(terminal)->width - 1;
+	if (SURFACE_S(terminal)->y >= SURFACE_S(terminal)->height)
+		SURFACE_S(terminal)->y = SURFACE_S(terminal)->height - 1;
 
 	if ((dir == WMSZ_LEFT) || (dir == WMSZ_TOPLEFT) || (dir == WMSZ_BOTTOMLEFT))
-		rect->left = rect->right - (terminal->surface.width * terminal->charx);
+		rect->left = rect->right - (SURFACE_S(terminal)->width * terminal->charx);
 	else
-		rect->right = rect->left + (terminal->surface.width * terminal->charx);
+		rect->right = rect->left + (SURFACE_S(terminal)->width * terminal->charx);
 
 	if ((dir == WMSZ_TOP) || (dir == WMSZ_TOPLEFT) || (dir == WMSZ_TOPRIGHT))
-		rect->top = rect->bottom - (terminal->surface.height * terminal->chary);
+		rect->top = rect->bottom - (SURFACE_S(terminal)->height * terminal->chary);
 	else
-		rect->bottom = rect->top + (terminal->surface.height * terminal->chary);
+		rect->bottom = rect->top + (SURFACE_S(terminal)->height * terminal->chary);
 
 	AdjustWindowRectEx(rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
 	return(ret);
