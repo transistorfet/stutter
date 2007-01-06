@@ -46,8 +46,8 @@
 
 #define SUR_BF_UNDESTROYABLE	0x0001
 
-#define surface_get_width_m(surface)		( ((struct surface_s *) surface)->width )
-#define surface_get_height_m(surface)		( ((struct surface_s *) surface)->height )
+#define surface_get_width_m(surface)		( SURFACE_S(surface)->width )
+#define surface_get_height_m(surface)		( SURFACE_S(surface)->height )
 
 typedef short style_t;
 
@@ -63,20 +63,22 @@ typedef struct attrib_s {
 	colour_t bg;
 } attrib_t;
 
-typedef surface_s;
+struct surface_s;
+
+#define SURFACE_S(surface)	((struct surface_s *) (surface))
 
 #define surface_create_m(surface, parent, width, height, bitflags)	\
-	((struct surface_s *) (surface))->type->create(((struct surface_s *) (surface)), parent, width, height, bitflags)
+	( SURFACE_S(surface)->type->create(SURFACE_S(surface), parent, width, height, bitflags) )
 #define surface_destroy_m(surface)					\
-	((struct surface_s *) (surface))->type->destroy(((struct surface_s *) (surface)))
+	( SURFACE_S(surface)->type->destroy(SURFACE_S(surface)) )
 #define surface_print_m(surface, str, len)				\
-	((struct surface_s *) (surface))->type->print(((struct surface_s *) (surface)), str, len)
+	( SURFACE_S(surface)->type->print(SURFACE_S(surface), str, len) )
 #define surface_clear_m(surface, x, y, width, height)			\
-	((struct surface_s *) (surface))->type->clear(((struct surface_s *) (surface)), x, y, width, height)
+	( SURFACE_S(surface)->type->clear(SURFACE_S(surface), x, y, width, height) )
 #define surface_move_m(surface, x, y)			\
-	((struct surface_s *) (surface))->type->move(((struct surface_s *) (surface)), x, y)
+	( SURFACE_S(surface)->type->move(SURFACE_S(surface), x, y) )
 #define surface_control_m(surface, cmd, ...)				\
-	((struct surface_s *) (surface))->type->control(((struct surface_s *) (surface)), cmd, __VA_ARGS__)
+	( SURFACE_S(surface)->type->control(SURFACE_S(surface), cmd, __VA_ARGS__) )
 
 typedef struct surface_s *(*surface_create_t)(struct surface_s *parent, short width, short height, int bitflags);
 typedef int (*surface_destroy_t)(struct surface_s *surface);
