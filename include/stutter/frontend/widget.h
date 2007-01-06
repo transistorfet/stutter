@@ -51,22 +51,22 @@ typedef struct widget_pos_s {
 
 struct widget_s;
 
-#define WIDGET_S(widget)	((struct widget_s *) widget)
+#define WIDGET_S(widget)	((struct widget_s *) (widget))
 
 #define widget_init_m(widget, bitflags)					\
-	((struct widget_s *) (widget))->type->init(((struct widget_s *) (widget)), bitflags)
+	( WIDGET_S(widget)->type->init(WIDGET_S(widget), bitflags) )
 #define widget_release_m(widget)					\
-	( ((struct widget_s *) (widget))->type->release(((struct widget_s *) (widget))) )
+	( WIDGET_S(widget)->type->release(WIDGET_S(widget)) )
 #define widget_refresh_m(widget)					\
-	( ((struct widget_s *) (widget))->type->refresh(((struct widget_s *) (widget))) )
+	( WIDGET_S(widget)->type->refresh(WIDGET_S(widget)) )
 #define widget_print_m(widget, str, len)				\
-	( ((struct widget_s *) (widget))->type->print(((struct widget_s *) (widget)), str, len) )
+	( WIDGET_S(widget)->type->print(WIDGET_S(widget), str, len) )
 #define widget_clear_m(widget)						\
-	( ((struct widget_s *) (widget))->type->clear(((struct widget_s *) (widget))) )
+	( WIDGET_S(widget)->type->clear(WIDGET_S(widget)) )
 #define widget_read_m(widget, buffer, max)				\
-	( ((struct widget_s *) (widget))->type->read(((struct widget_s *) widget), buffer, max) )
+	( WIDGET_S(widget)->type->read(WIDGET_S(widget), buffer, max) )
 #define widget_control_m(widget, cmd, va)				\
-	( ((struct widget_s *) (widget))->type->control(((struct widget_s *) (widget)), cmd, va) )
+	( WIDGET_S(widget)->type->control(WIDGET_S(widget), cmd, va) )
 
 // TODO how do we pass in special parameters?  have an array of strings?
 typedef int (*widget_init_t)(struct widget_s *widget);
