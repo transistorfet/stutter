@@ -15,7 +15,7 @@
 #define WT_FRAME		0x1001
 #define WT_REGION		0x1002
 
-#define WCC_GET_CHAR		0x0002
+#define WBF_NEEDS_REFRESH	0x0001
 
 #define WCC_GET_SURFACE		0x0010
 #define WCC_SET_SURFACE		0x0011
