@@ -34,7 +34,8 @@ int base_cmd_source(char *env, char *args)
 	}
 
 	while (str = fgets(buffer, STRING_SIZE, fptr)) {
-		if (cmd = strpbrk(str, "\n\r"))
+		trim_whitespace_m(str);
+		if (cmd = strpbrk(str, "#\n\r"))
 			*cmd = '\0';
 		if (*str != '\0') {
 			if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
