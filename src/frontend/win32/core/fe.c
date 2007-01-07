@@ -55,8 +55,6 @@ int init_frontend(void)
 	widget_control(root, WCC_ADD_WIDGET, frame);
 	widget_control(root, WCC_ADD_WIDGET, statusbar);
 	widget_control(root, WCC_ADD_WIDGET, input);
-
-	fe_update_size();
 	return(0);
 }
 
