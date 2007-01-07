@@ -5,7 +5,7 @@
  * Description:		Notice Command
  */
 
-#include <stutter/lib/macros.h>
+#include <stutter/macros.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_notice(char *env, char *args)

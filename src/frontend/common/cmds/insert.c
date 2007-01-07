@@ -6,8 +6,8 @@
  */
 
 
+#include <stutter/memory.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/memory.h>
 #include <stutter/frontend/widget.h>
 
 int fe_common_cmd_insert(struct widget_s *widget, char *args)

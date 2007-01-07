@@ -9,9 +9,8 @@
 #include <stdarg.h>
 
 #include <stutter/type.h>
+#include <stutter/memory.h>
 #include <stutter/variable.h>
-#include <stutter/lib/memory.h>
-
 
 static void *base_wildcard_index(char *, char *, struct type_s **);
 

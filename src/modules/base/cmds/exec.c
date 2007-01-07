@@ -6,8 +6,8 @@
  */
 
 #include CONFIG_H
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/base.h>
 #include <stutter/frontend/execute.h>
 

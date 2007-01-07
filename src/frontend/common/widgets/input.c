@@ -9,9 +9,9 @@
 #include <stdarg.h>
 
 #include CONFIG_H
-#include <stutter/lib/queue.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/string.h>
+#include <stutter/queue.h>
+#include <stutter/memory.h>
+#include <stutter/string.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>

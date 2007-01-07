@@ -9,7 +9,7 @@
 
 #include <stutter/type.h>
 #include <stutter/utils.h>
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 #include <stutter/frontend/surface.h>
 
 static void *fe_common_style_create(style_t *, char *, va_list);

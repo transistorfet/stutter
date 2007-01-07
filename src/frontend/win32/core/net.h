@@ -7,7 +7,7 @@
 #ifndef _WIN32_NET_H
 #define _WIN32_NET_H
 
-#include <stutter/lib/globals.h>
+#include <stutter/globals.h>
 
 #define NET_ATTEMPTS		3
 

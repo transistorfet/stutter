@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-#include <stutter/lib/memory.h>
+#include <stutter/memory.h>
 
 typedef void *fe_execute_t;
 

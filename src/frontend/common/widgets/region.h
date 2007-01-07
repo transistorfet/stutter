@@ -7,7 +7,7 @@
 #ifndef _COMMON_WIDGETS_REGION_H
 #define _COMMON_WIDGETS_REGION_H
 
-#include <stutter/lib/queue.h>
+#include <stutter/queue.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "container.h"

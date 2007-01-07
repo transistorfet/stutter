@@ -7,8 +7,8 @@
 #ifndef _STUTTER_SIGNAL_H
 #define _STUTTER_SIGNAL_H
 
-#include <stutter/lib/string.h>
-#include <stutter/lib/globals.h>
+#include <stutter/string.h>
+#include <stutter/globals.h>
 
 #define SIGNAL_STOP_EMIT		1
 

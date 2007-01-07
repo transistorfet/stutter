@@ -10,7 +10,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include <stutter/lib/memory.h>
+#include <stutter/memory.h>
 #include "desc.h"
 
 #define EXECUTE_MAX_PARAMS		64

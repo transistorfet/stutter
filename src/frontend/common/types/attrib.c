@@ -12,9 +12,9 @@
 #include CONFIG_H
 #include <stutter/type.h>
 #include <stutter/utils.h>
-#include <stutter/lib/macros.h>
-#include <stutter/lib/string.h>
-#include <stutter/lib/memory.h>
+#include <stutter/macros.h>
+#include <stutter/string.h>
+#include <stutter/memory.h>
 #include <stutter/frontend/surface.h>
 
 static struct type_s *style_type;

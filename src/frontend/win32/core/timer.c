@@ -10,7 +10,7 @@
 #include <windows.h>
 
 #include <stutter/signal.h>
-#include <stutter/lib/memory.h>
+#include <stutter/memory.h>
 #include <stutter/frontend/timer.h>
 
 struct fe_timer_s {

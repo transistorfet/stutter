@@ -4,8 +4,8 @@
  * Description:		String Type Header
  */
 
-#ifndef _STUTTER_LIB_STRING_H
-#define _STUTTER_LIB_STRING_H
+#ifndef _STUTTER_STRING_H
+#define _STUTTER_STRING_H
 
 #include <stdarg.h>
 

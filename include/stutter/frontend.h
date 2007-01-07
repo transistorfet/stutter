@@ -7,8 +7,8 @@
 #ifndef _STUTTER_FRONTEND_H
 #define _STUTTER_FRONTEND_H
 
-#include <stutter/lib/string.h>
-#include <stutter/lib/globals.h>
+#include <stutter/string.h>
+#include <stutter/globals.h>
 
 void *fe_create_widget(char *ns, char *type, char *id, void *parent);
 int fe_destroy_widget(void *widget);

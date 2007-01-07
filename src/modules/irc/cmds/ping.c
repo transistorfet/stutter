@@ -8,8 +8,8 @@
 #include <time.h>
 #include <stdio.h>
 
-#include <stutter/lib/macros.h>
-#include <stutter/lib/string.h>
+#include <stutter/macros.h>
+#include <stutter/string.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_ping(char *env, char *args)

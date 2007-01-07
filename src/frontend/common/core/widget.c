@@ -8,9 +8,9 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <stutter/lib/hash.h>
-#include <stutter/lib/macros.h>
-#include <stutter/lib/memory.h>
+#include <stutter/hash.h>
+#include <stutter/macros.h>
+#include <stutter/memory.h>
 #include <stutter/frontend/widget.h>
 
 #ifndef WIDGET_INIT_SIZE

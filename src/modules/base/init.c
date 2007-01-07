@@ -11,9 +11,9 @@
 #include <stutter/init.h>
 #include <stutter/type.h>
 #include <stutter/signal.h>
+#include <stutter/string.h>
+#include <stutter/globals.h>
 #include <stutter/variable.h>
-#include <stutter/lib/string.h>
-#include <stutter/lib/globals.h>
 #include <stutter/modules/base.h>
 
 DEFINE_HANDLER_LIST(base_handlers,

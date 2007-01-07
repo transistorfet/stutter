@@ -5,8 +5,8 @@
  * Description:		Current Server\Channel Manager
  */
 
+#include <stutter/string.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/string.h>
 #include <stutter/modules/irc.h>
 
 static void *last_window = NULL;

@@ -7,8 +7,8 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/memory.h>
 #include <stutter/variable.h>
-#include <stutter/lib/memory.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/common/colourmap.h>
 

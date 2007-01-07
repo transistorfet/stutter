@@ -10,8 +10,8 @@
 #include <string.h>
 
 #include CONFIG_H
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
 
 int irc_msg_ctcp_ping(char *env, void *index, struct irc_msg *msg)

@@ -8,8 +8,8 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <stutter/lib/memory.h>
-#include <stutter/lib/string.h>
+#include <stutter/memory.h>
+#include <stutter/string.h>
 
 #define STRING_MAX_SIZE			1024
 

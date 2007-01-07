@@ -9,9 +9,9 @@
 
 #include <stutter/key.h>
 #include <stutter/type.h>
-#include <stutter/lib/hash.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/string.h>
+#include <stutter/hash.h>
+#include <stutter/memory.h>
+#include <stutter/string.h>
 
 #ifndef KEY_INITIAL_CONTEXTS
 #define KEY_INITIAL_CONTEXTS	10

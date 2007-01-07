@@ -7,7 +7,7 @@
 #ifndef _STUTTER_FRONTEND_NET_H
 #define _STUTTER_FRONTEND_NET_H
 
-#include <stutter/lib/globals.h>
+#include <stutter/globals.h>
 
 typedef void *fe_network_t;
 

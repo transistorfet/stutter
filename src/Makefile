@@ -9,8 +9,8 @@ OBJS =	init.o \
 	utils.o \
 	signal.o \
 	variable.o \
-	lib/memory.o \
-	lib/string.o
+	memory.o \
+	string.o
 
 include $(ROOT)/rules.mk
 

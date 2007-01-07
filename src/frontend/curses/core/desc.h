@@ -7,8 +7,8 @@
 #ifndef _CURSES_DESC_H
 #define _CURSES_DESC_H
 
-#include <stutter/lib/linear.h>
-#include <stutter/lib/globals.h>
+#include <stutter/linear.h>
+#include <stutter/globals.h>
 
 #ifndef DESC_READ_BUFFER
 #define DESC_READ_BUFFER		512

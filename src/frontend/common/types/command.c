@@ -9,7 +9,7 @@
 #include <stdarg.h>
 
 #include <stutter/type.h>
-#include <stutter/lib/memory.h>
+#include <stutter/memory.h>
 #include <stutter/frontend/widget.h>
 
 typedef (*fe_common_command_func_t)(struct widget_s *, char *);

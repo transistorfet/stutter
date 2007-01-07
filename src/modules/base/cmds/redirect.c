@@ -7,8 +7,8 @@
 
 #include CONFIG_H
 #include <stutter/signal.h>
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_redirect(char *env, char *args)

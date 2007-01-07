@@ -9,9 +9,9 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/macros.h>
+#include <stutter/string.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
-#include <stutter/lib/string.h>
 
 int base_cmd_evaluate(char *env, char *args)
 {

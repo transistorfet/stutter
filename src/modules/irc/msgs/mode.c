@@ -6,8 +6,8 @@
  */
 
 #include CONFIG_H
+#include <stutter/string.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/string.h>
 #include <stutter/modules/irc.h>
 
 int irc_msg_mode(char *env, struct irc_msg *msg)

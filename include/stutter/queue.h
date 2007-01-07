@@ -4,11 +4,11 @@
  * Description:		Queue Virtual Interface
  */
 
-#ifndef _STUTTER_LIB_QUEUE_H
-#define _STUTTER_LIB_QUEUE_H
+#ifndef _STUTTER_QUEUE_H
+#define _STUTTER_QUEUE_H
 
-#include <stutter/lib/memory.h>
-#include <stutter/lib/globals.h>
+#include <stutter/memory.h>
+#include <stutter/globals.h>
 
 /*** Virtual Interface ***/
 

@@ -10,10 +10,10 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/macros.h>
+#include <stutter/string.h>
 #include <stutter/variable.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
-#include <stutter/lib/string.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_remove(char *env, char *args)

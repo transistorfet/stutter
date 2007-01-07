@@ -8,8 +8,8 @@
 #define _STUTTER_TYPE_H
 
 #include <stdarg.h>
-#include <stutter/lib/string.h>
-#include <stutter/lib/globals.h>
+#include <stutter/string.h>
+#include <stutter/globals.h>
 
 struct type_s;
 

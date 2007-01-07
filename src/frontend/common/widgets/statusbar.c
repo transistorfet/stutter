@@ -9,8 +9,8 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/string.h>
+#include <stutter/memory.h>
+#include <stutter/string.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "statusbar.h"

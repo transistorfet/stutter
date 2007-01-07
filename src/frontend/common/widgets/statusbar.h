@@ -9,7 +9,7 @@
 
 #include <stdarg.h>
 
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "window.h"

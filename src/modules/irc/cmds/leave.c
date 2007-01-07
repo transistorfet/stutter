@@ -5,8 +5,8 @@
  * Description:		Leave Channel Command
  */
 
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_leave(char *env, char *args)

@@ -7,7 +7,7 @@
 #ifndef _STUTTER_MODULES_IRC_H
 #define _STUTTER_MODULES_IRC_H
 
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/user.h>
 #include <stutter/modules/irc/server.h>

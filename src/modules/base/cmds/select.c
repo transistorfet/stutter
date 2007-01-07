@@ -5,8 +5,8 @@
  * Description:		Select Window Command
  */
 
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_select(char *env, char *args)

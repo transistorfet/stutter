@@ -19,9 +19,9 @@
 #include <netinet/in.h>
 
 #include CONFIG_H
+#include <stutter/debug.h>
+#include <stutter/memory.h>
 #include <stutter/signal.h>
-#include <stutter/lib/debug.h>
-#include <stutter/lib/memory.h>
 #include "desc.h"
 
 #ifndef FE_NET_ATTEMPTS

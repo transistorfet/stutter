@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 #include <stutter/type.h>
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 #include <stutter/modules/base.h>
 
 static int base_time_stringify(void *, char *, int);

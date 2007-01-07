@@ -8,7 +8,7 @@
 #define _STUTTER_MODULES_IRC_SERVER_H
 
 #include CONFIG_H
-#include <stutter/lib/queue.h>
+#include <stutter/queue.h>
 #include <stutter/frontend/net.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/channel.h>

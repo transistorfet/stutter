@@ -7,8 +7,8 @@
 #ifndef _STUTTER_MODULES_IRC_USER_H
 #define _STUTTER_MODULES_IRC_USER_H
 
-#include <stutter/lib/string.h>
-#include <stutter/lib/globals.h>
+#include <stutter/string.h>
+#include <stutter/globals.h>
 
 #define IRC_UBF_OP		0x80
 #define IRC_UBF_VOICE		0x40

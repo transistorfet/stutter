@@ -10,10 +10,10 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/hash.h>
+#include <stutter/macros.h>
+#include <stutter/memory.h>
 #include <stutter/variable.h>
-#include <stutter/lib/hash.h>
-#include <stutter/lib/macros.h>
-#include <stutter/lib/memory.h>
 
 #ifndef VARIABLE_INIT_SIZE
 #define VARIABLE_INIT_SIZE		20

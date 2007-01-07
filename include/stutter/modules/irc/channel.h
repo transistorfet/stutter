@@ -7,7 +7,7 @@
 #ifndef _STUTTER_MODULES_IRC_CHANNEL_H
 #define _STUTTER_MODULES_IRC_CHANNEL_H
 
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 #include <stutter/modules/irc/user.h>
 
 #define IRC_CBF_AUTO_REJOIN		0x01

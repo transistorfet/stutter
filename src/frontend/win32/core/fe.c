@@ -12,9 +12,9 @@
 #include CONFIG_H
 #include <stutter/type.h>
 #include <stutter/signal.h>
+#include <stutter/string.h>
+#include <stutter/globals.h>
 #include <stutter/variable.h>
-#include <stutter/lib/string.h>
-#include <stutter/lib/globals.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "net.h"

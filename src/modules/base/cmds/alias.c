@@ -7,9 +7,9 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/macros.h>
 #include <stutter/variable.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_alias(char *env, char *args)

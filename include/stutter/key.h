@@ -8,7 +8,7 @@
 #define _STUTTER_KEY_H
 
 #include <stutter/type.h>
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 
 int init_key(void);
 int release_key(void);

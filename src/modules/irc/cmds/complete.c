@@ -5,8 +5,8 @@
  * Description:		Nick Complete (Tab Complete) Command
  */
 
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
 
 struct irc_complete_info_s {

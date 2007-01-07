@@ -8,8 +8,8 @@
 #define _STUTTER_VARIABLE_H
 
 #include <stutter/type.h>
-#include <stutter/lib/string.h>
-#include <stutter/lib/memory.h>
+#include <stutter/string.h>
+#include <stutter/memory.h>
 
 #define VAR_ERR_NOT_FOUND	-10
 

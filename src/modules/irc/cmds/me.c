@@ -5,7 +5,7 @@
  * Description:		Action Message Command
  */
 
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_me(char *env, char *args)

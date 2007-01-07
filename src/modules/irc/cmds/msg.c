@@ -5,7 +5,7 @@
  * Description:		Private Message Command
  */
 
-#include <stutter/lib/macros.h>
+#include <stutter/macros.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_msg(char *env, char *args)

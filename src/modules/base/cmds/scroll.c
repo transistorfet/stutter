@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_scroll(char *env, char *args)

@@ -8,8 +8,8 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
-#include <stutter/lib/macros.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_reconnect(char *env, char *args)

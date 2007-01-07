@@ -10,9 +10,9 @@
 #include CONFIG_H
 #include <stutter/type.h>
 #include <stutter/signal.h>
+#include <stutter/macros.h>
+#include <stutter/string.h>
 #include <stutter/variable.h>
-#include <stutter/lib/macros.h>
-#include <stutter/lib/string.h>
 #include <stutter/utils.h>
 
 #define MAX_NAME		64

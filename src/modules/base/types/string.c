@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include <stutter/type.h>
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 #include <stutter/modules/base.h>
 
 struct type_s *base_load_string(void)

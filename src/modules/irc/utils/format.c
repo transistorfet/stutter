@@ -11,8 +11,8 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/lib/string.h>
-#include <stutter/lib/macros.h>
+#include <stutter/string.h>
+#include <stutter/macros.h>
 #include <stutter/modules/irc.h>
 #include <stutter/modules/base.h>
 #include <stutter/frontend/surface.h>

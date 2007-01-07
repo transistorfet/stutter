@@ -9,7 +9,7 @@
 #include <stdarg.h>
 
 #include CONFIG_H
-#include <stutter/lib/memory.h>
+#include <stutter/memory.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "window.h"

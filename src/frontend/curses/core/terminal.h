@@ -7,7 +7,7 @@
 #ifndef _CURSES_TERMINAL_H
 #define _CURSES_TERMINAL_H
 
-#include <stutter/lib/globals.h>
+#include <stutter/globals.h>
 
 struct terminal_s;
 extern struct terminal_s *terminal;

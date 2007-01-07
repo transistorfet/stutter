@@ -9,10 +9,10 @@
 #include <string.h>
 
 #include CONFIG_H
+#include <stutter/hash.h>
 #include <stutter/signal.h>
-#include <stutter/lib/hash.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/globals.h>
+#include <stutter/memory.h>
+#include <stutter/globals.h>
 
 #ifndef SIGNAL_INIT_SIZE
 #define SIGNAL_INIT_SIZE	10

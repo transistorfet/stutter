@@ -15,8 +15,8 @@
 #include <sys/select.h>
 
 #include <stutter/signal.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/linear.h>
+#include <stutter/memory.h>
+#include <stutter/linear.h>
 #include "desc.h"
 
 #define DESC_DEFAULT_DESCRIPTORS		4

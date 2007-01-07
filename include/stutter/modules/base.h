@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 #include <stutter/type.h>
-#include <stutter/lib/string.h>
+#include <stutter/string.h>
 
 int init_base(void);
 int release_base(void);

@@ -11,10 +11,10 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
-#include <stutter/lib/hash.h>
-#include <stutter/lib/macros.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/globals.h>
+#include <stutter/hash.h>
+#include <stutter/macros.h>
+#include <stutter/memory.h>
+#include <stutter/globals.h>
 
 #ifndef TYPE_INIT_SIZE
 #define TYPE_INIT_SIZE		10

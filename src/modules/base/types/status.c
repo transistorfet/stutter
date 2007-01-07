@@ -9,8 +9,8 @@
 #include <stdarg.h>
 
 #include <stutter/type.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/string.h>
+#include <stutter/memory.h>
+#include <stutter/string.h>
 #include <stutter/modules/base.h>
 
 #define MAX_BUFFER		64

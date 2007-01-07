@@ -10,11 +10,11 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <stutter/queue.h>
+#include <stutter/memory.h>
+#include <stutter/linear.h>
 #include <stutter/signal.h>
-#include <stutter/lib/queue.h>
-#include <stutter/lib/memory.h>
-#include <stutter/lib/linear.h>
-#include <stutter/lib/globals.h>
+#include <stutter/globals.h>
 #include <stutter/frontend/net.h>
 #include <stutter/frontend/timer.h>
 #include <stutter/modules/irc/msg.h>
