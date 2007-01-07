@@ -147,6 +147,10 @@ int text_print(struct text_s *text, const char *str, int len)
 	node->str[len] = '\0';
 
 	queue_prepend_node_v(text->log, log, node);
+	if (queue_size_v(text->log) > text->max_lines) {
+		queue_pop_node_v(text->log, log, node);
+		memory_free(node);
+	}
 	WIDGET_S(text)->bitflags |= WBF_NEEDS_REFRESH;
 
 	return(len);
