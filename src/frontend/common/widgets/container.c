@@ -32,26 +32,26 @@ struct widget_type_s container_type = {
 int container_init(struct container_s *container)
 {
 	window_init(WINDOW_S(container));
-	if (!(container->widgets = create_queue(0, (destroy_t) destroy_widget)))
+	if (container_widgets_init_list(container, 0))
 		return(-1);
 	return(0);
 }
 
 int container_release(struct container_s *container)
 {
-	if (container && container->widgets)
-		destroy_queue(container->widgets);
+	if (container)
+		container_widgets_release_list(container);
 	window_release(WINDOW_S(container));
 	return(0);
  }
 
 int container_refresh(struct container_s *container)
 {
-	struct widget_s *widget;
+	struct container_node_s *node;
 
 	// TODO what should this do?
-	if (widget = (struct widget_s *) queue_current(container->widgets))
-		widget_refresh_m(widget);
+	if ((node = container_widgets_current_node(container)) && node->widget)
+		widget_refresh_m(node->widget);
 	else
 		window_clear(WINDOW_S(container));
 	return(0);
@@ -76,75 +76,84 @@ int container_control(struct container_s *container, int cmd, va_list va)
 {
 	switch (cmd) {
 		case WCC_SET_SURFACE: {
-			struct queue_node_s *cur;
 			struct surface_s *surface;
+			struct container_node_s *cur;
 
 			surface = va_arg(va, struct surface_s *);
 			WINDOW_S(container)->surface = surface;
-			cur = queue_first_node(container->widgets);
-			while (cur) {
-				widget_control(WIDGET_S(cur->ptr), WCC_SET_SURFACE, surface);
-				cur = queue_next_node(container->widgets);
-			}
-			return(0);
-		}
-		case WCC_SET_WINDOW: {
-			struct queue_node_s *cur;
-
-			window_control(WINDOW_S(container), cmd, va);
-			// TODO what should this do about its child widgets?  Should it ignore them?
-			cur = queue_first_node(container->widgets);
-			while (cur) {
-				widget_control(WIDGET_S(cur->ptr), WCC_SET_WINDOW, WINDOW_S(container)->x, WINDOW_S(container)->y, WINDOW_S(container)->width, WINDOW_S(container)->height);
-				cur = queue_next_node(container->widgets);
+			container_widgets_foreach(container, cur) {
+				widget_control(cur->widget, WCC_SET_SURFACE, surface);
 			}
 			return(0);
 		}
 		case WCC_ADD_WIDGET: {
 			struct widget_s *widget;
+			struct container_node_s *node;
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
-			if (queue_append(container->widgets, widget))
+			if (!(node = container_widgets_create_node(0)))
 				return(-1);
+			node->widget = widget;
+			if (container_widgets_append_node(container, node)) {
+				/** We don't want to destroy the widget.  Just the node. */
+				node->widget = NULL;
+				container_widgets_destroy_node(container, node);
+				return(-1);
+			}
 			widget->parent = WIDGET_S(container);
 			return(0);
 		}
 		case WCC_INSERT_WIDGET: {
 			struct widget_s *widget;
+			struct container_node_s *node;
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
-			if (queue_insert(container->widgets, widget))
+			if (!(node = container_widgets_create_node(0)))
 				return(-1);
+			node->widget = widget;
+			if (container_widgets_insert_node(container, container_widgets_current_node(container), node)) {
+				/** We don't want to destroy the widget.  Just the node. */
+				node->widget = NULL;
+				container_widgets_destroy_node(container, node);
+				return(-1);
+			}
 			widget->parent = WIDGET_S(container);
 			return(0);
 		}
 		case WCC_REMOVE_WIDGET: {
 			struct widget_s *widget;
+			struct container_node_s *node;
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
-			queue_remove(container->widgets, widget);
-			if (!queue_current(container->widgets))
-				queue_first(container->widgets);
+			if (!(node = container_widgets_find_node(container, widget)))
+				return(-1);
+			container_widgets_remove_node(container, node);
+			/** We don't want to destroy the widget.  Just the node. */
+			node->widget = NULL;
+			container_widgets_destroy_node(container, node);
+			if (!container_widgets_current_node(container))
+				container_widgets_set_current_node(container, container_widgets_first_node(container));
 			widget->parent = NULL;
 			return(0);
 		}
 		case WCC_CURRENT_WIDGET: {
 			va_list args;
 			char *context;
-			struct widget_s *current, **widget;
+			struct widget_s **widget;
+			struct container_node_s *current;
 
 			args = va;
 			widget = va_arg(va, struct widget_s **);
 			context = va_arg(va, char *);
-			if (!widget || !(current = (struct widget_s *) queue_current(container->widgets)))
+			if (!widget || !(current = container_widgets_current_node(container)))
 				return(-1);
-			if (!widget_control_m(current, cmd, args) && *widget)
+			if (!widget_control_m(current->widget, cmd, args) && *widget)
 				return(0);
-			else if (strstr(current->type->name, context))
-				*widget = current;
+			else if (strstr(current->widget->type->name, context))
+				*widget = current->widget;
 			else
 				*widget = NULL;
 			return(0);
@@ -153,21 +162,19 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			va_list args;
 			char *context;
 			struct widget_s *widget;
-			struct queue_node_s *cur, *node;
+			struct container_node_s *cur, *node;
 
 			args = va;
 			context = va_arg(va, char *);
 			widget = va_arg(va, struct widget_s *);
-			node = queue_current_node(container->widgets);
-			cur = queue_first_node(container->widgets);
-			while (cur) {
-				if ((WIDGET_S(cur->ptr) == widget) || !widget_control_m(WIDGET_S(cur->ptr), cmd, args)) {
-					container->widgets->current = cur;
+			node = container_widgets_current_node(container);
+			container_widgets_foreach(container, cur) {
+				if ((cur->widget == widget) || !widget_control_m(cur->widget, cmd, args)) {
+					container_widgets_set_current_node(container, cur);
 					return(0);
 				}
-				cur = queue_next_node(container->widgets);
 			}
-			container->widgets->current = node;
+			container_widgets_set_current_node(container, node);
 			return(-1);
 		}
 		case WCC_NEXT_WIDGET: {
@@ -175,7 +182,9 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			widget = va_arg(va, struct widget_s **);
 			if (!widget)
 				return(-1);
-			*widget = (struct widget_s *) queue_next(container->widgets);
+			if (container_widgets_set_current_node(container, container_widgets_next_node(container_widgets_current_node(container))))
+				return(-1);
+			*widget = container_widgets_current_node(container)->widget;
 			return(0);
 		}
 		case WCC_PREVIOUS_WIDGET: {
@@ -183,7 +192,9 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			widget = va_arg(va, struct widget_s **);
 			if (!widget)
 				return(-1);
-			*widget = (struct widget_s *) queue_previous(container->widgets);
+			if (container_widgets_set_current_node(container, container_widgets_previous_node(container_widgets_current_node(container))))
+				return(-1);
+			*widget = container_widgets_current_node(container)->widget;
 			return(0);
 		}
 		case WCC_FIRST_WIDGET: {
@@ -191,7 +202,9 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			widget = va_arg(va, struct widget_s **);
 			if (!widget)
 				return(-1);
-			*widget = (struct widget_s *) queue_first(container->widgets);
+			if (container_widgets_set_current_node(container, container_widgets_first_node(container)))
+				return(-1);
+			*widget = container_widgets_current_node(container)->widget;
 			return(0);
 		}
 		case WCC_LAST_WIDGET: {
@@ -199,7 +212,9 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			widget = va_arg(va, struct widget_s **);
 			if (!widget)
 				return(-1);
-			*widget = (struct widget_s *) queue_last(container->widgets);
+			if (container_widgets_set_current_node(container, container_widgets_last_node(container)))
+				return(-1);
+			*widget = container_widgets_current_node(container)->widget;
 			return(0);
 		}
 		default:

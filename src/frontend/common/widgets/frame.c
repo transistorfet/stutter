@@ -43,10 +43,10 @@ int frame_release(struct frame_s *frame)
 
 int frame_refresh(struct frame_s *frame)
 {
-	struct widget_s *widget;
+	struct container_node_s *node;
 
-	if (widget = (struct widget_s *) queue_current(CONTAINER_S(frame)->widgets))
-		widget_refresh_m(widget);
+	if ((node = container_widgets_current_node(CONTAINER_S(frame))) && node->widget)
+		widget_refresh_m(node->widget);
 	else
 		window_clear(WINDOW_S(frame));
 	return(0);
@@ -71,34 +71,30 @@ int frame_control(struct frame_s *frame, int cmd, va_list va)
 {
 	switch (cmd) {
 		case WCC_SET_SURFACE: {
-			struct queue_node_s *cur;
 			struct surface_s *surface;
+			struct container_node_s *cur;
 
 			surface = va_arg(va, struct surface_s *);
 			WINDOW_S(frame)->surface = surface;
-			cur = queue_first_node(CONTAINER_S(frame)->widgets);
-			while (cur) {
-				widget_control(WIDGET_S(cur->ptr), WCC_SET_SURFACE, surface);
-				cur = queue_next_node(CONTAINER_S(frame)->widgets);
+			container_widgets_foreach(CONTAINER_S(frame), cur) {
+				widget_control(cur->widget, WCC_SET_SURFACE, surface);
 			}
 			// TODO should this also cause a resize of everything?  at least if we are the root
 			return(0);
 		}
 		case WCC_SET_WINDOW: {
-			struct queue_node_s *cur;
+			struct container_node_s *cur;
 
 			window_control(WINDOW_S(frame), cmd, va);
-			cur = queue_first_node(CONTAINER_S(frame)->widgets);
-			while (cur) {
-				widget_control(WIDGET_S(cur->ptr), WCC_SET_WINDOW, WINDOW_S(frame)->x, WINDOW_S(frame)->y, WINDOW_S(frame)->width, WINDOW_S(frame)->height);
-				cur = queue_next_node(CONTAINER_S(frame)->widgets);
+			container_widgets_foreach(CONTAINER_S(frame), cur) {
+				widget_control(cur->widget, WCC_SET_WINDOW, WINDOW_S(frame)->x, WINDOW_S(frame)->y, WINDOW_S(frame)->width, WINDOW_S(frame)->height);
 			}
 			return(0);
 		}
 		case WCC_GET_MIN_MAX_SIZE: {
-			struct queue_node_s *cur;
 			widget_size_t *min, *max;
 			widget_size_t ch_min, ch_max;
+			struct container_node_s *cur;
 
 			min = va_arg(va, widget_size_t *);
 			max = va_arg(va, widget_size_t *);
@@ -110,9 +106,8 @@ int frame_control(struct frame_s *frame, int cmd, va_list va)
 				max->width = -1;
 				max->height = -1;
 			}
-			cur = queue_first_node(CONTAINER_S(frame)->widgets);
-			while (cur) {
-				if (!widget_control(WIDGET_S(cur->ptr), WCC_GET_MIN_MAX_SIZE, &ch_min, &ch_max)) {
+			container_widgets_foreach(CONTAINER_S(frame), cur) {
+				if (!widget_control(cur->widget, WCC_GET_MIN_MAX_SIZE, &ch_min, &ch_max)) {
 					if (min) {
 						if (ch_min.width > min->width)
 							min->width = ch_min.width;
@@ -126,7 +121,6 @@ int frame_control(struct frame_s *frame, int cmd, va_list va)
 							max->height = ch_max.height;
 					}
 				}
-				cur = queue_next_node(CONTAINER_S(frame)->widgets);
 			}
 			return(0);
 		}

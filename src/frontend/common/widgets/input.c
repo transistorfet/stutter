@@ -31,10 +31,10 @@ struct widget_type_s input_type = {
 	(widget_control_t) input_control
 };
 
-static int input_insert_char(struct input_s *, char);
-static int input_delete_char(struct input_s *);
-static int input_save_buffer(struct input_s *);
-static int input_process_char(struct input_s *, int);
+static inline int input_insert_char(struct input_s *, char);
+static inline int input_delete_char(struct input_s *);
+static inline int input_save_buffer(struct input_s *);
+static inline int input_process_char(struct input_s *, int);
 
 int input_init(struct input_s *input)
 {
@@ -44,7 +44,7 @@ int input_init(struct input_s *input)
 	input->end = 0;
 	input->max = FE_INPUT_BUFFER_SIZE;
 
-	if (!(input->history = create_queue(FE_INPUT_HISTORY_SIZE, (destroy_t) destroy_string))) {
+	if (!(input->history = create_queue(FE_INPUT_HISTORY_SIZE, NULL))) {
 		memory_free(input->buffer);
 		return(-1);
 	}
@@ -117,24 +117,25 @@ int input_control(struct input_s *input, int cmd, va_list va)
 		}
 		case WCC_SCROLL: {
 			int i, amount;
-			char *str = NULL;
+			struct queue_node_s *node;
 
 			amount = va_arg(va, int);
 			if (amount >= 0) {
 				for (i = 0;i < amount;i++) {
-					if (!(str = queue_next(input->history)))
-						str = queue_first(input->history);
+					if (!(node = queue_next_node(queue_current_node(input->history))))
+						node = queue_first_node(input->history);
 				}
 			}
 			else {
 				amount *= -1;
 				for (i = 0;i < amount;i++) {
-					if (!(str = queue_previous(input->history)))
-						str = queue_last(input->history);
+					if (!(node = queue_previous_node(queue_current_node(input->history))))
+						node = queue_last_node(input->history);
 				}
 			}
-			if (str)
-				input_print(input, str, -1);
+			queue_set_current_node(input->history, node);
+			if (node)
+				input_print(input, (char *) node->ptr, -1);
 			break;
 		}
 		case WCC_INSERT_CHAR: {
@@ -161,7 +162,7 @@ int input_control(struct input_s *input, int cmd, va_list va)
  * Insert the given char into the buffer of the given input structure at
  * the location pointed to by the input's index and update the pointers.
  */ 
-static int input_insert_char(struct input_s *input, char ch)
+static inline int input_insert_char(struct input_s *input, char ch)
 {
 	int i;
 
@@ -178,7 +179,7 @@ static int input_insert_char(struct input_s *input, char ch)
 /**
  * Delete the character at the index of the given input structure.
  */
-static int input_delete_char(struct input_s *input)
+static inline int input_delete_char(struct input_s *input)
 {
 	int i;
 
@@ -195,14 +196,18 @@ static int input_delete_char(struct input_s *input)
  * Transfer the current input buffer into the history queue list of
  * the given input structure.
  */
-static int input_save_buffer(struct input_s *input)
+static inline int input_save_buffer(struct input_s *input)
 {
-	char *str;
+	struct queue_node_s *node;
 
 	input->buffer[input->end] = '\0';
-	if (str = create_string("%s", input->buffer))
-		queue_prepend(input->history, str);
-	input->history->current = NULL;
+	if (node = queue_create_node(sizeof(struct queue_node_s) + input->end + 1)) {
+		node->ptr = (void *) (((size_t) node) + sizeof(struct queue_node_s));
+		strcpy(node->ptr, input->buffer);
+		((char *) node->ptr)[input->end] = '\0';
+		queue_prepend_node(input->history, node);
+	}
+	queue_set_current_node(input->history, NULL);
 	return(0);
 }
 
@@ -211,7 +216,7 @@ static int input_save_buffer(struct input_s *input)
  * behaviour on the given input structure.  If the character is
  * processed then a 0 is returned otherwise a 1 is returned.
  */
-static int input_process_char(struct input_s *input, int ch)
+static inline int input_process_char(struct input_s *input, int ch)
 {
 	switch (ch) {
 		case KC_BACKSPACE: {
@@ -219,15 +224,15 @@ static int input_process_char(struct input_s *input, int ch)
 			break;
 		}
 		case KC_UP: {
-			char *str;
-			if ((str = queue_next(input->history)) || (str = queue_first(input->history)))
-				input_print(input, str, -1);
+			struct queue_node_s *node;
+			if ((node = queue_next_node(queue_current_node(input->history))) || (node = queue_first_node(input->history)))
+				input_print(input, (char *) node->ptr, -1);
 			break;
 		}
 		case KC_DOWN: {
-			char *str;
-			if ((str = queue_previous(input->history)) || (str = queue_last(input->history)))
-				input_print(input, str, -1);
+			struct queue_node_s *node;
+			if ((node = queue_previous_node(queue_current_node(input->history))) || (node = queue_last_node(input->history)))
+				input_print(input, (char *) node->ptr, -1);
 			break;
 		}
 		case KC_RIGHT: {
