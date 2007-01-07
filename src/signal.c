@@ -168,13 +168,14 @@ int signal_connect(char *name, void *index, int priority, signal_t func, void *p
 					handler->next = node->data.handlers;
 					node->data.handlers = handler;
 				}
-				break;
+				return(0);
 			}
-			else if (!cur->next)
-				cur->next = handler;
 			prev = cur;
 			cur = cur->next;
 		}
+		/** The handler wasn't added so it should be added to the end */
+		prev->next = handler;
+		handler->next = NULL;
 	}
 	return(0);
 }
