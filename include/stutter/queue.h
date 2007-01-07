@@ -281,12 +281,12 @@
 
 #define DEFINE_QUEUE_NEXT_NODE(queue_name, list_type, node_type, field)		\
 	static inline node_type *queue_name##_next_node(node_type *node) {	\
-		return(queue_next_v(field, node));				\
+		return(node ? queue_next_v(field, node) : NULL);		\
 	}
 
 #define DEFINE_QUEUE_PREVIOUS_NODE(queue_name, list_type, node_type, field)	\
 	static inline node_type *queue_name##_previous_node(node_type *node) {	\
-		return(queue_previous_v(field, node));				\
+		return(node ? queue_previous_v(field, node) : NULL);		\
 	}
 
 #define DEFINE_QUEUE_CURRENT_NODE(queue_name, list_type, node_type, field)	\
