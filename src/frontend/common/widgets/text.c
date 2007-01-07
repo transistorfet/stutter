@@ -38,7 +38,7 @@ static int text_wrap_string(char *, int);
 int text_init(struct text_s *text)
 {
 	text->cur_line = 0;
-	text->max_lines = FE_WINDOW_LOG_SIZE;
+	text->max_lines = FE_TEXT_LOG_SIZE;
 	queue_init_v(text->log, 0);
 	return(0);
 }
@@ -93,7 +93,7 @@ int text_refresh(struct text_s *text)
 			if (indices[j] == -1)
 				break;
 			if (!j)
-				limit = size.width - strlen(FE_WINDOW_WRAP_STRING);
+				limit = size.width - strlen(FE_TEXT_WRAP_STRING);
 			i += indices[j];
 		}
 		max = (j == TEXT_MAX_WRAP) ? j : j + 1;
@@ -107,7 +107,7 @@ int text_refresh(struct text_s *text)
 		for (;j < max;j++) {
 			surface_move_m(surface, pos.x, pos.y + line + j);
 			if (j)
-				surface_print_m(surface, FE_WINDOW_WRAP_STRING, -1);
+				surface_print_m(surface, FE_TEXT_WRAP_STRING, -1);
 			if (indices[j] == -1)
 				limit = format.length;
 			else
