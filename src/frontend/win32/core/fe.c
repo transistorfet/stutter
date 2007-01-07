@@ -126,8 +126,12 @@ void *fe_current_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_CURRENT_WIDGET, &widget, context))
-		return(NULL);
+	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_CURRENT_WIDGET, &widget, context)) {
+		if (strstr(root->type->name, context))
+			return(root);
+		else
+			return(NULL);
+	}
 	return(widget);
 }
 

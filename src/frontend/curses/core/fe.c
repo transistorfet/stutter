@@ -114,6 +114,7 @@ void *fe_find_widget(char *id)
 
 int fe_resize_widget(void *widget, int x, int y)
 {
+	// TODO should this really be absolute size and not difference in size?
 	if (widget && !widget_control(widget, WCC_MODIFY_SIZE, NULL, x, y))
 		return(0);
 	// TODO how do you know what size to resize the surface to?  should we just let
@@ -126,8 +127,12 @@ void *fe_current_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_CURRENT_WIDGET, &widget, context))
-		return(NULL);
+	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_CURRENT_WIDGET, &widget, context)) {
+		if (strstr(root->type->name, context))
+			return(root);
+		else
+			return(NULL);
+	}
 	return(widget);
 }
 
