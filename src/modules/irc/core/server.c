@@ -84,7 +84,7 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 	strcpy(node->server.address, address);
 	node->server.port = port;
 	strncpy(node->server.nick, nick, IRC_MAX_NICK);
-	queue_init_v(node->server.send_queue);
+	queue_init_v(node->server.send_queue, 0);
 
 	node->server.channels = irc_create_channel_list();
 	node->server.status = irc_add_channel(node->server.channels, IRC_SERVER_STATUS_CHANNEL, window, &node->server);
@@ -102,11 +102,14 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
  */
 int irc_server_reconnect(struct irc_server *server)
 {
+	struct irc_msg *cur, *tmp;
+
 	fe_net_disconnect(server->net);
 	server->bitflags &= ~IRC_SBF_CONNECTED;
-	queue_destroy_v(server->send_queue, queue,
+	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_destroy_msg(cur);
-	);
+	}
+	queue_release_v(server->send_queue);
 
 	if (irc_server_init_connection(server)) {
 		IRC_ERROR_JOINPOINT(IRC_ERR_RECONNECT_ERROR, server->address)
@@ -123,12 +126,14 @@ int irc_server_reconnect(struct irc_server *server)
  */
 int irc_server_disconnect(struct irc_server *server)
 {
+	struct irc_msg *cur, *tmp;
+
 	linear_remove_node_v(server_list, sl, (struct irc_server_node *) server);
 	irc_destroy_channel_list(server->channels);
 	fe_net_disconnect(server->net);
-	queue_destroy_v(server->send_queue, queue,
+	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_destroy_msg(cur);
-	);
+	}
 	memory_free(server);
 	return(0);
 }
@@ -415,9 +420,12 @@ static int irc_server_rejoin_channel(struct irc_channel *channel, struct irc_ser
  */
 static int irc_server_flush_send_queue(struct irc_server *server)
 {
-	queue_destroy_v(server->send_queue, queue,
+	struct irc_msg *cur, *tmp;
+
+	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_send_msg(server, cur);
-	);
+	}
+	queue_release_v(server->send_queue);
 	return(0);
 }
 
