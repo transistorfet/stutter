@@ -16,7 +16,7 @@ void *fe_get_parent(void *widget);
 short fe_get_width(void *widget);
 short fe_get_height(void *widget);
 void *fe_find_widget(char *id);
-int fe_resize_widget(void *widget, int diffx, int diffy);
+int fe_resize_widget(void *widget, int x, int y);
 
 void *fe_current_widget(char *context, void *ref);
 int fe_select_widget(char *context, void *ref, void *widget);
