@@ -146,7 +146,20 @@ int util_escape_char(const char *str, char *buffer)
 				buffer[0] = (str[1] - 0x30) * 0x10 + (str[2] - 0x30);
 			return(3);
 		default:
-			buffer[0] = str[0];
+			if (is_number_char_m(str[0])) {
+				buffer[0] = str[0] - 0x30;
+				if (is_number_char_m(str[1])) {
+					buffer[0] = (buffer[0] * 8) + str[1] - 0x30;
+					if (is_number_char_m(str[2])) {
+						buffer[0] = (buffer[0] * 8) + str[2] - 0x30;
+						return(3);
+					}
+					return(2);
+				}
+				return(1);
+			}
+			else
+				buffer[0] = str[0];
 			break;
 	}
 	return(1);
