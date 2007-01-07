@@ -60,7 +60,7 @@ int init_frontend(void)
 
 int release_frontend(void)
 {
-	destroy_widget((struct widget_s *) root);
+	destroy_widget(WIDGET_S(root));
 	return(0);
 }
 
@@ -87,7 +87,7 @@ int fe_destroy_widget(void *widget)
 
 void *fe_get_parent(void *widget)
 {
-	return(((struct widget_s *) widget)->parent);
+	return(WIDGET_S(widget)->parent);
 }
 
 short fe_get_width(void *widget)
@@ -124,7 +124,7 @@ void *fe_current_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_CURRENT_WIDGET, &widget, context)) {
+	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_CURRENT_WIDGET, &widget, context)) {
 		if (strstr(root->type->name, context))
 			return(root);
 		else
@@ -135,14 +135,14 @@ void *fe_current_widget(char *context, void *ref)
 
 int fe_select_widget(char *context, void *ref, void *widget)
 {
-	return(widget_control(ref ? (struct widget_s *) ref : root, WCC_SELECT_WIDGET, context, widget));
+	return(widget_control(ref ? WIDGET_S(ref) : root, WCC_SELECT_WIDGET, context, widget));
 }
 
 void *fe_next_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_NEXT_WIDGET, &widget, context))
+	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_NEXT_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -152,7 +152,7 @@ void *fe_previous_widget(char *context, void *ref)
 	struct widget_s *widget;
 
 
-	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_PREVIOUS_WIDGET, &widget, context))
+	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_PREVIOUS_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -161,7 +161,7 @@ void *fe_first_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_FIRST_WIDGET, &widget, context))
+	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_FIRST_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -170,7 +170,7 @@ void *fe_last_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
 
-	if (widget_control(ref ? (struct widget_s *) ref : root, WCC_LAST_WIDGET, &widget, context))
+	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_LAST_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -195,12 +195,12 @@ void fe_clear(void *widget)
 
 void fe_move(void *widget, short x, short y)
 {
-	widget_control((struct widget_s *) widget, WCC_MODIFY_POSITION, x, y);
+	widget_control(WIDGET_S(widget), WCC_MODIFY_POSITION, x, y);
 }
 
 int fe_scroll(void *widget, int diff)
 {
-	widget_control((struct widget_s *) widget, WCC_SCROLL, diff);
+	widget_control(WIDGET_S(widget), WCC_SCROLL, diff);
 }
 
 void fe_refresh(void)
