@@ -57,6 +57,7 @@ int irc_msg_topic(char *, struct irc_msg *);
 int irc_msg_ctcp_action(char *, void *, struct irc_msg *);
 int irc_msg_ctcp_ping(char *, void *, struct irc_msg *);
 int irc_msg_ctcp_version(char *, void *, struct irc_msg *);
+int irc_msg_ctcp_unknown(char *, void *, struct irc_msg *);
 
 /* Signal Handlers */
 int irc_sig_dispatch_msg(char *, int, struct irc_msg *);

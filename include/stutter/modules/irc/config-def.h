@@ -23,6 +23,7 @@
 
 #define DEFAULT_IRC_FMT_CTCP_VERSION		"\022status\022%B [\022timestamp\022%@\022status\022] CTCP Version received from \022nick\022%N\022status\022 (%H)"
 #define DEFAULT_IRC_FMT_CTCP_VERSION_REPLY	"\022status\022%B [\022timestamp\022%@\022status\022] CTCP Version reply from \022nick\022%N\022status\022 (%H) %M"
+#define DEFAULT_IRC_FMT_CTCP_UNKNOWN		"\022status\022%B [\022timestamp\022%@\022status\022] Unknown CTCP received from \022nick\022%N\022status\022 (%H)"
 #define DEFAULT_IRC_FMT_CURRENT			"%N!%H %C %M"
 #define DEFAULT_IRC_FMT_DEFAULT			"%N!%H %C %M"
 #define DEFAULT_IRC_FMT_PRIVATE_ACTION		"[\022timestamp\022%@\022default\022] <*> \022nick\022%N\022default\022 %M"
@@ -69,9 +70,10 @@
 
 #define DEFAULT_IRC_HANDLERS()							\
 	ADD_HANDLER("irc.dispatch_msg", NULL, 10, irc_sig_dispatch_msg, NULL)	\
-	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_action, NULL)	\
-	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_ping, NULL)	\
-	ADD_HANDLER("irc.dispatch_ctcp", NULL, 10, irc_msg_ctcp_version, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", NULL, 5, irc_msg_ctcp_action, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", NULL, 5, irc_msg_ctcp_ping, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", NULL, 5, irc_msg_ctcp_version, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", NULL, 0, irc_msg_ctcp_unknown, NULL)	\
 	ADD_HANDLER("base.exec_output", NULL, 10, irc_sig_exec, NULL)		\
 	ADD_HANDLER("fe.quit", NULL, 10, irc_sig_quit, NULL)
 
@@ -156,6 +158,10 @@
 #ifndef IRC_FMT_CTCP_VERSION_REPLY
 #define IRC_FMT_CTCP_VERSION_REPLY \
 	DEFAULT_IRC_FMT_CTCP_VERSION_REPLY
+#endif
+#ifndef IRC_FMT_CTCP_UNKNOWN
+#define IRC_FMT_CTCP_UNKNOWN \
+	DEFAULT_IRC_FMT_CTCP_UNKNOWN
 #endif
 #ifndef IRC_FMT_CURRENT
 #define IRC_FMT_CURRENT \
