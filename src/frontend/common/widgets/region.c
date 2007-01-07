@@ -14,10 +14,10 @@
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "region.h"
-#include "window.h"
+#include "container.h"
 
 struct widget_type_s region_type = {
-	"region:window",
+	"region:container:window",
 	WT_REGION,
 	sizeof(struct region_s),
 	(widget_init_t) region_init,
@@ -29,34 +29,28 @@ struct widget_type_s region_type = {
 	(widget_control_t) region_control
 };
 
-static int region_split_insert(struct region_s *, struct region_node_s *, struct region_node_s *);
+static int region_split_insert(struct region_s *, struct container_node_s *, struct container_node_s *);
 static int region_resize(struct region_s *, int);
 
 int region_init(struct region_s *region)
 {
-	window_init(WINDOW_S(region));
-	region->current = NULL;
-	queue_init_v(region->widgets);
+	container_init(CONTAINER_S(region));
 	return(0);
 }
 
 int region_release(struct region_s *region)
 {
-	if (!region)
-		return(-1);
-	queue_destroy_v(region->widgets, widgets,
-		destroy_widget(cur->widget);
-		memory_free(cur);
-	);
-	window_release(WINDOW_S(region));
+	container_release(CONTAINER_S(region));
 	return(0);
  }
 
 int region_refresh(struct region_s *region)
 {
-	queue_traverse_v(region->widgets, widgets,
+	struct container_node_s *cur;
+
+	container_widgets_foreach(CONTAINER_S(region), cur) {
 		widget_refresh_m(cur->widget);
-	);
+	}
 	return(0);
 }
 
@@ -78,31 +72,15 @@ int region_read(struct region_s *region, char *buffer, int max)
 int region_control(struct region_s *region, int cmd, va_list va)
 {
 	switch (cmd) {
-		case WCC_SET_SURFACE: {
-			struct region_node_s *cur;
-			struct surface_s *surface;
-
-			surface = va_arg(va, struct surface_s *);
-			WINDOW_S(region)->surface = surface;
-			cur = queue_first_v(region->widgets);
-			while (cur) {
-				widget_control(cur->widget, WCC_SET_SURFACE, surface);
-				cur = queue_next_v(widgets, cur);
-			}
-			// TODO should this also cause a resize of everything?  at least if we are the root
-			//	or is it the job of the code that sets the surface to also do a resize?
-			return(0);
-		}
 		case WCC_SET_WINDOW: {
 			int height;
 			height = WINDOW_S(region)->height;
-			window_control((struct window_s *) region, cmd, va);
+			window_control(WINDOW_S(region), cmd, va);
 			return(region_resize(region, WINDOW_S(region)->height - height));
 		}
 		case WCC_MODIFY_SIZE: {
 			int width, height;
 			struct widget_s *child;
-			struct region_node_s *cur;
 			widget_pos_t cur_pos, ch_pos;
 			widget_size_t cur_min, cur_max, cur_size, ch_size;
 
@@ -119,7 +97,7 @@ int region_control(struct region_s *region, int cmd, va_list va)
 			return(-1);
 		}
 		case WCC_GET_MIN_MAX_SIZE: {
-			struct region_node_s *cur;
+			struct container_node_s *cur;
 			widget_size_t *min, *max;
 			widget_size_t ch_min, ch_max;
 
@@ -133,8 +111,7 @@ int region_control(struct region_s *region, int cmd, va_list va)
 				max->width = -1;
 				max->height = -1;
 			}
-			cur = queue_first_v(region->widgets);
-			while (cur) {
+			container_widgets_foreach(CONTAINER_S(region), cur) {
 				widget_control(cur->widget, WCC_GET_MIN_MAX_SIZE, &ch_min, &ch_max);
 				if (min) {
 					min->width += ch_min.width;
@@ -144,7 +121,6 @@ int region_control(struct region_s *region, int cmd, va_list va)
 					max->width = (ch_max.width == -1) ? -1 : (max->width + ch_max.width);
 					max->height = (ch_max.height == -1) ? -1 : (max->height + ch_max.height);
 				}
-				cur = queue_next_v(widgets, cur);
 			}
 			return(0);
 		}
@@ -152,21 +128,23 @@ int region_control(struct region_s *region, int cmd, va_list va)
 		case WCC_INSERT_WIDGET: {
 			widget_pos_t pos;
 			struct widget_s *widget;
-			struct region_node_s *node;
 			widget_size_t size, min, max;
+			struct container_node_s *node;
 
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
-			if (!(node = (struct region_node_s *) memory_alloc(sizeof(struct region_node_s))))
+			if (!(node = container_widgets_create_node(0)))
 				return(-1);
 			node->widget = widget;
-			if (!queue_last_v(region->widgets)) {
+			if (!container_widgets_last_node(CONTAINER_S(region))) {
 				widget_control(widget, WCC_SET_WINDOW, WINDOW_S(region)->x, WINDOW_S(region)->y, WINDOW_S(region)->width, WINDOW_S(region)->height);
-				queue_append_node_v(region->widgets, widgets, node);
+				container_widgets_append_node(CONTAINER_S(region), node);
 			}
-			else if (region_split_insert(region, (cmd == WCC_INSERT_WIDGET) ? region->current : queue_last_v(region->widgets), node)) {
-				memory_free(node);
+			else if (region_split_insert(region, (cmd == WCC_INSERT_WIDGET) ? container_widgets_current_node(CONTAINER_S(region)) : container_widgets_last_node(CONTAINER_S(region)), node)) {
+				/** We don't want to destroy the widget.  Just the node */
+				node->widget = NULL;
+				container_widgets_destroy_node(CONTAINER_S(region), node);
 				return(-1);
 			}
 			widget_control(widget, WCC_SET_SURFACE, WINDOW_S(region)->surface);
@@ -174,121 +152,51 @@ int region_control(struct region_s *region, int cmd, va_list va)
 			return(0);
 		}
 		case WCC_REMOVE_WIDGET: {
-			struct widget_s *widget;
-			struct region_node_s *node;
-			widget = va_arg(va, struct widget_s *);
-			if (!widget)
+			if (container_control(CONTAINER_S(region), cmd, va))
 				return(-1);
-			node = queue_first_v(region->widgets);
-			while (node) {
-				if (node->widget == widget) {
-					queue_remove_node_v(region->widgets, widgets, node);
-					memory_free(node);
-					widget->parent = NULL;
-					return(0);
-				}
-				node = queue_next_v(widgets, node);
-			}
-			return(1);
+			// TODO do a resize
+			return(0);
 		}
 		case WCC_CURRENT_WIDGET: {
 			va_list args;
 			char *context;
 			struct widget_s **widget;
-			struct region_node_s *node;
+			struct container_node_s *cur;
 
 			args = va;
 			widget = va_arg(va, struct widget_s **);
 			context = va_arg(va, char *);
 			if (!widget)
 				return(-1);
-			node = region->current ? region->current : queue_first_v(region->widgets);
-			while (node) {
-				if (!widget_control_m(node->widget, cmd, args) && *widget)
+			if (!(cur = container_widgets_current_node(CONTAINER_S(region))))
+				cur = container_widgets_first_node(CONTAINER_S(region));
+			while (cur) {
+				if (!widget_control_m(cur->widget, cmd, args) && *widget)
 					return(0);
-				else if (strstr(node->widget->type->name, context)) {
-					*widget = node->widget;
+				else if (strstr(cur->widget->type->name, context)) {
+					*widget = cur->widget;
 					return(0);
 				}
-				if (!(node = queue_next_v(widgets, node)) && region->current)
-					node = queue_first_v(region->widgets);
-				if (node == region->current)
+				if (!(cur = container_widgets_next_node(cur)) && container_widgets_current_node(CONTAINER_S(region)))
+					cur = container_widgets_first_node(CONTAINER_S(region));
+				if (cur == container_widgets_current_node(CONTAINER_S(region)))
 					break;
 			}
 			*widget = NULL;
 			return(0);
 		}
-		case WCC_SELECT_WIDGET: {
-			va_list args;
-			char *context;
-			struct widget_s *widget;
-			struct region_node_s *node;
-
-			args = va;
-			context = va_arg(va, char *);
-			widget = va_arg(va, struct widget_s *);
-			node = queue_first_v(region->widgets);
-			while (node) {
-				if ((node->widget == widget) || !widget_control_m(node->widget, cmd, args)) {
-					region->current = node;
-					return(0);
-				}
-				node = queue_next_v(widgets, node);
-			}
-			return(-1);
-		}
-		case WCC_NEXT_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
-				return(-1);
-			if (region->current)
-				region->current = queue_next_v(widgets, region->current);
-			*widget = region->current ? region->current->widget : NULL;
-			return(0);
-		}
-		case WCC_PREVIOUS_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
-				return(-1);
-			if (region->current)
-				region->current = queue_previous_v(widgets, region->current);
-			*widget = region->current ? region->current->widget : NULL;
-			return(0);
-		}
-		case WCC_FIRST_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
-				return(-1);
-			if (region->current)
-				region->current = queue_first_v(region->widgets);
-			*widget = region->current ? region->current->widget : NULL;
-			return(0);
-		}
-		case WCC_LAST_WIDGET: {
-			struct widget_s **widget;
-			widget = va_arg(va, struct widget_s **);
-			if (!widget)
-				return(-1);
-			if (region->current)
-				region->current = queue_last_v(region->widgets);
-			*widget = region->current ? region->current->widget : NULL;
-			return(0);
-		}
 		default:
-			return(window_control(WINDOW_S(region), cmd, va));
+			return(container_control(CONTAINER_S(region), cmd, va));
 	}
 	return(-1);
 }
 
 /*** Local Functions ***/
 
-static int region_split_insert(struct region_s *region, struct region_node_s *node, struct region_node_s *new_node)
+static int region_split_insert(struct region_s *region, struct container_node_s *node, struct container_node_s *new_node)
 {
 	widget_pos_t pos;
-	struct region_node_s *cur;
+	struct container_node_s *cur;
 	int min_height, total_height = 0;
 	widget_size_t size, min, max, cur_min;
 
@@ -302,7 +210,7 @@ static int region_split_insert(struct region_s *region, struct region_node_s *no
 		min_height += cur_min.height;
 		if (total_height >= min_height)
 			break;
-		cur = queue_previous_v(widgets, cur);
+		cur = container_widgets_previous_node(cur);
 	}
 	if (!cur)
 		return(-1);
@@ -320,7 +228,7 @@ static int region_split_insert(struct region_s *region, struct region_node_s *no
 	pos.y += min_height;
 	min_height = total_height - min_height;
 	while (cur && (cur != node)) {
-		cur = queue_next_v(widgets, cur);
+		cur = container_widgets_next_node(cur);
 		widget_control(cur->widget, WCC_GET_MIN_MAX_SIZE, &cur_min, NULL);
 		widget_control(cur->widget, WCC_SET_WINDOW, pos.x, pos.y, WINDOW_S(region)->width, cur_min.height);
 		pos.y += cur_min.height;
@@ -328,7 +236,7 @@ static int region_split_insert(struct region_s *region, struct region_node_s *no
 	}
 	// TODO can cur be NULL?
 	widget_control(new_node->widget, WCC_SET_WINDOW, pos.x, pos.y, WINDOW_S(region)->width, min_height);
-	queue_insert_node_v(region->widgets, widgets, node, new_node);
+	container_widgets_insert_node(CONTAINER_S(region), node, new_node);
 	return(0);
 }
 
@@ -351,11 +259,11 @@ static int region_split_insert(struct region_s *region, struct region_node_s *no
 static int region_resize(struct region_s *region, int diff_height)
 {
 	int height, pos;
-	struct region_node_s *cur;
+	struct container_node_s *cur;
 	widget_size_t size, min, max;
 
 	pos = WINDOW_S(region)->height + WINDOW_S(region)->y;
-	cur = queue_last_v(region->widgets);
+	cur = container_widgets_last_node(CONTAINER_S(region));
 	while (cur) {
 		widget_control(cur->widget, WCC_GET_WINDOW, NULL, &size);
 		widget_control(cur->widget, WCC_GET_MIN_MAX_SIZE, &min, &max);
@@ -371,14 +279,14 @@ static int region_resize(struct region_s *region, int diff_height)
 			while (cur) {
 				widget_control(cur->widget, WCC_SET_WINDOW, WINDOW_S(region)->x, WINDOW_S(region)->y, WINDOW_S(region)->width, height);
 				height = 0;
-				cur = queue_previous_v(widgets, cur);
+				cur = container_widgets_previous_node(cur);
 			}
 			return(0);
 		}
 		widget_control(cur->widget, WCC_SET_WINDOW, WINDOW_S(region)->x, pos, WINDOW_S(region)->width, height);
-		cur = queue_previous_v(widgets, cur);
+		cur = container_widgets_previous_node(cur);
 	}
-	if ((diff_height > 0) && (cur = queue_first_v(region->widgets)))
+	if ((diff_height > 0) && (cur = container_widgets_first_node(CONTAINER_S(region))))
 		widget_control(cur->widget, WCC_SET_WINDOW, WINDOW_S(region)->x, WINDOW_S(region)->y, WINDOW_S(region)->width, height + diff_height);
 	return(0);
 }

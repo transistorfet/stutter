@@ -10,17 +10,10 @@
 #include <stutter/lib/queue.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
-#include "window.h"
-
-struct region_node_s {
-	struct widget_s *widget;
-	queue_node_v(region_node_s) widgets;
-};
+#include "container.h"
 
 struct region_s {
-	struct window_s window;
-	struct region_node_s *current;
-	queue_list_v(region_node_s) widgets;
+	struct container_s container;
 };
 
 #define REGION_S(widget)	((struct region_s *) widget)
