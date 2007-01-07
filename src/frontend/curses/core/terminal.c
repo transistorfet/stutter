@@ -93,13 +93,13 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 
 	if (!(terminal = memory_alloc(sizeof(struct terminal_s))))
 		return(NULL);
-	terminal->surface.type = &terminal_type;
-	terminal->surface.bitflags = bitflags;
-	terminal->surface.x = 0;
-	terminal->surface.y = 0;
+	SURFACE_S(terminal)->type = &terminal_type;
+	SURFACE_S(terminal)->bitflags = bitflags;
+	SURFACE_S(terminal)->x = 0;
+	SURFACE_S(terminal)->y = 0;
 	getmaxyx(stdscr, screen_height, screen_width);
-	terminal->surface.width = ((width == -1) || (width >= screen_width)) ? screen_width : width;
-	terminal->surface.height = ((height == -1) || (height >= screen_height)) ? screen_height : height;
+	SURFACE_S(terminal)->width = ((width == -1) || (width >= screen_width)) ? screen_width : width;
+	SURFACE_S(terminal)->height = ((height == -1) || (height >= screen_height)) ? screen_height : height;
 	linear_add_node_v(terminal_list, list, terminal);
 	terminal->def_attrib = terminal_def_attrib;
 	terminal_control(terminal, SCC_MODIFY_ATTRIB, SA_METHOD_SET, SA_NORMAL, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR);
@@ -118,16 +118,16 @@ int terminal_print(struct terminal_s *terminal, char *str, int length)
 {
 	int i;
 
-	move(terminal->surface.y, terminal->surface.x);
+	move(SURFACE_S(terminal)->y, SURFACE_S(terminal)->x);
 	terminal_set_attribs(terminal, terminal->attrib);
 	if (length == -1)
 		length = strlen(str);
 	for (i = 0;(str[i] != '\0') && (i < length);i++)
 		addch(str[i]);
-	terminal->surface.x += (length % terminal->surface.width);
-	terminal->surface.y += (length / terminal->surface.width);
-	if (terminal->surface.y > terminal->surface.height)
-		terminal->surface.y = terminal->surface.y % terminal->surface.height;
+	SURFACE_S(terminal)->x += (length % SURFACE_S(terminal)->width);
+	SURFACE_S(terminal)->y += (length / SURFACE_S(terminal)->width);
+	if (SURFACE_S(terminal)->y > SURFACE_S(terminal)->height)
+		SURFACE_S(terminal)->y = SURFACE_S(terminal)->y % SURFACE_S(terminal)->height;
 	return(0);
 }
 
@@ -137,9 +137,9 @@ void terminal_clear(struct terminal_s *terminal, short x, short y, short width, 
 
 	terminal_set_attribs(terminal, terminal->attrib);
 	if (!width)
-		width = terminal->surface.width - x;
+		width = SURFACE_S(terminal)->width - x;
 	if (!height)
-		height = terminal->surface.height - y;
+		height = SURFACE_S(terminal)->height - y;
 
 	for (i = 0;i < height;i++) {
 		move(y, x);
@@ -150,9 +150,9 @@ void terminal_clear(struct terminal_s *terminal, short x, short y, short width, 
 
 void terminal_move(struct terminal_s *terminal, short x, short y)
 {
-	terminal->surface.x = (x < terminal->surface.width) ? x : terminal->surface.width - 1;
-	terminal->surface.y = (y < terminal->surface.height) ? y : terminal->surface.height - 1;
-	move(terminal->surface.y, terminal->surface.x);
+	SURFACE_S(terminal)->x = (x < SURFACE_S(terminal)->width) ? x : SURFACE_S(terminal)->width - 1;
+	SURFACE_S(terminal)->y = (y < SURFACE_S(terminal)->height) ? y : SURFACE_S(terminal)->height - 1;
+	move(SURFACE_S(terminal)->y, SURFACE_S(terminal)->x);
 }
 
 int terminal_control(struct terminal_s *terminal, int cmd, ...)
@@ -207,8 +207,8 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			int x, y;
 			x = va_arg(va, int);
 			y = va_arg(va, int);
-			x = (x < terminal->surface.width) ? ( (x >= 0) ? x : 0 ) : terminal->surface.width - 1;
-			y = (y < terminal->surface.height) ? ( (y >= 0) ? y : 0 ) : terminal->surface.height - 1;
+			x = (x < SURFACE_S(terminal)->width) ? ( (x >= 0) ? x : 0 ) : SURFACE_S(terminal)->width - 1;
+			y = (y < SURFACE_S(terminal)->height) ? ( (y >= 0) ? y : 0 ) : SURFACE_S(terminal)->height - 1;
 			move(y, x);
 			return(0);
 		}
@@ -225,7 +225,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
  */
 void terminal_refresh(struct terminal_s *terminal)
 {
-	getmaxyx(stdscr, terminal->surface.height, terminal->surface.width);
+	getmaxyx(stdscr, SURFACE_S(terminal)->height, SURFACE_S(terminal)->width);
 	refresh();
 }
 
