@@ -108,25 +108,6 @@ int window_control(struct window_s *window, int cmd, va_list va)
 				return(widget_control(WIDGET_S(window)->parent, WCC_MODIFY_SIZE, window, width, height));
 			return(-1);
 		}
-		case WCC_MODIFY_POSITION: {
-			// TODO re-write this perhaps? or just get rid of it
-/*
-			int x, y, width, height;
-			x = va_arg(va, int);
-			y = va_arg(va, int);
-			width = surface_get_width_m(window->surface);
-			height = surface_get_height_m(window->surface);
-			if (x >= width)
-				x = width - 1;
-			if (y >= height)
-				y = height - 1;
-			if (x != -1)
-				window->x = x;
-			if (y != -1)
-				window->y = y;
-			return(0);
-*/
-		}
 		case WCC_GET_MIN_MAX_SIZE: {
 			widget_size_t *min, *max;
 			min = va_arg(va, widget_size_t *);
