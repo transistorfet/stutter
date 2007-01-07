@@ -6,6 +6,7 @@
 #ifndef _CONFIG_DEF_H
 #define _CONFIG_DEF_H
 
+#include <stutter/macros.h>
 #include <stutter/config-macros.h>
 
 #define DEFAULT_STUTTER_VERSION		"pre-0.3"
@@ -44,6 +45,10 @@
 	EMIT_STRING(name, NULL, __VA_ARGS__)
 
 /*** Global Initialization ***/
+
+#define DEFAULT_STUTTER_INIT_COMMANDS()				\
+	EVALUATE_COMMAND("base.alias setcolour set fe.theme.")	\
+	EVALUATE_COMMAND("base.alias getcolour get fe.theme.")	\
 
 #define DEFAULT_STUTTER_INIT(argc, argv) {			\
 	util_evaluate_command("base.source", DOT_FILE);		\
@@ -105,6 +110,10 @@
 #ifndef OUTPUT_JOINPOINT
 #define OUTPUT_JOINPOINT(name, ...) \
 	DEFAULT_OUTPUT_JOINPOINT(name, __VA_ARGS__)
+#endif
+#ifndef STUTTER_INIT_COMMANDS
+#define STUTTER_INIT_COMMANDS() \
+	DEFAULT_STUTTER_INIT_COMMANDS()
 #endif
 #ifndef STUTTER_INIT
 #define STUTTER_INIT(argc, argv) \

@@ -53,6 +53,10 @@ DEFINE_VARIABLE_LIST(fe_variables,
 	)
 );
 
+DEFINE_COMMAND_LIST(fe_commands,
+	STUTTER_INIT_COMMANDS()
+);
+
 int exit_flag = 1;
 
 extern int init_net(void);
@@ -80,8 +84,8 @@ int init_curses(void)
 		return(-1);
 
 	add_signal("fe.quit", 0);
-	ADD_TYPE_LIST(fe_types);
-	ADD_HANDLER_LIST(fe_handlers);
+	ADD_TYPE_LIST(fe_types)
+	ADD_HANDLER_LIST(fe_handlers)
 
 	if (init_desc())
 		return(-1);
@@ -100,8 +104,8 @@ int init_curses(void)
 		return(-1);
 	fe_theme = add_variable(fe_table, type, "theme", 0, "");
 
-	ADD_VARIABLE_LIST(fe_table, fe_variables);
-	ADD_KEY_LIST(fe_keys);
+	ADD_VARIABLE_LIST(fe_table, fe_variables)
+	ADD_KEY_LIST(fe_keys)
 
 	if (init_terminal())
 		return(-1);
@@ -139,6 +143,8 @@ main(int argc, char **argv)
 		release_curses();
 		return(0);
 	}
+
+	EVALUATE_COMMAND_LIST(fe_commands)
 
 	fe_refresh(NULL);
 	terminal_refresh(terminal);

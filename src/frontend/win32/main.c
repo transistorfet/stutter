@@ -52,6 +52,10 @@ DEFINE_VARIABLE_LIST(fe_variables,
 	)
 );
 
+DEFINE_COMMAND_LIST(fe_commands,
+	STUTTER_INIT_COMMANDS()
+);
+
 HINSTANCE this_instance;
 char *WinName = "Stutter";
 struct variable_table_s *fe_table;
@@ -93,8 +97,8 @@ int init_windows(void)
 		return(-1);
 
 	add_signal("fe.quit", 0);
-	ADD_TYPE_LIST(fe_types);
-	ADD_HANDLER_LIST(fe_handlers);
+	ADD_TYPE_LIST(fe_types)
+	ADD_HANDLER_LIST(fe_handlers)
 
 	if (init_net())
 		return(-1);
@@ -111,8 +115,8 @@ int init_windows(void)
 		return(-1);
 	fe_theme = add_variable(fe_table, type, "theme", 0, "");
 
-	ADD_VARIABLE_LIST(fe_table, fe_variables);
-	ADD_KEY_LIST(fe_keys);
+	ADD_VARIABLE_LIST(fe_table, fe_variables)
+	ADD_KEY_LIST(fe_keys)
 
 	if (init_terminal())
 		return(-1);
@@ -151,6 +155,8 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR argv, int WinMode
 		release_windows();
 		return(0);
 	}
+
+	EVALUATE_COMMAND_LIST(fe_commands)
 
 	#ifdef STUTTER_INIT
 	STUTTER_INIT(argc, argv);
