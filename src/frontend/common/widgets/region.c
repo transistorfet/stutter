@@ -49,7 +49,8 @@ int region_refresh(struct region_s *region)
 	struct container_node_s *cur;
 
 	container_widgets_foreach(CONTAINER_S(region), cur) {
-		widget_refresh_m(cur->widget);
+		if (cur->widget->bitflags & WBF_NEEDS_REFRESH)
+			widget_refresh_m(cur->widget);
 	}
 	return(0);
 }

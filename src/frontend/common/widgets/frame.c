@@ -45,8 +45,10 @@ int frame_refresh(struct frame_s *frame)
 {
 	struct container_node_s *node;
 
-	if ((node = container_widgets_current_node(CONTAINER_S(frame))) && node->widget)
-		widget_refresh_m(node->widget);
+	if ((node = container_widgets_current_node(CONTAINER_S(frame))) && node->widget) {
+		if (node->widget->bitflags & WBF_NEEDS_REFRESH)
+			widget_refresh_m(node->widget);
+	}
 	else
 		window_clear(WINDOW_S(frame));
 	return(0);

@@ -35,6 +35,7 @@ extern struct variable_table_s *fe_theme;
 int statusbar_init(struct statusbar_s *statusbar)
 {
 	window_init(WINDOW_S(statusbar));
+	WIDGET_S(statusbar)->bitflags |= WBF_NEEDS_REFRESH;
 	statusbar->text = NULL;
 	return(0);
 }

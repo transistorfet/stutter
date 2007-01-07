@@ -32,6 +32,7 @@ struct widget_type_s container_type = {
 int container_init(struct container_s *container)
 {
 	window_init(WINDOW_S(container));
+	WIDGET_S(container)->bitflags |= WBF_NEEDS_REFRESH;
 	if (container_widgets_init_list(container, 0))
 		return(-1);
 	return(0);

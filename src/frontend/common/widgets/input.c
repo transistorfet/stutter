@@ -38,6 +38,7 @@ static inline int input_process_char(struct input_s *, int);
 
 int input_init(struct input_s *input)
 {
+	window_init(WINDOW_S(input));
 	if (!(input->buffer = (char *) memory_alloc(FE_INPUT_BUFFER_SIZE)))
 		return(-1);
 	input->i = 0;
@@ -48,7 +49,7 @@ int input_init(struct input_s *input)
 		memory_free(input->buffer);
 		return(-1);
 	}
-	window_init(WINDOW_S(input));
+	WIDGET_S(input)->bitflags |= WBF_NEEDS_REFRESH;
 	return(0);
 }
 

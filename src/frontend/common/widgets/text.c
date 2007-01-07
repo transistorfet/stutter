@@ -67,6 +67,7 @@ int text_refresh(struct text_s *text)
 	struct format_string_s format;
 	struct format_style_s styles[FE_FORMAT_MAX_STYLES];
 
+	WIDGET_S(text)->bitflags &= ~WBF_NEEDS_REFRESH;
 	widget_control(WIDGET_S(text)->parent, WCC_GET_SURFACE, &surface);
 	widget_control(WIDGET_S(text)->parent, WCC_GET_WINDOW, &pos, &size);
 
@@ -146,6 +147,7 @@ int text_print(struct text_s *text, const char *str, int len)
 	node->str[len] = '\0';
 
 	queue_prepend_node_v(text->log, log, node);
+	WIDGET_S(text)->bitflags |= WBF_NEEDS_REFRESH;
 
 	return(len);
 }
@@ -160,6 +162,7 @@ void text_clear(struct text_s *text)
 		memory_free(cur);
 	}
 	queue_release_v(text->log);
+	WIDGET_S(text)->bitflags |= WBF_NEEDS_REFRESH;
 }
 
 int text_read(struct text_s *text, char *buffer, int max)
@@ -183,6 +186,7 @@ int text_control(struct text_s *text, int cmd, va_list va)
 				text->cur_line = queue_size_v(text->log);
 				return(-1);
 			}
+			WIDGET_S(text)->bitflags |= WBF_NEEDS_REFRESH;
 			return(0);
 		}
 		default:
