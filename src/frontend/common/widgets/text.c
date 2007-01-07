@@ -39,15 +39,17 @@ int text_init(struct text_s *text)
 {
 	text->cur_line = 0;
 	text->max_lines = FE_WINDOW_LOG_SIZE;
-	queue_init_v(text->log);
+	queue_init_v(text->log, 0);
 	return(0);
 }
 
 int text_release(struct text_s *text)
 {
-	queue_destroy_v(text->log, log,
+	struct text_entry_s *cur, *tmp;
+
+	queue_foreach_safe_v(text->log, log, cur, tmp) {
 		memory_free(cur);
-	);
+	}
 	return(0);
  }
 
@@ -150,13 +152,14 @@ int text_print(struct text_s *text, const char *str, int len)
 
 void text_clear(struct text_s *text)
 {
-	struct queue_s *log;
+	struct text_entry_s *cur, *tmp;
 
 	if (!text)
 		return;
-	queue_destroy_v(text->log, log,
+	queue_foreach_safe_v(text->log, log, cur, tmp) {
 		memory_free(cur);
-	);
+	}
+	queue_release_v(text->log);
 }
 
 int text_read(struct text_s *text, char *buffer, int max)
