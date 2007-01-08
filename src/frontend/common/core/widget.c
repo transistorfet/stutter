@@ -81,6 +81,8 @@ int destroy_widget(struct widget_s *widget)
 {
 	struct widget_node_s *node;
 
+	if (!widget)
+		return(-1);
 	hash_remove_node_v(widget_list, wl, node, widget_hash_m(widget_list, widget->id), (&cur->data == widget));
 	if (!node)
 		return(-1);

@@ -93,6 +93,7 @@ int window_control(struct window_s *window, int cmd, va_list va)
 			window->y = va_arg(va, int);
 			window->width = va_arg(va, int);
 			window->height = va_arg(va, int);
+			WIDGET_S(window)->bitflags |= WBF_NEEDS_REFRESH;
 			return(0);
 		}
 		case WCC_MODIFY_SIZE: {
