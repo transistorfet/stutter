@@ -71,19 +71,25 @@ fe_network_t fe_net_connect(char *server, int port)
 	struct hostent *host;
 	struct sockaddr_in saddr;
 
-	if (!(net = (fe_network_t) memory_alloc(sizeof(struct fe_network_s))))
+	if (!(net = (fe_network_t) memory_alloc(sizeof(struct fe_network_s)))) {
+		FE_NET_ERROR_JOINPOINT(FE_NET_ERR_FAILED_TO_CONNECT, server)
 		return(NULL);
+	}
 	memset(net, '\0', sizeof(struct fe_network_s));
 
 	// TODO call inet_addr first
-	if (!(host = gethostbyname(server)))
+	if (!(host = gethostbyname(server))) {
+		FE_NET_ERROR_JOINPOINT(FE_NET_ERR_FAILED_TO_CONNECT, server)
 		return(NULL);
+	}
 	memset(&saddr, '\0', sizeof(struct sockaddr_in));
 	saddr.sin_family = AF_INET;
 	saddr.sin_port = htons(port);
 
-	if ((net->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if ((net->socket = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		FE_NET_ERROR_JOINPOINT(FE_NET_ERR_FAILED_TO_CONNECT, server)
 		return(NULL);
+	}
 	for (j = 0;host->h_addr_list[j];j++) {
 		saddr.sin_addr = *((struct in_addr *) host->h_addr_list[j]);
 		for (i = 0;i < NET_ATTEMPTS;i++) {

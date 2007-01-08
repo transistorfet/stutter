@@ -61,14 +61,18 @@ fe_network_t fe_net_connect(char *server, int port)
 	struct sockaddr_in saddr;
 	struct fe_descriptor_s *desc;
 
-	if (!(host = gethostbyname(server)))
+	if (!(host = gethostbyname(server))) {
+		FE_NET_ERROR_JOINPOINT(FE_NET_ERR_FAILED_TO_CONNECT, server)
 		return(NULL);
+	}
 	memset(&saddr, '\0', sizeof(struct sockaddr_in));
 	saddr.sin_family = AF_INET;
 	saddr.sin_port = htons(port);
 
-	if (!(desc = fe_desc_create(net_list, 0)))
+	if (!(desc = fe_desc_create(net_list, 0))) {
+		FE_NET_ERROR_JOINPOINT(FE_NET_ERR_FAILED_TO_CONNECT, server)
 		return(NULL);
+	}
 	desc->write = -1;
 	desc->error = -1;
 	if ((desc->read = socket(AF_INET, SOCK_STREAM, 0)) >= 0) {
