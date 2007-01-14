@@ -13,43 +13,47 @@
 #include <stutter/memory.h>
 #include <stutter/frontend/widget.h>
 
-#ifndef WIDGET_INIT_SIZE
-#define WIDGET_INIT_SIZE		10
-#endif
+#define widget_release_node(list, node)	\
+	node->data.type->release(&node->data);
 
-#ifndef WIDGET_LOAD_FACTOR
-#define WIDGET_LOAD_FACTOR		0.75
-#endif
+#define widget_hash(list, key)	\
+	sdbm_hash_icase(key)
 
-#define widget_hash_m(list, str)	(sdbm_hash_icase(str) % hash_size_v(list))
-#define widget_compare_m(str)		(!strcmp_icase(cur->data.id, str))
+#define widget_compare_node(node, ptr)	\
+	(!strcmp_icase(node->data.id, key))
 
 struct widget_node_s {
 	hash_node_v(widget_node_s) wl;
 	struct widget_s data;
 };
 
+struct widget_list_s {
+	hash_list_v(widget_node_s) wl;
+};
+
+DEFINE_HASH_TABLE(widget, struct widget_list_s, struct widget_node_s, wl, data.id, widget_release_node, widget_hash, widget_compare_node, FE_WIDGET_LIST_LOAD_FACTOR, FE_WIDGET_LIST_GROWTH_FACTOR)
+
 static int widget_initialized = 0;
-static hash_list_v(widget_node_s) widget_list;
+static struct widget_list_s widget_list;
 
 int init_widget(void)
 {
 	if (widget_initialized)
 		return(1);
-	hash_init_v(widget_list, WIDGET_INIT_SIZE);
+	widget_init_table(&widget_list, FE_WIDGET_LIST_INIT_SIZE);
 	widget_initialized = 1;
 	return(0);
 }
 
 int release_widget(void)
 {
+	int i;
+	struct widget_node_s *cur, *tmp;
+
 	if (!widget_initialized)
 		return(1);
+	widget_release_table(&widget_list);
 	widget_initialized = 0;
-	hash_destroy_list_v(widget_list, wl,
-		memory_free(cur);
-	);
-	hash_release_v(widget_list);
 	return(0);
 }
 
@@ -58,7 +62,9 @@ struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widg
 	struct widget_node_s *node;
 
 	// TODO what are the parameters??
-	if (!(node = (struct widget_node_s *) memory_alloc(type->size + (sizeof(struct widget_node_s) - sizeof(struct widget_s)) + strlen(id) + 1)))
+	if (widget_find_node(&widget_list, id))
+		return(NULL);
+	if (!(node = widget_create_node(type->size + (sizeof(struct widget_node_s) - sizeof(struct widget_s)) + strlen(id) + 1)))
 		return(NULL);
 	node->data.bitflags = 0;
 	node->data.type = type;
@@ -66,14 +72,11 @@ struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widg
 	node->data.id = (char *) (((size_t) &node->data) + type->size);
 	strcpy(node->data.id, id);
 
-	if (type->init(&node->data) > 0) {
-		destroy_widget(&node->data);
+	if (type->init(&node->data) < 0) {
+		widget_destroy_node(&widget_list, node);
 		return(NULL);
 	}
-
-	hash_add_node_v(widget_list, wl, node, widget_hash_m(widget_list, id));
-	if (hash_load_v(widget_list) > WIDGET_LOAD_FACTOR)
-		hash_rehash_v(widget_list, wl, (hash_size_v(widget_list) * 1.75), widget_hash_m(widget_list, cur->data.id), NULL);
+	widget_add_node(&widget_list, node);
 	return(&node->data);
 }
 
@@ -83,11 +86,9 @@ int destroy_widget(struct widget_s *widget)
 
 	if (!widget)
 		return(-1);
-	hash_remove_node_v(widget_list, wl, node, widget_hash_m(widget_list, widget->id), (&cur->data == widget));
-	if (!node)
+	if (!(node = widget_remove_node(&widget_list, widget->id)) || (&node->data != widget))
 		return(-1);
-	widget->type->release(widget);
-	memory_free(node);
+	widget_release_node(&widget_list, node);
 	return(0);
 }
 
@@ -95,8 +96,7 @@ struct widget_s *find_widget(char *id)
 {
 	struct widget_node_s *node;
 
-	hash_find_node_v(widget_list, wl, node, widget_hash_m(widget_list, id), widget_compare_m(id));
-	if (!node)
+	if (!(node = widget_find_node(&widget_list, id)))
 		return(NULL);
 	return(&node->data);
 }
