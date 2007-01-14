@@ -15,13 +15,6 @@
 #include <stutter/memory.h>
 #include <stutter/variable.h>
 
-#ifndef VARIABLE_INIT_SIZE
-#define VARIABLE_INIT_SIZE		20
-#endif
-
-#ifndef VARIABLE_LOAD_FACTOR
-#define VARIABLE_LOAD_FACTOR		HASH_LOAD_FACTOR
-#endif
 
 #define variable_hash_m(list, str, len)		(sdbm_partial_hash_icase(str, len) % hash_size_v(list))
 #define variable_compare_m(str, len)		(!strncmp_icase(cur->data.name, str, len) && (strlen(cur->data.name) == len))
@@ -64,7 +57,7 @@ struct variable_table_s *create_variable_table(void)
 
 	if (!(table = (struct variable_table_s *) memory_alloc(sizeof(struct variable_table_s))))
 		return(NULL);
-	hash_init_v(table->vl, VARIABLE_INIT_SIZE);
+	hash_init_v(table->vl, VARIABLE_LIST_INIT_SIZE);
 	return(table);
 }
 
@@ -74,11 +67,14 @@ struct variable_table_s *create_variable_table(void)
  */
 int destroy_variable_table(struct variable_table_s *table)
 {
-	hash_destroy_list_v(table->vl, vl,
+	int i;
+	struct variable_node_s *cur, *tmp;
+
+	hash_foreach_safe_v(table->vl, vl, i, cur, tmp) {
 		if (cur->data.type->destroy)
 			cur->data.type->destroy(cur->data.value);
 		memory_free(cur);
-	);
+	}
 	hash_release_v(table->vl);
 }
 
@@ -131,8 +127,8 @@ void *add_variable_real(struct variable_table_s *table, struct type_s *type, cha
 		node->data.value = type->create(NULL, str, va);
         
 		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
-		if (hash_load_v(table->vl) > VARIABLE_LOAD_FACTOR)
-			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * 1.75), variable_hash_m(table->vl, cur->data.name, strlen(cur->data.name)), NULL);
+		if (hash_load_v(table->vl) > VARIABLE_LIST_LOAD_FACTOR)
+			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * VARIABLE_LIST_GROWTH_FACTOR), variable_hash_m(table->vl, cur->data.name, strlen(cur->data.name)), NULL);
 		return(node->data.value);
 	}
 	else if (name[len] != '\0') {
@@ -230,15 +226,17 @@ void *find_variable(struct variable_table_s *table, char *name, struct type_s **
  */
 int traverse_variable_table(struct variable_table_s *table, struct type_s *type, type_traverse_func_t func, void *ptr)
 {
+	int i;
 	int ret = 0;
+	struct variable_node_s *cur;
 
 	if (!table)
 		table = variable_root;
 
-	hash_traverse_list_v(table->vl, vl,
+	hash_foreach_v(table->vl, vl, i, cur) {
 		if ((cur->data.type == type) && (ret = func(cur->data.value, cur->data.type, ptr)))
 			return(ret);
-	);
+	}
 	return(0);
 }
 

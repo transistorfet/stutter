@@ -14,33 +14,35 @@
 #include <stutter/memory.h>
 #include <stutter/globals.h>
 
-#ifndef SIGNAL_INIT_SIZE
-#define SIGNAL_INIT_SIZE	10
-#endif
+#define signal_hash(list, key)	\
+	sdbm_hash_icase(key)
 
-#ifndef SIGNAL_LOAD_FACTOR
-#define SIGNAL_LOAD_FACTOR	0.75
-#endif
-
-#define signal_hash_m(list, str)		(sdbm_hash(str) % hash_size_v(list))
-#define signal_compare_m(str)			(!strcmp(cur->data.name, str))
+#define signal_compare_node(node, ptr)	\
+	(!strcmp_icase(node->data.name, key))
 
 struct signal_node_s {
 	struct signal_s data;
 	hash_node_v(signal_node_s) sl;
 };
 
-static int signal_initialized = 0;
-static hash_list_v(signal_node_s) signal_list;
+struct signal_list_s {
+	hash_list_v(signal_node_s) sl;
+};
 
-static void signal_destroy_node(struct signal_node_s *);
+static inline void signal_release_node(struct signal_list_s *, struct signal_node_s *);
+
+DEFINE_HASH_TABLE(signal, struct signal_list_s, struct signal_node_s, sl, data.name, signal_release_node, signal_hash, signal_compare_node, SIGNAL_LIST_LOAD_FACTOR, SIGNAL_LIST_GROWTH_FACTOR)
+
+static int signal_initialized = 0;
+static struct signal_list_s signal_list;
+
 static int signal_remove_handlers(struct signal_node_s *, int, void *, signal_t, void *);
 
 int init_signal(void)
 {
 	if (signal_initialized)
 		return(1);
-	hash_init_v(signal_list, SIGNAL_INIT_SIZE);
+	signal_init_table(&signal_list, SIGNAL_LIST_INIT_SIZE);
 	signal_initialized = 1;
 	return(0);
 }
@@ -49,11 +51,8 @@ int release_signal(void)
 {
 	if (!signal_initialized)
 		return(1);
+	signal_release_table(&signal_list);
 	signal_initialized = 0;
-	hash_destroy_list_v(signal_list, sl,
-		signal_destroy_node(cur);
-	);
-	hash_release_v(signal_list);
 	return(0);
 }
 
@@ -64,15 +63,13 @@ int add_signal(char *name, int bitflags)
 {
 	struct signal_node_s *node;
 
-	if (!(node = memory_alloc(sizeof(struct signal_node_s) + strlen(name) + 1)))
+	if (!(node = signal_create_node(sizeof(struct signal_node_s) + strlen(name) + 1)))
 		return(-1);
 	node->data.name = (char *) (((unsigned int) node) + sizeof(struct signal_node_s));
 	strcpy(node->data.name, name);
 	node->data.bitflags = bitflags;
 	node->data.handlers = NULL;
-	hash_add_node_v(signal_list, sl, node, signal_hash_m(signal_list, name));
-	if (hash_load_v(signal_list) > SIGNAL_LOAD_FACTOR)
-		hash_rehash_v(signal_list, sl, (hash_size_v(signal_list) * 1.75), signal_hash_m(signal_list, cur->data.name), NULL);
+	signal_add_node(&signal_list, node);
 	return(0);
 }
 
@@ -83,12 +80,7 @@ int add_signal(char *name, int bitflags)
  */
 int remove_signal(char *name)
 {
-	struct signal_node_s *node;
-
-	hash_remove_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
-	if (!node)
-		return(-1);
-	signal_destroy_node(node);
+	signal_delete_node(&signal_list, name);
 	return(0);
 }
 
@@ -105,8 +97,7 @@ int emit_signal(char *name, void *index, void *ptr)
 	struct signal_node_s *node;
 	struct signal_handler_s *cur;
 
-	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
-	if (!node)
+	if (!(node = signal_find_node(&signal_list, name)))
 		return(-1);
 	cur = node->data.handlers;
 	while (cur) {
@@ -141,8 +132,7 @@ int signal_connect(char *name, void *index, int priority, signal_t func, void *p
 
 	if (!func)
 		return(-1);
-	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
-	if (!node)
+	if (!(node = signal_find_node(&signal_list, name)))
 		return(-1);
 	if (!(handler = memory_alloc(sizeof(struct signal_handler_s))))
 		return(-1);
@@ -190,8 +180,7 @@ int signal_disconnect(char *name, void *index, signal_t func, void *ptr)
 {
 	struct signal_node_s *node;
 
-	hash_find_node_v(signal_list, sl, node, signal_hash_m(signal_list, name), signal_compare_m(name));
-	if (!node)
+	if (!(node = signal_find_node(&signal_list, name)))
 		return(-1);
 	return(signal_remove_handlers(node, 1, index, func, ptr));
 }
@@ -203,7 +192,7 @@ int signal_disconnect(char *name, void *index, signal_t func, void *ptr)
  * Destroy all the handlers associated with the given signal node as
  * well as the node itself.
  */
-static void signal_destroy_node(struct signal_node_s *node)
+static inline void signal_release_node(struct signal_list_s *table, struct signal_node_s *node)
 {
 	struct signal_handler_s *cur, *tmp;
 
@@ -213,7 +202,6 @@ static void signal_destroy_node(struct signal_node_s *node)
 		memory_free(cur);
 		cur = tmp;
 	}
-	memory_free(node);
 }
 
 /**
