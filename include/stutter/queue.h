@@ -345,24 +345,6 @@ struct queue_s {
 	destroy_t destroy;
 };
 
-static inline struct queue_s *queue_create_list(int max);
-static inline int queue_destroy_list(struct queue_s *queue);
-
-static inline struct queue_s *create_queue(int max, destroy_t destroy)
-{
-	struct queue_s *queue;
-
-	if (!(queue = queue_create_list(max)))
-		return(NULL);
-	queue->destroy = destroy;
-	return(queue);
-}
-
-static inline int destroy_queue(struct queue_s *queue)
-{
-	return(queue_destroy_list(queue));
-}
-
 static inline int queue_init_node(struct queue_s *queue, struct queue_node_s *node, void *ptr)
 {
 	node->ptr = ptr;
@@ -380,6 +362,21 @@ static inline int queue_release_node(struct queue_s *queue, struct queue_node_s 
 	(node->ptr == ptr)
 
 DEFINE_QUEUE(queue, struct queue_s, struct queue_node_s, q, queue_release_node, queue_compare_node)
+
+static inline struct queue_s *create_queue(int max, destroy_t destroy)
+{
+	struct queue_s *queue;
+
+	if (!(queue = queue_create_list(max)))
+		return(NULL);
+	queue->destroy = destroy;
+	return(queue);
+}
+
+static inline int destroy_queue(struct queue_s *queue)
+{
+	return(queue_destroy_list(queue));
+}
 
 #define queue_foreach(list, cur)	\
 	queue_foreach_v(list, q, cur)
