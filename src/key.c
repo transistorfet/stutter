@@ -294,7 +294,7 @@ static inline struct key_map_s *create_key_map(char *context, int size)
 
 	if (!(map = context_create_node(sizeof(struct key_map_s) + strlen(context) + 1)))
 		return(NULL);
-	map->context = (char *) (((size_t) &map) + sizeof(struct key_map_s));
+	map->context = (char *) (((size_t) map) + sizeof(struct key_map_s));
 	strcpy(map->context, context);
 	key_map_init_table(map, size);
 	return(map);
