@@ -57,10 +57,10 @@
 	DO_NOTHING()
 
 #define DEFAULT_ERROR_JOINPOINT(name, ...)	\
-	EMIT_STRING(name, NULL, __VA_ARGS__)
+	PRINT_TO_CURRENT(__VA_ARGS__)
 
 #define DEFAULT_OUTPUT_JOINPOINT(name, ...)	\
-	EMIT_STRING(name, NULL, __VA_ARGS__)
+	PRINT_TO_CURRENT(__VA_ARGS__)
 
 /*** Global Initialization ***/
 
