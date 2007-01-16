@@ -15,35 +15,27 @@ int base_cmd_redirect(char *env, char *args)
 {
 	void *window;
 	char *name, *target;
-	char buffer[SMALL_STRING_SIZE];
 
-	if (!(window = fe_current_widget("text", NULL)) && !(window = fe_first_widget("text", NULL)))
-		return(-1);
 	trim_whitespace_m(args);
 	get_param_m(args, name, ' ');
 	get_param_m(args, target, ' ');
 
-	if (*args != '\0') {
-		BASE_ERROR_JOINPOINT("redirect: Invalid parameters\n")
+	if (*args != '\0')
 		return(-1);
-	}
 	else if (!strcmp(target, "none")) {
 		signal_disconnect(name, NULL, (signal_t) base_sig_print, NULL);
-		if (snprintf(buffer, SMALL_STRING_SIZE, "Signal %s has been disconnected", name) >= 0)
-			fe_print(window, buffer);
+		BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REDIRECT_DISCONNECTED, name)
 	}
 	else if (!strcmp(target, "current")) {
 		signal_connect(name, NULL, 10, (signal_t) base_sig_print, NULL);
-		if (snprintf(buffer, SMALL_STRING_SIZE, "Signal %s is directed to the current window", name) >= 0)
-			fe_print(window, buffer);
+		BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REDIRECT_CURRENT, name)
 	}
 	else if (!strcmp(target, "this")) {
 		signal_connect(name, NULL, 10, (signal_t) base_sig_print, window);
-		if (snprintf(buffer, SMALL_STRING_SIZE, "Signal %s is directed to this window", name) >= 0)
-			fe_print(window, buffer);
+		BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REDIRECT_THIS, name)
 	}
 	else {
-		BASE_ERROR_JOINPOINT("redirect: Invalid target location\n")
+		BASE_ERROR_JOINPOINT(BASE_ERR_REDIRECT_FAILED, target)
 		return(-1);
 	}
 	return(0);

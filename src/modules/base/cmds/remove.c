@@ -19,18 +19,13 @@
 int base_cmd_remove(char *env, char *args)
 {
 	char *name;
-	void *window;
-	char buffer[SMALL_STRING_SIZE];
 
 	get_param_m(args, name, ' ');
 	if (remove_variable(NULL, NULL, name)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_REMOVE_FAILED, name)
 		return(-1);
 	}
-	else if ((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL))) {
-		if (snprintf(buffer, SMALL_STRING_SIZE, "Variable %s removed.", name) >= 0)
-			fe_print(window, buffer);
-	}
+	BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REMOVE, name)
 	return(0);
 }
 

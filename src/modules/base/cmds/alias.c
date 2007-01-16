@@ -14,10 +14,8 @@
 
 int base_cmd_alias(char *env, char *args)
 {
-	void *window;
 	char *name, *str;
 	struct type_s *type;
-	char buffer[STRING_SIZE];
 
 	trim_whitespace_m(args);
 	get_param_m(args, name, ' ');
@@ -30,10 +28,7 @@ int base_cmd_alias(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_ALIAS_FAILED, name)
 		return(-1);
 	}
-	else if ((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL))) {
-		if (snprintf(buffer, STRING_SIZE, "Alias: %s <= %s", name, args) >= 0)
-			fe_print(window, buffer);
-	}
+	BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_ALIAS, name, args)
 	return(0);
 }
 

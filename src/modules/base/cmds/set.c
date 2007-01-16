@@ -20,9 +20,7 @@ int base_cmd_set(char *env, char *args)
 {
 	int j = 0;
 	char *name;
-	void *window;
 	char *type_name = NULL;
-	char buffer[STRING_SIZE];
 	struct type_s *type = NULL;
 
 	trim_whitespace_m(args);
@@ -39,10 +37,7 @@ int base_cmd_set(char *env, char *args)
 		BASE_ERROR_JOINPOINT(BASE_ERR_SET_FAILED, name)
 		return(-1);
 	}
-	else if ((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL))) {
-		if (snprintf(buffer, STRING_SIZE, "Variable: %s <= %s", name, args) >= 0)
-			fe_print(window, buffer);
-	}
+	BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_SET, name, args)
 	return(0);
 }
 

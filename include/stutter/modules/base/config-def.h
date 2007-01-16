@@ -18,6 +18,15 @@
 #define DEFAULT_BASE_COMMAND_PREFIX		"/"
 #define DEFAULT_BASE_NULL_COMMAND		""
 
+#define DEFAULT_BASE_FMT_ALIAS			"Alias: %s <= %s"
+#define DEFAULT_BASE_FMT_BIND			"Key %s bound to %s %s"
+#define DEFAULT_BASE_FMT_REDIRECT_DISCONNECTED	"Signal %s has been disconnected"
+#define DEFAULT_BASE_FMT_REDIRECT_CURRENT	"Signal %s is directed to the current window"
+#define DEFAULT_BASE_FMT_REDIRECT_THIS		"Signal %s is directed to this window"
+#define DEFAULT_BASE_FMT_REMOVE			"Variable %s removed"
+#define DEFAULT_BASE_FMT_SET			"Variable: %s <= %s"
+#define DEFAULT_BASE_FMT_UNBIND			"Key %s is not longer bound"
+
 #define DEFAULT_BASE_ERR_UNKNOWN_COMMAND	"\022error\022Error: Unknown Command %s"
 #define DEFAULT_BASE_ERR_UNABLE_TO_OPEN_FILE	"\022error\022Error: Unable to open the file %s"
 #define DEFAULT_BASE_ERR_VARIABLE_NOT_FOUND	"\022error\022Error: %s variable not found"
@@ -26,6 +35,7 @@
 #define DEFAULT_BASE_ERR_EVALUATE_FAILED	"\022error\022Error evaluating variable %s"
 #define DEFAULT_BASE_ERR_ALIAS_FAILED		"\022error\022Error creating alias %s"
 #define DEFAULT_BASE_ERR_BINDING_FAILED		"\022error\022Error binding key %s"
+#define DEFAULT_BASE_ERR_REDIRECT_FAILED	"\022error\022Error: Invalid target location %s"
 #define DEFAULT_BASE_ERR_REMOVE_FAILED		"\022error\022Error removing variable %s"
 #define DEFAULT_BASE_ERR_SET_FAILED		"\022error\022Error setting variable %s"
 #define DEFAULT_BASE_ERR_UNBINDING_FAILED	"\022error\022Error unbinding key %s"
@@ -73,16 +83,21 @@
 	ADD_COMMAND("source", base_cmd_source)		\
 	ADD_COMMAND("unbind", base_cmd_unbind)
 
+/*** Joinpoints ***/
+
 #define DEFAULT_BASE_INIT_JOINPOINT(table)	\
 	DO_NOTHING();
 
 #define DEFAULT_BASE_RELEASE_JOINPOINT(table)	\
 	DO_NOTHING();
 
+#define DEFAULT_BASE_COMMAND_RESPONSE_JOINPOINT(...)	\
+	BASE_OUTPUT_JOINPOINT(__VA_ARGS__)
+
 #define DEFAULT_BASE_ERROR_JOINPOINT(...)	\
 	ERROR_JOINPOINT("base.error", __VA_ARGS__)
 
-#define DEFAULT_BASE_OUPUT_JOINPOINT(...)	\
+#define DEFAULT_BASE_OUTPUT_JOINPOINT(...)	\
 	OUTPUT_JOINPOINT("base.output", __VA_ARGS__)
 
 /*** START OF DEFAULT ASSIGNMENTS ***/
@@ -113,6 +128,38 @@
 #ifndef BASE_NULL_COMMAND
 #define BASE_NULL_COMMAND \
 	DEFAULT_BASE_NULL_COMMAND
+#endif
+#ifndef BASE_FMT_ALIAS
+#define BASE_FMT_ALIAS \
+	DEFAULT_BASE_FMT_ALIAS
+#endif
+#ifndef BASE_FMT_BIND
+#define BASE_FMT_BIND \
+	DEFAULT_BASE_FMT_BIND
+#endif
+#ifndef BASE_FMT_REDIRECT_DISCONNECTED
+#define BASE_FMT_REDIRECT_DISCONNECTED \
+	DEFAULT_BASE_FMT_REDIRECT_DISCONNECTED
+#endif
+#ifndef BASE_FMT_REDIRECT_CURRENT
+#define BASE_FMT_REDIRECT_CURRENT \
+	DEFAULT_BASE_FMT_REDIRECT_CURRENT
+#endif
+#ifndef BASE_FMT_REDIRECT_THIS
+#define BASE_FMT_REDIRECT_THIS \
+	DEFAULT_BASE_FMT_REDIRECT_THIS
+#endif
+#ifndef BASE_FMT_REMOVE
+#define BASE_FMT_REMOVE \
+	DEFAULT_BASE_FMT_REMOVE
+#endif
+#ifndef BASE_FMT_SET
+#define BASE_FMT_SET \
+	DEFAULT_BASE_FMT_SET
+#endif
+#ifndef BASE_FMT_UNBIND
+#define BASE_FMT_UNBIND \
+	DEFAULT_BASE_FMT_UNBIND
 #endif
 #ifndef BASE_ERR_UNKNOWN_COMMAND
 #define BASE_ERR_UNKNOWN_COMMAND \
@@ -145,6 +192,10 @@
 #ifndef BASE_ERR_BINDING_FAILED
 #define BASE_ERR_BINDING_FAILED \
 	DEFAULT_BASE_ERR_BINDING_FAILED
+#endif
+#ifndef BASE_ERR_REDIRECT_FAILED
+#define BASE_ERR_REDIRECT_FAILED \
+	DEFAULT_BASE_ERR_REDIRECT_FAILED
 #endif
 #ifndef BASE_ERR_REMOVE_FAILED
 #define BASE_ERR_REMOVE_FAILED \
@@ -182,13 +233,17 @@
 #define BASE_RELEASE_JOINPOINT(table) \
 	DEFAULT_BASE_RELEASE_JOINPOINT(table)
 #endif
+#ifndef BASE_COMMAND_RESPONSE_JOINPOINT
+#define BASE_COMMAND_RESPONSE_JOINPOINT(...) \
+	DEFAULT_BASE_COMMAND_RESPONSE_JOINPOINT(__VA_ARGS__)
+#endif
 #ifndef BASE_ERROR_JOINPOINT
 #define BASE_ERROR_JOINPOINT(...) \
 	DEFAULT_BASE_ERROR_JOINPOINT(__VA_ARGS__)
 #endif
-#ifndef BASE_OUPUT_JOINPOINT
-#define BASE_OUPUT_JOINPOINT(...) \
-	DEFAULT_BASE_OUPUT_JOINPOINT(__VA_ARGS__)
+#ifndef BASE_OUTPUT_JOINPOINT
+#define BASE_OUTPUT_JOINPOINT(...) \
+	DEFAULT_BASE_OUTPUT_JOINPOINT(__VA_ARGS__)
 #endif
 /*** END OF DEFAULT ASSIGNMENTS ***/
 
