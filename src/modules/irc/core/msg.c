@@ -93,11 +93,11 @@ struct irc_msg *irc_create_msg(short cmd, char *nick, char *host, short num_para
 		params[j] = va_arg(va, char *);
 	if (info = msg_get_command(cmd)) {
 		if (num_params < info->min_params) {
-			IRC_ERROR_JOINPOINT("Error: IRC message, %s, doesn't have enough parameters", info->name)
+			IRC_ERROR_JOINPOINT(IRC_ERR_MSG_NOT_ENOUGH_PARAMS, info->name)
 			return(NULL);
 		}
 		else if (info->max_params && (num_params > info->max_params)) {
-			IRC_ERROR_JOINPOINT("Error: IRC message, %s, has too many parameters", info->name)
+			IRC_ERROR_JOINPOINT(IRC_ERR_MSG_TOO_MANY_PARAMS, info->name)
 			return(NULL);
 		}
 	}

@@ -36,12 +36,13 @@ int init_desc(void)
 int release_desc(void)
 {
 	int i;
+	struct fe_descriptor_list_s *cur, *tmp;
 
 	remove_signal("fe.error_ready");
 	remove_signal("fe.write_ready");
 	remove_signal("fe.read_ready");
 
-	linear_destroy_list_v(desc_lists, ll,
+	linear_foreach_safe_v(desc_lists, ll, cur, tmp) {
 		for (i = 0;i < cur->size;i++) {
 			if (cur->descs[i]) {
 				if (cur->destroy)
@@ -51,7 +52,7 @@ int release_desc(void)
 		}
 		memory_free(cur->descs);
 		memory_free(cur);
-	);
+	}
 	return(0);
 }
 
@@ -62,8 +63,9 @@ int release_desc(void)
 int fe_desc_close_all(void)
 {
 	int i;
+	struct fe_descriptor_list_s *cur, *tmp;
 
-	linear_destroy_list_v(desc_lists, ll,
+	linear_foreach_safe_v(desc_lists, ll, cur, tmp) {
 		for (i = 0;i < cur->size;i++) {
 			if (cur->descs[i]) {
 				if (cur->descs[i]->read != -1)
@@ -74,7 +76,7 @@ int fe_desc_close_all(void)
 					close(cur->descs[i]->error);
 			}
 		}
-	);
+	}
 	return(0);
 }
 
@@ -296,14 +298,14 @@ int fe_desc_wait(float t)
 	/** Check the buffer of each connection to see if any messages are waiting
 	    and return when each connection gets a chance to read one message so that
 	    we can refresh the screen and check for keyboard input to remain responsive */
-	linear_traverse_list_v(desc_lists, ll,
+	linear_foreach_v(desc_lists, ll, cur) {
 		for (i = 0;i < cur->size;i++) {
 			if (cur->descs[i] && (cur->descs[i]->read_pos < cur->descs[i]->read_length)) {
 				emit_signal("fe.read_ready", cur->descs[i], cur->descs[i]);
 				ret++;
 			}
 		}
-	);
+	}
 	if (ret)
 		return(ret);
 
@@ -316,7 +318,7 @@ int fe_desc_wait(float t)
 	FD_ZERO(&wr);
 	FD_ZERO(&err);
 	max = 0;
-	linear_traverse_list_v(desc_lists, ll,
+	linear_foreach_v(desc_lists, ll, cur) {
 		for (i = 0;i < cur->size;i++) {
 			if (!cur->descs[i])
 				continue;
@@ -340,14 +342,14 @@ int fe_desc_wait(float t)
 					max = cur->descs[i]->error;
 			}
 		}
-	);
+	}
 
 	if ((ret = select(max + 1, &rd, &wr, &err, &timeout)) == -1) {
 		// TODO what do we do in the case of a socket error?
 		return(-1);
 	}
 
-	linear_traverse_list_v(desc_lists, ll,
+	linear_foreach_v(desc_lists, ll, cur) {
 		for (i = 0;i < cur->size;i++) {
 			if (!cur->descs[i])
 				continue;
@@ -362,7 +364,7 @@ int fe_desc_wait(float t)
 			if ((cur->descs[i]->error != -1) && FD_ISSET(cur->descs[i]->error, &err))
 				emit_signal("fe.error_ready", cur->descs[i], cur->descs[i]);
 		}
-	);
+	}
 	return(ret);
 }
 

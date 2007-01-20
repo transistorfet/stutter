@@ -414,10 +414,11 @@ HWND terminal_get_window(struct terminal_s *terminal)
 int terminal_get_number(void)
 {
 	int i = 0;
+	struct terminal_s *cur;
 
-	linear_traverse_list_v(terminal_list, list,
+	linear_foreach_v(terminal_list, list, cur) {
 		i++;
-	);
+	}
 	return(i);
 }
 

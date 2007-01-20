@@ -59,11 +59,11 @@ int release_irc_server(void)
 		signal_disconnect("fe.timer_done", irc_ping_watchdog_timer, irc_server_ping_watchdog, NULL);
 	remove_signal("irc.dispatch_msg");
 	remove_signal("irc.dispatch_ctcp");
-	linear_destroy_list_v(server_list, sl,
+	linear_foreach_safe_v(server_list, sl, cur, tmp) {
 		if (cur->server.channels)
 			irc_destroy_channel_list(cur->server.channels);
 		memory_free(cur);
-	);
+	}
 	server_initialized = 0;
 	return(0);
 }
@@ -144,10 +144,12 @@ int irc_server_disconnect(struct irc_server *server)
  */
 struct irc_server *irc_find_server(char *address)
 {
-	linear_traverse_list_v(server_list, sl,
+	struct irc_server_node *cur;
+
+	linear_foreach_v(server_list, sl, cur) {
 		if (!strcmp(cur->server.address, address))
 			return(&cur->server);
-	);
+	}
 	return(NULL);
 }
 
@@ -159,11 +161,12 @@ struct irc_server *irc_find_server(char *address)
 struct irc_channel *irc_server_find_window(void *window)
 {
 	struct irc_channel *channel;
+	struct irc_server_node *cur;
 
-	linear_traverse_list_v(server_list, sl,
+	linear_foreach_v(server_list, sl, cur) {
 		if (channel = irc_channel_find_window(cur->server.channels, window))
 			return(channel);
-	);
+	}
 	return(NULL);
 }
 
@@ -247,12 +250,13 @@ int irc_broadcast_msg(struct irc_msg *msg)
 {
 	int ret = 0;
 	struct irc_msg *new_msg;
+	struct irc_server_node *cur;
 
-	linear_traverse_list_v(server_list, sl,
+	linear_foreach_v(server_list, sl, cur) {
 		if (new_msg = irc_duplicate_msg(msg))
 			ret = irc_send_msg(&cur->server, new_msg);
 		cur->server.last_ping = time(NULL);
-	);
+	}
 	irc_destroy_msg(msg);
 	return(ret);
 }
@@ -437,9 +441,10 @@ static int irc_server_flush_send_queue(struct irc_server *server)
 static int irc_server_ping_watchdog(fe_timer_t timer, void *ptr1, void *ptr2)
 {
 	time_t current_time;
+	struct irc_server_node *cur;
 
 	current_time = time(NULL);
-	linear_traverse_list_v(server_list, sl,
+	linear_foreach_v(server_list, sl, cur) {
 		if ((current_time - cur->server.last_ping) >= IRC_PING_WATCHDOG_TIMEOUT) {
 			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, cur->server.address)
 			if (cur->server.bitflags & IRC_SBF_RECONNECTING) {
@@ -450,7 +455,7 @@ static int irc_server_ping_watchdog(fe_timer_t timer, void *ptr1, void *ptr2)
 				irc_server_reconnect(&cur->server);
 			cur->server.bitflags |= IRC_SBF_RECONNECTING;
 		}
-	);
+	}
 	return(0);
 }
 

@@ -42,13 +42,15 @@ struct irc_channel_list *irc_create_channel_list(void)
  */
 void irc_destroy_channel_list(struct irc_channel_list *list)
 {
-	linear_destroy_list_v(list->cl, cl,
+	struct irc_channel_node *cur, *tmp;
+
+	linear_foreach_safe_v(list->cl, cl, cur, tmp) {
 		if (cur->channel.topic)
 			destroy_string(cur->channel.topic);
 		if (cur->channel.users)
 			irc_destroy_user_list(cur->channel.users);
 		memory_free(cur);
-	);
+	}
 	memory_free(list);
 }
 
@@ -123,10 +125,12 @@ struct irc_channel *irc_find_channel(struct irc_channel_list *list, char *name)
  */
 struct irc_channel *irc_channel_find_window(struct irc_channel_list *list, void *window)
 {
-	linear_traverse_list_v(list->cl, cl,
+	struct irc_channel_node *cur;
+
+	linear_foreach_v(list->cl, cl, cur) {
 		if (cur->channel.window == window)
 			return(&cur->channel);
-	);
+	}
 	return(NULL);
 }
 
@@ -140,11 +144,12 @@ struct irc_channel *irc_channel_find_window(struct irc_channel_list *list, void 
 int irc_traverse_channel_list(struct irc_channel_list *list, traverse_t func, void *ptr)
 {
 	int ret;
+	struct irc_channel_node *cur;
 
-	linear_traverse_list_v(list->cl, cl,
+	linear_foreach_v(list->cl, cl, cur) {
 		if (ret = func(&cur->channel, ptr))
 			return(ret);
-	);
+	}
 	return(0);
 }
 
