@@ -385,10 +385,10 @@ static inline int destroy_queue(struct queue_s *queue)
 	queue_foreach_safe_v(list, q, cur, tmp)
 
 #define queue_reverse_foreach(list, cur)	\
-	queue_reverse_fforeach_v(list, q, cur)
+	queue_reverse_foreach_v(list, q, cur)
 
-#define queue_reverse_fforeach_safe(list, cur, tmp)	\
-	queue_reverse_fforeach_safe_v(list, q, cur, tmp)
+#define queue_reverse_foreach_safe(list, cur, tmp)	\
+	queue_reverse_foreach_safe_v(list, q, cur, tmp)
 
 #endif
 
