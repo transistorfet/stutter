@@ -1,7 +1,7 @@
 /*
  * Module Name:		msg.c
  * Version:		0.1
- * Module Requirements:	utils
+ * Module Requirements:	utils ; memory
  * Description:		Message Manager
  */
 
@@ -13,14 +13,8 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/memory.h>
 #include <stutter/modules/irc/msg.h>
-
-#define msg_copy_addr_m(dest, src, size)	\
-	if (size) {				\
-		dest = &buffer[i];		\
-		i += size;			\
-		strncpy(dest, src, size);	\
-	}
 
 struct irc_msg_commands {
 	char *name;
@@ -69,26 +63,29 @@ static struct irc_msg_commands msg_commands[] = {
 	{ NULL, 0 }
 };
 
-static struct irc_msg *msg_create(short, short, char *, char *, short, char **);
-static struct irc_msg_commands *msg_get_command(short);
-static int msg_ctoa(int, char *);
-static char *msg_uppercase(char *);
+static struct irc_msg *msg_create(int, int, char *, char *, int, char **, int, struct irc_msg_ctcp *);
+static int msg_parse_ctcps(char *, char *, int, struct irc_msg_ctcp *, int);
+
+inline static struct irc_msg_commands *msg_get_command(int);
+inline static int msg_ctoa(int, char *);
+inline static char *msg_uppercase(char *);
 
 /**
  * Allocate and initialize an irc_msg structure using the values
  * given.  All strings are copied to newly allocated memory.
  */
-struct irc_msg *irc_create_msg(short cmd, char *nick, char *host, short num_params, ...)
+struct irc_msg *irc_create_msg(int cmd, char *nick, char *host, int num_params, int num_ctcps, ...)
 {
 	int j;
 	va_list va;
 	char *params[IRC_MAX_PARAMS];
 	struct irc_msg_commands *info;
+	struct irc_msg_ctcp ctcps[IRC_MAX_CTCPS];
 
 	if (num_params >= IRC_MAX_PARAMS)
 		return(NULL);
 
-	va_start(va, num_params);
+	va_start(va, num_ctcps);
 	for (j = 0;j < num_params;j++)
 		params[j] = va_arg(va, char *);
 	if (info = msg_get_command(cmd)) {
@@ -101,7 +98,11 @@ struct irc_msg *irc_create_msg(short cmd, char *nick, char *host, short num_para
 			return(NULL);
 		}
 	}
-	return(msg_create((info && (num_params == info->max_params)) ? info->use_text : 0, cmd, nick, host, num_params, params));
+	for (j = 0;j < num_ctcps;j++) {
+		ctcps[j].tag = va_arg(va, char *);
+		ctcps[j].args = va_arg(va, char *);
+	}
+	return(msg_create((info && (num_params == info->max_params)) ? info->use_text : 0, cmd, nick, host, num_params, params, num_ctcps, ctcps));
 }
 
 /**
@@ -112,7 +113,7 @@ struct irc_msg *irc_duplicate_msg(struct irc_msg *msg)
 {
 	struct irc_msg *dup;
 
-	if (!msg || !(dup = msg_create(msg->text ? 1 : 0, msg->cmd, msg->nick, msg->host, msg->num_params, msg->params)))
+	if (!msg || !(dup = msg_create(msg->text ? 1 : 0, msg->cmd, msg->nick, msg->host, msg->num_params, msg->params, msg->num_ctcps, msg->ctcps)))
 		return(NULL);
 	dup->time = msg->time;
 	return(dup);
@@ -123,7 +124,7 @@ struct irc_msg *irc_duplicate_msg(struct irc_msg *msg)
  */
 int irc_destroy_msg(struct irc_msg *msg)
 {
-	free(msg);
+	memory_free(msg);
 	return(0);
 }
 
@@ -135,24 +136,25 @@ int irc_destroy_msg(struct irc_msg *msg)
 struct irc_msg *irc_unmarshal_msg(char *str)
 {
 	int i = 0;
-	short cmd;
+	int cmd;
 	char *tmp;
 	int bitflags = 0;
 	char *nick = NULL;
 	char *host = NULL;
-	short num_params = 0;
-	char *params[IRC_MAX_PARAMS] = { NULL };
+	char buffer[IRC_MAX_MSG];
+	char *params[IRC_MAX_PARAMS];
+	int num_params = 0, num_ctcps = 0;
+	struct irc_msg_ctcp ctcps[IRC_MAX_CTCPS];
 
 	/* Parse the nick and server if it exists */
 	if (str[i] == ':') {
-		host = &str[++i];
+		nick = &str[++i];
 		while ((str[i] != '!') && (str[i] != ' ') && (str[i] != '\0'))
 			i++;
 		if (str[i] == '\0')
 			return(NULL);
 		if (str[i] == '!') {
 			str[i] = '\0';
-			nick = host;
 			host = &str[++i];
 			while ((str[i] != ' ') && (str[i] != '\0'))
 				i++;
@@ -179,6 +181,10 @@ struct irc_msg *irc_unmarshal_msg(char *str)
 			while ((str[i] != 0x0d) && (str[i] != 0x0a) && (str[i] != '\0'))
 				i++;
 			str[i] = '\0';
+			if ((cmd == IRC_MSG_PRIVMSG) || (cmd == IRC_MSG_NOTICE)) {
+				num_ctcps = msg_parse_ctcps(params[num_params], buffer, IRC_MAX_MSG, ctcps, IRC_MAX_CTCPS);
+				params[num_params] = buffer;
+			}
 			break;
 		}
 		else if (str[i] == ' ') {
@@ -190,7 +196,7 @@ struct irc_msg *irc_unmarshal_msg(char *str)
 	}
 	str[i] = '\0';
 
-	return(msg_create(bitflags, cmd, nick, host, ++num_params, params));
+	return(msg_create(bitflags, cmd, nick, host, ++num_params, params, num_ctcps, ctcps));
 }
 
 /**
@@ -242,6 +248,17 @@ int irc_marshal_msg(struct irc_msg *msg, char *buffer, int size)
 			strncpy(&buffer[i], msg->params[j], size - i);
 		i += strlen(msg->params[j]);
 	}
+	for (j = 0;j < msg->num_ctcps;j++) {
+		buffer[i++] = 0x01;
+		strncpy(&buffer[i], msg->ctcps[j].tag, size - i);
+		i += strlen(msg->ctcps[j].tag);
+		if (msg->ctcps[j].args) {
+			buffer[i++] = ' ';
+			strncpy(&buffer[i], msg->ctcps[j].args, size - i);
+			i += strlen(msg->ctcps[j].args);
+		}
+		buffer[i++] = 0x01;
+	}
 	buffer[i++] = '\r';
 	buffer[i++] = '\n';
 
@@ -252,7 +269,7 @@ int irc_marshal_msg(struct irc_msg *msg, char *buffer, int size)
  * Search the list of commands for the command number given and return the
  * corresponding command name string.
  */
-char *irc_command_name(short cmd)
+char *irc_command_name(int cmd)
 {
 	int i = 0;
 
@@ -290,65 +307,115 @@ short irc_command_number(char *str)
 /**
  * Create a new message based on the given values.
  */
-static struct irc_msg *msg_create(short bitflags, short cmd, char *nick, char *host, short num_params, char **params)
+static struct irc_msg *msg_create(int bitflags, int cmd, char *nick, char *host, int num_params, char **params, int num_ctcps, struct irc_msg_ctcp *ctcps)
 {
 	char *buffer;
+	int i = 0, j, size;
 	struct irc_msg *msg;
-	int i = 0, param_len = 0;
-	int j, size, nick_len, host_len;
+	int nick_len, host_len, param_len = 0, ctcp_len = 0;
 
 	nick_len = nick ? strlen(nick) + 1 : 0;
 	host_len = host ? strlen(host) + 1 : 0;
 	for (j = 0;j < num_params;j++)
 		param_len += strlen(params[j]) + 1;
-	size = sizeof(struct irc_msg) + (sizeof(char *) * num_params) + nick_len + host_len + param_len;
+	for (j = 0;j < num_ctcps;j++)
+		ctcp_len += strlen(ctcps[j].tag) + 1 + (ctcps[j].args ? (strlen(ctcps[j].args) + 1) : 0);
+	size = sizeof(struct irc_msg) + (sizeof(char *) * num_params) + (sizeof(struct irc_msg_ctcp) * num_ctcps) + nick_len + host_len + param_len + ctcp_len;
 
-	if (!(msg = (struct irc_msg *) malloc(size)))
+	if (!(msg = (struct irc_msg *) memory_alloc(size)))
 		return(NULL);
 	memset(msg, '\0', size);
 	msg->size = size;
 	msg->time = time(NULL);
 	msg->cmd = cmd;
 	msg->num_params = num_params;
+	msg->params = num_params ? (char **) (((size_t) msg) + sizeof(struct irc_msg)) : NULL;
+	msg->num_ctcps = num_ctcps;
+	msg->ctcps = num_ctcps ? (struct irc_msg_ctcp *) (((size_t) msg) + sizeof(struct irc_msg) + (sizeof(char *) * num_params)) : NULL;
 
-	buffer = (char *) (((size_t) msg) + sizeof(struct irc_msg));
+	buffer = (char *) (((size_t) msg) + sizeof(struct irc_msg) + (sizeof(char *) * num_params) + (sizeof(struct irc_msg_ctcp) * num_ctcps));
 
 	if (nick_len) {
 		msg->nick = &buffer[i];
 		i += nick_len;
-		strncpy(msg->nick, nick, nick_len);
+		strcpy(msg->nick, nick);
 	}
 	if (host_len) {
 		msg->host = &buffer[i];
 		i += host_len;
-		strncpy(msg->host, host, host_len);
+		strcpy(msg->host, host);
 	}
-
 	if (num_params) {
-		msg->params = (char **) &buffer[i];
-		i += sizeof(char *) * num_params;
 		for (j = 0;j < num_params;j++) {
-			param_len = strlen(params[j]) + 1;
-			msg_copy_addr_m(msg->params[j], params[j], param_len);
+			msg->params[j] = &buffer[i];
+			i += strlen(params[j]) + 1;
+			strcpy(msg->params[j], params[j]);
 		}
 		if (bitflags)
 			msg->text = msg->params[num_params - 1];
 	}
+	if (num_ctcps) {
+		for (j = 0;j < num_ctcps;j++) {
+			msg->ctcps[j].tag = &buffer[i];
+			i += strlen(ctcps[j].tag) + 1;
+			strcpy(msg->ctcps[j].tag, ctcps[j].tag);
+			if (ctcps[j].args) {
+				msg->ctcps[j].args = &buffer[i];
+				i += strlen(ctcps[j].args) + 1;
+				strcpy(msg->ctcps[j].args, ctcps[j].args);
+			}
+		}
+	}
 	return(msg);
+}
+
+/**
+ * Parse the ctcp messages out of the given string and store them in the
+ * given array of ctcps up to the maximum number of available ctcps.
+ */
+static int msg_parse_ctcps(char *str, char *buffer, int max_buffer, struct irc_msg_ctcp *ctcps, int max_ctcps)
+{
+	int i, j = 0, k = 0;
+
+	for (i = 0;str[i] != '\0';i++) {
+		if (str[i] == 0x01) {
+			if (k >= max_ctcps)
+				return(k);
+			ctcps[k].tag = &str[++i];
+			for (;(str[i] != '\0') && (str[i] != ' ') && (str[i] != 0x01);i++) ;
+			if (str[i] == 0x01) {
+				str[i] = '\0';
+				ctcps[k].args = NULL;
+			}
+			else {
+				str[i] = '\0';
+				ctcps[k].args = &str[++i];
+				for (;(str[i] != '\0') && (str[i] != 0x01);i++) ;
+				str[i++] = '\0';
+			}
+			k++;
+		}
+		else {
+			buffer[j++] = str[i];
+			if (j >= max_buffer)
+				return(k);
+		}
+	}
+	buffer[j] = '\0';
+	return(k);
 }
 
 /**
  * Search the list of commands for the command number given and return 1
  * if the command should have a quoted parameter at the end or 0 otherwise.
  */
-static struct irc_msg_commands *msg_get_command(short cmd)
+inline static struct irc_msg_commands *msg_get_command(int cmd)
 {
-	int i = 0;
+	int i;
 
-	while (msg_commands[i].name) {
+	for (i = 0;msg_commands[i].name;i++) {
 		if (msg_commands[i].cmd == cmd)
 			return(&msg_commands[i]);
-		i++;
 	}
 	return(NULL);
 }
@@ -357,7 +424,7 @@ static struct irc_msg_commands *msg_get_command(short cmd)
  * Convert the given number into a string representation stored in the
  * given buffer.  The length is returned or 0 on error (always 3).
  */
-static int msg_ctoa(int num, char *str)
+inline static int msg_ctoa(int num, char *str)
 {
 	int i = 0, mul = 100;
 
@@ -378,13 +445,14 @@ static int msg_ctoa(int num, char *str)
  * Convert all lowercase letters in the string into uppercase letters and
  * return a pointer to the string.
  */
-static char *msg_uppercase(char *str)
+inline static char *msg_uppercase(char *str)
 {
 	int i;
 
-	for (i = 0;str[i] != '\0';i++)
+	for (i = 0;str[i] != '\0';i++) {
 		if ((str[i] >= 0x61) && (str[i] <= 0x7a))
 			str[i] = str[i] - 0x20;
+	}
 	return(str);
 }
 
