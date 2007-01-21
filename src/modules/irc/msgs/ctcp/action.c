@@ -17,26 +17,19 @@
  */
 int irc_msg_ctcp_action(char *env, void *index, struct irc_msg *msg)
 {
-	int pos;
-	char buffer[STRING_SIZE];
+	char *fmt;
 	struct irc_channel *channel;
 
-	if (!strncmp_icase(&msg->text[1], "ACTION", 6)) {
-		pos = strlen(msg->text) - 1;
-		msg->text[pos] = '\0';
-		msg->text = &msg->text[8];
+	if (!strcmp_icase(msg->ctcps[0].tag, "ACTION")) {
 		if (!(channel = irc_find_channel(msg->server->channels, msg->params[0]))) {
 			if ((msg->params[0][0] == '#') || (msg->params[0][0] == '&') || (msg->params[0][0] == '+')
 			    || (msg->params[0][0] == '!') || !(channel = irc_current_channel()))
 				return(SIGNAL_STOP_EMIT);
-			if (irc_format_msg(msg, msg->nick ? IRC_FMT_PRIVATE_ACTION : IRC_FMT_PRIVATE_ACTION_SELF, buffer, STRING_SIZE) < 0)
-				return(SIGNAL_STOP_EMIT);
+			fmt = msg->nick ? IRC_FMT_PRIVATE_ACTION : IRC_FMT_PRIVATE_ACTION_SELF;
 		}
-		else if (irc_format_msg(msg, msg->nick ? IRC_FMT_PUBLIC_ACTION : IRC_FMT_PUBLIC_ACTION_SELF, buffer, STRING_SIZE) < 0)
-			return(SIGNAL_STOP_EMIT);
-		fe_print(channel->window, buffer);
-		msg->text = &msg->text[-8];
-		msg->text[pos] = '\x01';
+		else
+			fmt = msg->nick ? IRC_FMT_PUBLIC_ACTION : IRC_FMT_PUBLIC_ACTION_SELF;
+		IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt)
 		return(SIGNAL_STOP_EMIT);
 	}
 	return(0);
