@@ -21,9 +21,9 @@ int irc_cmd_ping(char *env, char *args)
 	get_param_m(args, target, ' ');
 	if (*target == '\0' || !(channel = irc_current_channel()))
 		return(-1);
-	if (sprintf(ping, "\x01PING %d\x01", time(NULL)) < 0)
+	if (sprintf(ping, "%d", time(NULL)) < 0)
 		return(-1);
-	irc_private_msg(channel->server, target, ping);
+	irc_ctcp_msg(channel->server, "PING", target, ping);
 	return(0);
 }
 

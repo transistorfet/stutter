@@ -13,19 +13,17 @@ int irc_cmd_ctcp(char *env, char *args)
 {
 	int i;
 	char *nick, *cmd;
-	char buffer[STRING_SIZE];
 	struct irc_server *server;
 
 	if (*args == '\0' || !(server = irc_current_server()))
 		return(-1);
 	get_param_m(args, nick, ' ');
-	if (snprintf(buffer, STRING_SIZE, "\x01%s\x01", args) < 0)
-		return(-1);
-	for (i = 0;buffer[i] != '\0' && buffer[i] != ' ';i++) {
-		if ((buffer[i] >= 'a') && (buffer[i] <= 'z'))
-			buffer[i] -= 0x20;
+	get_param_m(args, cmd, ' ');
+	for (i = 0;cmd[i] != '\0';i++) {
+		if ((cmd[i] >= 'a') && (cmd[i] <= 'z'))
+			cmd[i] -= 0x20;
 	}
-	irc_private_msg(server, nick, buffer);
+	irc_ctcp_msg(server, cmd, nick, args);
 	return(0);
 }
 

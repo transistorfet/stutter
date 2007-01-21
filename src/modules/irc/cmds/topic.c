@@ -19,9 +19,9 @@ int irc_cmd_topic(char *env, char *args)
 		return(-1);
 	get_param_m(args, name, ' ');
 	if (*args == '\0')
-		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 1, name);
+		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 1, 0, name);
 	else
-		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 2, name, (!strcmp_icase(args, "none")) ? "" : args);
+		msg = irc_create_msg(IRC_MSG_TOPIC, NULL, NULL, 2, 0, name, (!strcmp_icase(args, "none")) ? "" : args);
 	if (!msg)
 		return(-1);
 	irc_send_msg(channel->server, msg);

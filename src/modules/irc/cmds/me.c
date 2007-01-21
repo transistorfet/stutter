@@ -10,17 +10,11 @@
 
 int irc_cmd_me(char *env, char *args)
 {
-	char *action;
 	struct irc_channel *channel;
 
 	if (*args == '\0' || !(channel = irc_current_channel()))
 		return(-1);
-	/** The string \x01ACTION is interpreted incorrectly because AC
-	    is taken to be another hex number */
-	if (!(action = create_string("\x01\x41\x43TION %s\x01", args)))
-		return(-1);
-	irc_private_msg(channel->server, channel->name, action);
-	destroy_string(action);
+	irc_ctcp_msg(channel->server, "ACTION", channel->name, args);
 	return(0);
 }
 

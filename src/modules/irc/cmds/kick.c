@@ -20,9 +20,9 @@ int irc_cmd_kick(char *env, char *args)
 	get_param_m(args, channel, ' ');
 	get_param_m(args, nick, ' ');
 	if (*args == '\0')
-		msg = irc_create_msg(IRC_MSG_KICK, NULL, NULL, 2, channel, nick);
+		msg = irc_create_msg(IRC_MSG_KICK, NULL, NULL, 2, 0, channel, nick);
 	else
-		msg = irc_create_msg(IRC_MSG_KICK, NULL, NULL, 3, channel, nick, args);
+		msg = irc_create_msg(IRC_MSG_KICK, NULL, NULL, 3, 0, channel, nick, args);
 	if (!msg)
 		return(-1);
 	irc_send_msg(server, msg);

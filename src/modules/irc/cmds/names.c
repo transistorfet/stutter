@@ -15,7 +15,7 @@ int irc_cmd_names(char *env, char *args)
 
 	if (!(channel = irc_current_channel()))
 		return(-1);
-	if (!(msg = irc_create_msg(IRC_MSG_NAMES, NULL, NULL, 1, (*args != '\0') ? args : channel->name)))
+	if (!(msg = irc_create_msg(IRC_MSG_NAMES, NULL, NULL, 1, 0, (*args != '\0') ? args : channel->name)))
 		return(-1);
 	irc_send_msg(channel->server, msg);
 	return(0);

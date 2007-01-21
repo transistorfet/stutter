@@ -15,7 +15,7 @@ int irc_cmd_whois(char *env, char *args)
 
 	if ((*args == '\0') || !(server = irc_current_server()))
 		return(-1);
-	if (!(msg = irc_create_msg(IRC_MSG_WHOIS, NULL, NULL, 1, args)))
+	if (!(msg = irc_create_msg(IRC_MSG_WHOIS, NULL, NULL, 1, 0, args)))
 		return(-1);
 	irc_send_msg(server, msg);
 	return(0);
