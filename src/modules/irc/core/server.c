@@ -274,7 +274,7 @@ int irc_join_channel(struct irc_server *server, char *name)
 {
 	struct irc_msg *msg;
 
-	if (!(msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, name)))
+	if (!(msg = irc_create_msg(IRC_MSG_JOIN, NULL, NULL, 1, 0, name)))
 		return(-1);
 	irc_send_msg(server, msg);
 	return(0);
@@ -290,7 +290,7 @@ int irc_leave_channel(struct irc_server *server, char *name)
 {
 	struct irc_msg *msg;
 
-	if (!(msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, name)))
+	if (!(msg = irc_create_msg(IRC_MSG_PART, NULL, NULL, 1, 0, name)))
 		return(-1);
 	irc_send_msg(server, msg);
 	return(0);
@@ -304,7 +304,7 @@ int irc_change_nick(struct irc_server *server, char *nick)
 {
 	struct irc_msg *msg;
 
-	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, nick)))
+	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, 0, nick)))
 		return(-1);
 	return(irc_send_msg(server, msg));
 }
@@ -327,7 +327,7 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 		j = ((j + 488 - name_len) < text_len) ? (j + 488 - name_len) : text_len;
 		ch = text[j];
 		text[j] = '\0';
-		if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, name, &text[i])))
+		if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, 0, name, &text[i])))
 			return(-1);
 		text[j] = ch;
 		msg->server = server;
@@ -357,7 +357,7 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 		j = ((j + 488 - name_len) < text_len) ? (j + 488 - name_len) : text_len;
 		ch = text[j];
 		text[j] = '\0';
-		if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, name, &text[i])))
+		if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, 0, name, &text[i])))
 			return(-1);
 		msg->server = server;
 		emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
@@ -365,6 +365,38 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 			return(ret);
 	} while (j < text_len);
 	return(0);
+}
+
+/**
+ * Send the given ctcp message type with the given arguments to the given
+ * channel or nick on the given server and return -1 if the send fail and
+ * 0 on success.
+ */
+int irc_ctcp_msg(struct irc_server *server, char *cmd, char *name, char *text)
+{
+	struct irc_msg *msg;
+
+	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, 1, name, "", cmd, text)))
+		return(-1);
+	msg->server = server;
+	emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+	return(irc_send_msg(server, msg));
+}
+
+/**
+ * Send the given ctcp message type with the given arguments to the given
+ * channel or nick on the given server and return -1 if the send fail and
+ * 0 on success.
+ */
+int irc_ctcp_reply(struct irc_server *server, char *cmd, char *name, char *text)
+{
+	struct irc_msg *msg;
+
+	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, 1, name, "", cmd, text)))
+		return(-1);
+	msg->server = server;
+	emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+	return(irc_send_msg(server, msg));
 }
 
 /*** Local Functions ***/
@@ -382,8 +414,8 @@ static int irc_server_init_connection(struct irc_server *server)
 		return(-1);
 	signal_connect("fe.read_ready", server->net, 10, (signal_t) irc_server_receive, server);
 
-	if ((msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, server->nick)) && !irc_send_msg(server, msg)
-	    && (msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, server->nick, "0", "0", "Person Pants")) && !irc_send_msg(server, msg)) {
+	if ((msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, 0, server->nick)) && !irc_send_msg(server, msg)
+	    && (msg = irc_create_msg(IRC_MSG_USER, NULL, NULL, 4, 0, server->nick, "0", "0", "Person Pants")) && !irc_send_msg(server, msg)) {
 		server->last_ping = time(NULL);
 		return(0);
 	}

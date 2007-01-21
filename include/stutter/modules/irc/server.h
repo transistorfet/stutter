@@ -48,6 +48,8 @@ int irc_leave_channel(struct irc_server *, char *);
 int irc_change_nick(struct irc_server *, char *);
 int irc_private_msg(struct irc_server *, char *, char *);
 int irc_notice(struct irc_server *, char *, char *);
+int irc_ctcp_msg(struct irc_server *, char *, char *, char *);
+int irc_ctcp_reply(struct irc_server *, char *, char *, char *);
 
 #endif
 
