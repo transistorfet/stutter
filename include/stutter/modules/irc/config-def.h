@@ -7,6 +7,7 @@
 #define _MODULES_IRC_CONFIG_DEF_H
 
 #include <stutter/config-macros.h>
+#include <stutter/modules/irc/config-macros.h>
 
 #define DEFAULT_IRC_DEFAULT_PORT		6667
 #define DEFAULT_IRC_DEFAULT_NICK		"CaptainPants"
@@ -22,14 +23,14 @@
 #define DEFAULT_IRC_BANNER			"***"
 
 #define DEFAULT_IRC_FMT_CTCP_VERSION		"\022status\022%B [\022timestamp\022%@\022status\022] CTCP Version received from \022nick\022%N\022status\022 (%H)"
-#define DEFAULT_IRC_FMT_CTCP_VERSION_REPLY	"\022status\022%B [\022timestamp\022%@\022status\022] CTCP Version reply from \022nick\022%N\022status\022 (%H) %M"
-#define DEFAULT_IRC_FMT_CTCP_UNKNOWN		"\022status\022%B [\022timestamp\022%@\022status\022] Unknown CTCP received from \022nick\022%N\022status\022 (%H)"
+#define DEFAULT_IRC_FMT_CTCP_VERSION_REPLY	"\022status\022%B [\022timestamp\022%@\022status\022] CTCP Version reply from \022nick\022%N\022status\022 (%H) %A0"
+#define DEFAULT_IRC_FMT_CTCP_UNKNOWN		"\022status\022%B [\022timestamp\022%@\022status\022] Unknown CTCP %T0 received from \022nick\022%N\022status\022 (%H)"
 #define DEFAULT_IRC_FMT_CURRENT			"%N!%H %C %M"
 #define DEFAULT_IRC_FMT_DEFAULT			"%N!%H %C %M"
-#define DEFAULT_IRC_FMT_PRIVATE_ACTION		"[\022timestamp\022%@\022default\022] <*> \022nick\022%N\022default\022 %M"
-#define DEFAULT_IRC_FMT_PRIVATE_ACTION_SELF	"\022bracket\022[\022timestamp\022%@\022bracket\022]\022default\022 <*> \022nick\022%n\022message\022 %M"
-#define DEFAULT_IRC_FMT_PUBLIC_ACTION		"[\022timestamp\022%@\022default\022] * \022nick\022%N\022message\022 %M"
-#define DEFAULT_IRC_FMT_PUBLIC_ACTION_SELF	"\022bracket\022[\022nick\022%@\022bracket\022]\022default\022 * \022nick\022%n\022message\022 %M"
+#define DEFAULT_IRC_FMT_PRIVATE_ACTION		"[\022timestamp\022%@\022default\022] <*> \022nick\022%N\022default\022 %A0"
+#define DEFAULT_IRC_FMT_PRIVATE_ACTION_SELF	"\022bracket\022[\022timestamp\022%@\022bracket\022]\022default\022 <*> \022nick\022%n\022message\022 %A0"
+#define DEFAULT_IRC_FMT_PUBLIC_ACTION		"[\022timestamp\022%@\022default\022] * \022nick\022%N\022message\022 %A0"
+#define DEFAULT_IRC_FMT_PUBLIC_ACTION_SELF	"\022bracket\022[\022nick\022%@\022bracket\022]\022default\022 * \022nick\022%n\022message\022 %A0"
 #define DEFAULT_IRC_FMT_JOIN			"\022status\022%B [\022timestamp\022%@\022status\022] Joined \022channel\022%P1\022status\022: \022nick\022%N\022status\022 (%H)"
 #define DEFAULT_IRC_FMT_KICK			"\022status\022%B [\022timestamp\022%@\022status\022] \022nick\022%P2\022status\022 was kicked from \022channel\022%P1\022status\022 by \022nick\022%N\022status\022 (%M)"
 #define DEFAULT_IRC_FMT_KICK_SELF		"\022status\022%B [\022timestamp\022%@\022status\022] You were kicked from \022channel\022%P1\022status\022 by \022nick\022%N\022status\022 (%M)"
@@ -40,7 +41,7 @@
 #define DEFAULT_IRC_FMT_NOTICE_SELF		"%B \022bracket\022[\022timestamp\022%@\022bracket\022]\022default\022 -\022nick\022%n\022default\022- \022message\022%M"
 #define DEFAULT_IRC_FMT_PART			"\022status\022%B [\022timestamp\022%@\022status\022] Leaving \022channel\022%P1\022status\022: \022nick\022%N\022status\022 (%M)"
 #define DEFAULT_IRC_FMT_PING			"\022status\022%B [\022timestamp\022%@\022status\022] Ping received from \022nick\022%N\022status\022 (%H)"
-#define DEFAULT_IRC_FMT_PING_REPLY		"\022status\022%B [\022timestamp\022%@\022status\022] Ping reply from \022nick\022%N\022status\022 (%M)"
+#define DEFAULT_IRC_FMT_PING_REPLY		"\022status\022%B [\022timestamp\022%@\022status\022] Ping reply from \022nick\022%N\022status\022 (%A0)"
 #define DEFAULT_IRC_FMT_PRIVATE_MSG		"-[\022timestamp\022%@ \022nick\022%N\022default\022]- \022message\022%M"
 #define DEFAULT_IRC_FMT_PRIVATE_MSG_SELF	"-\022bracket\022[\022timestamp\022%@ \022nick\022%n\022default\022 -> \022nick\022%P1\022bracket\022]\022default\022- \022message\022%M"
 #define DEFAULT_IRC_FMT_PUBLIC_MSG		"[\022timestamp\022%@ \022nick\022%N\022default\022] \022message\022%M"
@@ -62,6 +63,8 @@
 
 #define DEFAULT_IRC_ERR_SERVER_DISCONNECTED	"\022error\022Error: Disconnected from %s"
 #define DEFAULT_IRC_ERR_RECONNECT_ERROR		"\022error\022Error: Unable to reconnect to %s"
+#define DEFAULT_IRC_ERR_MSG_NOT_ENOUGH_PARAMS	"\022error\022Error: IRC message, %s, doesn't have enough parameters"
+#define DEFAULT_IRC_ERR_MSG_TOO_MANY_PARAMS	"\022error\022Error: IRC message, %s, has too many parameters"
 #define DEFAULT_IRC_ERR_JOIN_ERROR		"\022error\022Error: Unable to create channel resources after joining %s"
 #define DEFAULT_IRC_ERR_QUERY_ERROR		"\022error\022Error: Unable to create query resources for %s"
 
@@ -102,6 +105,8 @@
 	ADD_COMMAND("whowas", irc_cmd_whowas)		\
 	ADD_COMMAND("", irc_cmd_say)
 
+/*** Joinpoints ***/
+
 #define DEFAULT_IRC_INIT_JOINPOINT(table)	\
 	DO_NOTHING();
 
@@ -113,6 +118,64 @@
 
 #define DEFAULT_IRC_OUPUT_JOINPOINT(...)	\
 	OUTPUT_JOINPOINT("irc.output", __VA_ARGS__)
+
+#define DEFAULT_IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_PRINT_TO_CHANNEL(channel, msg, fmt)
+
+#define DEFAULT_IRC_SERVER_OUTPUT_JOINPOINT(server, msg, fmt)	\
+	IRC_PRINT_TO_STATUS(server, msg, fmt)
+
+#define DEFAULT_IRC_MSG_CURRENT_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_DEFAULT_OUTPUT_JOINPOINT(msg, fmt)	\
+	IRC_SERVER_OUTPUT_JOINPOINT(msg->server, msg, fmt)
+
+#define DEFAULT_IRC_MSG_INUSE_OUTPUT_JOINPOINT(msg, fmt)	\
+	IRC_PRINT_TO_CURRENT(msg, fmt)
+
+#define DEFAULT_IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_KICK_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_MODE_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_NICK_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_NOTICE_OUTPUT_JOINPOINT(msg, fmt)	\
+	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt)
+
+#define DEFAULT_IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_PRIVMSG_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_TOPIC_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+
+#define DEFAULT_IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT(msg, fmt)	\
+	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt)
+
+#define DEFAULT_IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT(msg, fmt)	\
+	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt)
+
+#define DEFAULT_IRC_MSG_CTCP_UNKNOWN_OUTPUT_JOINPOINT(msg, fmt)	\
+	IRC_PRINT_TO_CURRENT(msg, fmt)
+
 
 /*** START OF DEFAULT ASSIGNMENTS ***/
 #ifndef IRC_DEFAULT_PORT
@@ -307,6 +370,14 @@
 #define IRC_ERR_RECONNECT_ERROR \
 	DEFAULT_IRC_ERR_RECONNECT_ERROR
 #endif
+#ifndef IRC_ERR_MSG_NOT_ENOUGH_PARAMS
+#define IRC_ERR_MSG_NOT_ENOUGH_PARAMS \
+	DEFAULT_IRC_ERR_MSG_NOT_ENOUGH_PARAMS
+#endif
+#ifndef IRC_ERR_MSG_TOO_MANY_PARAMS
+#define IRC_ERR_MSG_TOO_MANY_PARAMS \
+	DEFAULT_IRC_ERR_MSG_TOO_MANY_PARAMS
+#endif
 #ifndef IRC_ERR_JOIN_ERROR
 #define IRC_ERR_JOIN_ERROR \
 	DEFAULT_IRC_ERR_JOIN_ERROR
@@ -343,8 +414,83 @@
 #define IRC_OUPUT_JOINPOINT(...) \
 	DEFAULT_IRC_OUPUT_JOINPOINT(__VA_ARGS__)
 #endif
+#ifndef IRC_CHANNEL_OUTPUT_JOINPOINT
+#define IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_SERVER_OUTPUT_JOINPOINT
+#define IRC_SERVER_OUTPUT_JOINPOINT(server, msg, fmt) \
+	DEFAULT_IRC_SERVER_OUTPUT_JOINPOINT(server, msg, fmt)
+#endif
+#ifndef IRC_MSG_CURRENT_OUTPUT_JOINPOINT
+#define IRC_MSG_CURRENT_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_CURRENT_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_DEFAULT_OUTPUT_JOINPOINT
+#define IRC_MSG_DEFAULT_OUTPUT_JOINPOINT(msg, fmt) \
+	DEFAULT_IRC_MSG_DEFAULT_OUTPUT_JOINPOINT(msg, fmt)
+#endif
+#ifndef IRC_MSG_INUSE_OUTPUT_JOINPOINT
+#define IRC_MSG_INUSE_OUTPUT_JOINPOINT(msg, fmt) \
+	DEFAULT_IRC_MSG_INUSE_OUTPUT_JOINPOINT(msg, fmt)
+#endif
+#ifndef IRC_MSG_JOIN_OUTPUT_JOINPOINT
+#define IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_KICK_OUTPUT_JOINPOINT
+#define IRC_MSG_KICK_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_KICK_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_MODE_OUTPUT_JOINPOINT
+#define IRC_MSG_MODE_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_MODE_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_NAMES_OUTPUT_JOINPOINT
+#define IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_NICK_OUTPUT_JOINPOINT
+#define IRC_MSG_NICK_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_NICK_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_NOTICE_OUTPUT_JOINPOINT
+#define IRC_MSG_NOTICE_OUTPUT_JOINPOINT(msg, fmt) \
+	DEFAULT_IRC_MSG_NOTICE_OUTPUT_JOINPOINT(msg, fmt)
+#endif
+#ifndef IRC_MSG_PART_OUTPUT_JOINPOINT
+#define IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_PRIVMSG_OUTPUT_JOINPOINT
+#define IRC_MSG_PRIVMSG_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_PRIVMSG_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_QUIT_OUTPUT_JOINPOINT
+#define IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_TOPIC_OUTPUT_JOINPOINT
+#define IRC_MSG_TOPIC_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_TOPIC_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT
+#define IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt) \
+	DEFAULT_IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt)
+#endif
+#ifndef IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT
+#define IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT(msg, fmt) \
+	DEFAULT_IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT(msg, fmt)
+#endif
+#ifndef IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT
+#define IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT(msg, fmt) \
+	DEFAULT_IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT(msg, fmt)
+#endif
+#ifndef IRC_MSG_CTCP_UNKNOWN_OUTPUT_JOINPOINT
+#define IRC_MSG_CTCP_UNKNOWN_OUTPUT_JOINPOINT(msg, fmt) \
+	DEFAULT_IRC_MSG_CTCP_UNKNOWN_OUTPUT_JOINPOINT(msg, fmt)
+#endif
 /*** END OF DEFAULT ASSIGNMENTS ***/
-
 
 #endif
 

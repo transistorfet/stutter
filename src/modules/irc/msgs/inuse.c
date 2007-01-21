@@ -12,7 +12,6 @@
 int irc_msg_inuse(char *env, struct irc_msg *msg)
 {
 	int i;
-	char buffer[STRING_SIZE];
 
 	if (msg->server && !(msg->server->bitflags & IRC_SBF_CONNECTED)) {
 		for (i = 0;(i < IRC_MAX_NICK) && (msg->server->nick[i] != '\0');i++) ;
@@ -23,9 +22,7 @@ int irc_msg_inuse(char *env, struct irc_msg *msg)
 		irc_change_nick(msg->server, msg->server->nick);
 	}
 
-	if (irc_format_msg(msg, IRC_FMT_NICKNAMEINUSE, buffer, STRING_SIZE) < 0)
-		return(-1);
-	fe_print(msg->server->status->window, buffer);
+	IRC_MSG_INUSE_OUTPUT_JOINPOINT(msg, IRC_FMT_NICKNAMEINUSE)
 	return(0);
 }
 

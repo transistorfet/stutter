@@ -16,7 +16,6 @@
 int irc_msg_join(char *env, struct irc_msg *msg)
 {
 	void *window, *frame;
-	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!strcmp(msg->server->nick, msg->nick)) {
@@ -38,9 +37,7 @@ int irc_msg_join(char *env, struct irc_msg *msg)
 
 	irc_add_user(channel->users, msg->nick, 0);
 
-	if (irc_format_msg(msg, IRC_FMT_JOIN, buffer, STRING_SIZE) < 0)
-		return(-1);
-	fe_print(channel->window, buffer);
+	IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_JOIN)
 	return(0);
 }
 

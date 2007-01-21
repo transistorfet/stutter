@@ -25,9 +25,7 @@ int irc_msg_topic(char *env, struct irc_msg *msg)
 		destroy_string(channel->topic);
 	channel->topic = create_string("%s", msg->text);
 
-	if (irc_format_msg(msg, IRC_FMT_TOPIC, buffer, LARGE_STRING_SIZE) < 0)
-		return(-1);
-	fe_print(channel->window, buffer);
+	IRC_MSG_TOPIC_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_TOPIC)
 	return(0);
 }
 

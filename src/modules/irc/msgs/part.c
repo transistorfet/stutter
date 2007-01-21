@@ -14,7 +14,6 @@
  */
 int irc_msg_part(char *env, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
@@ -26,11 +25,8 @@ int irc_msg_part(char *env, struct irc_msg *msg)
 	}
 	else {
 		irc_remove_user(channel->users, msg->nick);
-		if (irc_format_msg(msg, IRC_FMT_PART, buffer, STRING_SIZE) < 0)
-			return(-1);
-		fe_print(channel->window, buffer);
+		IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_PART)
 	}
-
 	return(0);
 }
 

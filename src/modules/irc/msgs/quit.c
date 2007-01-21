@@ -16,12 +16,7 @@ static int irc_msg_quit_traverse(struct irc_channel *, struct irc_msg *);
  */
 int irc_msg_quit(char *env, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
-
 	irc_traverse_channel_list(msg->server->channels, (traverse_t) irc_msg_quit_traverse, msg);
-	if (irc_format_msg(msg, IRC_FMT_QUIT, buffer, STRING_SIZE) < 0)
-		return(-1);
-	fe_print(msg->server->status->window, buffer);
 	return(0);
 }
 
@@ -31,10 +26,9 @@ int irc_msg_quit(char *env, struct irc_msg *msg)
  */
 static int irc_msg_quit_traverse(struct irc_channel *channel, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
-
-	if (!irc_remove_user(channel->users, msg->nick) && (irc_format_msg(msg, IRC_FMT_QUIT, buffer, STRING_SIZE) >= 0))
-		fe_print(channel->window, buffer);
+	if (!irc_remove_user(channel->users, msg->nick) || (channel == msg->server->status)) {
+		IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_QUIT)
+	}
 	return(0);
 }
 

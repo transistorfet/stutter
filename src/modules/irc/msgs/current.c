@@ -11,14 +11,11 @@
 
 int irc_msg_current(char *env, struct irc_msg *msg)
 {
-	char buffer[LARGE_STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_current_channel()))
 		return(-1);
-	if (irc_format_msg(msg, env ? env : IRC_FMT_CURRENT, buffer, LARGE_STRING_SIZE) < 0)
-		return(-1);
-	fe_print(channel->window, buffer);
+	IRC_MSG_CURRENT_OUTPUT_JOINPOINT(channel, msg, env ? env : IRC_FMT_CURRENT)
 	return(0);
 }
 

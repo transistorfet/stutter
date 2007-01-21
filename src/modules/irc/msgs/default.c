@@ -11,11 +11,7 @@
 
 int irc_msg_default(char *env, struct irc_msg *msg)
 {
-	char buffer[LARGE_STRING_SIZE];
-
-	if (irc_format_msg(msg, env ? env : IRC_FMT_DEFAULT, buffer, LARGE_STRING_SIZE) < 0)
-		return(-1);
-	fe_print(msg->server->status->window, buffer);
+	IRC_MSG_DEFAULT_OUTPUT_JOINPOINT(msg, env ? env : IRC_FMT_DEFAULT)
 	return(0);
 }
 

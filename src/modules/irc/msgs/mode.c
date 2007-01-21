@@ -12,15 +12,12 @@
 
 int irc_msg_mode(char *env, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		return(-1);
 	// TODO update channel and user bitflags
-	if (irc_format_msg(msg, IRC_FMT_MODE, buffer, STRING_SIZE) < 0)
-		return(-1);
-	fe_print(channel->window, buffer);
+	IRC_MSG_MODE_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_MODE)
 	return(0);
 }
 

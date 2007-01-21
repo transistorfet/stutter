@@ -19,17 +19,11 @@ static int irc_msg_nick_traverse(struct irc_channel *, struct irc_msg *);
  */
 int irc_msg_nick(char *env, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
-
 	if (!strcmp_icase(msg->server->nick, msg->nick)) {
 		strncpy(msg->server->nick, msg->params[0], IRC_MAX_NICK - 1);
 		msg->server->nick[IRC_MAX_NICK - 1] = '\0';
 	}
 	irc_traverse_channel_list(msg->server->channels, (traverse_t) irc_msg_nick_traverse, msg);
-
-	if (irc_format_msg(msg, IRC_FMT_NICK, buffer, STRING_SIZE) < 0)
-		return(-1);
-	fe_print(msg->server->status->window, buffer);
 	return(0);
 }
 
@@ -40,10 +34,9 @@ int irc_msg_nick(char *env, struct irc_msg *msg)
  */
 static int irc_msg_nick_traverse(struct irc_channel *channel, struct irc_msg *msg)
 {
-	char buffer[STRING_SIZE];
-
-	if (!irc_change_user_nick(channel->users, msg->nick, msg->params[0]) && (irc_format_msg(msg, IRC_FMT_NICK, buffer, STRING_SIZE) >= 0))
-		fe_print(channel->window, buffer);
+	if (!irc_change_user_nick(channel->users, msg->nick, msg->params[0]) || (channel == msg->server->status)) {
+		IRC_MSG_NICK_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_NICK)
+	}
 	return(0);
 }
 

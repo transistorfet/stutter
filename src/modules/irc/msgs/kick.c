@@ -14,8 +14,8 @@
  */
 int irc_msg_kick(char *env, struct irc_msg *msg)
 {
+	char *fmt;
 	void *window;
-	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
@@ -29,16 +29,14 @@ int irc_msg_kick(char *env, struct irc_msg *msg)
 			irc_remove_channel(msg->server->channels, msg->params[0]);
 			channel = msg->server->status;
 		}
-		if (irc_format_msg(msg, IRC_FMT_KICK_SELF, buffer, STRING_SIZE) < 0)
-			return(-1);
+		fmt = IRC_FMT_KICK_SELF;
 	}
 	else {
 		irc_remove_user(channel->users, msg->params[1]);
-		if (irc_format_msg(msg, IRC_FMT_KICK, buffer, STRING_SIZE) < 0)
-			return(-1);
+		fmt = IRC_FMT_KICK;
 	}
 
-	fe_print(channel->window, buffer);
+	IRC_MSG_KICK_OUTPUT_JOINPOINT(channel, msg, fmt)
 	return(0);
 }
 
