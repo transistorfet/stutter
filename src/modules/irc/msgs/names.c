@@ -28,7 +28,7 @@ int irc_msg_names(char *env, struct irc_msg *msg)
 		bitflags = 0;
 		get_param_m(str, name, ' ');
 		if ((name[0] == '@') || (name[0] == '+')) {
-			bitflags = (name[0] == '@') ? IRC_UBF_OP : IRC_UBF_VOICE ;
+			bitflags = (name[0] == '@') ? IRC_UBF_MODE_OP : IRC_UBF_MODE_VOICE ;
 			name = &name[1];
 		}
 		if (!irc_find_user(channel->users, name))

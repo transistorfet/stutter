@@ -10,7 +10,14 @@
 #include <stutter/string.h>
 #include <stutter/modules/irc/user.h>
 
-#define IRC_CBF_AUTO_REJOIN		0x01
+#define IRC_CBF_MODE_PRIVATE		0x0001
+#define IRC_CBF_MODE_SECRET		0x0002
+#define IRC_CBF_MODE_INVITE_ONLY	0x0004
+#define IRC_CBF_MODE_OPS_TOPIC		0x0008
+#define IRC_CBF_MODE_LOCAL_SEND_ONLY	0x0010
+#define IRC_CBF_MODE_MODERATED		0x0020
+
+#define IRC_CBF_AUTO_REJOIN		0x0100
 
 struct irc_server;
 
