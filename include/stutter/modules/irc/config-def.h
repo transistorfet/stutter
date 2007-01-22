@@ -47,6 +47,7 @@
 #define DEFAULT_IRC_FMT_PUBLIC_MSG		"[\022timestamp\022%@ \022nick\022%N\022default\022] \022message\022%M"
 #define DEFAULT_IRC_FMT_PUBLIC_MSG_SELF		"\022bracket\022[\022timestamp\022%@ \022nick\022%n\022bracket\022]\022message\022 %M"
 #define DEFAULT_IRC_FMT_QUIT			"\022status\022%B [\022timestamp\022%@\022status\022] Quit: \022nick\022%N\022status\022 (%M)"
+#define DEFAULT_IRC_FMT_STATUS			"\022status\022%B [\022timestamp\022%@\022status\022] %M"
 #define DEFAULT_IRC_FMT_TOPIC			"\022topic\022%B Topic Set by \022nick\022%N\022topic\022 To: %M"
 #define DEFAULT_IRC_FMT_WHOISUSER		"\022status\022%B [Whois \022nick\022%P2\022status\022] Realname : %M"
 #define DEFAULT_IRC_FMT_WHOISSERVER		"\022status\022%B [Whois \022nick\022%P2\022status\022] Server : \022server\022%P3\022status\022 (%M)"
@@ -313,6 +314,10 @@
 #ifndef IRC_FMT_QUIT
 #define IRC_FMT_QUIT \
 	DEFAULT_IRC_FMT_QUIT
+#endif
+#ifndef IRC_FMT_STATUS
+#define IRC_FMT_STATUS \
+	DEFAULT_IRC_FMT_STATUS
 #endif
 #ifndef IRC_FMT_TOPIC
 #define IRC_FMT_TOPIC \

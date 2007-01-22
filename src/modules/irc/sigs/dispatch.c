@@ -20,12 +20,21 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 				strncpy(msg->server->nick, msg->params[0], IRC_MAX_NICK - 1);
 				msg->server->nick[IRC_MAX_NICK - 1] = '\0';
 			}
+			msg->server->bitflags |= IRC_SBF_CONNECTED;
+			msg->server->bitflags &= ~IRC_SBF_RECONNECTING;
 		case 002:
 		case 003:
 		case 004:
-			msg->server->bitflags |= IRC_SBF_CONNECTED;
-			msg->server->bitflags &= ~IRC_SBF_RECONNECTING;
-			return(irc_msg_default(NULL, msg));
+		case 005:
+		case IRC_RPL_LUSERCLIENT:
+		case IRC_RPL_LUSEROP:
+		case IRC_RPL_LUSERUNKNOWN:
+		case IRC_RPL_LUSERCHANNELS:
+		case IRC_RPL_LUSERME:
+		case IRC_RPL_MOTDSTART:
+		case IRC_RPL_MOTD:
+		case IRC_RPL_ENDOFMOTD:
+			return(irc_msg_default(IRC_FMT_STATUS, msg));
 		case IRC_RPL_WHOISUSER:
 			return(irc_msg_current(IRC_FMT_WHOISUSER, msg));
 		case IRC_RPL_WHOISSERVER:
@@ -43,6 +52,8 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 		case IRC_RPL_WHOWASUSER:
 			return(irc_msg_current(IRC_FMT_WHOWASUSER, msg));
 		case IRC_RPL_ENDOFWHOWAS:
+			return(0);
+		case IRC_RPL_ENDOFNAMES:
 			return(0);
 		case IRC_ERR_NOSUCHNICK:
 			return(irc_msg_current(IRC_FMT_NOSUCHNICK, msg));
