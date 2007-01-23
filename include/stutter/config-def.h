@@ -9,7 +9,7 @@
 #include <stutter/macros.h>
 #include <stutter/config-macros.h>
 
-#define DEFAULT_STUTTER_VERSION			"pre-0.3"
+#define DEFAULT_STUTTER_VERSION			"0.3"
 
 #define DEFAULT_PATH_VARIABLE_NAME		"path"
 #define DEFAULT_NAME_SEPARATOR			'.'
