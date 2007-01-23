@@ -1,17 +1,245 @@
 
-Stutter 0.2
+Stutter 0.3
+2007/01/22
 
 Introduction:
-	Stutter is module communications platform.  Currently it
-	has an IRC module and a simple curses frontend.
+	Stutter is modular communications platform.  Currently it has an IRC
+	module and a unix curses and windows frontend.
 
-	A lot has changed since v0.1 (mostly backend type stuff).
+	A lot has changed since v0.2 (again mostly backend type stuff).  There
+	are now 2 working frontends (but still only the IRC module).  Colours
+	are now supported but the frontends are not yet dynamically
+	configurable (but they are closer to being so).
 
 Compiling & Installing:
+	Stutter has a number of compiled in default values and settings that
+	can be changed by adding #define's to config.h.  All the available
+	values are listed in the config-def.h files (one for each module,
+	one for the frontends, and a global one).  Do not edit the config-def.h
+	files directly.  The frontend and modules to compile in can be selected
+	by modifying config.mk.  Once all the desired options and
+	configurations have been done, just make the binary with:
+
 	make
 
-	There is no install.  Only one binary (bin/stutter) is
-	produced.  Copy this to somewhere in your path.
+	There is no install.  Only one binary (bin/stutter for the curses
+	frontend and bin/winstutter for the windows frontend) is produced.
+
+Using:
+	When the program first starts, it will attempt to read the dotfile
+	(~/.stutterrc for unix and stutterrc in the working dir for windows)
+	and evaluate each line as a command just as is done in the source
+	command.  See the listing of commands for details.
+
+Base Module Commands:
+	alias <name> <command>
+	Creates a new command alias with the <name>.  When the new command
+	is evaluated, the arguments are appended to <command> and the
+	resulting command line is evaluated.
+
+	bind <key> <command>
+	Creates a new key binding where the given key sequence is bound to
+	the given command.  The key is a sequence of characters where the
+	combination ^X where X is a letter is converted to the corresponding
+	control code, \X where X is an escape character is converted to the
+	appropriate character code, and variable references are expanded.
+
+	clear
+	Clears the output of the current window.
+
+	clearline
+	Clears the input line.  (Note: this command is intended to be bound
+	to a key).
+
+	echo <string>
+	Outputs <string> to the current window.
+
+	exec [-o] <command>
+	Executes <command> as a unix command and prints the output of the
+	command to the current window.  If the -o option is specified, the
+	output is sent to the base.exec_output signal.  (Note: the IRC module
+	is connected to this signal and sends the output to the current IRC
+	channel.)
+
+	expand <string>
+	Converts variable references in <string> and then evaluates the
+	resulting string as if it were a command.
+
+	get <name>
+	Looks up the variable with <name>, stringifies the value using the
+	variable's type stringify function and prints the string to the
+	current window.
+
+	next
+	Selects the next window.
+
+	parse
+	Reads the contents of the input line and evaluates it as a command.
+	(Note: this command is intended to be bound to a key such as <enter>).
+
+	previous
+	Selects the previous window.
+
+	quit [<message>]
+	Quits the program with <message> emitted to the fe.quit signal.
+	(Note: the IRC module has a handler that shutsdown all server
+	connections and sends <message> as the quit message).
+
+	redirect <signal> <none|current|this>
+	Adds a signal handler to <signal> that causes the string sent in a
+	signal to be be printed to a window.  If the window target is "none",
+	any signal handlers for that signal are removed.  If the target is
+	"current" then a handler that always outputs to the current window is
+	added.  If the target is "this" then the window currently select will
+	always received the message.  DANGER: this command can mess things up
+	if not used properly.
+
+	remove <name>
+	Removes the variable <name> unless the variable is not removable.
+
+	scroll <number>
+	Scrolls the current window by the given number of lines.  If the number
+	is positive, the window is scrolled upwards.  If the number is negative
+	the window is scrolled downwards.
+
+	select <id>
+	Selects the window with the <id>.
+
+	set [-<type>] <name> <value>
+	Sets the value of the variable <name> to <value>.  If type is not
+	specified then the type of the variable is used.  If the variable does
+	not exist, a type must be specified.  <value> is sent to the type's
+	create function as a string.
+
+	source <filename>
+	Read the file <filename> and interprete each line as a command.
+	All characters between a '#' character and the end of the line are
+	removed before the command is evaluated.
+
+	unbind <key>
+	Unbind the key sequence <key>.
+
+Base Module Default Key Bindings:
+	'\n' - parse
+	'^C' - quit
+	'^X' - next
+	'^Q' - previous
+	'^U' - clearline
+	'^P' - scroll 1
+	'^Y' - scroll -1
+
+IRC Module Commands:
+	complete
+	Attempts to complete the name partially typed in the input field by
+	looking at the names of the users in the current IRC channel.  If the
+	partial name starts at the beginning of the input field, when the name
+	is completed it will have a ': ' added to the end.  Otherwise a ' ' is
+	added to the end of the name.  If the character at the end of the line
+	is a ' ', then the previous word is taken as a complete name and is
+	replaced by the next user listed alphabetically.  (Note: this command
+	is intended to be bound to a key).
+
+	ctcp <nick> <ctcp>
+	Sends the user <nick> the <ctcp> message.
+
+	disconnect [<message>]
+	Disconnects from the current server using the optional <message> as the
+	quit message.
+
+	endquery [<nick>]
+	Closes the query window with the user <nick>.
+
+	join <channel>
+	Joins <channel> creating a new channel window for it and making that
+	window current.
+
+	kick <channel> <nick> [<message>]
+	Kicks the user <nick> from <channel> with the optional <message> as the
+	given as the reason.
+
+	leave [<channel>]
+	Leaves <channel> (or the current channel if not channel name is given)
+	and destroy the window used by that channel.
+
+	me <message>
+	Sends the ctcp action message with <message> as the body to the current
+	channel.
+
+	mode <channel> <modes>
+	Attempts to set the mode of <channel> to the modes specified in <modes>
+
+	msg <nick> <message>
+	Sends the private message <message> to <nick>.
+
+	names [<channel>]
+	Prints the names of the people in <channel> (or the current channel if
+	no channel name is given).
+
+	nick <newnick>
+	Attempts to set your nick to <newnick>.
+
+	notice <nick> <message>
+	Sends a notice <message> to <nick>.
+
+	part [<channel>]
+	See the leave command.
+
+	ping <nick>
+	Sends a ping request to <nick>.
+
+	query <nick>
+	Opens a query window to <nick>.
+
+	reconnect
+	Attempts to reconnect to the current server.
+
+	say <message>
+	Sends <message> to the current channel.
+
+	server <server> [<port>]
+	Attempts to connect to <server>:<port> (where <port> is assumed to be
+	6667 if it is not given).
+
+	topic <channel> [<topic>|none]
+	Prints the topic of <channel> if no topic is given or sets the topic
+	of <channel> to <topic>.  If "none" is given as the topic then the
+	topic is removed.
+
+	whois <nick>
+	Sends a whois request for <nick> to the server.
+
+	whowas <nick>
+	Sends a whowas request for <nick> to the server.
+
+IRC Module Default Key Bindings:
+	'\t' - complete
+
+Colours:
+	The colours can be changed by settings the colour variables which
+	have names such as fe.theme.status.  Aliases are defined by default
+	to make the process easier.
+
+	getcolour <name>
+	Prints the current colour of the theme tag <name>.  This is an alias
+	for 'get fe.theme.'
+
+	setcolour <name> <colour>
+	Sets the colour of the theme tag <name> to <colour>.  This is an alias
+	for 'set fe.theme.'.  The colour can be an RGB colour in the form
+	#RRGGBB where RR, GG, and BB are hex numbers.  Thus the colour white
+	is specified as #FFFFFF (case is insensitive).  The colour can also
+	be a decimal number 0-15 corresponding to the IRC colour mappings or
+	a colour name from the following list: white, black, blue, green, red,
+	cyan, magenta, yellow, bright yellow, bright green, bright cyan,
+	bright red, bright blue, grey, bright white.
+
+	The following theme tags are defined by default: error, status,
+	bracket, channel, default, message, nick, server, statusbar,
+	timestamp, topic.
+
+	The variables fe.fg and fe.bg can also be changed to change the
+	foreground and background colours respectively.
+
 
 This package is Copyrighted (C) 2005 Sarina McFarland and licensed
 under the GPL (see LICENSE and COPYRIGHT)
