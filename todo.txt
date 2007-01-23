@@ -1,48 +1,13 @@
 
-	* make the disconnect error print to all windows instead of just the current one.  How?  You could
-	  have a joinpoint IRC_SERVER_ERROR() that is printed to all channel windows (as well as
-	  IRC_SERVER_MESSAGE() which could be used for nick and quit message broadcasting if we want to turn
-	  those into joinpoint eventually (as well as IRC_CHANNEL_ERROR, IRC_CHANNEL_MESSAGE, etc)).
-
-	* replace the traverse and destroy list function in linear.h and hash.h with for loop macros
-	* fix text.c to properly display tab characters (perhaps you could modify irc_format_msg instead
-	  to expand tabs and/or to filter out non-printable characters such as backspace and other control
-	  codes)
+	* work on API documentation
 	* finish/fix up region particularily the handling of MODIFY_SIZE and possibly re-write split
 
-	* convert text.c and server.c/msg.c to use the new queue functions if it is easily possible
-
-	* should the root widget control the surface that it draws to? or should fe.c handle all the
-	  coordination?  how will multiple terminals be handled with multiple root widgets?
-	* there could be a big problem with the way things are set up for widgets and the use of multiple
-	  terminals because the fe.c functions really can only accept *one* widget in the whole program
-	  as being the root (NULL) so can each terminal really have a widget with no parent or does there
-	  need to be a list widget that just groups the widgets together (or a change to the fe.c functions
-	  a bit to accomodate).
+	* you kind of need a widget that is a list of widget/terminal pairs that handles everything itself
+	  (taking away some responsibility of fe.c) so that you have a widget that can be an absolute root
+	  that is the parent of all seperate windows/terminals.  (A dedicated list in fe.c wouldn't work
+	  since the widgets need something to put as their parent unless fe.c was itself a widget).
 	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
 	  or is it the job of the code that sets the surface to also do a resize?
-
-	* how will widget types be stored and retrieved when dyamically creating widgets?  a seperate
-	  widgets type list in the common frontend core? in the widget manager itself?  we can probably
-	  get away with not allocating the memory for the type (just using the statically initialized type
-	  struct) but we still need to store the type pointers in a hash table of some sorts.
-	->put a hashtable in widget.c for the types with a few simple functions (add, remove, find) and
-	  have a list in fe/config-def.h that specifies which types to add to the list and the code that
-	  adds this list would be in main.c for each frontend (i guess).  Types could either be added
-	  using the extern type pointer (which could be defined in the common header or else each widget
-	  can have a "load" function like variable system types
-
-	* should you use static inline functions in the widget control functions to help clean up some of
-	  the large control functions?
-	* should all instances of stringify that are accessable to the user do an index (path lookup) so
-	  that all variables can be accessed indirectly and not just commands?
-	* split errors into multiple categories such as CRITICAL, MAJOR, MINOR, ???
-	* go through everything and add lots of joinpoints
-
-	* how can you control a list widget such as a users list where names are added and deleted?  should
-	  the widget rely on an array to get it's information?  should the widget be a vairable array itself?
-	  should the whole widget structure be replicated as variables such that every widget is added to
-	  the variables list using the id as it's name?
 
 Structural Issues:
 	* should windows be able to have 2 or more names ("#philosophy", "1", "otherside/#philosophy") or
@@ -50,8 +15,12 @@ Structural Issues:
 	  can be accessed by number and the order can be switched. (or both?)  Could we have all the names
 	  in one string like "otherside/#philosophy,#philosophy"
 	* where should errors generally be printed from even using joinpoints?  Is it ok to have the net
-	  code printing errors (in the case of the retries there is *that* much choice but perhaps there is)
+	  code printing errors (in the case of the retries there isn't *that* much choice but perhaps there
+	  is).  Would it be better for the command that attempts to connect to report the failure to connect
+	  or should net_connect do that before it returns NULL?
 
+	* should all instances of stringify that are accessable to the user do an index (path lookup) so
+	  that all variables can be accessed indirectly and not just commands?
 	* can we use macros to implement the ability to set at compile time which parameters are compiled
 	  in and which are modifiable variables?  how will we handle this for all the things in config.h
 	* should the stringify and evaluate type functions take a parameter (string or number?) to specify
@@ -69,32 +38,35 @@ Structural Issues:
 	  sending an optional destroy function that can is called when a type is destroyed.  For things
 	  where the pointer may be used multiple times but still needs to be destroyed, a simple refcount
 	  can be used in the pointer and the destroy func.
+	* should you make a seperate include/ dir for each module/frontend?
 
 	* should there be 2 region widgets (one handling horizontal and one vertical organization) or should
 	  there be one that handles both directions (but not necessarily at the same time)?
 	* the init functions for widgets should take parameters but how should those parameters be passed and
 	  described? (ie. using vargs? passing a string with typenames or valuename?)
-	* the context is ignored in select/next/previous/etc but should it be?
 	* should we change fe_read to return an int instead of char *?
-	* use the type system for widget types.  A widget is created from a type and subwidgets are added
 	* should you add a bunch of variables to the frontends which return common environment variables
 	  and values such as the homedir and the current user's username?  should there also be a way to
 	  access environment variables through a function and how would that be supported?
 	* should the parameters to fe_resize be absolute sizes or differences in size?
 	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
 	  so we could do the same thing as with MODIFY_SIZE
+	* should there be a function in the fe that returns the id of a widget given a pointer to it?
+	* the context is ignored in select/next/previous/etc but should it be? Should the behave like
+	  the CURRENT_WIDGET command in region.c?
+	* how will multiple terminals work in curses?  how will input work with multiple terminal?
+	* how can you control a list widget such as a users list where names are added and deleted?  should
+	  the widget rely on an array to get it's information?  should the widget be a vairable array itself?
+	  should the whole widget structure be replicated as variables such that every widget is added to
+	  the variables list using the id as it's name?
+	* should widget types be stored in a dedicated list or as a system variable
 
-	* what if you store the channel struct pointer as the index?  there can be an irc-specific
-	  method of finding the channel by assuming the index of an "irc.print" signal (or whatever it
-	  will be called) is a channel struct but it would still need a method of searching all signal
-	  handlers for "irc.print" for the current window pointer stored as the signal handler's
-	  parameter.
 	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages? instead of just
 	  dispatching select messages like privmsg and notice (which would require a rewrite of the message
 	  handlers to check for an outbound message))
 
 	* can/should we make complex and/or expensive operations compile-time options (at least as long
-	  as the operation can be disabled without causing trouble)?
+	  as the operation can be disabled without causing trouble)? (like vim does with its FEAT_...)
 	* should you move the commmon/utils headers to the include/ dir?
 	* a window handler connecting to a signal emitted for a particular window so that it can
 	  free memory when that window is destroyed for example (server registering for its status
@@ -110,45 +82,34 @@ Bugs:
 	* when a character that is displayed with 2 characters is entered (such as ^C) the cursor is only
 	  moved one character forward so when you enter more characters, they show up in further to the left
 	  than expected
-	* when you create a window ("base", "window", NULL, NULL) during the init before you run the dotfile
-	  script and then switch to that first window from the server status window before joining a channel
-	  and switch back to the irc status window, the nick and current channel don't change back among
-	  other things
+
+	* one time after being disconnected, it tried reconnecting twice, printed the Unable to reconnect
+	  message but then printed nearly 1000 Error: Disconnected messages.  What was this caused by?
 
 General:
 	* work on the new build system
-	* revise dispatch to handle messages better during a reconnect
-
-	* make all string prints joinpoints and make a function util_print_str if you need (otherwise use
-	  the config macros).  You can use joinpoints to implement the mechanism that redirects the output
-	  of all messages for commands like source
-	* make it possible to silence output to any window somehow so that the messages don't have to be
-	  printed when executing the source command.  Through joinpoints and signals? some special frontend
-	  support control?
+	* convert some of the modules that use linear lists to use the static inlines version of it instead
+	* fix text.c to properly display tab characters (perhaps you could modify irc_format_msg instead
+	  to expand tabs and/or to filter out non-printable characters such as backspace and other control
+	  codes)
 
 	* make the fe.c stuff dynamically build the frontend widgets instead of being static like it is
 	* add scrollwheel message handlers to the win32 frontend and use joinpoints to define the behaviour
 	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
-	* make the calling of process_char() a joinpoint?
 
-	* MAKE SURE all message handlers don't clobber the message! (CTCP messages do)
 	* implement execute.c for win32
 	* add a function fe_prompt(char *prompt, char *buffer, int max) that prompts the user for input
 	  by some appropriate frontend method (to be used for example to prompt yes or no when quitting)
 	* add a flag option to the quit command that causes it to prompt yes/no before quitting
-	* add a SIGWINCH handler to curses terminal
+	* convert text.c and server.c/msg.c to use the new queue functions if it is easily possible
 
 	* report when a command fails
-	* fix up error handling in net.c and server.c
-	* add error messages to commands and stuff that fail giving the reason for failure (this should
-	  either be directly printed or use a different error joinpoint).
+	* make the disconnect error print to all windows instead of just the current one (using joinpoints)
 	* add a timer response type and make an email checker timed event
-	* make the MODE msg handler update the channel and user mode bits
 	* add irc variables and types for servers and channels and so on in a similar fashion to the colour
 	  type in the frontend
-	* maybe add to the source command a message that is printed that says what file is being loaded
 
-	* do better parsing of args in commands and such (so you have use "" in particular)
+	* do better parsing of args in commands and such (so you can use "" in particular)
 	* add dcc support
 	* have an "activity" status indicator in the status bar so you know when stuff has been said and
 	  in what channels
@@ -156,20 +117,19 @@ General:
 	* get realname, nick from current user's info (on unix) (store in a "realname" variable?)
 	* pass realname to server when connecting (base it on a "realname" variable?)
 	* add list command
-	* add channel and user mode bits
 	* add home/end functions to be keybound
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
 	* add unalias command
 	* add a beep (maybe using an fe_beep() function which is called from irc_format_msg)?
+	* add channel and user mode bit stringification (probably through some kind of variable type)
 
+	* for each command write a proper description of the command's use in the source file itself either
+	  as a comment or as a variable of some kind that is accessable to some kind of help system.
 	* make ping to milliseconds
 	* make a directory of configs for runtime configuration files
 	* do better parsing of arguments in execute.c
-	* move include files into an include/ directory inside of each module's directory (and then same
-	  for frontends) (??? is this really a good idea?)
 	* make a configuration/compilation script that builds the makefiles
 	* modify channel.c to use a hash table instead of the linear list?
-	* rewrite msg.c using va_args instead of making an array and use sprintf
 	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
 	  addresses)
 	* add a function to key.c to get the current binding of a key sequence (without processing)
@@ -178,14 +138,12 @@ General:
 	* make all the colour mappings reassignable
 	* make an online help system
 
-	* unify the naming patterns for variables and frontend widgets, etc.
 	* can we fix the handling of the no remove flag in variables so that is doesn't remove the node
 	  from the list before checking the flag and readding it when it finds it's not suppose to remove it?
-	* would it be desirable to have msgs/names.c instead of ignoring users already added, update their
-	  stats?  would this erase other bitflags that may have been set if they were just overwritten?
 	* optimize for space and speed (re-evaluate things).
 	* add the slab allocator
 	* catch the ^C signal to cancel a connect
+	* add a SIGWINCH handler to curses terminal
 
 Features:
 	* logging plugin
