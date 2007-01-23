@@ -101,9 +101,14 @@ struct widget_s {
 int init_widget(void);
 int release_widget(void);
 
+int add_widget_type(struct widget_type_s *);
+int remove_widget_type(char *);
+struct widget_type_s *find_widget_type(char *);
+
 struct widget_s *create_widget(struct widget_type_s *, char *, struct widget_s *, ...);
 int destroy_widget(struct widget_s *);
 struct widget_s *find_widget(char *);
+
 int widget_control(struct widget_s *, int, ...);
 
 #endif

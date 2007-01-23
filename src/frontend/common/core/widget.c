@@ -13,6 +13,8 @@
 #include <stutter/memory.h>
 #include <stutter/frontend/widget.h>
 
+#define WIDGET_TYPES_INIT_SIZE		10
+
 #define widget_release_node(list, node)	\
 	node->data.type->release(&node->data);
 
@@ -35,11 +37,14 @@ DEFINE_HASH_TABLE(widget, struct widget_list_s, struct widget_node_s, wl, data.i
 
 static int widget_initialized = 0;
 static struct widget_list_s widget_list;
+static struct hash_table_s *widget_types;
 
 int init_widget(void)
 {
 	if (widget_initialized)
 		return(1);
+	if (!(widget_types = create_hash_table(WIDGET_TYPES_INIT_SIZE, NULL)))
+		return(-1);
 	widget_init_table(&widget_list, FE_WIDGET_LIST_INIT_SIZE);
 	widget_initialized = 1;
 	return(0);
@@ -53,8 +58,34 @@ int release_widget(void)
 	if (!widget_initialized)
 		return(1);
 	widget_release_table(&widget_list);
+	destroy_hash_table(widget_types);
 	widget_initialized = 0;
 	return(0);
+}
+
+int add_widget_type(struct widget_type_s *type)
+{
+	struct hash_node_s *node;
+
+	if (!(node = hash_create_node(0)))
+		return(-1);
+	hash_init_node(widget_types, node, type->name, type);
+	hash_add_node(widget_types, node);
+	return(0);
+}
+
+int remove_widget_type(char *name)
+{
+	return(hash_delete_node(widget_types, name));
+}
+
+struct widget_type_s *find_widget_type(char *name)
+{
+	struct hash_node_s *node;
+
+	if (!(node = hash_find_node(widget_types, name)))
+		return(NULL);
+	return(node->ptr);
 }
 
 struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widget_s *parent, ...)
