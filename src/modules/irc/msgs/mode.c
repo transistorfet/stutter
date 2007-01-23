@@ -56,44 +56,44 @@ static inline int irc_msg_mode_convert(struct irc_channel *channel, struct irc_m
 				}
 				case 'm': {
 					if (method)
-						user->bitflags |= IRC_CBF_MODE_MODERATED;
+						channel->bitflags |= IRC_CBF_MODE_MODERATED;
 					else
-						user->bitflags &= ~IRC_CBF_MODE_MODERATED;
+						channel->bitflags &= ~IRC_CBF_MODE_MODERATED;
 					break;
 				}
 				case 't': {
 					if (method)
-						user->bitflags |= IRC_CBF_MODE_OPS_TOPIC;
+						channel->bitflags |= IRC_CBF_MODE_OPS_TOPIC;
 					else
-						user->bitflags &= ~IRC_CBF_MODE_OPS_TOPIC;
+						channel->bitflags &= ~IRC_CBF_MODE_OPS_TOPIC;
 					break;
 				}
 				case 'n': {
 					if (method)
-						user->bitflags |= IRC_CBF_MODE_LOCAL_SEND_ONLY;
+						channel->bitflags |= IRC_CBF_MODE_LOCAL_SEND_ONLY;
 					else
-						user->bitflags &= ~IRC_CBF_MODE_LOCAL_SEND_ONLY;
+						channel->bitflags &= ~IRC_CBF_MODE_LOCAL_SEND_ONLY;
 					break;
 				}
 				case 'i': {
 					if (method)
-						user->bitflags |= IRC_CBF_MODE_INVITE_ONLY;
+						channel->bitflags |= IRC_CBF_MODE_INVITE_ONLY;
 					else
-						user->bitflags &= ~IRC_CBF_MODE_INVITE_ONLY;
+						channel->bitflags &= ~IRC_CBF_MODE_INVITE_ONLY;
 					break;
 				}
 				case 'p': {
 					if (method)
-						user->bitflags |= IRC_CBF_MODE_PRIVATE;
+						channel->bitflags |= IRC_CBF_MODE_PRIVATE;
 					else
-						user->bitflags &= ~IRC_CBF_MODE_PRIVATE;
+						channel->bitflags &= ~IRC_CBF_MODE_PRIVATE;
 					break;
 				}
 				case 's': {
 					if (method)
-						user->bitflags |= IRC_CBF_MODE_SECRET;
+						channel->bitflags |= IRC_CBF_MODE_SECRET;
 					else
-						user->bitflags &= ~IRC_CBF_MODE_SECRET;
+						channel->bitflags &= ~IRC_CBF_MODE_SECRET;
 					break;
 				}
 				case 'k':
