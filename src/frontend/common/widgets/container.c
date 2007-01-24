@@ -166,6 +166,7 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			container_widgets_foreach(container, cur) {
 				if ((cur->widget == widget) || !widget_control_m(cur->widget, cmd, args)) {
 					container_widgets_set_current_node(container, cur);
+					WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
 					return(0);
 				}
 			}
