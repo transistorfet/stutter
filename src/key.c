@@ -95,26 +95,26 @@ int release_key(void)
  * old binding will be destroyed and replace with the given value/type
  * pair and arguments.  A 0 is returned on success.
  */
-int bind_key(char *context, char *str, void *value, struct type_s *type, char *args)
+int bind_key(char *context, unsigned char *key, void *value, struct type_s *type, char *args)
 {
 	int i;
 	union key_data_u data;
 	struct key_s *cur_key;
 	struct key_map_s *map, *cur_map;
 
-	if ((*str == '\0') || !type || !type->evaluate || !(args = create_string("%s", args)))
+	if ((*key == '\0') || !type || !type->evaluate || !(args = create_string("%s", args)))
 		return(-1);
 	data.variable.value = value;
 	data.variable.type = type;
 
 	if (!(cur_map = context ? context_find_node(&context_list, context) : current_context) && !(cur_map = create_context(context)))
 		return(-1);
-	for (i = 0;str[i] != '\0';i++) {
-		cur_key = key_map_find_node(cur_map, (void *) (int) str[i]);
-		if (str[i + 1] == '\0') {
+	for (i = 0;key[i] != '\0';i++) {
+		cur_key = key_map_find_node(cur_map, (void *) (int) key[i]);
+		if (key[i + 1] == '\0') {
 			if (!cur_key) {
 				/* Create a new terminating key entry */
-				if (!(cur_key = create_key(str[i], 0, data, args)))
+				if (!(cur_key = create_key(key[i], 0, data, args)))
 					return(-1);
 				key_map_add_node(cur_map, cur_key);
 			}
@@ -128,7 +128,7 @@ int bind_key(char *context, char *str, void *value, struct type_s *type, char *a
 					destroy_string(cur_key->args);
 				cur_key->bitflags = 0;
 				cur_key->data = data;
-				cur_key->ch = str[i];
+				cur_key->ch = key[i];
 				cur_key->args = args;
 			}
 		}
@@ -137,7 +137,7 @@ int bind_key(char *context, char *str, void *value, struct type_s *type, char *a
 				/* Create a new submap */
 				if (!(map = create_key_map(NULL, KEY_SUBMAP_INIT_SIZE)))
 					return(-1);
-				if (!(cur_key = create_key(str[i], KEY_KBF_SUBMAP, (union key_data_u) map, NULL))) {
+				if (!(cur_key = create_key(key[i], KEY_KBF_SUBMAP, (union key_data_u) map, NULL))) {
 					key_map_destroy_table(map);
 					return(-1);
 				}
@@ -151,7 +151,7 @@ int bind_key(char *context, char *str, void *value, struct type_s *type, char *a
 					destroy_string(cur_key->args);
 				cur_key->data.submap = map;
 				cur_key->bitflags = KEY_KBF_SUBMAP;
-				cur_key->ch = str[i];
+				cur_key->ch = key[i];
 				cur_key->args = args;
 			}
 			/* Recurse on the submap */
@@ -292,6 +292,8 @@ static inline struct key_map_s *create_key_map(char *context, int size)
 {
 	struct key_map_s *map;
 
+	if (!context)
+		context = "";
 	if (!(map = context_create_node(sizeof(struct key_map_s) + strlen(context) + 1)))
 		return(NULL);
 	map->context = (char *) (((size_t) map) + sizeof(struct key_map_s));
