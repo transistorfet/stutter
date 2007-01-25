@@ -125,6 +125,7 @@ int input_control(struct input_s *input, int cmd, va_list va)
 				for (i = 0;i < amount;i++) {
 					if (!(node = queue_next_node(queue_current_node(input->history))))
 						node = queue_first_node(input->history);
+					queue_set_current_node(input->history, node);
 				}
 			}
 			else {
@@ -132,6 +133,7 @@ int input_control(struct input_s *input, int cmd, va_list va)
 				for (i = 0;i < amount;i++) {
 					if (!(node = queue_previous_node(queue_current_node(input->history))))
 						node = queue_last_node(input->history);
+					queue_set_current_node(input->history, node);
 				}
 			}
 			queue_set_current_node(input->history, node);
@@ -226,14 +228,18 @@ static inline int input_process_char(struct input_s *input, int ch)
 		}
 		case KC_UP: {
 			struct queue_node_s *node;
-			if ((node = queue_next_node(queue_current_node(input->history))) || (node = queue_first_node(input->history)))
+			if ((node = queue_next_node(queue_current_node(input->history))) || (node = queue_first_node(input->history))) {
+				queue_set_current_node(input->history, node);
 				input_print(input, (char *) node->ptr, -1);
+			}
 			break;
 		}
 		case KC_DOWN: {
 			struct queue_node_s *node;
-			if ((node = queue_previous_node(queue_current_node(input->history))) || (node = queue_last_node(input->history)))
+			if ((node = queue_previous_node(queue_current_node(input->history))) || (node = queue_last_node(input->history))) {
+				queue_set_current_node(input->history, node);
 				input_print(input, (char *) node->ptr, -1);
+			}
 			break;
 		}
 		case KC_RIGHT: {
