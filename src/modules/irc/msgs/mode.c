@@ -16,7 +16,7 @@ int irc_msg_mode(char *env, struct irc_msg *msg)
 {
 	struct irc_channel *channel;
 
-	if (channel = irc_find_channel(msg->server->channels, msg->params[0])) {
+	if (channel = irc_find_channel(msg->server->channels, msg->params[0]))
 		irc_msg_mode_convert(channel, msg);
 	else if (!(channel = msg->server->status))
 		return(-1);
