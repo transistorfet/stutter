@@ -21,7 +21,6 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 				msg->server->nick[IRC_MAX_NICK - 1] = '\0';
 			}
 			msg->server->bitflags |= IRC_SBF_CONNECTED;
-			msg->server->bitflags &= ~IRC_SBF_RECONNECTING;
 		case 002:
 		case 003:
 		case 004:

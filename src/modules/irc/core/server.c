@@ -111,12 +111,14 @@ int irc_server_reconnect(struct irc_server *server)
 	}
 	queue_release_v(server->send_queue);
 
+	server->attempts++;
 	if (irc_server_init_connection(server)) {
 		IRC_ERROR_JOINPOINT(IRC_ERR_RECONNECT_ERROR, server->address)
 		fe_net_disconnect(server->net);
 		server->net = NULL;
 		return(-1);
 	}
+	server->attempts = 0;
 	irc_traverse_channel_list(server->channels, (traverse_t) irc_server_rejoin_channel, server);
 	return(0);
 }
@@ -211,14 +213,10 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
 			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, server->address)
-			if (server->bitflags & IRC_SBF_RECONNECTING) {
-				fe_net_disconnect(server->net);
-				server->net = NULL;
+			if (IRC_RECONNECT_RETRIES && (server->attempts > IRC_RECONNECT_RETRIES))
 				return(NULL);
-			}
-			else if (irc_server_reconnect(server))
+			if (irc_server_reconnect(server))
 				return(NULL);
-			server->bitflags |= IRC_SBF_RECONNECTING;
 		}
 		else if (size == 0)
 			return(NULL);
@@ -478,14 +476,11 @@ static int irc_server_ping_watchdog(fe_timer_t timer, void *ptr1, void *ptr2)
 	current_time = time(NULL);
 	linear_foreach_v(server_list, sl, cur) {
 		if ((current_time - cur->server.last_ping) >= IRC_PING_WATCHDOG_TIMEOUT) {
-			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, cur->server.address)
-			if (cur->server.bitflags & IRC_SBF_RECONNECTING) {
-				fe_net_disconnect(cur->server.net);
-				cur->server.net = NULL;
+			if (cur->server.bitflags & IRC_SBF_CONNECTED) {
+				IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, cur->server.address)
 			}
-			else
+			if (!IRC_RECONNECT_RETRIES || (cur->server.attempts <= IRC_RECONNECT_RETRIES))
 				irc_server_reconnect(&cur->server);
-			cur->server.bitflags |= IRC_SBF_RECONNECTING;
 		}
 	}
 	return(0);
