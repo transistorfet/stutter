@@ -16,7 +16,6 @@
 #define IRC_SERVER_STATUS_CHANNEL	"status"
 
 #define IRC_SBF_CONNECTED		0x01
-#define IRC_SBF_RECONNECTING		0x02
 
 struct irc_server {
 	int bitflags;
@@ -25,6 +24,7 @@ struct irc_server {
 
 	fe_network_t net;
 	time_t last_ping;
+	int attempts;
 	char nick[IRC_MAX_NICK];
 	queue_list_v(irc_msg) send_queue;
 	struct irc_channel *status;
