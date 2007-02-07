@@ -126,6 +126,8 @@ int util_decode_bytes(const char *str, unsigned char *data, int max)
  */
 int util_escape_char(const char *str, char *buffer)
 {
+	char number[3];
+
 	if (*str == '\0')
 		return(0);
 	switch (str[0]) {
@@ -142,8 +144,12 @@ int util_escape_char(const char *str, char *buffer)
 			buffer[0] = '\x1b';
 			break;
 		case 'x':
-			if ((str[1] != '\0') && (str[2] != '\0'))
-				buffer[0] = (str[1] - 0x30) * 0x10 + (str[2] - 0x30);
+			if ((str[1] != '\0') && (str[2] != '\0')) {
+				number[0] = str[1];
+				number[1] = str[2];
+				number[2] = '\0';
+				buffer[0] = util_atoi(number, 16);
+			}
 			return(3);
 		default:
 			if (is_number_char_m(str[0])) {
@@ -174,7 +180,7 @@ int util_convert_key(const char *str, char *buffer, int max)
 	int i, j = 0;
 
 	max--;
-	for (i = 0;(str[i] != '\0') && (j < max);i++) {
+	for (i = 0;(str[i] != '\0') && (j < max);) {
 		if (str[i] == '$')
 			j += util_expand_variable(&str[i], &buffer[j], max - j + 1, &i);
 		else if (str[i] == '\\') {
@@ -183,12 +189,12 @@ int util_convert_key(const char *str, char *buffer, int max)
 		else if (str[i] == '^') {
 			i++;
 			if ((str[i] >= 0x41) && (str[i] <= 0x5f))
-				buffer[j++] = str[i] - 0x40;
+				buffer[j++] = str[i++] - 0x40;
 			else if ((str[i] >= 0x61) && (str[i] <= 0x7a))
-				buffer[j++] = str[i] - 0x60;
+				buffer[j++] = str[i++] - 0x60;
 		}
 		else
-			buffer[j++] = str[i];
+			buffer[j++] = str[i++];
 	}
 	buffer[j] = '\0';
 	return(j);
