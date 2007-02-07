@@ -1,0 +1,14 @@
+
+0.3.2:
+	- Fixed the key conversion code to properly convert the \x00 into its
+	  hex equivalent.
+	- Fixed a segfault that occurred when you disconnect from a server and
+	  attempt to connect to another server.
+
+0.3.1:
+	- Fixed the input history scrolling.
+	- Added a forced refresh after a widget is selected.
+	- Fixed a segfault that occurred when connecting to some servers (when
+	  a mode command is sent on connection).
+	- Changed auto-reconnect code to retry a certain number of times.
+
