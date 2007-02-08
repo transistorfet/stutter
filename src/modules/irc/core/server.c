@@ -33,10 +33,11 @@ static fe_timer_t irc_ping_watchdog_timer;
 static linear_list_v(irc_server_node) server_list;
 
 static int irc_server_init_connection(struct irc_server *);
+static int irc_server_auto_reconnect(struct irc_server *, void *, fe_timer_t);
 static int irc_server_receive(struct irc_server *, fe_network_t, fe_network_t);
 static int irc_server_rejoin_channel(struct irc_channel *, struct irc_server *);
 static int irc_server_flush_send_queue(struct irc_server *);
-static int irc_server_ping_watchdog(fe_timer_t, void *, void *);
+static int irc_server_ping_watchdog(void *, void *, fe_timer_t);
 
 int init_irc_server(void)
 {
@@ -104,7 +105,8 @@ int irc_server_reconnect(struct irc_server *server)
 {
 	struct irc_msg *cur, *tmp;
 
-	fe_net_disconnect(server->net);
+	if (server->net)
+		fe_net_disconnect(server->net);
 	server->bitflags &= ~IRC_SBF_CONNECTED;
 	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_destroy_msg(cur);
@@ -130,6 +132,7 @@ int irc_server_disconnect(struct irc_server *server)
 {
 	struct irc_msg *cur, *tmp;
 
+	signal_disconnect("fe.read_ready", server->net, (signal_t) irc_server_receive, server);
 	linear_remove_node_v(server_list, sl, (struct irc_server_node *) server);
 	irc_destroy_channel_list(server->channels);
 	fe_net_disconnect(server->net);
@@ -204,6 +207,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 struct irc_msg *irc_receive_msg(struct irc_server *server)
 {
 	int size;
+	fe_timer_t timer;
 	struct irc_msg *msg;
 	char buffer[IRC_MAX_MSG + 1];
 
@@ -215,8 +219,13 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, server->address)
 			if (IRC_RECONNECT_RETRIES && (server->attempts > IRC_RECONNECT_RETRIES))
 				return(NULL);
-			if (irc_server_reconnect(server))
-				return(NULL);
+			fe_net_disconnect(server->net);
+			server->net = NULL;
+			if (timer = fe_timer_create(FE_TIMER_BF_PERIODIC, IRC_RETRY_DELAY)) {
+				signal_connect("fe.timer_done", timer, 10, (signal_t) irc_server_auto_reconnect, server);
+				IRC_OUTPUT_JOINPOINT(IRC_OUT_ATTEMPTING_RECONNECT, IRC_RETRY_DELAY)
+			}
+			return(NULL);
 		}
 		else if (size == 0)
 			return(NULL);
@@ -424,6 +433,23 @@ static int irc_server_init_connection(struct irc_server *server)
 }
 
 /**
+ * Reconnect to the given server after the retry delay has expired.  If the
+ * attempt fails, the timer is reset unless the maximum number of retries has
+ * been reached.
+ */
+static int irc_server_auto_reconnect(struct irc_server *server, void *ptr, fe_timer_t timer)
+{
+	int ret;
+
+	ret = irc_server_reconnect(server);
+	if (!ret || !IRC_RECONNECT_RETRIES || (server->attempts <= IRC_RECONNECT_RETRIES)) {
+		signal_disconnect("fe.timer_done", timer, (signal_t) irc_server_auto_reconnect, server);
+		fe_timer_destroy(timer);
+	}
+	return(ret);
+}
+
+/**
  * Called by network when data is available from the given socket for
  * the given server.
  */
@@ -468,7 +494,7 @@ static int irc_server_flush_send_queue(struct irc_server *server)
  * is greater than IRC_PING_WATCHDOG_TIMEOUT then the server is reconnected
  * to.
  */
-static int irc_server_ping_watchdog(fe_timer_t timer, void *ptr1, void *ptr2)
+static int irc_server_ping_watchdog(void *ptr1, void *ptr2, fe_timer_t timer)
 {
 	time_t current_time;
 	struct irc_server_node *cur;
