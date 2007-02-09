@@ -140,3 +140,29 @@ int irc_traverse_user_list(struct irc_user_list *list, traverse_t func, void *pt
 }
 
 
+/**
+ * Returns the first user in the given user list.
+ */
+struct irc_user *irc_user_get_first(struct irc_user_list *list)
+{
+	struct irc_user_node *node;
+
+	if (node = linear_first_v(list->ul))
+		return(&node->user);
+	return(NULL);
+}
+
+/**
+ * Returns the next user structure in a user list given its previous
+ * user structure.
+ */
+struct irc_user *irc_user_get_next(struct irc_user *user)
+{
+	struct irc_user_node *node;
+
+	if (node = linear_next_v(ul, (struct irc_user_node *) user))
+		return(&node->user);
+	return(NULL);
+}
+
+

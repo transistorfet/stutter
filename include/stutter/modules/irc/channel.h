@@ -41,6 +41,9 @@ struct irc_channel *irc_find_channel(struct irc_channel_list *, char *);
 struct irc_channel *irc_channel_find_window(struct irc_channel_list *, void *);
 int irc_traverse_channel_list(struct irc_channel_list *, traverse_t, void *);
 
+struct irc_channel *irc_channel_get_first(struct irc_channel_list *);
+struct irc_channel *irc_channel_get_next(struct irc_channel *);
+
 #endif
 
 

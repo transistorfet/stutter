@@ -154,4 +154,30 @@ int irc_traverse_channel_list(struct irc_channel_list *list, traverse_t func, vo
 }
 
 
+/**
+ * Returns the first channel in the given channel list.
+ */
+struct irc_channel *irc_channel_get_first(struct irc_channel_list *list)
+{
+	struct irc_channel_node *node;
+
+	if (node = linear_first_v(list->cl))
+		return(&node->channel);
+	return(NULL);
+}
+
+/**
+ * Returns the next channel structure in a channel list given its previous
+ * channel structure.
+ */
+struct irc_channel *irc_channel_get_next(struct irc_channel *channel)
+{
+	struct irc_channel_node *node;
+
+	if (node = linear_next_v(cl, (struct irc_channel_node *) channel))
+		return(&node->channel);
+	return(NULL);
+}
+
+
 
