@@ -34,6 +34,10 @@ struct irc_user *irc_find_user(struct irc_user_list *, char *);
 int irc_change_user_nick(struct irc_user_list *, char *, char *);
 int irc_traverse_user_list(struct irc_user_list *, traverse_t, void *);
 
+struct irc_user *irc_user_get_first(struct irc_user_list *);
+struct irc_user *irc_user_get_next(struct irc_user *);
+
+
 #endif
 
 

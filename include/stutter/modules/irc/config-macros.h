@@ -39,6 +39,19 @@
 	}								\
 }
 
+#define IRC_PRINT_TO_SERVER(server, msg, fmt) {				\
+	struct irc_channel *channel;					\
+	char buffer[LARGE_STRING_SIZE];					\
+	if (irc_format_msg(msg, fmt, buffer, LARGE_STRING_SIZE) >= 0) {	\
+		channel = irc_channel_get_first(server->channels);	\
+		while (channel) {					\
+			fe_print(channel->window, buffer);		\
+			channel = irc_channel_get_next(channel);	\
+		}							\
+	}								\
+}
+
+
 #endif
 
 

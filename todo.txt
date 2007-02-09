@@ -1,4 +1,34 @@
 
+	* add to timer the ability to expire a timer prematurely
+	* re-evaluate the use of the traverse functions for channel and user lists.  Would it be better to
+	  have a function or macro to step through the list like you do for the raw list itself?
+	* add macros to timer to create a timer and add a signal handler at the same time
+
+	* you *really* have to fix signal system to better manage handlers (when things disconnect or are
+	  destroyed for example).  Perhaps all event-based services can use an id (perhaps even just a
+	  pointer) to group callbacks tied to a particular object so that the object can be purged from the
+	  system cleanly without a need to manually remove them all.  Perhaps you could even use a
+	  "purge_object" signal to report when an object/id should be removed.  How would each handler of
+	  this signal know that their parameter is a pointer and not a number?
+	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
+	  of pointers that is passed to the handlers along with the size of the array?  Would this make
+	  things to specific to a particular signal that is handled?  Is that a bad thing?
+
+	* make bind key do the variable lookup itself but if you do, should you allow a path index lookup
+	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
+	  the /bind command use path.<name> for the command name (at least if no . is found).
+
+	* should process_key take an unsigned char instead of an int?  do special characters like the
+	  arrow keys use numbers >256?  What about international keyboard, is there any reason to use an
+	  array of short or int instead of unsigned char as the key sequence?  (It would be wisest to use
+	  an array of int.  windows sends UTF-16 chars or for the WM_UNICHAR message, UTF-32).
+
+	* it might be possible to make it so that every server has it's own frame of channel widgets and
+	  when you use the next command, it will find the current frame, find the next text widget in that
+	  frame, and if there is no next widget, instead of going to the first, it finds the next frame
+	  (which should go to the next frame or go to the same frame if there is only one) and then go
+	  to the first text widget in that frame.
+
 	* work on API documentation
 	* finish/fix up region particularily the handling of MODIFY_SIZE and possibly re-write split
 
@@ -13,11 +43,15 @@ Structural Issues:
 	* should windows be able to have 2 or more names ("#philosophy", "1", "otherside/#philosophy") or
 	  should it be able to have only one name and a number which can be easily changed so that windows
 	  can be accessed by number and the order can be switched. (or both?)  Could we have all the names
-	  in one string like "otherside/#philosophy,#philosophy"
+	  in one string like "otherside/#philosophy,#philosophy".  It probably is possible to do this using
+	  multiple entries for the same node in the table and using strstr or something to compare the names
+	  after the hash number has been found.
 	* where should errors generally be printed from even using joinpoints?  Is it ok to have the net
 	  code printing errors (in the case of the retries there isn't *that* much choice but perhaps there
 	  is).  Would it be better for the command that attempts to connect to report the failure to connect
-	  or should net_connect do that before it returns NULL?
+	  or should net_connect do that before it returns NULL?  (For example, the net.c's failed to connect
+	  message is always printed before the unable to reconnect message when stutter is disconnected from
+	  irc.)
 
 	* should all instances of stringify that are accessable to the user do an index (path lookup) so
 	  that all variables can be accessed indirectly and not just commands?
@@ -78,13 +112,16 @@ Bugs:
 	  nick
 	* the windows version sometimes hangs up when printing the motd and wont change the display but you
 	  can still type and the statusbar updates.
-	* the bold_test string only displays white in bold even though the other colours can be bolded
 	* when a character that is displayed with 2 characters is entered (such as ^C) the cursor is only
 	  moved one character forward so when you enter more characters, they show up in further to the left
 	  than expected
+	* got some kind of infinite loop connected to freenode, in #logarithm, after testing logarithm with
+	  stutter running on panther
 
-	* one time after being disconnected, it tried reconnecting twice, printed the Unable to reconnect
-	  message but then printed nearly 1000 Error: Disconnected messages.  What was this caused by?
+	* stutter may be printing quit messages for users to channels where the user only partially matches
+	  (logarithm_'s quit was reported when only logarithm was in the channel).
+	* the Error Disconnected message is only printed for one server and is printed along with other
+	  messages to the current window and not to windows properly associated with that server
 
 General:
 	* work on the new build system
