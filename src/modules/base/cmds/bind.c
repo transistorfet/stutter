@@ -23,7 +23,7 @@ int base_cmd_bind(char *env, char *args)
 	char *key, *name;
 	struct type_s *type;
 	char *context = NULL;
-	char buffer[SMALL_STRING_SIZE];
+	int buffer[SMALL_STRING_SIZE];
 
 	trim_whitespace_m(args);
 	if (*args == '-')

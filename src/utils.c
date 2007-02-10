@@ -175,28 +175,44 @@ int util_escape_char(const char *str, char *buffer)
  * Convert the given key sequence representation into the sequence of
  * actual characters expected from the terminal.
  */
-int util_convert_key(const char *str, char *buffer, int max)
+int util_convert_key(const unsigned char *str, int *key, int max)
 {
-	int i, j = 0;
+	int i, j = 0, k;
+	unsigned char buffer[SMALL_STRING_SIZE];
 
 	max--;
 	for (i = 0;(str[i] != '\0') && (j < max);) {
-		if (str[i] == '$')
-			j += util_expand_variable(&str[i], &buffer[j], max - j + 1, &i);
+		if (str[i] == '$') {
+			k = util_expand_variable(&str[i], buffer, SMALL_STRING_SIZE, &i);
+			j += util_convert_key(buffer, &key[j], k);
+			i++;
+		}
 		else if (str[i] == '\\') {
-			i += util_escape_char(&str[++i], &buffer[j++]);
+			i += util_escape_char(&str[++i], buffer);
+			key[j++] = buffer[0];
+		}
+		else if (!strncmp_icase(&str[i], "u+", 2)) {
+			i += 2;
+			for (k = 0;(k < SMALL_STRING_SIZE) && (str[i] != '\0');k++, i++) {
+				if (((str[i] >= 0x30) && (str[i] <= 0x39)) || ((str[i] >= 0x41) && (str[i] <= 0x46)) || ((str[i] >= 0x61) && (str[i] <= 0x66)))
+					buffer[k] = str[i];
+				else
+					break;
+			}
+			buffer[k] = '\0';
+			key[j++] = util_atoi(buffer, 16);
 		}
 		else if (str[i] == '^') {
 			i++;
 			if ((str[i] >= 0x41) && (str[i] <= 0x5f))
-				buffer[j++] = str[i++] - 0x40;
+				key[j++] = str[i++] - 0x40;
 			else if ((str[i] >= 0x61) && (str[i] <= 0x7a))
-				buffer[j++] = str[i++] - 0x60;
+				key[j++] = str[i++] - 0x60;
 		}
 		else
-			buffer[j++] = str[i++];
+			key[j++] = str[i++];
 	}
-	buffer[j] = '\0';
+	key[j] = '\0';
 	return(j);
 }
 

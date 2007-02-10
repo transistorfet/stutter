@@ -38,7 +38,7 @@ struct key_map_s {
 };
 
 struct key_s {
-	short ch;
+	int ch;
 	short bitflags;
 	union key_data_u {
 		struct key_variable_s {
@@ -95,7 +95,7 @@ int release_key(void)
  * old binding will be destroyed and replace with the given value/type
  * pair and arguments.  A 0 is returned on success.
  */
-int bind_key(char *context, unsigned char *key, void *value, struct type_s *type, char *args)
+int bind_key(char *context, int *key, void *value, struct type_s *type, char *args)
 {
 	int i;
 	union key_data_u data;
@@ -110,7 +110,7 @@ int bind_key(char *context, unsigned char *key, void *value, struct type_s *type
 	if (!(cur_map = context ? context_find_node(&context_list, context) : current_context) && !(cur_map = create_context(context)))
 		return(-1);
 	for (i = 0;key[i] != '\0';i++) {
-		cur_key = key_map_find_node(cur_map, (void *) (int) key[i]);
+		cur_key = key_map_find_node(cur_map, (void *) key[i]);
 		if (key[i + 1] == '\0') {
 			if (!cur_key) {
 				/* Create a new terminating key entry */
@@ -167,7 +167,7 @@ int bind_key(char *context, unsigned char *key, void *value, struct type_s *type
  * will be returned otherwise 0 is returned.  If the given key is the
  * last key in a given submap then the submap is removed as well.
  */
-int unbind_key(char *context, char *str)
+int unbind_key(char *context, int *key)
 {
 	int i;
 	struct key_s *cur_key;
@@ -175,12 +175,12 @@ int unbind_key(char *context, char *str)
 
 	if (!(cur_map = context ? context_find_node(&context_list, context) : current_context))
 		return(-1);
-	for (i = 0;str[i] != '\0';i++) {
-		if (str[i + 1] == '\0') {
+	for (i = 0;key[i] != '\0';i++) {
+		if (key[i + 1] == '\0') {
 			/* Remove the entry (whether a submap or terminating key entry) */
-			key_map_delete_node(cur_map, (void *) (int) str[i]);
+			key_map_delete_node(cur_map, (void *) key[i]);
 		}
-		else if (!(cur_key = key_map_find_node(cur_map, (void *) (int) str[i]))) {
+		else if (!(cur_key = key_map_find_node(cur_map, (void *) key[i]))) {
 			/* We didn't find the key sequence */
 			return(1);
 		}

@@ -98,9 +98,12 @@ struct key_prototype_s {
 	int i;						\
 	void *value;					\
 	struct type_s *type;				\
+	int key[SMALL_STRING_SIZE];			\
 	for (i = 0;list[i].key;i++) {			\
-		if (value = find_variable(NULL, list[i].var, &type))	\
-			bind_key(NULL, list[i].key, value, type, list[i].params);	\
+		if (value = find_variable(NULL, list[i].var, &type)) {	\
+			util_convert_key(list[i].key, key, SMALL_STRING_SIZE);	\
+			bind_key(NULL, key, value, type, list[i].params);	\
+		}					\
 	}						\
 }
 
