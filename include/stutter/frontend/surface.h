@@ -7,6 +7,8 @@
 #ifndef _STUTTER_FRONTEND_SURFACE_H
 #define _STUTTER_FRONTEND_SURFACE_H
 
+#include <stutter/frontend/widget.h>
+
 #define SA_NORMAL		0x00
 #define SA_BOLD			0x01
 #define SA_INVERSE		0x02
@@ -38,9 +40,11 @@
 #define SC_RGBA_GREY		0x7F7F7F
 #define SC_RGBA_TURQUOISE	0x007F7F
 
-#define SCC_GET_ATTRIB		0x0010
-#define SCC_SET_ATTRIB		0x0020
-#define SCC_MODIFY_ATTRIB	0x0030
+#define SCC_SET_ROOT		0x0011
+#define SCC_REFRESH		0x0020
+#define SCC_GET_ATTRIB		0x0030
+#define SCC_SET_ATTRIB		0x0031
+#define SCC_MODIFY_ATTRIB	0x0032
 #define SCC_RESIZE		0x0040
 #define SCC_MOVE_CURSOR		0x0050
 
@@ -105,6 +109,7 @@ struct surface_s {
 	short y;
 	short width;
 	short height;
+	struct widget_s *root;
 };
 
 /*** Miscellaneous Macros and Inline Functions ***/
