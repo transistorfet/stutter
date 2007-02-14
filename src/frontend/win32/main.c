@@ -20,9 +20,6 @@
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/common.h>
 
-#include "core/net.h"
-#include "core/terminal.h"
-
 int handle_quit(char *, void *, char *);
 
 DEFINE_TYPE_LIST(fe_types,
@@ -57,9 +54,11 @@ DEFINE_COMMAND_LIST(fe_commands,
 );
 
 HINSTANCE this_instance;
-char *WinName = "Stutter";
 struct variable_table_s *fe_table;
 struct variable_table_s *fe_theme;
+
+extern int init_net(void);
+extern int release_net(void);
 
 extern int init_execute(void);
 extern int release_execute(void);
@@ -70,29 +69,10 @@ extern int release_timer(void);
 extern int init_frontend(void);
 extern int release_frontend(void);
 
-LRESULT CALLBACK windows_callback(HWND, UINT, WPARAM, LPARAM);
-
 int init_windows(void)
 {
-	WNDCLASSEX winclass;
 	struct type_s *type;
 
-	winclass.cbSize = sizeof(WNDCLASSEX);
-	winclass.hInstance = this_instance;
-	winclass.lpszClassName = WinName;
-	winclass.lpfnWndProc = windows_callback;
-	winclass.cbClsExtra = 0;
-	winclass.cbWndExtra = 0;
-
-	winclass.style = 0;
-	winclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	winclass.hIconSm = NULL;
-	winclass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	winclass.lpszMenuName = "StutterMenu";
-	winclass.hbrBackground = NULL;
-
-	if (!RegisterClassEx(&winclass))
-		return(-1);
 	if (init_system()) 
 		return(-1);
 
@@ -118,8 +98,6 @@ int init_windows(void)
 	ADD_VARIABLE_LIST(fe_table, fe_variables)
 	ADD_KEY_LIST(fe_keys)
 
-	if (init_terminal())
-		return(-1);
 	if (init_frontend()) 
 		return(-1);
 	return(0);
@@ -131,7 +109,6 @@ int release_windows(void)
 	#define MODULE(name)	RELEASE_MODULE(name)
 	MODULE_LIST()
 
-	release_terminal();
 	release_frontend();
 	release_timer();
 	release_execute();
@@ -178,61 +155,6 @@ int handle_quit(char *env, void *index, char *msg)
 {
 	PostQuitMessage(0);
 	return(SIGNAL_STOP_EMIT);
-}
-
-LRESULT CALLBACK windows_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
-{
-	switch (message) {
-		case WM_DESTROY: {
-			struct terminal_s *terminal;
-
-			if (terminal = terminal_find(hwnd))
-				terminal_free(terminal);
-			if (!terminal_get_number())
-				fe_quit("Lost Terminal");
-			break;
-		}
-		case NET_MESSAGE: {
-			fe_net_handle_message(wparam, LOWORD(lparam), HIWORD(lparam));
-			InvalidateRect(hwnd, NULL, 1);
-			break;
-		}
-		case WM_KEYDOWN: {
-			if ((wparam = terminal_convert_char(wparam)) == -1)
-				break;
-		}
-		case WM_CHAR: {
-			struct widget_s *input;
-
-			if (process_key(wparam) && (input = (struct input_s *) fe_current_widget("input", NULL)))
-				widget_control(input, WCC_PROCESS_CHAR, wparam);
-			InvalidateRect(hwnd, NULL, 1);
-			break;
-		}
-		case WM_SIZING: {
-			struct terminal_s *terminal;
-
-			if (terminal = terminal_find(hwnd)) {
-				if (terminal_resizing(terminal, (RECT *) lparam, wparam))
-					; // TODO cause a resize/update of widgets
-				InvalidateRect(hwnd, NULL, 1);
-			}
-			break;
-		}
-		case WM_PAINT: {
-			struct terminal_s *terminal;
-
-			if (terminal = terminal_find(hwnd)) {
-				fe_refresh();
-				terminal_refresh(terminal);
-			}
-			break;
-		}
-		default:
-			return(DefWindowProc(hwnd, message, wparam, lparam));
-	}
-
-	return(0);
 }
 
 

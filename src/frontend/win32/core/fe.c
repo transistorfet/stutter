@@ -1,7 +1,7 @@
 /*
  * Module Name:		fe.c
  * Version:		0.1
- * Module Requirements:	type ; signal ; queue ; string ; variable ; net ; terminal
+ * Module Requirements:	queue ; signal ; queue
  * Description:		Windows Frontend
  */
 
@@ -10,16 +10,13 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <stutter/type.h>
+#include <stutter/queue.h>
 #include <stutter/signal.h>
-#include <stutter/string.h>
 #include <stutter/globals.h>
-#include <stutter/variable.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
-#include "net.h"
 
-extern struct surface_s *terminal;
+extern struct surface_type_s *terminal_type;
 
 extern struct widget_type_s text_type;
 extern struct widget_type_s frame_type;
@@ -28,61 +25,76 @@ extern struct widget_type_s window_type;
 extern struct widget_type_s region_type;
 extern struct widget_type_s statusbar_type;
 
-struct widget_s *root;
-struct widget_s *frame;
-struct widget_s *input;
-struct widget_s *statusbar;
+static struct queue_s *surface_list;
+
+extern int init_terminal(void);
+extern int release_terminal(void);
+
+static struct widget_s *fe_create_root_widget(void);
+static struct surface_s *fe_create_surface(void);
+static int fe_destroy_surface(struct surface_s *);
 
 int init_frontend(void)
 {
+	if (!(surface_list = create_queue(0, (destroy_t) fe_destroy_surface)))
+		return(-1);
 	if (init_widget())
 		return(-1);
-
-	if (!(frame = (struct widget_s *) create_widget(&frame_type, "frame", NULL)))
+	if (init_terminal())
 		return(-1);
 
-	if (!(statusbar = (struct widget_s *) create_widget(&statusbar_type, "statusbar", NULL)))
+	if (!(fe_create_surface()))
 		return(-1);
-	widget_print_m(statusbar, FE_STATUSBAR, -1);
-
-	if (!(input = (struct widget_s *) create_widget(&input_type, "input", NULL)))
-		return(-1);
-
-	if (!(root = (struct widget_s *) create_widget(&region_type, "region", NULL)))
-		return(-1);
-	widget_control(root, WCC_SET_SURFACE, terminal);
-	widget_control(root, WCC_SET_WINDOW, 0, 0, surface_get_width_m(terminal), surface_get_height_m(terminal));
-	widget_control(root, WCC_ADD_WIDGET, frame);
-	widget_control(root, WCC_ADD_WIDGET, statusbar);
-	widget_control(root, WCC_ADD_WIDGET, input);
 	return(0);
 }
 
 int release_frontend(void)
 {
-	destroy_widget(WIDGET_S(root));
+	destroy_queue(surface_list);
+	release_terminal();
+	release_widget();
 	return(0);
 }
 
 void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 {
-	struct window_s *window;
+	struct widget_s *widget;
+	struct surface_s *surface;
 
-	if (!parent)
+	if (!parent) {
+		if (!(surface = fe_create_surface()))
+			return(NULL);
+		return(surface->root);
+	}
+	else if (!strcmp(type, "text"))
+		widget = (struct widget_s *) create_widget(&text_type, id, NULL);
+	else
 		return(NULL);
-	if (strcmp(type, "text") || !(window = (struct window_s *) create_widget(&text_type, id, (struct widget_s *) parent)))
-		return(NULL);
-	widget_control(frame, WCC_ADD_WIDGET, window);
-	return(window);
+
+	if (widget && parent)
+		widget_control(parent, WCC_ADD_WIDGET, widget);
+	return(widget);
 }
 
 int fe_destroy_widget(void *widget)
 {
-	if ((widget == root) || (widget == frame) || (widget == statusbar) || (widget == input))
-		return(-1);
-	widget_control(frame, WCC_REMOVE_WIDGET, widget);
-	destroy_widget(widget);
-	return(0);
+	struct queue_node_s *cur;
+
+	// TODO should there be some kind of lock that prevents destruction of key widgets?
+	if (WIDGET_S(widget)->parent) {
+		widget_control(WIDGET_S(widget)->parent, WCC_REMOVE_WIDGET, widget);
+		destroy_widget(widget);
+		return(0);
+	}
+	else {
+		queue_foreach(surface_list, cur) {
+			if (SURFACE_S(cur->ptr)->root == widget) {
+				queue_delete_node(surface_list, cur);
+				return(0);
+			}
+		}
+	}
+	return(-1);
 }
 
 void *fe_get_parent(void *widget)
@@ -123,10 +135,18 @@ int fe_resize_widget(void *widget, int x, int y)
 void *fe_current_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
+	struct queue_node_s *node;
 
-	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_CURRENT_WIDGET, &widget, context)) {
-		if (strstr(root->type->name, context))
-			return(root);
+	if (!ref) {
+		if (!(node = queue_current_node(surface_list)))
+			node = queue_set_current_node(surface_list, queue_first_node(surface_list));
+		if (!node || !node->ptr || !(ref = SURFACE_S(node->ptr)->root))
+			return(NULL);
+	}
+
+	if (widget_control(WIDGET_S(ref), WCC_CURRENT_WIDGET, &widget, context)) {
+		if (strstr(WIDGET_S(ref)->type->name, context))
+			return(ref);
 		else
 			return(NULL);
 	}
@@ -135,14 +155,30 @@ void *fe_current_widget(char *context, void *ref)
 
 int fe_select_widget(char *context, void *ref, void *widget)
 {
-	return(widget_control(ref ? WIDGET_S(ref) : root, WCC_SELECT_WIDGET, context, widget));
+	struct queue_node_s *cur;
+
+	if (!ref) {
+		// TODO should you send a command to the surface to cause it to become active?
+		queue_foreach(surface_list, cur) {
+			if (!(widget_control(SURFACE_S(cur->ptr)->root, WCC_SELECT_WIDGET, context, widget)))
+				return(0);
+		}
+		return(-1);
+	}
+	return(widget_control(WIDGET_S(ref), WCC_SELECT_WIDGET, context, widget));
 }
 
 void *fe_next_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
+	struct queue_node_s *node;
 
-	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_NEXT_WIDGET, &widget, context))
+	if (!ref) {
+		if (!(node = queue_set_current_node(surface_list, queue_next_node(queue_current_node(surface_list)))) || !node->ptr)
+			return(NULL);
+		return(SURFACE_S(node->ptr)->root);
+	}
+	if (widget_control(WIDGET_S(ref), WCC_NEXT_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -150,9 +186,14 @@ void *fe_next_widget(char *context, void *ref)
 void *fe_previous_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
+	struct queue_node_s *node;
 
-
-	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_PREVIOUS_WIDGET, &widget, context))
+	if (!ref) {
+		if (!(node = queue_set_current_node(surface_list, queue_previous_node(queue_current_node(surface_list)))) || !node->ptr)
+			return(NULL);
+		return(SURFACE_S(node->ptr)->root);
+	}
+	if (widget_control(WIDGET_S(ref), WCC_PREVIOUS_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -160,8 +201,14 @@ void *fe_previous_widget(char *context, void *ref)
 void *fe_first_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
+	struct queue_node_s *node;
 
-	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_FIRST_WIDGET, &widget, context))
+	if (!ref) {
+		if (!(node = queue_set_current_node(surface_list, queue_first_node(surface_list))) || !node->ptr)
+			return(NULL);
+		return(SURFACE_S(node->ptr)->root);
+	}
+	if (widget_control(WIDGET_S(ref), WCC_FIRST_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -169,8 +216,14 @@ void *fe_first_widget(char *context, void *ref)
 void *fe_last_widget(char *context, void *ref)
 {
 	struct widget_s *widget;
+	struct queue_node_s *node;
 
-	if (widget_control(ref ? WIDGET_S(ref) : root, WCC_LAST_WIDGET, &widget, context))
+	if (!ref) {
+		if (!(node = queue_set_current_node(surface_list, queue_last_node(surface_list))) || !node->ptr)
+			return(NULL);
+		return(SURFACE_S(node->ptr)->root);
+	}
+	if (widget_control(WIDGET_S(ref), WCC_LAST_WIDGET, &widget, context))
 		return(NULL);
 	return(widget);
 }
@@ -203,19 +256,79 @@ int fe_scroll(void *widget, int diff)
 	widget_control(WIDGET_S(widget), WCC_SCROLL, diff);
 }
 
-void fe_refresh(void)
-{
-	widget_size_t size;
-
-	widget_control(root, WCC_GET_WINDOW, NULL, &size);
-	if ((surface_get_width_m(terminal) != size.width) || (surface_get_height_m(terminal) != size.height))
-		widget_control(root, WCC_SET_WINDOW, 0, 0, surface_get_width_m(terminal), surface_get_height_m(terminal));
-	widget_refresh_m(root);
-}
-
 void fe_quit(char *reason)
 {
 	emit_signal("fe.quit", NULL, (void *) reason);
+}
+
+int fe_refresh(void)
+{
+	struct queue_node_s *cur;
+
+	queue_foreach(surface_list, cur) {
+		surface_control_m(cur->ptr, SCC_REFRESH, 0);
+	}
+	return(0);
+}
+
+/*** Local Functions ***/
+
+static struct widget_s *fe_create_root_widget(void)
+{
+	struct widget_s *root;
+	struct widget_s *frame;
+	struct widget_s *input;
+	struct widget_s *statusbar;
+
+	if (!(frame = (struct widget_s *) create_widget(&frame_type, "frame", NULL)))
+		return(NULL);
+
+	if (!(statusbar = (struct widget_s *) create_widget(&statusbar_type, "statusbar", NULL)))
+		return(NULL);
+	widget_print_m(statusbar, FE_STATUSBAR, -1);
+
+	if (!(input = (struct widget_s *) create_widget(&input_type, "input", NULL)))
+		return(NULL);
+
+	if (!(root = (struct widget_s *) create_widget(&region_type, "region", NULL)))
+		return(NULL);
+	// TODO this set_window should not longer be needed when region is fixed to allow widgets to be added
+	//	even when they don't fit (or should it be removed?)
+	widget_control(root, WCC_SET_WINDOW, 0, 0, 80, 25);
+	widget_control(root, WCC_ADD_WIDGET, frame);
+	widget_control(root, WCC_ADD_WIDGET, statusbar);
+	widget_control(root, WCC_ADD_WIDGET, input);
+	return(root);
+}
+
+static struct surface_s *fe_create_surface(void)
+{
+	struct widget_s *root;
+	struct queue_node_s *node;
+	struct surface_s *surface;
+
+	if (!(node = queue_create_node(0)))
+		return(NULL);
+	if (!(surface = (struct surface_s *) surface_create_m(&terminal_type, NULL, -1, -1, 0)))
+		return(NULL);
+	queue_init_node(surface_list, node, surface);
+	queue_append_node(surface_list, node);
+
+	// TODO how do you know what kind of root widget to create?
+	if (!(root = fe_create_root_widget())) {
+		queue_delete_node(surface_list, (void *) surface);
+		return(NULL);
+	}
+	surface_control_m(surface, SCC_SET_ROOT, root, NULL);
+	if (!queue_current_node(surface_list))
+		queue_set_current_node(surface_list, node);
+	return(surface);
+}
+
+static int fe_destroy_surface(struct surface_s *surface)
+{
+	surface_destroy_m(surface);
+	return(0);
 }
 
 

@@ -17,6 +17,8 @@
 #include <stutter/memory.h>
 #include <stutter/linear.h>
 #include <stutter/variable.h>
+#include <stutter/frontend.h>
+#include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
 #include <stutter/frontend/common/colourmap.h>
@@ -31,7 +33,6 @@ struct terminal_s {
 	struct surface_s surface;
 	short charx;
 	short chary;
-	attrib_t def_attrib;
 	attrib_t attrib;
 	HWND window;
 	HDC context;
@@ -41,10 +42,9 @@ struct terminal_s {
 
 extern HINSTANCE this_instance;
 
-struct terminal_s *terminal;
-
 static HFONT terminal_font;
 static HFONT terminal_bold_font;
+static int terminal_initialized = 0;
 static linear_list_v(terminal_s) terminal_list;
 static attrib_t terminal_def_attrib = { 0, SA_NORMAL, { SC_ENC_RGBA, SC_RGBA_WHITE }, { SC_ENC_RGBA, SC_RGBA_BLACK } };
 
@@ -59,15 +59,37 @@ struct surface_type_s terminal_type = {
 	(surface_control_t) terminal_control
 };
 
+LRESULT CALLBACK terminal_callback(HWND, UINT, WPARAM, LPARAM);
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
+static inline int terminal_free(struct terminal_s *);
+static inline void terminal_paint(struct terminal_s *);
+static inline int terminal_resizing(struct terminal_s *, RECT *, int);
+static inline int terminal_convert_char(int);
 static inline int terminal_convert_colour(colour_t);
 
 int init_terminal(void)
 {
+	WNDCLASSEX winclass;
 	struct type_s *type;
 
-	if (terminal)
-		return(1);
+	if (terminal_initialized)
+		return(0);
+	winclass.cbSize = sizeof(WNDCLASSEX);
+	winclass.hInstance = this_instance;
+	winclass.lpszClassName = "terminal";
+	winclass.lpfnWndProc = terminal_callback;
+	winclass.cbClsExtra = 0;
+	winclass.cbWndExtra = 0;
+
+	winclass.style = 0;
+	winclass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	winclass.hIconSm = NULL;
+	winclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+	winclass.lpszMenuName = NULL;
+	winclass.hbrBackground = NULL;
+
+	if (!RegisterClassEx(&winclass))
+		return(-1);
 	linear_init_v(terminal_list);
 
 	// TODO fix font width problem
@@ -78,17 +100,18 @@ int init_terminal(void)
 
 	if (init_colourmap())
 		return(-1);
-	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
-		return(-1);
 	if (type = find_type("colour:fe")) {
-		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal->def_attrib.fg);
-		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal->def_attrib.bg);
+		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal_def_attrib.fg);
+		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal_def_attrib.bg);
 	}
+	terminal_initialized = 1;
 	return(0);
 }
 
 int release_terminal(void)
 {
+	if (!terminal_initialized)
+		return(0);
 	return(0);
 }
 
@@ -110,10 +133,11 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 	SURFACE_S(terminal)->y = 0;
 	SURFACE_S(terminal)->width = (width == -1) ? TERMINAL_DEFAULT_WIDTH : width;
 	SURFACE_S(terminal)->height = (height == -1) ? TERMINAL_DEFAULT_HEIGHT : height;
+	SURFACE_S(terminal)->root = NULL;
 
 	terminal->window = CreateWindowEx(
 		WS_EX_CLIENTEDGE,
-		"Stutter",
+		"terminal",
 		"Stutter",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
@@ -138,7 +162,6 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 	terminal->chary = tm.tmHeight + tm.tmExternalLeading;
 	ReleaseDC(terminal->window, hdc);
 
-	terminal->def_attrib = terminal_def_attrib;
 	terminal_control(terminal, SCC_MODIFY_ATTRIB, SA_METHOD_SET, SA_NORMAL, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR);
 	terminal_control(terminal, SCC_RESIZE, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
 
@@ -221,6 +244,25 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 
 	va_start(va, cmd);
 	switch (cmd) {
+		case SCC_SET_ROOT: {
+			struct widget_s *root, **widget_ptr;
+
+			root = va_arg(va, struct widget_s *);
+			widget_ptr = va_arg(va, struct widget_s **);
+			if (widget_ptr)
+				*widget_ptr = SURFACE_S(terminal)->root;
+			else if (SURFACE_S(terminal)->root)
+				destroy_widget(SURFACE_S(terminal)->root);
+			if (SURFACE_S(terminal)->root = root) {
+				widget_control(SURFACE_S(terminal)->root, WCC_SET_SURFACE, terminal);
+				widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
+			}
+			return(0);
+		}
+		case SCC_REFRESH: {
+			InvalidateRect(terminal->window, NULL, 1);
+			return(0);
+		}
 		case SCC_GET_ATTRIB: {
 			attrib_t *attrib;
 
@@ -283,6 +325,8 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			size.bottom = SURFACE_S(terminal)->height * terminal->chary;
 			AdjustWindowRectEx(&size, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
 			SetWindowPos(terminal->window, NULL, 0, 0, size.right - size.left, size.bottom - size.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
+			if (SURFACE_S(terminal)->root)
+				widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
 			return(0);
 		}
 		case SCC_MOVE_CURSOR: {
@@ -304,10 +348,118 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 	return(-1);
 }
 
-int terminal_free(struct terminal_s *terminal)
+
+struct terminal_s *terminal_find(HWND window)
+{
+	struct terminal_s *terminal;
+
+	linear_find_node_v(terminal_list, list, terminal, (cur->window == window));
+	return(terminal);
+}
+
+HWND terminal_get_window(struct terminal_s *terminal)
+{
+	return(terminal->window);
+}
+
+/*** Local Functions ***/
+
+LRESULT CALLBACK terminal_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+{
+	switch (message) {
+		case WM_DESTROY: {
+			int i;
+			struct terminal_s *terminal;
+
+			// TODO you need to implement a method of reporting that a widget has been destroyed to parts
+			//	of the core and modules so they can free the resources tied to that widget
+			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
+			if (terminal)
+				terminal_free(terminal);
+			linear_foreach_v(terminal_list, list, terminal)
+				i++;
+			if (!i)
+				fe_quit("Lost Terminal");
+			break;
+		}
+		case WM_KEYDOWN: {
+			if ((wparam = terminal_convert_char(wparam)) == -1)
+				break;
+		}
+		case WM_CHAR: {
+			struct widget_s *input;
+			struct terminal_s *terminal;
+
+			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
+			if (process_key(wparam) && terminal && SURFACE_S(terminal)->root && (input = (struct input_s *) fe_current_widget("input", SURFACE_S(terminal)->root)))
+				widget_control(input, WCC_PROCESS_CHAR, wparam);
+			InvalidateRect(hwnd, NULL, 1);
+			break;
+		}
+		case WM_SIZING: {
+			struct terminal_s *terminal;
+
+			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
+			if (terminal) {
+				terminal_resizing(terminal, (RECT *) lparam, wparam);
+				InvalidateRect(hwnd, NULL, 1);
+			}
+			break;
+		}
+		case WM_PAINT: {
+			struct terminal_s *terminal;
+
+			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
+			if (terminal)
+				terminal_paint(terminal);
+			break;
+		}
+		default:
+			return(DefWindowProc(hwnd, message, wparam, lparam));
+	}
+
+	return(0);
+}
+
+/**
+ * Set the current attributes of the given terminal to the given attributes.
+ */
+static void terminal_set_attribs(struct terminal_s *terminal, attrib_t attrib)
+{
+	colour_t fg, bg;
+
+	if ((attrib.fg.enc == SC_ENC_MAPPING) && (attrib.fg.colour == SC_MAP_DEFAULT_COLOUR))
+		attrib.fg = terminal_def_attrib.fg;
+	if ((attrib.bg.enc == SC_ENC_MAPPING) && (attrib.bg.colour == SC_MAP_DEFAULT_COLOUR))
+		attrib.bg = terminal_def_attrib.bg;
+
+	if (attrib.style & SA_BOLD)
+		SelectObject(terminal->context, terminal_bold_font);
+	else
+		SelectObject(terminal->context, terminal_font);
+
+	if (attrib.style & SA_INVERSE) {
+		bg = attrib.fg;
+		fg = attrib.bg;
+	}
+	else {
+		fg = attrib.fg;
+		bg = attrib.bg;
+	}
+
+	SetTextColor(terminal->context, terminal_convert_colour(fg));
+	SetBkColor(terminal->context, terminal_convert_colour(bg));
+}
+
+/**
+ * Free the resources of the given terminal
+ */
+static inline int terminal_free(struct terminal_s *terminal)
 {
 	linear_remove_node_v(terminal_list, list, terminal);
 	ReleaseDC(terminal->window, terminal->context);
+	if (SURFACE_S(terminal)->root)
+		destroy_widget(WIDGET_S(SURFACE_S(terminal)->root));
 	memory_free(terminal);
 	return(0);
 }
@@ -316,12 +468,14 @@ int terminal_free(struct terminal_s *terminal)
  * Redraw and refresh the terminal by calling all registered refresh callback
  * functions and return 0 on success.
  */
-void terminal_refresh(struct terminal_s *terminal)
+static inline void terminal_paint(struct terminal_s *terminal)
 {
 	HDC hdc;
 	RECT rect;
 	PAINTSTRUCT ps;
 
+	if (SURFACE_S(terminal)->root)
+		widget_refresh_m(SURFACE_S(terminal)->root);
 	hdc = BeginPaint(terminal->window, &ps);
 	GetClientRect(terminal->window, &rect);
 	BitBlt(hdc, 0, 0, rect.right, rect.bottom, terminal->context, 0, 0, SRCCOPY);
@@ -332,7 +486,7 @@ void terminal_refresh(struct terminal_s *terminal)
  * Process the resizing message so that the window is always an even number of
  * characters wide and high.
  */
-int terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
+static inline int terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 {
 	RECT size;
 	int ret = 0;
@@ -374,13 +528,15 @@ int terminal_resizing(struct terminal_s *terminal, RECT *rect, int dir)
 		rect->bottom = rect->top + (SURFACE_S(terminal)->height * terminal->chary);
 
 	AdjustWindowRectEx(rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
+	if (SURFACE_S(terminal)->root)
+		widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
 	return(ret);
 }
 
 /**
  * Convert windows virtual keys to the common keycodes
  */
-int terminal_convert_char(int ch)
+static inline int terminal_convert_char(int ch)
 {
 	switch (ch) {
 		case VK_RETURN:
@@ -396,63 +552,6 @@ int terminal_convert_char(int ch)
 		default:
 			return(-1);
 	}
-}
-
-struct terminal_s *terminal_find(HWND window)
-{
-	struct terminal_s *terminal;
-
-	linear_find_node_v(terminal_list, list, terminal, (cur->window == window));
-	return(terminal);
-}
-
-HWND terminal_get_window(struct terminal_s *terminal)
-{
-	return(terminal->window);
-}
-
-int terminal_get_number(void)
-{
-	int i = 0;
-	struct terminal_s *cur;
-
-	linear_foreach_v(terminal_list, list, cur) {
-		i++;
-	}
-	return(i);
-}
-
-
-/*** Local Functions ***/
-
-/**
- * Set the current attributes of the given terminal to the given attributes.
- */
-static void terminal_set_attribs(struct terminal_s *terminal, attrib_t attrib)
-{
-	colour_t fg, bg;
-
-	if ((attrib.fg.enc == SC_ENC_MAPPING) && (attrib.fg.colour == SC_MAP_DEFAULT_COLOUR))
-		attrib.fg = terminal->def_attrib.fg;
-	if ((attrib.bg.enc == SC_ENC_MAPPING) && (attrib.bg.colour == SC_MAP_DEFAULT_COLOUR))
-		attrib.bg = terminal->def_attrib.bg;
-
-	if (attrib.style & SA_BOLD)
-		SelectObject(terminal->context, terminal_bold_font);
-	else
-		SelectObject(terminal->context, terminal_font);
-
-	if (attrib.style & SA_INVERSE) {
-		bg = attrib.fg;
-		fg = attrib.bg;
-	}
-	else {
-		fg = attrib.fg;
-		bg = attrib.bg;
-	}
-
-	SetTextColor(terminal->context, terminal_convert_colour(fg));
-	SetBkColor(terminal->context, terminal_convert_colour(bg));
 }
 
 /**
