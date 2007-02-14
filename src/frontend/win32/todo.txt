@@ -1,5 +1,0 @@
-
-- can we have net not depend on terminal
-
-- fix fonts (particularily adding the expression of the bold attribute)
-
