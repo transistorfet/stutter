@@ -16,7 +16,6 @@
 #include <stutter/memory.h>
 #include <stutter/signal.h>
 #include "net.h"
-#include "terminal.h"
 
 #ifndef NET_READ_BUFFER
 #define NET_READ_BUFFER		512
@@ -30,14 +29,39 @@ struct fe_network_s {
 	struct fe_network_s *next;
 };
 
+extern HINSTANCE this_instance;
+
+static HWND net_hwnd;
 static fe_network_t net_list = NULL;
+
+extern int fe_refresh(void);
+LRESULT CALLBACK net_callback(HWND, UINT, WPARAM, LPARAM);
 
 int init_net(void)
 {
 	WSADATA tmp;
+	WNDCLASSEX winclass;
 
 	if (WSAStartup(0x0101, &tmp))
 		return(-1);
+
+	winclass.cbSize = sizeof(WNDCLASSEX);
+	winclass.hInstance = this_instance;
+	winclass.lpszClassName = "net";
+	winclass.lpfnWndProc = net_callback;
+	winclass.cbClsExtra = 0;
+	winclass.cbWndExtra = 0;
+
+	winclass.style = 0;
+	winclass.hIcon = NULL;
+	winclass.hIconSm = NULL;
+	winclass.hCursor = NULL;
+	winclass.lpszMenuName = NULL;
+	winclass.hbrBackground = NULL;
+
+	if (!RegisterClassEx(&winclass))
+		return(-1);
+	net_hwnd = CreateWindow("net", "net", WS_POPUP, 0, 0, 0, 0, NULL, NULL, this_instance, NULL);
 	add_signal("fe.read_ready", 0);
 	return(0);
 }
@@ -56,6 +80,7 @@ int release_net(void)
 	}
 
 	remove_signal("fe.read_ready");
+	DestroyWindow(net_hwnd);
 	WSACleanup();
 	return(0);
 }
@@ -94,7 +119,7 @@ fe_network_t fe_net_connect(char *server, int port)
 		saddr.sin_addr = *((struct in_addr *) host->h_addr_list[j]);
 		for (i = 0;i < NET_ATTEMPTS;i++) {
 			if (connect(net->socket, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0) {
-				WSAAsyncSelect(net->socket, terminal_get_window(terminal), NET_MESSAGE, FD_READ | FD_CLOSE);
+				WSAAsyncSelect(net->socket, net_hwnd, NET_MESSAGE, FD_READ | FD_CLOSE);
 				net->next = net_list;
 				net_list = net;
 				return(net);
@@ -271,4 +296,17 @@ int fe_net_handle_message(int socket, int condition, int error)
 	return(-1);
 }
 
+LRESULT CALLBACK net_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
+{
+	switch (message) {
+		case NET_MESSAGE: {
+			fe_net_handle_message(wparam, LOWORD(lparam), HIWORD(lparam));
+			fe_refresh();
+			break;
+		}
+		default:
+			return(DefWindowProc(hwnd, message, wparam, lparam));
+	}
+	return(0);
+}
 
