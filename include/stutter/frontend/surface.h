@@ -71,8 +71,8 @@ struct surface_s;
 
 #define SURFACE_S(surface)	((struct surface_s *) (surface))
 
-#define surface_create_m(surface, parent, width, height, bitflags)	\
-	( SURFACE_S(surface)->type->create(SURFACE_S(surface), parent, width, height, bitflags) )
+#define surface_create_m(surface_type, parent, width, height, bitflags)	\
+	( surface_type->create(parent, width, height, bitflags) )
 #define surface_destroy_m(surface)					\
 	( SURFACE_S(surface)->type->destroy(SURFACE_S(surface)) )
 #define surface_print_m(surface, str, len)				\
