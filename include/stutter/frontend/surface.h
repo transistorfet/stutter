@@ -68,11 +68,13 @@ typedef struct attrib_s {
 } attrib_t;
 
 struct surface_s;
+struct surface_type_s;
 
 #define SURFACE_S(surface)	((struct surface_s *) (surface))
+#define SURFACE_TYPE_S(type)	((struct surface_type_s *) (type))
 
 #define surface_create_m(surface_type, parent, width, height, bitflags)	\
-	( surface_type->create(parent, width, height, bitflags) )
+	( SURFACE_TYPE_S(surface_type)->create(parent, width, height, bitflags) )
 #define surface_destroy_m(surface)					\
 	( SURFACE_S(surface)->type->destroy(SURFACE_S(surface)) )
 #define surface_print_m(surface, str, len)				\
