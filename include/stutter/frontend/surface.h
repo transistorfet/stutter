@@ -74,17 +74,17 @@ struct surface_type_s;
 #define SURFACE_TYPE_S(type)	((struct surface_type_s *) (type))
 
 #define surface_create_m(surface_type, parent, width, height, bitflags)	\
-	( SURFACE_TYPE_S(surface_type)->create(parent, width, height, bitflags) )
+	( (SURFACE_TYPE_S(surface_type)->create)(parent, width, height, bitflags) )
 #define surface_destroy_m(surface)					\
-	( SURFACE_S(surface)->type->destroy(SURFACE_S(surface)) )
+	( (SURFACE_S(surface)->type->destroy)(SURFACE_S(surface)) )
 #define surface_print_m(surface, str, len)				\
-	( SURFACE_S(surface)->type->print(SURFACE_S(surface), str, len) )
+	( (SURFACE_S(surface)->type->print)(SURFACE_S(surface), str, len) )
 #define surface_clear_m(surface, x, y, width, height)			\
-	( SURFACE_S(surface)->type->clear(SURFACE_S(surface), x, y, width, height) )
+	( (SURFACE_S(surface)->type->clear)(SURFACE_S(surface), x, y, width, height) )
 #define surface_move_m(surface, x, y)			\
-	( SURFACE_S(surface)->type->move(SURFACE_S(surface), x, y) )
+	( (SURFACE_S(surface)->type->move)(SURFACE_S(surface), x, y) )
 #define surface_control_m(surface, cmd, ...)				\
-	( SURFACE_S(surface)->type->control(SURFACE_S(surface), cmd, __VA_ARGS__) )
+	( (SURFACE_S(surface)->type->control)(SURFACE_S(surface), cmd, __VA_ARGS__) )
 
 typedef struct surface_s *(*surface_create_t)(struct surface_s *parent, short width, short height, int bitflags);
 typedef int (*surface_destroy_t)(struct surface_s *surface);
