@@ -7,10 +7,7 @@
 #ifndef _CURSES_TERMINAL_H
 #define _CURSES_TERMINAL_H
 
-#include <stutter/globals.h>
-
 struct terminal_s;
-extern struct terminal_s *terminal;
 
 int init_terminal(void);
 int release_terminal(void);
@@ -22,8 +19,7 @@ void terminal_clear(struct terminal_s *, short, short, short, short);
 void terminal_move(struct terminal_s *, short, short);
 int terminal_control(struct terminal_s *, int, ...);
 
-void terminal_refresh(struct terminal_s *);
-int terminal_read_char(void);
+int terminal_check_keys(void);
 
 #endif
 

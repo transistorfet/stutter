@@ -107,8 +107,6 @@ int init_curses(void)
 	ADD_VARIABLE_LIST(fe_table, fe_variables)
 	ADD_KEY_LIST(fe_keys)
 
-	if (init_terminal())
-		return(-1);
 	if (init_frontend())
 		return(-1);
 	return(0);
@@ -121,7 +119,6 @@ int release_curses(void)
 	MODULE_LIST()
 
 	release_frontend();
-	release_terminal();
 	release_execute();
 	release_timer();
 	release_net();
@@ -135,9 +132,6 @@ int release_curses(void)
  */
 main(int argc, char **argv)
 {
-	int ch;
-	struct widget_s *input;
-
 	if (init_curses()) {
 		printf("Failed to initialize frontend\n");
 		release_curses();
@@ -146,19 +140,16 @@ main(int argc, char **argv)
 
 	EVALUATE_COMMAND_LIST(fe_commands)
 
-	fe_refresh(NULL);
-	terminal_refresh(terminal);
+	fe_refresh();
 	#ifdef STUTTER_INIT
 	STUTTER_INIT(argc, argv);
 	#endif
 
 	while (exit_flag) {
 		fe_refresh();
-		terminal_refresh(terminal);
 		fe_desc_wait(1);
 		fe_timer_check();
-		if ((ch = terminal_read_char()) && process_key(ch) && (input = (struct widget_s *) fe_current_widget("input", NULL)))
-			widget_control(input, WCC_PROCESS_CHAR, ch);
+		terminal_check_keys();
 	}
 
 	release_curses();
