@@ -2,7 +2,7 @@
  * Module Name:		terminal.c
  * Version:		0.1
  * Interface:		surface
- * Module Requirements:	type ; variable ; memory ; linear ; surface ; colourmap
+ * Module Requirements:	key ; type ; variable ; memory ; linear ; surface ; colourmap
  * System Requirements:	Windows OS
  * Description:		Windows Terminal Manager
  */
@@ -13,6 +13,7 @@
 #include <stdlib.h>
 
 #include CONFIG_H
+#include <stutter/key.h>
 #include <stutter/type.h>
 #include <stutter/memory.h>
 #include <stutter/linear.h>
@@ -110,8 +111,13 @@ int init_terminal(void)
 
 int release_terminal(void)
 {
+	struct terminal_s *cur, *tmp;
+
 	if (!terminal_initialized)
 		return(0);
+	linear_foreach_safe_v(terminal_list, list, cur, tmp) {
+		terminal_free(cur);
+	}
 	return(0);
 }
 
