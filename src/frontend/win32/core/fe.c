@@ -1,7 +1,7 @@
 /*
  * Module Name:		fe.c
  * Version:		0.1
- * Module Requirements:	queue ; signal ; queue
+ * Module Requirements:	queue ; signal
  * Description:		Windows Frontend
  */
 
@@ -316,7 +316,7 @@ static struct surface_s *fe_create_surface(void)
 
 	// TODO how do you know what kind of root widget to create?
 	if (!(root = fe_create_root_widget())) {
-		queue_delete_node(surface_list, (void *) surface);
+		queue_delete_node(surface_list, node);
 		return(NULL);
 	}
 	surface_control_m(surface, SCC_SET_ROOT, root, NULL);
