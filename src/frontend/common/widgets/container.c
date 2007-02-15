@@ -138,17 +138,17 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			va_list args;
 			char *context;
 			struct widget_s **widget;
-			struct container_node_s *current;
+			struct container_node_s *cur;
 
 			args = va;
 			widget = va_arg(va, struct widget_s **);
 			context = va_arg(va, char *);
-			if (!widget || !(current = container_widgets_current_node(container)))
+			if (!widget || (!(cur = container_widgets_current_node(container)) && !(cur = container_widgets_first_node(container))))
 				return(-1);
-			if (!widget_control_m(current->widget, cmd, args) && *widget)
+			if (!widget_control_m(cur->widget, cmd, args) && *widget)
 				return(0);
-			else if (strstr(current->widget->type->name, context))
-				*widget = current->widget;
+			else if (strstr(cur->widget->type->name, context))
+				*widget = cur->widget;
 			else
 				*widget = NULL;
 			return(0);
