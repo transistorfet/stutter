@@ -1,6 +1,7 @@
 /*
  * Module Name:		execute.c
  * Version:		0.1
+ * Module Requirements:	memory
  * System Requirements:	unistd.h
  * Description:		Program Execution Manager
  */
@@ -120,6 +121,23 @@ void fe_execute_close(fe_execute_t desc)
 	if (!desc)
 		return;
 	fe_desc_destroy(exec_list, desc);
+}
+
+/**
+ * Returns the callback for the given process.
+ */
+struct callback_s fe_execute_get_callback(fe_execute_t exec)
+{
+	return(fe_desc_get_callback(exec));
+}
+
+/**
+ * Sets the callback for the given process to be executed under the given
+ * conditions.
+ */
+void fe_execute_set_callback(fe_execute_t exec, int condition, callback_t func, void *ptr)
+{
+	return(fe_desc_set_callback(exec, condition, func, ptr));
 }
 
 /**

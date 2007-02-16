@@ -15,6 +15,9 @@
 #endif
 
 struct fe_descriptor_s {
+	int bitflags;
+	int condition;
+	struct callback_s callback;
 	int read;
 	int write;
 	int error;
@@ -39,6 +42,9 @@ struct fe_descriptor_list_s *fe_desc_create_list(destroy_t);
 int fe_desc_destroy_list(struct fe_descriptor_list_s *);
 struct fe_descriptor_s *fe_desc_create(struct fe_descriptor_list_s *, int);
 int fe_desc_destroy(struct fe_descriptor_list_s *, struct fe_descriptor_s *);
+
+struct callback_s fe_desc_get_callback(struct fe_descriptor_s *);
+void fe_desc_set_callback(struct fe_descriptor_s *, int, callback_t, void *);
 
 int fe_desc_write(struct fe_descriptor_s *, char *, int);
 int fe_desc_read(struct fe_descriptor_s *, char *, int);

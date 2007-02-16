@@ -27,9 +27,6 @@ linear_list_v(fe_descriptor_list_s) desc_lists;
 int init_desc(void)
 {
 	linear_init_v(desc_lists);
-	add_signal("fe.read_ready", 0);
-	add_signal("fe.write_ready", 0);
-	add_signal("fe.error_ready", 0);
 	return(0);
 }
 
@@ -37,10 +34,6 @@ int release_desc(void)
 {
 	int i;
 	struct fe_descriptor_list_s *cur, *tmp;
-
-	remove_signal("fe.error_ready");
-	remove_signal("fe.write_ready");
-	remove_signal("fe.read_ready");
 
 	linear_foreach_safe_v(desc_lists, ll, cur, tmp) {
 		for (i = 0;i < cur->size;i++) {
@@ -183,6 +176,26 @@ int fe_desc_destroy(struct fe_descriptor_list_s *list, struct fe_descriptor_s *d
 
 
 /**
+ * Returns the callback for the given descriptor.
+ */
+struct callback_s fe_desc_get_callback(struct fe_descriptor_s *desc)
+{
+	return(desc->callback);
+}
+
+/**
+ * Sets the callback that occurs under the given condition for the given
+ * descriptior.
+ */
+void fe_desc_set_callback(struct fe_descriptor_s *desc, int condition, callback_t func, void *ptr)
+{
+	desc->condition = condition;
+	desc->callback.func = func;
+	desc->callback.ptr = ptr;
+}
+
+
+/**
  * Send the string of length len to the given process and
  * return the number of bytes written or -1 on error.
  */
@@ -300,8 +313,8 @@ int fe_desc_wait(float t)
 	    we can refresh the screen and check for keyboard input to remain responsive */
 	linear_foreach_v(desc_lists, ll, cur) {
 		for (i = 0;i < cur->size;i++) {
-			if (cur->descs[i] && (cur->descs[i]->read_pos < cur->descs[i]->read_length)) {
-				emit_signal("fe.read_ready", cur->descs[i], cur->descs[i]);
+			if (cur->descs[i] && (cur->descs[i]->condition & IO_COND_READ) && (cur->descs[i]->read_pos < cur->descs[i]->read_length)) {
+				execute_callback_m(cur->descs[i]->callback, cur->descs[i]);
 				ret++;
 			}
 		}
@@ -353,16 +366,16 @@ int fe_desc_wait(float t)
 		for (i = 0;i < cur->size;i++) {
 			if (!cur->descs[i])
 				continue;
-			if ((cur->descs[i]->read_pos < cur->descs[i]->read_length) || ((cur->descs[i]->read != -1) && FD_ISSET(cur->descs[i]->read, &rd)))
-				emit_signal("fe.read_ready", cur->descs[i], cur->descs[i]);
+			if ((cur->descs[i]->condition & IO_COND_READ) && ((cur->descs[i]->read_pos < cur->descs[i]->read_length) || ((cur->descs[i]->read != -1) && FD_ISSET(cur->descs[i]->read, &rd))))
+				execute_callback_m(cur->descs[i]->callback, cur->descs[i]);
 			if (!cur->descs[i])
 				continue;
-			if ((cur->descs[i]->write != -1) && FD_ISSET(cur->descs[i]->write, &wr))
-				emit_signal("fe.write_ready", cur->descs[i], cur->descs[i]);
+			if ((cur->descs[i]->condition & IO_COND_WRITE) && ((cur->descs[i]->write != -1) && FD_ISSET(cur->descs[i]->write, &wr)))
+				execute_callback_m(cur->descs[i]->callback, cur->descs[i]);
 			if (!cur->descs[i])
 				continue;
-			if ((cur->descs[i]->error != -1) && FD_ISSET(cur->descs[i]->error, &err))
-				emit_signal("fe.error_ready", cur->descs[i], cur->descs[i]);
+			if ((cur->descs[i]->condition & IO_COND_ERROR) && ((cur->descs[i]->error != -1) && FD_ISSET(cur->descs[i]->error, &err)))
+				execute_callback_m(cur->descs[i]->callback, cur->descs[i]);
 		}
 	}
 	return(ret);

@@ -110,6 +110,25 @@ void fe_net_disconnect(fe_network_t desc)
 	fe_desc_destroy(net_list, desc);
 }
 
+
+/**
+ * Returns the callback for the given process.
+ */
+struct callback_s fe_net_get_callback(fe_network_t net)
+{
+	return(fe_desc_get_callback(net));
+}
+
+/**
+ * Sets the callback for the given process to be executed under the given
+ * conditions.
+ */
+void fe_net_set_callback(fe_network_t net, int condition, callback_t func, void *ptr)
+{
+	return(fe_desc_set_callback(net, condition, func, ptr));
+}
+
+
 /**
  * Send the string of length size to the given network connection and
  * return the number of bytes written or -1 on error.
