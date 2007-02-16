@@ -15,19 +15,26 @@
 #include <stutter/debug.h>
 #include <stutter/memory.h>
 #include <stutter/signal.h>
-#include "net.h"
+#include <stutter/globals.h>
+
+#define NET_ATTEMPTS		3
+#define NET_MESSAGE		1000
 
 #ifndef NET_READ_BUFFER
 #define NET_READ_BUFFER		512
 #endif
 
 struct fe_network_s {
+	int condition;
+	struct callback_s callback;
 	int socket;
 	int read;
 	int length;
 	char buffer[NET_READ_BUFFER];
 	struct fe_network_s *next;
 };
+
+typedef struct fe_network_s *fe_network_t;
 
 extern HINSTANCE this_instance;
 
@@ -62,7 +69,6 @@ int init_net(void)
 	if (!RegisterClassEx(&winclass))
 		return(-1);
 	net_hwnd = CreateWindow("net", "net", WS_POPUP, 0, 0, 0, 0, NULL, NULL, this_instance, NULL);
-	add_signal("fe.read_ready", 0);
 	return(0);
 }
 
@@ -79,7 +85,6 @@ int release_net(void)
 		cur = tmp;
 	}
 
-	remove_signal("fe.read_ready");
 	DestroyWindow(net_hwnd);
 	WSACleanup();
 	return(0);
@@ -169,6 +174,25 @@ void fe_net_disconnect(fe_network_t net)
 	shutdown(net->socket, 2);
 	close(net->socket);
 	memory_free(net);
+}
+
+/**
+ * Returns the callback for the given process.
+ */
+struct callback_s fe_net_get_callback(fe_network_t net)
+{
+	return(net->callback);
+}
+
+/**
+ * Sets the callback for the given process to be executed under the given
+ * conditions.
+ */
+void fe_net_set_callback(fe_network_t net, int condition, callback_t func, void *ptr)
+{
+	net->condition = condition;
+	net->callback.func = func;
+	net->callback.ptr = ptr;
 }
 
 /**
@@ -272,7 +296,7 @@ int fe_net_receive_str(fe_network_t net, char *msg, int size, char ch)
 }
 
 /**
- *
+ * Handle a message request.
  */
 int fe_net_handle_message(int socket, int condition, int error)
 {
@@ -287,8 +311,8 @@ int fe_net_handle_message(int socket, int condition, int error)
 			//	nonblocking call???
 			FD_ZERO(&rd);
 			FD_SET(socket, &rd);
-			while ((cur->read < cur->length) || select(socket + 1, &rd, NULL, NULL, &timeout))
-				emit_signal("fe.read_ready", cur, cur);
+			while ((cur->condition & IO_COND_READ) && ((cur->read < cur->length) || select(socket + 1, &rd, NULL, NULL, &timeout)))
+				execute_callback_m(cur->callback, cur);
 			return(0);
 		}
 		cur = cur->next;

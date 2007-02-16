@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <stutter/memory.h>
+#include <stutter/globals.h>
 
 typedef void *fe_execute_t;
 
@@ -35,6 +36,25 @@ fe_execute_t fe_execute_open(char *cmd, int bitflags)
  * Close the given program reference.
  */
 void fe_execute_close(fe_execute_t desc)
+{
+	// TODO nothing here
+}
+
+/**
+ * Returns the callback for the given process.
+ */
+struct callback_s fe_execute_get_callback(fe_execute_t desc)
+{
+	// TODO this isn't really here ;)
+	struct callback_s callback = { 0 };
+	return(callback);
+}
+
+/**
+ * Sets the callback for the given process to be executed under the given
+ * conditions.
+ */
+void fe_execute_set_callback(fe_execute_t desc, int condition, callback_t func, void *ptr)
 {
 	// TODO nothing here
 }
