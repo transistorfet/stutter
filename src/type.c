@@ -41,7 +41,7 @@ static struct type_list_s type_list;
 int init_type(void)
 {
 	if (type_initialized)
-		return(1);
+		return(0);
 	type_init_table(&type_list, TYPE_LIST_INIT_SIZE);
 	type_initialized = 1;
 	return(0);
@@ -50,7 +50,7 @@ int init_type(void)
 int release_type(void)
 {
 	if (!type_initialized)
-		return(1);
+		return(0);
 	type_release_table(&type_list);
 	type_initialized = 0;
 	return(0);

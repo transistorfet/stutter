@@ -215,6 +215,7 @@ static int region_split_insert(struct region_s *region, struct container_node_s 
 			break;
 		cur = container_widgets_previous_node(cur);
 	}
+	// TODO can we still add the widget even though it wont fit?
 	if (!cur)
 		return(-1);
 

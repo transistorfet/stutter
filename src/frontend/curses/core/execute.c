@@ -27,7 +27,7 @@ static int fe_exec_parse_args(char *, char **, int);
 int init_execute(void)
 {
 	if (exec_list)
-		return(1);
+		return(0);
 	if (!(exec_list = fe_desc_create_list((destroy_t) fe_exec_free_handle)))
 		return(-1);
 	signal(SIGCHLD, fe_exec_sig_child);
@@ -37,7 +37,7 @@ int init_execute(void)
 int release_execute(void)
 {
 	if (!exec_list)
-		return(1);
+		return(0);
 	fe_desc_destroy_list(exec_list);
 	return(0);
 }
@@ -123,6 +123,7 @@ void fe_execute_close(fe_execute_t desc)
 	fe_desc_destroy(exec_list, desc);
 }
 
+
 /**
  * Returns the callback for the given process.
  */
@@ -139,6 +140,7 @@ void fe_execute_set_callback(fe_execute_t exec, int condition, callback_t func, 
 {
 	return(fe_desc_set_callback(exec, condition, func, ptr));
 }
+
 
 /**
  * Send the string of length len to the given process and

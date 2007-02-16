@@ -36,7 +36,7 @@ struct colourmap_s *colourmap_list = NULL;
 int init_colourmap(void)
 {
 	if (colourmap_list)
-		return(1);
+		return(0);
 	if (!(colourmap_list = create_colourmap(FE_COLOURMAP_SIZE)))
 		return(-1);
 	colourmap_load_defaults(colourmap_list);
@@ -46,7 +46,7 @@ int init_colourmap(void)
 int release_colourmap(void)
 {
 	if (!colourmap_list)
-		return(1);
+		return(0);
 	destroy_colourmap(colourmap_list);
 	return(0);
 }

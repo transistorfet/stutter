@@ -37,7 +37,7 @@ static void fe_net_free_socket(struct fe_descriptor_s *);
 int init_net(void)
 {
 	if (net_list)
-		return(1);
+		return(0);
 	if (!(net_list = fe_desc_create_list((destroy_t) fe_net_free_socket)))
 		return(-1);
 	return(0);
@@ -46,7 +46,7 @@ int init_net(void)
 int release_net(void)
 {
 	if (!net_list)
-		return(1);
+		return(0);
 	fe_desc_destroy_list(net_list);
 	return(0);
 }

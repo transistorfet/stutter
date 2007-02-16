@@ -70,7 +70,7 @@ static inline struct key_map_s *create_key_map(char *, int);
 int init_key(void)
 {
 	if (current_context)
-		return(1);
+		return(0);
 	context_init_table(&context_list, KEY_CONTEXT_LIST_INIT_SIZE);
 	if (!(current_context = create_context(""))) {
 		release_key();

@@ -42,7 +42,7 @@ static int irc_server_ping_watchdog(void *, fe_timer_t);
 int init_irc_server(void)
 {
 	if (server_initialized)
-		return(1);
+		return(0);
 	linear_init_v(server_list);
 	add_signal("irc.dispatch_msg", SIG_BF_USE_WILDCARD_INDEX);
 	add_signal("irc.dispatch_ctcp", SIG_BF_USE_WILDCARD_INDEX);

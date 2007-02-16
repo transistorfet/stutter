@@ -42,7 +42,7 @@ static struct hash_table_s *widget_types;
 int init_widget(void)
 {
 	if (widget_initialized)
-		return(1);
+		return(0);
 	if (!(widget_types = create_hash_table(WIDGET_TYPES_INIT_SIZE, NULL)))
 		return(-1);
 	widget_init_table(&widget_list, FE_WIDGET_LIST_INIT_SIZE);
@@ -56,7 +56,7 @@ int release_widget(void)
 	struct widget_node_s *cur, *tmp;
 
 	if (!widget_initialized)
-		return(1);
+		return(0);
 	widget_release_table(&widget_list);
 	destroy_hash_table(widget_types);
 	widget_initialized = 0;
