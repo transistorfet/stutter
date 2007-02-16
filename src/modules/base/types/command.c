@@ -10,12 +10,8 @@
 
 #include <stutter/type.h>
 #include <stutter/memory.h>
+#include <stutter/globals.h>
 #include <stutter/variable.h>
-
-struct base_command_s {
-	callback_t func;
-	void *ptr;
-};
 
 static void *base_command_create(void *, char *, va_list);
 static int base_command_evaluate(void *, void *);
@@ -41,27 +37,27 @@ static void *base_command_create(void *value, char *params, va_list va)
 {
 	void *ptr;
 	callback_t func;
-	struct base_command_s *command;
+	struct callback_s *callback;
 
 	if (value)
 		base_command_destroy(value);
 
 	if (strncmp(params, "callback,", 9) || strchr(&params[9], ','))
 		return(NULL);
-	if (!(command = (struct base_command_s *) memory_alloc(sizeof(struct base_command_s))))
+	if (!(callback = (struct callback_s *) memory_alloc(sizeof(struct callback_s))))
 		return(NULL);
-	command->func = va_arg(va, callback_t);
-	command->ptr = va_arg(va, void *);
+	callback->func = va_arg(va, callback_t);
+	callback->ptr = va_arg(va, void *);
 	va_end(va);
-	return((void *) command);
+	return((void *) callback);
 }
 
 static int base_command_evaluate(void *data, void *ptr)
 {
-	struct base_command_s *command;
+	struct callback_s *callback;
 
-	if ((command = data) && command->func)
-		return(command->func(command->ptr, ptr));
+	if (callback = data)
+		execute_callback_m(*callback, ptr);
 	return(-1);
 }
 
