@@ -1,7 +1,7 @@
 /*
  * Module Name:		terminal.c
  * Version:		0.1
- * Module Requirements:	key ; type ; variable ; memory ; linear ; surface ; colourmap
+ * Module Requirements:	key ; type ; variable ; memory ; linear ; surface ; colourmap ; desc
  * System Requirements:	Curses Library
  * Description:		Curses Terminal Manager
  */
@@ -20,6 +20,7 @@
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
 #include <stutter/frontend/common/colourmap.h>
+#include "desc.h"
 #include "terminal.h"
 
 struct terminal_s {
@@ -31,6 +32,8 @@ struct terminal_s {
 struct terminal_s *terminal;
 
 static int terminal_initialized = 0;
+static struct fe_descriptor_s *stdin_desc;
+static struct fe_descriptor_list_s *desc_list;
 static linear_list_v(terminal_s) terminal_list;
 static struct terminal_s *terminal_current = NULL;
 static attrib_t terminal_def_attrib = { 0, SA_NORMAL, { SC_ENC_RGBA, SC_RGBA_WHITE }, { SC_ENC_RGBA, SC_RGBA_BLACK } };
@@ -46,10 +49,11 @@ struct surface_type_s terminal_type = {
 	(surface_control_t) terminal_control
 };
 
-static inline void terminal_refresh(struct terminal_s *);
+static int terminal_check_input(void *, struct fe_descriptor_s *);
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
+static inline void terminal_refresh(struct terminal_s *);
 static inline int terminal_convert_colour(colour_t);
-static inline int terminal_read_char(void);
+static inline int terminal_convert_char(int);
 
 int init_terminal(void)
 {
@@ -58,6 +62,15 @@ int init_terminal(void)
 
 	if (terminal_initialized)
 		return(0);
+	if (init_colourmap())
+		return(-1);
+	if (!(desc_list = fe_desc_create_list((destroy_t) NULL)))
+		return(-1);
+	if (!(stdin_desc = fe_desc_create(desc_list, 0)))
+		return(-1);
+	stdin_desc->read = 0;
+	fe_desc_set_callback(stdin_desc, IO_COND_READ, (callback_t) terminal_check_input, NULL);
+
 	initscr();
 	if (has_colors()) {
 		start_color();
@@ -73,8 +86,6 @@ int init_terminal(void)
 	scrollok(stdscr, 1);
 	nodelay(stdscr, TRUE);
 
-	if (init_colourmap())
-		return(-1);
 	if (type = find_type("colour:fe")) {
 		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal_def_attrib.fg);
 		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal_def_attrib.bg);
@@ -87,7 +98,9 @@ int release_terminal(void)
 {
 	if (!terminal_initialized)
 		return(0);
+	fe_desc_destroy_list(desc_list);
 	endwin();
+	terminal_initialized = 0;
 	return(0);
 }
 
@@ -246,38 +259,20 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 	return(-1);
 }
 
+/*** Local Functions ***/
+
 /**
  * Check for keypresses.
  */
-int terminal_check_keys(void)
+static int terminal_check_input(void *ptr, struct fe_descriptor_s *desc)
 {
 	int ch;
 	struct widget_s *input;
 
 	// TODO modify to find the corresponding terminal somehow and use that as ref
-	if ((ch = terminal_read_char()) && process_key(ch) && (input = (struct widget_s *) fe_current_widget("input", NULL)))
+	if ((ch = terminal_convert_char(getch())) && process_key(ch) && (input = (struct widget_s *) fe_current_widget("input", NULL)))
 		widget_control(input, WCC_PROCESS_CHAR, ch);
 	return(0);
-}
-
-/*** Local Functions ***/
-
-/**
- * Redraw and refresh the terminal by calling all registered refresh callback
- * functions and return 0 on success.
- */
-static inline void terminal_refresh(struct terminal_s *terminal)
-{
-	widget_size_t size;
-
-	getmaxyx(stdscr, SURFACE_S(terminal)->height, SURFACE_S(terminal)->width);
-	if (SURFACE_S(terminal)->root) {
-		widget_control(SURFACE_S(terminal)->root, WCC_GET_WINDOW, NULL, &size);
-		if ((SURFACE_S(terminal)->width != size.width) || (SURFACE_S(terminal)->height != size.height))
-			widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
-		widget_refresh_m(SURFACE_S(terminal)->root);
-	}
-	refresh();
 }
 
 /**
@@ -304,6 +299,24 @@ static void terminal_set_attribs(struct terminal_s *terminal, attrib_t attrib)
 }
 
 /**
+ * Redraw and refresh the terminal by calling all registered refresh callback
+ * functions and return 0 on success.
+ */
+static inline void terminal_refresh(struct terminal_s *terminal)
+{
+	widget_size_t size;
+
+	getmaxyx(stdscr, SURFACE_S(terminal)->height, SURFACE_S(terminal)->width);
+	if (SURFACE_S(terminal)->root) {
+		widget_control(SURFACE_S(terminal)->root, WCC_GET_WINDOW, NULL, &size);
+		if ((SURFACE_S(terminal)->width != size.width) || (SURFACE_S(terminal)->height != size.height))
+			widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
+		widget_refresh_m(SURFACE_S(terminal)->root);
+	}
+	refresh();
+}
+
+/**
  * Convert the given colour and encoding into an 8-colour terminal colour number.
  */
 static inline int terminal_convert_colour(colour_t colour)
@@ -327,11 +340,9 @@ static inline int terminal_convert_colour(colour_t colour)
 /**
  * Read a character and convert it to keycodes.h characters
  */
-static inline int terminal_read_char(void)
+static inline int terminal_convert_char(int ch)
 {
-	int ch;
-
-	switch (ch = getch()) {
+	switch (ch) {
 		case 0x7f:
 		case KEY_BACKSPACE:
 			return(KC_BACKSPACE);

@@ -22,7 +22,6 @@
 #include <stutter/frontend/common.h>
 
 #include "core/desc.h"
-#include "core/terminal.h"
 
 static int handle_quit(char *, void *, char *);
 
@@ -67,6 +66,9 @@ extern int release_timer(void);
 
 extern int init_execute(void);
 extern int release_execute(void);
+
+extern int init_terminal(void);
+extern int release_terminal(void);
 
 extern int init_frontend(void);
 extern int release_frontend(void);
@@ -149,7 +151,6 @@ main(int argc, char **argv)
 		fe_refresh();
 		fe_desc_wait(1);
 		fe_timer_check();
-		terminal_check_keys();
 	}
 
 	release_curses();

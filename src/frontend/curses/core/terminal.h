@@ -19,8 +19,6 @@ void terminal_clear(struct terminal_s *, short, short, short, short);
 void terminal_move(struct terminal_s *, short, short);
 int terminal_control(struct terminal_s *, int, ...);
 
-int terminal_check_keys(void);
-
 #endif
 
 
