@@ -19,6 +19,7 @@
 #include <stutter/variable.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/common.h>
+#include "win32.h"
 
 int handle_quit(char *, void *, char *);
 
@@ -43,6 +44,9 @@ DEFINE_VARIABLE_LIST(fe_variables,
 	)
 	DECLARE_TYPE("command:fe",
 		FE_COMMON_COMMANDS()
+	)
+	DECLARE_TYPE("command",
+		FE_WIN32_COMMANDS()
 	)
 	DECLARE_TYPE("format",
 		FE_COMMON_FORMATS()

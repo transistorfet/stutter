@@ -5,6 +5,7 @@ ROOT = ../../..
 TARGET = $(ROOT)/bin/winstutter.exe
 
 OBJS =	main.o \
+	cmds/play.o \
 	core/fe.o \
 	core/net.o \
 	core/timer.o \
@@ -14,7 +15,7 @@ OBJS =	main.o \
 	$(MODULES) \
 	$(ROOT)/src/main.a
 
-LIBS = -mwindows -lwsock32 -lgdi32
+LIBS = -mwindows -lwsock32 -lgdi32 -lwinmm
 
 include $(ROOT)/rules.mk
 
