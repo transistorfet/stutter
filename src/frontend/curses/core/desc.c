@@ -132,6 +132,9 @@ struct fe_descriptor_s *fe_desc_create(struct fe_descriptor_list_s *list, int si
 	if (!(desc = (struct fe_descriptor_s *) memory_alloc(size)))
 		return(NULL);
 	memset(desc, '\0', size);
+	desc->read = -1;
+	desc->write = -1;
+	desc->error = -1;
 
 	if (list->next_space == list->size) {
 		newsize = list->size * DESC_GROWTH_FACTOR;
@@ -327,7 +330,6 @@ int fe_desc_wait(float t)
 	timeout.tv_usec = (int) ((t - timeout.tv_sec) * 1000000);
 
 	FD_ZERO(&rd);
-	FD_SET(0, &rd);
 	FD_ZERO(&wr);
 	FD_ZERO(&err);
 	max = 0;
