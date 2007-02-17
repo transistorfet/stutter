@@ -12,7 +12,7 @@
 #include <stutter/modules/base.h>
 #include <stutter/frontend/execute.h>
 
-static int base_cmd_exec_display(void *, fe_execute_t, void *);
+static int base_cmd_exec_display(void *, fe_execute_t);
 
 int base_cmd_exec(char *env, char *args)
 {
@@ -37,7 +37,7 @@ int base_cmd_exec(char *env, char *args)
 
 /*** Local Functions ***/
 
-static int base_cmd_exec_display(void *window, fe_execute_t exec, void *ptr)
+static int base_cmd_exec_display(void *window, fe_execute_t exec)
 {
 	int size;
 	char buffer[STRING_SIZE];
