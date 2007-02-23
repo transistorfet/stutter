@@ -10,6 +10,13 @@
 #include <string.h>
 
 /**
+ * Calculates the address of an offset after a struct for when struct
+ * data is allocated along with the struct.
+ */
+#define offset_after_struct_m(ptr, offset)	\
+	(((size_t) (ptr)) + sizeof(*(ptr)) + (offset))
+
+/**
  * Assign the string from the start of str up to (but not including) the
  * first ch character to substr and change str to point to the remaining
  * string after ch.  If the ch character is not found, substr equals str
