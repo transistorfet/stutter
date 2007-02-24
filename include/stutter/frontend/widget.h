@@ -50,11 +50,12 @@ typedef struct widget_pos_s {
 } widget_pos_t;
 
 struct widget_s;
+struct widget_attrib_s;
 
 #define WIDGET_S(widget)	((struct widget_s *) (widget))
 
-#define widget_init_m(widget, bitflags)					\
-	( (WIDGET_S(widget)->type->init)(WIDGET_S(widget), bitflags) )
+#define widget_init_m(widget, attribs)					\
+	( (WIDGET_S(widget)->type->init)(WIDGET_S(widget), attribs) )
 #define widget_release_m(widget)					\
 	( (WIDGET_S(widget)->type->release)(WIDGET_S(widget)) )
 #define widget_refresh_m(widget)					\
@@ -69,13 +70,19 @@ struct widget_s;
 	( (WIDGET_S(widget)->type->control)(WIDGET_S(widget), cmd, va) )
 
 // TODO how do we pass in special parameters?  have an array of strings?
-typedef int (*widget_init_t)(struct widget_s *widget);
+typedef int (*widget_init_t)(struct widget_s *widget, struct widget_attrib_s *attribs);
 typedef int (*widget_release_t)(struct widget_s *widget);
 typedef void (*widget_refresh_t)(struct widget_s *widget);
 typedef int (*widget_print_t)(struct widget_s *widget, const char *str, int len);
 typedef void (*widget_clear_t)(struct widget_s *widget);
 typedef int (*widget_read_t)(struct widget_s *widget, char *buffer, int max);
 typedef int (*widget_control_t)(struct widget_s *widget, int cmd, va_list va);
+
+struct widget_attrib_s {
+	char *name;
+	char *value;
+	struct widget_attrib_s *next;
+};
 
 struct widget_type_s {
 	char *name;
@@ -104,11 +111,23 @@ int add_widget_type(struct widget_type_s *);
 int remove_widget_type(char *);
 struct widget_type_s *find_widget_type(char *);
 
-struct widget_s *create_widget(struct widget_type_s *, char *, struct widget_s *, ...);
+struct widget_s *create_widget(struct widget_type_s *, char *, struct widget_s *, struct widget_attrib_s *);
 int destroy_widget(struct widget_s *);
 struct widget_s *find_widget(char *);
 
 int widget_control(struct widget_s *, int, ...);
+
+/*** Miscellaneous Macros and Inline Functions ***/
+
+static inline char *widget_get_attrib(struct widget_attrib_s *attribs, char *name)
+{
+	while (attribs) {
+		if (!strcmp(attribs->name, name))
+			return(attribs->value);
+		attribs = attribs->next;
+	}
+	return(NULL);
+}
 
 #endif
 
