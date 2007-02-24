@@ -321,7 +321,7 @@ static inline int hash_release_node(struct hash_table_s *table, struct hash_node
 	sdbm_hash(key)
 
 #define hash_compare_node(node, ptr)	\
-	(!strcmp(node->key, key))
+	(!strcmp(node->key, ptr))
 
 DEFINE_HASH_TABLE(hash, struct hash_table_s, struct hash_node_s, h, key, hash_release_node, hash_hashfunc, hash_compare_node, HASH_LOAD_FACTOR, HASH_GROWTH_FACTOR)
 
