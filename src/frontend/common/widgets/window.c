@@ -1,7 +1,7 @@
 /*
  * Widget Name:		window.c
  * Version:		0.1
- * Module Requirements:	memory ; surface
+ * Module Requirements:	utils ; memory ; surface
  * Description:		Generic Window Widget
  */
 
@@ -9,6 +9,7 @@
 #include <stdarg.h>
 
 #include CONFIG_H
+#include <stutter/utils.h>
 #include <stutter/memory.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
@@ -27,9 +28,20 @@ struct widget_type_s window_type = {
 	(widget_control_t) window_control
 };
 
-int window_init(struct window_s *window)
+int window_init(struct window_s *window, struct widget_attrib_s *attribs)
 {
+	int num;
+	char *value;
+
 	window->surface = NULL;
+	if (value = widget_get_attrib(attribs, "width")) {
+		num = util_atoi(value, 10);
+		window->width = num;
+	}
+	if (value = widget_get_attrib(attribs, "height")) {
+		num = util_atoi(value, 10);
+		window->height = num;
+	}
 	return(0);
 }
 

@@ -31,7 +31,7 @@ extern struct widget_type_s container_type;
 DEFINE_QUEUE(container_widgets, struct container_s, struct container_node_s, widgets, container_release_node, container_compare_node)
 #define container_widgets_foreach(container, cur)	queue_foreach_v(container->widgets, widgets, cur)
 
-int container_init(struct container_s *);
+int container_init(struct container_s *, struct widget_attrib_s *);
 int container_release(struct container_s *);
 int container_refresh(struct container_s *);
 int container_print(struct container_s *, const char *, int);

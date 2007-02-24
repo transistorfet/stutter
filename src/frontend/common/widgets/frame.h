@@ -19,7 +19,7 @@ struct frame_s {
 
 extern struct widget_type_s frame_type;
 
-int frame_init(struct frame_s *);
+int frame_init(struct frame_s *, struct widget_attrib_s *);
 int frame_release(struct frame_s *);
 int frame_refresh(struct frame_s *);
 int frame_print(struct frame_s *, const char *, int);

@@ -32,11 +32,15 @@ struct widget_type_s statusbar_type = {
 
 extern struct variable_table_s *fe_theme;
 
-int statusbar_init(struct statusbar_s *statusbar)
+int statusbar_init(struct statusbar_s *statusbar, struct widget_attrib_s *attribs)
 {
-	window_init(WINDOW_S(statusbar));
+	char *value;
+
+	window_init(WINDOW_S(statusbar), attribs);
 	WIDGET_S(statusbar)->bitflags |= WBF_NEEDS_REFRESH;
 	statusbar->text = NULL;
+	if (value = widget_get_attrib(attribs, "text"))
+		statusbar_print(statusbar, value, -1);
 	return(0);
 }
 
