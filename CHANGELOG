@@ -1,4 +1,15 @@
 
+0.4:
+	- Modified the frontend extension interfaces to use direct callbacks
+	  instead of using the signal system.
+	- Modified the frontends to manage a list of surfaces.
+	- Modified surfaces in the frontends to own and manage their own root
+	  widget instead of a single common root widget held by the frontends.
+	- Modified widgets to take a list of attributes to use when
+	  initializing themselves.
+	- Added the layout manager for creating groups of widgets based on
+	  templates.
+
 0.3.2:
 	- Fixed the key conversion code to properly convert the \x00 into its
 	  hex equivalent.
