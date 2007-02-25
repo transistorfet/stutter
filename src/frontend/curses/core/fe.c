@@ -1,7 +1,7 @@
 /*
  * Module Name:		fe.c
  * Version:		0.1
- * Module Requirements:	queue ; signal
+ * Module Requirements:	queue ; signal ; widget ; surface ; layout
  * Description:		Curses Frontend
  */
 
@@ -15,22 +15,15 @@
 #include <stutter/globals.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
+#include <stutter/frontend/common/layout.h>
 
 extern struct surface_type_s *terminal_type;
-
-extern struct widget_type_s text_type;
-extern struct widget_type_s frame_type;
-extern struct widget_type_s input_type;
-extern struct widget_type_s window_type;
-extern struct widget_type_s region_type;
-extern struct widget_type_s statusbar_type;
 
 static struct queue_s *surface_list;
 
 extern int init_terminal(void);
 extern int release_terminal(void);
 
-static struct widget_s *fe_create_root_widget(void);
 static struct surface_s *fe_create_surface(void);
 static int fe_destroy_surface(struct surface_s *);
 
@@ -40,10 +33,12 @@ int init_frontend(void)
 		return(-1);
 	if (init_widget())
 		return(-1);
+	if (init_layout())
+		return(-1);
 	if (init_terminal())
 		return(-1);
 
-	if (!(fe_create_surface()))
+	if (!(fe_create_widget("fe", "root", "root", NULL)))
 		return(-1);
 	return(0);
 }
@@ -52,6 +47,7 @@ int release_frontend(void)
 {
 	destroy_queue(surface_list);
 	release_terminal();
+	release_layout();
 	release_widget();
 	return(0);
 }
@@ -61,18 +57,18 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 	struct widget_s *widget;
 	struct surface_s *surface;
 
-	if (!parent) {
-		if (!(surface = fe_create_surface()))
-			return(NULL);
-		return(surface->root);
-	}
-	else if (!strcmp(type, "text"))
-		widget = (struct widget_s *) create_widget(&text_type, id, NULL);
-	else
+	if (!parent && !(surface = fe_create_surface()))
 		return(NULL);
+	if (!(widget = layout_generate_widget(ns, type, id))) {
+		if (surface)
+			queue_delete_node(surface_list, (void *) surface);
+		return(NULL);
+	}
 
-	if (widget && parent)
+	if (parent)
 		widget_control(parent, WCC_ADD_WIDGET, widget);
+	else
+		surface_control_m(surface, SCC_SET_ROOT, widget, NULL);
 	return(widget);
 }
 
@@ -81,7 +77,9 @@ int fe_destroy_widget(void *widget)
 	struct queue_node_s *cur;
 
 	// TODO should there be some kind of lock that prevents destruction of key widgets?
-	if (WIDGET_S(widget)->parent) {
+	if (!widget)
+		return(-1);
+	else if (WIDGET_S(widget)->parent) {
 		widget_control(WIDGET_S(widget)->parent, WCC_REMOVE_WIDGET, widget);
 		destroy_widget(widget);
 		return(0);
@@ -277,39 +275,10 @@ int fe_refresh(void)
 
 /*** Local Functions ***/
 
-static struct widget_s *fe_create_root_widget(void)
-{
-	struct widget_s *root;
-	struct widget_s *frame;
-	struct widget_s *input;
-	struct widget_s *statusbar;
-
-	if (!(frame = (struct widget_s *) create_widget(&frame_type, "frame", NULL)))
-		return(NULL);
-
-	if (!(statusbar = (struct widget_s *) create_widget(&statusbar_type, "statusbar", NULL)))
-		return(NULL);
-	widget_print_m(statusbar, FE_STATUSBAR, -1);
-
-	if (!(input = (struct widget_s *) create_widget(&input_type, "input", NULL)))
-		return(NULL);
-
-	if (!(root = (struct widget_s *) create_widget(&region_type, "region", NULL)))
-		return(NULL);
-	// TODO this set_window should not longer be needed when region is fixed to allow widgets to be added
-	//	even when they don't fit (or should it be removed?)
-	widget_control(root, WCC_SET_WINDOW, 0, 0, 80, 25);
-	widget_control(root, WCC_ADD_WIDGET, frame);
-	widget_control(root, WCC_ADD_WIDGET, statusbar);
-	widget_control(root, WCC_ADD_WIDGET, input);
-	return(root);
-}
-
 static struct surface_s *fe_create_surface(void)
 {
-	struct widget_s *root;
-	struct queue_node_s *node;
 	struct surface_s *surface;
+	struct queue_node_s *node;
 
 	if (!(node = queue_create_node(0)))
 		return(NULL);
@@ -318,12 +287,6 @@ static struct surface_s *fe_create_surface(void)
 	queue_init_node(surface_list, node, surface);
 	queue_append_node(surface_list, node);
 
-	// TODO how do you know what kind of root widget to create?
-	if (!(root = fe_create_root_widget())) {
-		queue_delete_node(surface_list, (void *) surface);
-		return(NULL);
-	}
-	surface_control_m(surface, SCC_SET_ROOT, root, NULL);
 	if (!queue_current_node(surface_list))
 		queue_set_current_node(surface_list, node);
 	return(surface);

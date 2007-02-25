@@ -18,6 +18,14 @@ struct type_s *fe_common_load_colour(void);
 struct type_s *fe_common_load_command(void);
 struct type_s *fe_common_load_style(void);
 
+/* Widgets */
+extern struct widget_type_s text_type;
+extern struct widget_type_s frame_type;
+extern struct widget_type_s input_type;
+extern struct widget_type_s window_type;
+extern struct widget_type_s region_type;
+extern struct widget_type_s statusbar_type;
+
 #endif
 
 

@@ -1,7 +1,7 @@
 /*
  * Module Name:		widget.c
  * Version:		0.1
- * Module Requirements:	memory
+ * Module Requirements:	memory ; signal
  * Description:		Widget Manager
  */
 
@@ -11,6 +11,7 @@
 #include <stutter/hash.h>
 #include <stutter/macros.h>
 #include <stutter/memory.h>
+#include <stutter/signal.h>
 #include <stutter/frontend/widget.h>
 
 #define WIDGET_TYPES_INIT_SIZE		10
@@ -21,7 +22,7 @@
 #define widget_hash(list, key)	\
 	sdbm_hash_icase(key)
 
-#define widget_compare_node(node, ptr)	\
+#define widget_compare_node(node, key)	\
 	(!strcmp_icase(node->data.id, key))
 
 struct widget_node_s {
@@ -88,13 +89,16 @@ struct widget_type_s *find_widget_type(char *name)
 	return(node->ptr);
 }
 
-struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widget_s *parent, ...)
+struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widget_s *parent, struct widget_attrib_s *attribs)
 {
 	struct widget_node_s *node;
 
-	// TODO what are the parameters??
-	if (widget_find_node(&widget_list, id))
-		return(NULL);
+	// TODO if id is NULL perhaps you could assign a numeric id instead
+	if (!id)
+		id = "";
+	// TODO decide what to do about duplicate ids and stuff
+	//if (widget_find_node(&widget_list, id))
+	//	return(NULL);
 	if (!(node = widget_create_node(type->size + (sizeof(struct widget_node_s) - sizeof(struct widget_s)) + strlen(id) + 1)))
 		return(NULL);
 	node->data.bitflags = 0;
@@ -103,7 +107,7 @@ struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widg
 	node->data.id = (char *) (((size_t) &node->data) + type->size);
 	strcpy(node->data.id, id);
 
-	if (type->init(&node->data) < 0) {
+	if (type->init(&node->data, attribs) < 0) {
 		widget_destroy_node(&widget_list, node);
 		return(NULL);
 	}
@@ -117,6 +121,7 @@ int destroy_widget(struct widget_s *widget)
 
 	if (!widget)
 		return(-1);
+	emit_signal("purge_object", widget, widget);
 	if (!(node = widget_remove_node(&widget_list, widget->id)) || (&node->data != widget))
 		return(-1);
 	widget_release_node(&widget_list, node);

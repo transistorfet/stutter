@@ -5,6 +5,7 @@ ROOT = ../../..
 LIB_TARGET = fecommon.a
 OBJS =	cmds/insert.o \
 	core/colourmap.o \
+	core/layout.o \
 	core/widget.o \
 	types/attrib.o \
 	types/colour.o \
