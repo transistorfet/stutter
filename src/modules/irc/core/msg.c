@@ -359,7 +359,9 @@ static struct irc_msg *msg_create(int bitflags, int cmd, char *nick, char *host,
 			msg->ctcps[j].tag = &buffer[i];
 			i += strlen(ctcps[j].tag) + 1;
 			strcpy(msg->ctcps[j].tag, ctcps[j].tag);
-			if (ctcps[j].args) {
+			if (!ctcps[j].args || (ctcps[j].args[0] == '\0'))
+				ctcps[j].args = NULL;
+			else {
 				msg->ctcps[j].args = &buffer[i];
 				i += strlen(ctcps[j].args) + 1;
 				strcpy(msg->ctcps[j].args, ctcps[j].args);
