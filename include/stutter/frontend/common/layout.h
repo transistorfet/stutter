@@ -35,16 +35,16 @@ int init_layout(void);
 int release_layout(void);
 
 // TODO this shouldn't take the layout
-int add_layout(char *module, char *name, struct layout_s *layout);
-int remove_layout(char *module, char *name);
-struct layout_s *find_layout(char *module, char *name);
+int add_layout(char *, char *, struct layout_s *layout);
+int remove_layout(char *, char *);
+struct layout_s *find_layout(char *, char *);
 
-int layout_register_type(char *type, int, layout_create_t func, void *ptr);
-int layout_unregister_type(char *type);
-struct layout_type_s *layout_find_type(char *name);
+int layout_register_type(char *, int, layout_create_t, void *);
+int layout_unregister_type(char *);
+struct layout_type_s *layout_find_type(char *);
 
-struct widget_s *layout_generate_widget(char *module, char *name, char *id);
-struct widget_s *layout_create_widget(struct widget_type_s *type, struct widget_attrib_s *attribs, struct layout_s *children);
+struct widget_s *layout_generate_widget(char *, char *, char *);
+struct widget_s *layout_create_widget(struct widget_type_s *, struct widget_attrib_s *, struct layout_s *);
 
 #endif
 

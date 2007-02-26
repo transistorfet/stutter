@@ -26,8 +26,8 @@
 #define layout_compare_node(node, key)			(!strcmp_icase(node->name, key))
 
 struct layout_type_node_s {
-	hash_node_v(layout_type_node_s) types;
 	struct layout_type_s type;
+	hash_node_v(layout_type_node_s) types;
 };
 
 struct layout_type_list_s {
@@ -35,10 +35,10 @@ struct layout_type_list_s {
 };
 
 struct layout_node_s {
-	hash_node_v(layout_node_s) layouts;
 	char *module;
 	char *name;
 	struct layout_s *layout;
+	hash_node_v(layout_node_s) layouts;
 };
 
 struct layout_list_s {
@@ -49,10 +49,10 @@ static int layout_initialized = 0;
 static struct layout_list_s layouts;
 static struct layout_type_list_s layout_types;
 
-static struct layout_s *create_layout(struct layout_type_s *type, struct widget_attrib_s *attribs);
-static void destroy_layout(struct layout_s *layout);
-static struct widget_attrib_s *layout_create_attrib(char *name, char *value, struct widget_attrib_s *next);
-static void layout_destroy_attribs(struct widget_attrib_s *attribs);
+static struct layout_s *create_layout(struct layout_type_s *, struct widget_attrib_s *);
+static void destroy_layout(struct layout_s *);
+static struct widget_attrib_s *layout_create_attrib(char *, char *, struct widget_attrib_s *);
+static void layout_destroy_attribs(struct widget_attrib_s *);
 static int add_builtin_layouts(void);
 
 DEFINE_HASH_TABLE(layout_type, struct layout_type_list_s, struct layout_type_node_s, types, type.name, layout_type_release_node, layout_type_hash, layout_type_compare_node, FE_LAYOUT_TYPES_LOAD_FACTOR, FE_LAYOUT_TYPES_GROWTH_FACTOR)
