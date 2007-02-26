@@ -1,15 +1,84 @@
 
-	* add to timer the ability to expire a timer prematurely
-	* re-evaluate the use of the traverse functions for channel and user lists.  Would it be better to
-	  have a function or macro to step through the list like you do for the raw list itself?
-	* add macros to timer to create a timer and add a signal handler at the same time
+	* add a handler for the purge_object signal that deletes the object from the signal list in signal.c
+	  (this requires a purge_object with a NULL object signal to be emitted)
+	* figure out how the add_signal function will work with the new object thing
 
-	* you *really* have to fix signal system to better manage handlers (when things disconnect or are
-	  destroyed for example).  Perhaps all event-based services can use an id (perhaps even just a
-	  pointer) to group callbacks tied to a particular object so that the object can be purged from the
-	  system cleanly without a need to manually remove them all.  Perhaps you could even use a
-	  "purge_object" signal to report when an object/id should be removed.  How would each handler of
-	  this signal know that their parameter is a pointer and not a number?
+	* consider converting bitflags to bitfield structs unioned with the bitflags (so that it's still
+	  easy to copy them).
+	* convert all lists to use a more descriptive name than "data" as the data portion of the node
+	* consider converting code to use contants and enums for some of the things that aren't configs
+	* convert code to use the new offset_after_struct_m macro
+	* you could have a special widget control command that allows you to add layouts to the widget
+	  (basically have the widget process the layout for things like menus and stuff) and a bitflags in
+	  the type of the layout that tells the layout generator to pass the layout to the widget instead of
+	  calling the function, gettings a widget, and using the add widget command
+
+	* make a header in frontend/common that has static inline functions for all the API function that
+	  fe.c can use thus allowing you to maintain a single common implementation for all frontends that
+	  use the common fe system
+	* you can have a command "fe.dialogue <diag-name> <params>" in the win32 frontend that pops up a
+	  dialogue by the given name (stored in a list probably by a dialogue.c manager in the core)
+
+	* how is the win32 config defs going to work?
+	* win32 is segfaulting when you close a window using the X button because the surface is not removed
+	  from the fe.c surfaces_list.  This can be done either by having a central surfaces list that
+	  terminal can call to destroy itself or by emitting a purge_object signal that fe.c can connect to
+	* make dispatch into a whole bunch of joinpoints? (what dispatch am i talking about?)  Oh i think
+	  this is related to the evaluating of commands based on signals (make irc dispatch into joinpoints
+	  with the default joinpoint being the message handler
+	* you need to re-evaluate the whole config system.  The biggest fuckup is with things that take
+	  multiple options like lists of commands and joinpoints and such.  A perl script of some sort might
+	  be useful for configuring these.  (as well as for enabling/disabling features)
+
+	* what should be used as a reference to a layout (name, etc)?  what methods of describing layouts
+	  will there be?  (hard-coded, xml, etc)? and how will they be expressed to layout?
+	* implement the layout method of registering "type" creation functions and make a callback for
+	  surfaces that calls something in fe.c as well as a callback for win32 terminal to create a menu.
+	* how will you specify things like "create a text widget and add it to the current frame"?  Who will
+	  add the widget to the frame, how does it know to do that, and how will it have access to that?
+	  (Will the surface be resolved and the root widget of that surface passed to layout which makes
+	  the widget and does whatever it needs to with the root widget it has been given?)
+	* move layout changes to curses/fe.c to win32/fe.c
+	* where should the xml parser go?  in the frontend or the core?
+
+	* add a signal handler that connects to things like irc_dispatch_msg and executes commands when
+	  particular messages come in.  You could even use some FEAT_ configs inside of this handler which
+	  enable and disable features like reading a variable to get a list of commands to execute, and
+	  sending a new uniquie signal for the message (wouldn't this belong in dispatch? or another signal
+	  handler?)
+	* you could have special variable tables like irc.on_msg where you add variables that are commands
+	  and when a message comes in, it traverses all the variables in the table and evaluates them with
+	  a particular formulation of parameters.  So you'd "/alias irc.on_msg.respond irc.say hey man"
+	  to have it send "hey man" whenever you get a message.
+
+	* should we disallow widgets to have the same id?  should we allow multiple ids and always add a
+	  unique numbered id?  (this could cause a problem with the widget remove which at the moment uses
+	  the id to find the widget).
+	* can we add something to the hash/linear/etc lists that allowing you to find multiple entires with
+	  the same "key"
+	* add purge_object handlers for windows used in servers and channels
+	* add a /close command that destroys a widget
+	* if the changes to signal.c will include an optional index parameter then signal.c should make sure
+	  it connects to object destroy signals such that handlers that use an index are purged when the
+	  object of the index is destroyed.
+
+	* attempt to canonicalize everything (you have sort of drifted in your style through-out this project)
+
+	* the context is ignored in select/next/previous/etc but should it be? Should the behave like
+	  the CURRENT_WIDGET command in region.c?  Change all the widget and fe.c functions
+	* region rejects widgets being added before we've resized it but that is causing some troubles with
+	  initialization (you have to make region a non-zero size before adding widget).  Should region
+	  instead allow widgets to be added when they don't fit or should you just size region before the
+	  terminal resizes it properly?
+
+	* KEEP IN MIND: the frontend API is mean to abstract as much of the frontend away as possible.  The
+	  formatting and display should be seperated from the core program
+	* All widgets are owned by a surface or by other widgets.  A widget with no parent is owned by a
+	  surface.  Surfaces can be owned by other surfaces (or possibly by widgets).  A surface with no
+	  parent is controlled by the central list.
+
+	* add to timer the ability to expire a timer prematurely
+
 	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
 	  of pointers that is passed to the handlers along with the size of the array?  Would this make
 	  things to specific to a particular signal that is handled?  Is that a bad thing?
@@ -17,11 +86,6 @@
 	* make bind key do the variable lookup itself but if you do, should you allow a path index lookup
 	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
 	  the /bind command use path.<name> for the command name (at least if no . is found).
-
-	* should process_key take an unsigned char instead of an int?  do special characters like the
-	  arrow keys use numbers >256?  What about international keyboard, is there any reason to use an
-	  array of short or int instead of unsigned char as the key sequence?  (It would be wisest to use
-	  an array of int.  windows sends UTF-16 chars or for the WM_UNICHAR message, UTF-32).
 
 	* it might be possible to make it so that every server has it's own frame of channel widgets and
 	  when you use the next command, it will find the current frame, find the next text widget in that
@@ -31,11 +95,15 @@
 
 	* work on API documentation
 	* finish/fix up region particularily the handling of MODIFY_SIZE and possibly re-write split
+	* finish the fe_resize implementation in fe.c
 
 	* you kind of need a widget that is a list of widget/terminal pairs that handles everything itself
 	  (taking away some responsibility of fe.c) so that you have a widget that can be an absolute root
 	  that is the parent of all seperate windows/terminals.  (A dedicated list in fe.c wouldn't work
-	  since the widgets need something to put as their parent unless fe.c was itself a widget).
+	  since the widgets need something to put as their parent unless fe.c was itself a widget).  You
+	  could make the list a void * and type pair which means it can be tied to the variable tree but it
+	  doesn't have to be.  The list widget would then want to do a traverse and stringify for each entry
+	  which hopefully would do what is wanted.
 	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
 	  or is it the job of the code that sets the surface to also do a resize?
 
@@ -53,15 +121,20 @@ Structural Issues:
 	  message is always printed before the unable to reconnect message when stutter is disconnected from
 	  irc.)
 
+	* can anything be done about the sorta messiness of the joinpoints?
+	* should joinpoint's default settings be defined inside the appropriate source file using an #ifndef
+	  check?  If this was the case, every file would have to have its own joinpoint for something and
+	  a global default value would still have to be around that the default values refer to
+	* should you make bind_key take a command and args pair instead of a void *, type * and args pair
+	  so that you wont have an issue with variables bound to keys being removed
 	* should all instances of stringify that are accessable to the user do an index (path lookup) so
-	  that all variables can be accessed indirectly and not just commands?
+	  that all variables can be accessed indirectly and not just commands? (eg /get current_nick will
+	  stringify "irc.current_nick")
 	* can we use macros to implement the ability to set at compile time which parameters are compiled
 	  in and which are modifiable variables?  how will we handle this for all the things in config.h
 	* should the stringify and evaluate type functions take a parameter (string or number?) to specify
 	  the "type" of operation?  This for example, would let you get the real value and formatted value
-	  of a format type or to specify the context of evaluation to avoid the /parse issue. 
-	* should you make bind_key take a command and args pair instead of a void *, type * and args pair
-	  so that you wont have an issue with variables bound to keys being removed
+	  of a format type
 	* how do we handle the case where a pointer is stored with a callback and then the callback is
 	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
 	  it will never be needed again so even if we can access it, we have no way to know that we can
@@ -73,6 +146,9 @@ Structural Issues:
 	  where the pointer may be used multiple times but still needs to be destroyed, a simple refcount
 	  can be used in the pointer and the destroy func.
 	* should you make a seperate include/ dir for each module/frontend?
+	* should you add parameter names to all function prototypes?  what is the difference if any?
+	* should we make net and exec be able to have a different callback for each different condition?
+	  (read/write/error/etc).
 
 	* should there be 2 region widgets (one handling horizontal and one vertical organization) or should
 	  there be one that handles both directions (but not necessarily at the same time)?
@@ -85,9 +161,8 @@ Structural Issues:
 	* should the parameters to fe_resize be absolute sizes or differences in size?
 	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
 	  so we could do the same thing as with MODIFY_SIZE
-	* should there be a function in the fe that returns the id of a widget given a pointer to it?
-	* the context is ignored in select/next/previous/etc but should it be? Should the behave like
-	  the CURRENT_WIDGET command in region.c?
+	* should there be a function in the fe that returns the id of a widget given a pointer to it?  Should
+	  there be a way to change the id?  properties (such as title)?
 	* how will multiple terminals work in curses?  how will input work with multiple terminal?
 	* how can you control a list widget such as a users list where names are added and deleted?  should
 	  the widget rely on an array to get it's information?  should the widget be a vairable array itself?
@@ -102,10 +177,6 @@ Structural Issues:
 	* can/should we make complex and/or expensive operations compile-time options (at least as long
 	  as the operation can be disabled without causing trouble)? (like vim does with its FEAT_...)
 	* should you move the commmon/utils headers to the include/ dir?
-	* a window handler connecting to a signal emitted for a particular window so that it can
-	  free memory when that window is destroyed for example (server registering for its status
-	  window and if a command like /close causes that window to be destroyed, the server disconnects
-	  and frees all resources it uses)
 
 Bugs:
 	* there is a bug such that if you try to say something in the status window, the server says no such
@@ -130,16 +201,20 @@ General:
 	  to expand tabs and/or to filter out non-printable characters such as backspace and other control
 	  codes)
 
-	* make the fe.c stuff dynamically build the frontend widgets instead of being static like it is
 	* add scrollwheel message handlers to the win32 frontend and use joinpoints to define the behaviour
 	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
 
+	* add a string variable to the frontends to identify what frontend is compiled in
+	* add a version string
 	* implement execute.c for win32
 	* add a function fe_prompt(char *prompt, char *buffer, int max) that prompts the user for input
 	  by some appropriate frontend method (to be used for example to prompt yes or no when quitting)
 	* add a flag option to the quit command that causes it to prompt yes/no before quitting
 	* convert text.c and server.c/msg.c to use the new queue functions if it is easily possible
+	* make everything unicode/UTF-8 capable
+	* fix fonts in win32 fe (particularily adding the expression of the bold attribute)
 
+	* add server name to notice messages
 	* report when a command fails
 	* make the disconnect error print to all windows instead of just the current one (using joinpoints)
 	* add a timer response type and make an email checker timed event
@@ -160,9 +235,10 @@ General:
 	* add a beep (maybe using an fe_beep() function which is called from irc_format_msg)?
 	* add channel and user mode bit stringification (probably through some kind of variable type)
 
+	* add UDP support to the net interface.
 	* for each command write a proper description of the command's use in the source file itself either
 	  as a comment or as a variable of some kind that is accessable to some kind of help system.
-	* make ping to milliseconds
+	* make ping do milliseconds
 	* make a directory of configs for runtime configuration files
 	* do better parsing of arguments in execute.c
 	* make a configuration/compilation script that builds the makefiles
