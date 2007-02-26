@@ -77,13 +77,13 @@
 	BIND_KEY("\x09", "irc.complete", "")
 
 #define DEFAULT_IRC_HANDLERS()							\
-	ADD_HANDLER("irc.dispatch_msg", NULL, 10, irc_sig_dispatch_msg, NULL)	\
-	ADD_HANDLER("irc.dispatch_ctcp", NULL, 5, irc_msg_ctcp_action, NULL)	\
-	ADD_HANDLER("irc.dispatch_ctcp", NULL, 5, irc_msg_ctcp_ping, NULL)	\
-	ADD_HANDLER("irc.dispatch_ctcp", NULL, 5, irc_msg_ctcp_version, NULL)	\
-	ADD_HANDLER("irc.dispatch_ctcp", NULL, 0, irc_msg_ctcp_unknown, NULL)	\
-	ADD_HANDLER("base.exec_output", NULL, 10, irc_sig_exec, NULL)		\
-	ADD_HANDLER("fe.quit", NULL, 10, irc_sig_quit, NULL)
+	ADD_HANDLER(NULL, "irc.dispatch_msg", 10, irc_sig_dispatch_msg, NULL)	\
+	ADD_HANDLER(NULL, "irc.dispatch_ctcp", 5, irc_msg_ctcp_action, NULL)	\
+	ADD_HANDLER(NULL, "irc.dispatch_ctcp", 5, irc_msg_ctcp_ping, NULL)	\
+	ADD_HANDLER(NULL, "irc.dispatch_ctcp", 5, irc_msg_ctcp_version, NULL)	\
+	ADD_HANDLER(NULL, "irc.dispatch_ctcp", 0, irc_msg_ctcp_unknown, NULL)	\
+	ADD_HANDLER(NULL, "base.exec_output", 10, irc_sig_exec, NULL)		\
+	ADD_HANDLER(NULL, "fe.quit", 10, irc_sig_quit, NULL)
 
 #define DEFAULT_IRC_COMMANDS()				\
 	ADD_COMMAND("complete", irc_cmd_complete)	\

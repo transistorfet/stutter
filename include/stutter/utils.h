@@ -15,7 +15,7 @@ int util_escape_char(const char *, char *);
 int util_convert_key(const unsigned char *, int *, int);
 int util_expand_str(const char *, char *, int);
 int util_expand_variable(const char *, char *, int, int *);
-int util_emit_str(char *, void *, char *, ...);
+int util_emit_str(void *, char *, char *, ...);
 int util_evaluate_command(char *, char *);
 
 #endif

@@ -80,7 +80,7 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 		return(NULL);
 	memset(node, '\0', sizeof(struct irc_server_node));
 
-	node->server.address = (char *) (((size_t) node) + sizeof(struct irc_server_node));
+	node->server.address = (char *) offset_after_struct_m(node, 0);
 	strcpy(node->server.address, address);
 	node->server.port = port;
 	strncpy(node->server.nick, nick, IRC_MAX_NICK);
@@ -334,7 +334,7 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 			return(-1);
 		text[j] = ch;
 		msg->server = server;
-		emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+		emit_signal(NULL, "irc.dispatch_msg", msg);
 		if (ret = irc_send_msg(server, msg) < 0)
 			return(ret);
 	} while (j < text_len);
@@ -363,7 +363,7 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 		if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, 0, name, &text[i])))
 			return(-1);
 		msg->server = server;
-		emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+		emit_signal(NULL, "irc.dispatch_msg", msg);
 		if (ret = irc_send_msg(server, msg))
 			return(ret);
 	} while (j < text_len);
@@ -382,7 +382,7 @@ int irc_ctcp_msg(struct irc_server *server, char *cmd, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, 1, name, "", cmd, text)))
 		return(-1);
 	msg->server = server;
-	emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+	emit_signal(NULL, "irc.dispatch_msg", msg);
 	return(irc_send_msg(server, msg));
 }
 
@@ -398,7 +398,7 @@ int irc_ctcp_reply(struct irc_server *server, char *cmd, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, 1, name, "", cmd, text)))
 		return(-1);
 	msg->server = server;
-	emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+	emit_signal(NULL, "irc.dispatch_msg", msg);
 	return(irc_send_msg(server, msg));
 }
 
@@ -452,7 +452,7 @@ static int irc_server_receive(struct irc_server *server, fe_network_t desc, fe_n
 	struct irc_msg *msg;
 
 	if (msg = irc_receive_msg(server))
-		emit_signal("irc.dispatch_msg", (void *) (int) msg->cmd, msg);
+		emit_signal(NULL, "irc.dispatch_msg", msg);
 	irc_destroy_msg(msg);
 	if (server->bitflags & IRC_SBF_CONNECTED)
 		irc_server_flush_send_queue(server);

@@ -49,7 +49,7 @@ static int base_cmd_exec_display(void *window, fe_execute_t exec)
 		if (window)
 			fe_print(window, buffer);
 		else
-			emit_signal("base.exec_output", NULL, buffer);
+			emit_signal(NULL, "base.exec_output", buffer);
 	}
 	return(0);
 }

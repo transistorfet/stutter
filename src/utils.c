@@ -308,7 +308,7 @@ int util_expand_variable(const char *str, char *buffer, int max, int *str_count)
  * Format a string given the sprintf-style format string and optional arguments
  * and emit that string to the given signal.
  */
-int util_emit_str(char *name, void *index, char *fmt, ...)
+int util_emit_str(void *obj, char *name, char *fmt, ...)
 {
 	va_list va;
 	char buffer[STRING_SIZE];
@@ -316,7 +316,7 @@ int util_emit_str(char *name, void *index, char *fmt, ...)
 	va_start(va, fmt);
 	if (vsnprintf(buffer, STRING_SIZE, fmt, va) < 0)
 		return(-1);
-	return(emit_signal(name, index, buffer));
+	return(emit_signal(obj, name, buffer));
 }
 
 /**

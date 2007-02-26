@@ -49,15 +49,15 @@ struct type_prototype_s {
 /*** Signals ***/
 
 struct handler_prototype_s {
+	void *obj;
 	char *name;
-	void *index;
 	int priority;
 	signal_t func;
 	void *ptr;
 };
 
-#define ADD_HANDLER(name, index, priority, func, env)	\
-	{ name, index, priority, (signal_t) func, env },
+#define ADD_HANDLER(obj, name, priority, func, env)	\
+	{ obj, name, priority, (signal_t) func, env },
 
 #define DEFINE_HANDLER_LIST(name, list)			\
 	static struct handler_prototype_s name[] = {	\
@@ -68,13 +68,13 @@ struct handler_prototype_s {
 #define ADD_HANDLER_LIST(list) {			\
 	int i;						\
 	for (i = 0;list[i].name;i++)			\
-		signal_connect(list[i].name, list[i].index, list[i].priority, (signal_t) list[i].func, list[i].ptr);	\
+		signal_connect(list[i].obj, list[i].name, list[i].priority, (signal_t) list[i].func, list[i].ptr);	\
 }
 
 #define REMOVE_HANDLER_LIST(list) {			\
 	int i;						\
 	for (i = 0;list[i].name;i++)			\
-		signal_disconnect(list[i].name, list[i].index, (signal_t) list[i].func, list[i].ptr);	\
+		signal_disconnect(signal_find_handler(list[i].obj, list[i].name, (signal_t) list[i].func, list[i].ptr));	\
 }
 
 /*** Keys ***/

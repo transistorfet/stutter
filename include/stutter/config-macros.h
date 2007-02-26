@@ -15,11 +15,11 @@
 #define DO_NOTHING() \
 	;
 
-#define EMIT_SIGNAL(name, index, ptr) \
-	emit_signal(name, index, ptr);
+#define EMIT_SIGNAL(obj, name, ptr) \
+	emit_signal(obj, name, ptr);
 
-#define EMIT_STRING(name, index, ...) \
-	util_emit_str(name, index, __VA_ARGS__);
+#define EMIT_STRING(obj, name, ...) \
+	util_emit_str(obj, name, __VA_ARGS__);
 
 #define PRINT_TO_CURRENT(...) {										\
 	void *window;											\

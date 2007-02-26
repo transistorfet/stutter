@@ -260,7 +260,7 @@ int fe_scroll(void *widget, int diff)
 
 void fe_quit(char *reason)
 {
-	emit_signal("fe.quit", NULL, (void *) reason);
+	emit_signal(NULL, "fe.quit", (void *) reason);
 }
 
 int fe_refresh(void)

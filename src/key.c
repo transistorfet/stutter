@@ -55,17 +55,16 @@ struct context_list_s {
 	hash_list_v(key_map_s) cl;
 };
 
-static inline void key_map_release_node(struct key_map_s *, struct key_s *);
-
-DEFINE_HASH_TABLE(key_map, struct key_map_s, struct key_s, kl, ch, key_map_release_node, key_map_hash, key_map_compare_node, KEY_MAP_LOAD_FACTOR, KEY_MAP_GROWTH_FACTOR)
-DEFINE_HASH_TABLE(context, struct context_list_s, struct key_map_s, cl, context, context_release_node, context_hash, context_compare_node, KEY_MAP_LOAD_FACTOR, KEY_MAP_GROWTH_FACTOR)
-
 static struct context_list_s context_list;
 static struct key_map_s *current_context, *current_map;
 
+static inline void key_map_release_node(struct key_map_s *, struct key_s *);
 static inline struct key_map_s *create_context(char *);
 static inline struct key_s *create_key(short, short, union key_data_u, string_t);
 static inline struct key_map_s *create_key_map(char *, int);
+
+DEFINE_HASH_TABLE(key_map, struct key_map_s, struct key_s, kl, ch, key_map_release_node, key_map_hash, key_map_compare_node, KEY_MAP_LOAD_FACTOR, KEY_MAP_GROWTH_FACTOR)
+DEFINE_HASH_TABLE(context, struct context_list_s, struct key_map_s, cl, context, context_release_node, context_hash, context_compare_node, KEY_MAP_LOAD_FACTOR, KEY_MAP_GROWTH_FACTOR)
 
 int init_key(void)
 {

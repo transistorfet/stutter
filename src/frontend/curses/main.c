@@ -33,7 +33,7 @@ DEFINE_TYPE_LIST(fe_types,
 );
 
 DEFINE_HANDLER_LIST(fe_handlers,
-	ADD_HANDLER("fe.quit", NULL, 0, handle_quit, NULL)
+	ADD_HANDLER(NULL, "fe.quit", 0, handle_quit, NULL)
 );
 
 DEFINE_KEY_LIST(fe_keys,
@@ -157,7 +157,7 @@ main(int argc, char **argv)
 	return(0);
 }
 
-static int handle_quit(char *env, void *index, char *args)
+static int handle_quit(char *env, void *obj, char *args)
 {
 	exit_flag = 0;
 	return(SIGNAL_STOP_EMIT);

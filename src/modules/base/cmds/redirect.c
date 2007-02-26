@@ -23,15 +23,15 @@ int base_cmd_redirect(char *env, char *args)
 	if (*args != '\0')
 		return(-1);
 	else if (!strcmp(target, "none")) {
-		signal_disconnect(name, NULL, (signal_t) base_sig_print, NULL);
+		signal_disconnect(signal_find_handler(NULL, name, (signal_t) base_sig_print, NULL));
 		BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REDIRECT_DISCONNECTED, name)
 	}
 	else if (!strcmp(target, "current")) {
-		signal_connect(name, NULL, 10, (signal_t) base_sig_print, NULL);
+		signal_connect(NULL, name, 10, (signal_t) base_sig_print, NULL);
 		BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REDIRECT_CURRENT, name)
 	}
 	else if (!strcmp(target, "this")) {
-		signal_connect(name, NULL, 10, (signal_t) base_sig_print, window);
+		signal_connect(NULL, name, 10, (signal_t) base_sig_print, window);
 		BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REDIRECT_THIS, name)
 	}
 	else {

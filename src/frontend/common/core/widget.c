@@ -121,7 +121,7 @@ int destroy_widget(struct widget_s *widget)
 
 	if (!widget)
 		return(-1);
-	emit_signal("purge_object", widget, widget);
+	emit_signal(widget, "purge_object", NULL);
 	if (!(node = widget_remove_node(&widget_list, widget->id)) || (&node->data != widget))
 		return(-1);
 	widget_release_node(&widget_list, node);

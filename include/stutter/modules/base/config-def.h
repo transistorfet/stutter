@@ -59,8 +59,8 @@
 	BIND_KEY("\x19", "base.scroll", "-1")
 
 #define DEFAULT_BASE_HANDLERS()						\
-	ADD_HANDLER("error_general", NULL, 10, base_sig_print, NULL)	\
-	ADD_HANDLER("base.error", NULL, 10, base_sig_print, NULL)
+	ADD_HANDLER(NULL, "error_general", 10, base_sig_print, NULL)	\
+	ADD_HANDLER(NULL, "base.error", 10, base_sig_print, NULL)
 
 #define DEFAULT_BASE_COMMANDS()				\
 	ADD_COMMAND("alias", base_cmd_alias)		\
