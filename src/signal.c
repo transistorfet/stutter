@@ -56,6 +56,7 @@ int init_signal(void)
 	if (signal_initialized)
 		return(1);
 	object_init_table(&object_list, SIGNAL_OBJECTS_INIT_SIZE);
+	signal_list.obj = NULL;
 	signal_init_table(&signal_list, SIGNAL_LIST_INIT_SIZE);
 	signal_initialized = 1;
 	return(0);
@@ -269,6 +270,7 @@ static inline struct signal_list_s *create_object(void *obj)
 
 	if (!(list = signal_create_table(SIGNAL_LIST_INIT_SIZE)))
 		return(NULL);
+	list->obj = obj;
 	object_add_node(&object_list, list);
 	return(list);
 }
