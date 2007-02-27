@@ -44,8 +44,8 @@ int init_irc_server(void)
 	if (server_initialized)
 		return(0);
 	linear_init_v(server_list);
-	add_signal("irc.dispatch_msg", SIG_BF_USE_WILDCARD_INDEX);
-	add_signal("irc.dispatch_ctcp", SIG_BF_USE_WILDCARD_INDEX);
+	add_signal("irc.dispatch_msg", 0);
+	add_signal("irc.dispatch_ctcp", 0);
 	irc_ping_watchdog_timer = fe_timer_create(FE_TIMER_BF_PERIODIC, 60, irc_server_ping_watchdog, NULL);
 	server_initialized = 1;
 	return(0);
