@@ -42,8 +42,9 @@ static int signal_initialized = 0;
 static struct signal_list_s signal_list;
 static struct object_list_s object_list;
 
-static inline struct signal_s *create_signal(char *, int);
+static inline struct signal_s *create_signal(struct signal_list_s *, char *, int);
 static inline void signal_release_node(struct signal_list_s *, struct signal_s *);
+static inline struct signal_list_s *create_object(void *);
 static inline void object_release_node(struct object_list_s *, struct signal_list_s *);
 static int signal_purge_handlers(struct signal_s *, struct signal_handler_s *);
 
@@ -75,11 +76,8 @@ int release_signal(void)
  */
 int add_signal(char *name, int bitflags)
 {
-	struct signal_s *signal;
-
-	if (!(signal = create_signal(name, bitflags)))
+	if (!create_signal(&signal_list, name, bitflags))
 		return(-1);
-	signal_add_node(&signal_list, signal);
 	return(0);
 }
 
@@ -149,10 +147,10 @@ struct signal_handler_s *signal_connect(void *obj, char *name, int priority, sig
 		return(NULL);
 	if (!obj)
 		list = &signal_list;
-	else if (!(list = object_find_node(&object_list, obj)))
+	else if (!(list = object_find_node(&object_list, obj)) && !(list = create_object(obj)))
 		return(NULL);
 
-	if (!(signal = signal_find_node(list, name)) && (!(signal = create_signal(name, 0)) || signal_add_node(list, signal)))
+	if (!(signal = signal_find_node(list, name)) && !(signal = create_signal(list, name, 0)))
 		return(NULL);
 	if (!(handler = memory_alloc(sizeof(struct signal_handler_s))))
 		return(NULL);
@@ -233,7 +231,7 @@ struct signal_handler_s *signal_find_handler(void *obj, char *name, signal_t fun
 /**
  * Create and initialize a signal struct.
  */
-static inline struct signal_s *create_signal(char *name, int bitflags)
+static inline struct signal_s *create_signal(struct signal_list_s *list, char *name, int bitflags)
 {
 	struct signal_s *signal;
 
@@ -243,6 +241,7 @@ static inline struct signal_s *create_signal(char *name, int bitflags)
 	strcpy(signal->name, name);
 	signal->bitflags = bitflags;
 	signal->handlers = NULL;
+	signal_add_node(list, signal);
 	return(signal);
 }
 
@@ -262,11 +261,24 @@ static inline void signal_release_node(struct signal_list_s *list, struct signal
 }
 
 /**
+ * Create a signal table for an object and add it to the object list.
+ */
+static inline struct signal_list_s *create_object(void *obj)
+{
+	struct signal_list_s *list;
+
+	if (!(list = signal_create_table(SIGNAL_LIST_INIT_SIZE)))
+		return(NULL);
+	object_add_node(&object_list, list);
+	return(list);
+}
+
+/**
  * Destroy all the signal lists associated with the given object.
  */
-static inline void object_release_node(struct object_list_s *list, struct signal_list_s *signal_list)
+static inline void object_release_node(struct object_list_s *obj_list, struct signal_list_s *list)
 {
-	signal_destroy_table(signal_list);
+	signal_destroy_table(list);
 }
 
 /**
