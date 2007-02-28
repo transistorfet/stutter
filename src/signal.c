@@ -280,7 +280,7 @@ static inline struct signal_list_s *create_object(void *obj)
  */
 static inline void object_release_node(struct object_list_s *obj_list, struct signal_list_s *list)
 {
-	signal_destroy_table(list);
+	signal_release_table(list);
 }
 
 /**
