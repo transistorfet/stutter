@@ -26,6 +26,7 @@ extern int release_terminal(void);
 
 static struct surface_s *fe_create_surface(void);
 static int fe_destroy_surface(struct surface_s *);
+static int fe_handle_purge_surface(void *, struct surface_s *);
 
 int init_frontend(void)
 {
@@ -285,14 +286,29 @@ static struct surface_s *fe_create_surface(void)
 
 	if (!queue_current_node(surface_list))
 		queue_set_current_node(surface_list, node);
+	signal_connect(surface, "purge_object", 10, (signal_t) fe_handle_purge_surface, NULL);
 	return(surface);
 }
 
 static int fe_destroy_surface(struct surface_s *surface)
 {
-	surface_destroy_m(surface);
+	if (surface)
+		surface_destroy_m(surface);
 	return(0);
 }
 
+static int fe_handle_purge_surface(void *ptr, struct surface_s *surface)
+{
+	struct queue_node_s *cur;
+
+	queue_foreach(surface_list, cur) {
+		if (SURFACE_S(cur->ptr) == surface) {
+			cur->ptr = NULL;
+			queue_delete_node(surface_list, cur);
+			return(0);
+		}
+	}
+	return(0);
+}
 
 
