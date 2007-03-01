@@ -31,7 +31,7 @@ DEFINE_TYPE_LIST(fe_types,
 );
 
 DEFINE_HANDLER_LIST(fe_handlers,
-	ADD_HANDLER("fe.quit", NULL, 0, handle_quit, NULL)
+	ADD_HANDLER(NULL, "fe.quit", 0, handle_quit, NULL)
 );
 
 DEFINE_KEY_LIST(fe_keys,
@@ -155,7 +155,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR argv, int WinMode
 
 /*** Local Functions ***/
 
-int handle_quit(char *env, void *index, char *msg)
+int handle_quit(char *env, void *obj, char *msg)
 {
 	PostQuitMessage(0);
 	return(SIGNAL_STOP_EMIT);
