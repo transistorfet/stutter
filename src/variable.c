@@ -15,12 +15,11 @@
 #include <stutter/memory.h>
 #include <stutter/variable.h>
 
-
 #define variable_hash_m(list, str, len)		(sdbm_partial_hash_icase(str, len) % hash_size_v(list))
-#define variable_compare_m(str, len)		(!strncmp_icase(cur->data.name, str, len) && (strlen(cur->data.name) == len))
+#define variable_compare_m(str, len)		(!strncmp_icase(cur->var.name, str, len) && (strlen(cur->var.name) == len))
 
 struct variable_node_s {
-	struct variable_s data;
+	struct variable_s var;
 	hash_node_v(variable_node_s) vl;
 };
 
@@ -35,7 +34,6 @@ static int variable_validate_name(char *);
 int init_variable(void)
 {
 	init_type();
-
 	if (!(variable_root = create_variable_table()))
 		return(-1);
 	return(0);
@@ -71,8 +69,8 @@ int destroy_variable_table(struct variable_table_s *table)
 	struct variable_node_s *cur, *tmp;
 
 	hash_foreach_safe_v(table->vl, vl, i, cur, tmp) {
-		if (cur->data.type->destroy)
-			cur->data.type->destroy(cur->data.value);
+		if (cur->var.type->destroy)
+			cur->var.type->destroy(cur->var.value);
 		memory_free(cur);
 	}
 	hash_release_v(table->vl);
@@ -120,28 +118,28 @@ void *add_variable_real(struct variable_table_s *table, struct type_s *type, cha
 			return(NULL);
 		if (!(node = memory_alloc(sizeof(struct variable_node_s) + strlen(name) + 1)))
 			return(NULL);
-		node->data.name = (char *) (((unsigned int) node) + sizeof(struct variable_node_s));
-		strcpy(node->data.name, name);
-		node->data.type = type;
-		node->data.bitflags = bitflags;
-		node->data.value = type->create(NULL, str, va);
+		node->var.name = (char *) offset_after_struct_m(node, 0);
+		strcpy(node->var.name, name);
+		node->var.type = type;
+		node->var.bitflags = bitflags;
+		node->var.value = type->create(NULL, str, va);
         
 		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
 		if (hash_load_v(table->vl) > VARIABLE_LIST_LOAD_FACTOR)
-			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * VARIABLE_LIST_GROWTH_FACTOR), variable_hash_m(table->vl, cur->data.name, strlen(cur->data.name)), NULL);
-		return(node->data.value);
+			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * VARIABLE_LIST_GROWTH_FACTOR), variable_hash_m(table->vl, cur->var.name, strlen(cur->var.name)), NULL);
+		return(node->var.value);
 	}
 	else if (name[len] != '\0') {
-		if (!node->data.type->add)
+		if (!node->var.type->add)
 			return(NULL);
-		return(node->data.type->add(node->data.value, type, &name[len + 1], bitflags, str, va));
+		return(node->var.type->add(node->var.value, type, &name[len + 1], bitflags, str, va));
 	}
-	else if ((!type || (node->data.type == type)) && !(node->data.bitflags & VAR_BF_NO_MODIFY)) {
-		node->data.bitflags = bitflags;
-		if (!node->data.type->create)
+	else if ((!type || (node->var.type == type)) && !(node->var.bitflags & VAR_BF_NO_MODIFY)) {
+		node->var.bitflags = bitflags;
+		if (!node->var.type->create)
 			return(NULL);
-		node->data.value = node->data.type->create(node->data.value, str, va);
-		return(node->data.value);
+		node->var.value = node->var.type->create(node->var.value, str, va);
+		return(node->var.value);
 	}
 	else
 		return(NULL);
@@ -164,22 +162,22 @@ int remove_variable(struct variable_table_s *table, struct type_s *type, char *n
 
 	if (name[len] != '\0') {
 		hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
-		if (!node || !node->data.type->remove)
+		if (!node || !node->var.type->remove)
 			return(1);
-		return(node->data.type->remove(node->data.value, type, &name[len + 1]));
+		return(node->var.type->remove(node->var.value, type, &name[len + 1]));
 	}
 	else {
 		hash_remove_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
 		if (!node)
 			return(-1);
-		if ((node->data.bitflags & VAR_BF_NO_REMOVE) || (type && (node->data.type != type))) {
+		if ((node->var.bitflags & VAR_BF_NO_REMOVE) || (type && (node->var.type != type))) {
 			// TODO is this bad to remove the node and then re-add it?
 			hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
 			return(1);
 		}
 		else {
-			if (node->data.type->destroy)
-				node->data.type->destroy(node->data.value);
+			if (node->var.type->destroy)
+				node->var.type->destroy(node->var.value);
 			memory_free(node);
 			return(0);
 		}
@@ -204,14 +202,14 @@ void *find_variable(struct variable_table_s *table, char *name, struct type_s **
 	if (!node)
 		return(NULL);
 	else if (name[len] != '\0') {
-		if (!node->data.type->index)
+		if (!node->var.type->index)
 			return(NULL);
-		return(node->data.type->index(node->data.value, &name[len + 1], type_ptr));
+		return(node->var.type->index(node->var.value, &name[len + 1], type_ptr));
 	}
 	else {
 		if (type_ptr)
-			*type_ptr = node->data.type;
-		return(node->data.value);
+			*type_ptr = node->var.type;
+		return(node->var.value);
 	}
 }
 
@@ -234,7 +232,7 @@ int traverse_variable_table(struct variable_table_s *table, struct type_s *type,
 		table = variable_root;
 
 	hash_foreach_v(table->vl, vl, i, cur) {
-		if ((cur->data.type == type) && (ret = func(cur->data.value, cur->data.type, ptr)))
+		if ((cur->var.type == type) && (ret = func(cur->var.value, cur->var.type, ptr)))
 			return(ret);
 	}
 	return(0);

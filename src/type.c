@@ -17,15 +17,11 @@
 #include <stutter/globals.h>
 
 #define type_release_node(list, node)
-
-#define type_hash(list, key)	\
-	sdbm_hash_icase(key)
-
-#define type_compare_node(node, ptr)	\
-	(!strcmp_icase(node->data.name, key))
+#define type_hash(list, key)			sdbm_hash_icase(key)
+#define type_compare_node(node, ptr)		(!strcmp_icase(node->type.name, key))
 
 struct type_node_s {
-	struct type_s data;
+	struct type_s type;
 	hash_node_v(type_node_s) tl;
 };
 
@@ -33,7 +29,7 @@ struct type_list_s {
 	hash_list_v(type_node_s) tl;
 };
 
-DEFINE_HASH_TABLE(type, struct type_list_s, struct type_node_s, tl, data.name, type_release_node, type_hash, type_compare_node, TYPE_LIST_LOAD_FACTOR, TYPE_LIST_GROWTH_FACTOR)
+DEFINE_HASH_TABLE(type, struct type_list_s, struct type_node_s, tl, type.name, type_release_node, type_hash, type_compare_node, TYPE_LIST_LOAD_FACTOR, TYPE_LIST_GROWTH_FACTOR)
 
 static int type_initialized = 0;
 static struct type_list_s type_list;
@@ -66,20 +62,20 @@ struct type_s *add_type(char *name, int bitflags, type_create_t create, type_des
 
 	if (!(node = type_create_node(sizeof(struct type_node_s) + strlen(name) + 1)))
 		return(NULL);
-	node->data.name = (char *) (((unsigned int) node) + sizeof(struct type_node_s));
-	strcpy(node->data.name, name);
-	node->data.bitflags = bitflags;
-	node->data.create = create;
-	node->data.destroy = destroy;
-	node->data.add = add;
-	node->data.remove = remove;
-	node->data.index = index;
-	node->data.traverse = traverse;
-	node->data.stringify = stringify;
-	node->data.evaluate = evaluate;
+	node->type.name = (char *) offset_after_struct_m(node, 0);
+	strcpy(node->type.name, name);
+	node->type.bitflags = bitflags;
+	node->type.create = create;
+	node->type.destroy = destroy;
+	node->type.add = add;
+	node->type.remove = remove;
+	node->type.index = index;
+	node->type.traverse = traverse;
+	node->type.stringify = stringify;
+	node->type.evaluate = evaluate;
 
 	type_add_node(&type_list, node);
-	return(&node->data);
+	return(&node->type);
 }
 
 /**
@@ -103,7 +99,7 @@ struct type_s *find_type(char *name)
 
 	if (!(node = type_find_node(&type_list, name)))
 		return(NULL);
-	return(&node->data);
+	return(&node->type);
 }
 
 
