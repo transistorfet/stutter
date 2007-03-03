@@ -16,25 +16,20 @@
 
 #define WIDGET_TYPES_INIT_SIZE		10
 
-#define widget_release_node(list, node)	\
-	node->data.type->release(&node->data);
-
-#define widget_hash(list, key)	\
-	sdbm_hash_icase(key)
-
-#define widget_compare_node(node, key)	\
-	(!strcmp_icase(node->data.id, key))
+#define widget_release_node(list, node)		node->widget.type->release(&node->widget);
+#define widget_hash(list, key)			sdbm_hash_icase(key)
+#define widget_compare_node(node, key)		(!strcmp_icase(node->widget.id, key))
 
 struct widget_node_s {
 	hash_node_v(widget_node_s) wl;
-	struct widget_s data;
+	struct widget_s widget;
 };
 
 struct widget_list_s {
 	hash_list_v(widget_node_s) wl;
 };
 
-DEFINE_HASH_TABLE(widget, struct widget_list_s, struct widget_node_s, wl, data.id, widget_release_node, widget_hash, widget_compare_node, FE_WIDGET_LIST_LOAD_FACTOR, FE_WIDGET_LIST_GROWTH_FACTOR)
+DEFINE_HASH_TABLE(widget, struct widget_list_s, struct widget_node_s, wl, widget.id, widget_release_node, widget_hash, widget_compare_node, FE_WIDGET_LIST_LOAD_FACTOR, FE_WIDGET_LIST_GROWTH_FACTOR)
 
 static int widget_initialized = 0;
 static struct widget_list_s widget_list;
@@ -101,18 +96,18 @@ struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widg
 	//	return(NULL);
 	if (!(node = widget_create_node(type->size + (sizeof(struct widget_node_s) - sizeof(struct widget_s)) + strlen(id) + 1)))
 		return(NULL);
-	node->data.bitflags = 0;
-	node->data.type = type;
-	node->data.parent = parent;
-	node->data.id = (char *) (((size_t) &node->data) + type->size);
-	strcpy(node->data.id, id);
+	node->widget.bitflags = 0;
+	node->widget.type = type;
+	node->widget.parent = parent;
+	node->widget.id = (char *) (((size_t) &node->widget) + type->size);
+	strcpy(node->widget.id, id);
 
-	if (type->init(&node->data, attribs) < 0) {
+	if (type->init(&node->widget, attribs) < 0) {
 		widget_destroy_node(&widget_list, node);
 		return(NULL);
 	}
 	widget_add_node(&widget_list, node);
-	return(&node->data);
+	return(&node->widget);
 }
 
 int destroy_widget(struct widget_s *widget)
@@ -122,7 +117,7 @@ int destroy_widget(struct widget_s *widget)
 	if (!widget)
 		return(-1);
 	emit_signal(widget, "purge_object", NULL);
-	if (!(node = widget_remove_node(&widget_list, widget->id)) || (&node->data != widget))
+	if (!(node = widget_remove_node(&widget_list, widget->id)) || (&node->widget != widget))
 		return(-1);
 	widget_release_node(&widget_list, node);
 	return(0);
@@ -134,7 +129,7 @@ struct widget_s *find_widget(char *id)
 
 	if (!(node = widget_find_node(&widget_list, id)))
 		return(NULL);
-	return(&node->data);
+	return(&node->widget);
 }
 
 int widget_control(struct widget_s *widget, int cmd, ...)
