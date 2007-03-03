@@ -56,18 +56,18 @@ static void *fe_common_command_create(void *value, char *params, va_list va)
 	return((void *) command);
 }
 
-static int fe_common_command_evaluate(void *data, void *ptr)
+static int fe_common_command_evaluate(void *value, void *ptr)
 {
 	struct fe_common_command_s *command;
 
-	if ((command = data) && command->func)
+	if ((command = value) && command->func)
 		return(command->func(command->widget, ptr));
 	return(-1);
 }
 
-static void fe_common_command_destroy(void *data)
+static void fe_common_command_destroy(void *value)
 {
-	if (data)
-		memory_free(data);
+	if (value)
+		memory_free(value);
 }
 

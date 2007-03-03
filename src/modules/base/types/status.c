@@ -62,17 +62,17 @@ static void *base_status_create(void *value, char *params, va_list va)
 	return(status);
 }
 
-static int base_status_stringify(void *ptr, char *buffer, int max)
+static int base_status_stringify(void *value, char *buffer, int max)
 {
-	if (!ptr)
+	if (!value)
 		return(-1);
-	return(((struct base_status_s *) ptr)->func(((struct base_status_s *) ptr)->ptr, buffer, max));
+	return(((struct base_status_s *) value)->func(((struct base_status_s *) value)->ptr, buffer, max));
 }
 
-static void base_status_destroy(void *ptr)
+static void base_status_destroy(void *value)
 {
-	if (ptr)
-		memory_free(ptr);
+	if (value)
+		memory_free(value);
 }
 
 

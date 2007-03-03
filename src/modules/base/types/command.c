@@ -52,17 +52,17 @@ static void *base_command_create(void *value, char *params, va_list va)
 	return((void *) callback);
 }
 
-static int base_command_evaluate(void *data, void *ptr)
+static int base_command_evaluate(void *value, void *ptr)
 {
 	struct callback_s *callback;
 
-	if (callback = data)
+	if (callback = value)
 		execute_callback_m(*callback, ptr);
 	return(-1);
 }
 
-static void base_command_destroy(void *data)
+static void base_command_destroy(void *value)
 {
-	memory_free(data);
+	memory_free(value);
 }
 

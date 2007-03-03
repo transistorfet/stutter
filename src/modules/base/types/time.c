@@ -32,13 +32,13 @@ struct type_s *base_load_time(void)
 
 /*** Local Functions ***/
 
-static int base_time_stringify(void *ptr, char *buffer, int max)
+static int base_time_stringify(void *value, char *buffer, int max)
 {
 	int i;
 	time_t current_time;
 
 	current_time = time(NULL);
-	if (!(i = strftime(buffer, max, (char *) ptr, localtime(&current_time))))
+	if (!(i = strftime(buffer, max, (char *) value, localtime(&current_time))))
 		return(-1);
 	return(i);
 }
