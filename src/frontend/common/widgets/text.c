@@ -11,6 +11,7 @@
 #include CONFIG_H
 #include <stutter/queue.h>
 #include <stutter/memory.h>
+#include <stutter/macros.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "text.h"
@@ -142,7 +143,7 @@ int text_print(struct text_s *text, const char *str, int len)
 
 	if (!(node = (struct text_entry_s *) memory_alloc(sizeof(struct text_entry_s) + len + 1)))
 		return(-1);
-	node->str = (char *) (((size_t) node) + sizeof(struct text_entry_s));
+	node->str = (char *) offset_after_struct_m(node, 0);
 	strncpy(node->str, str, len);
 	node->str[len] = '\0';
 

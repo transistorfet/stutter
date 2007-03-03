@@ -1,7 +1,7 @@
 /*
  * Widget Name:		input.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; string ; surface
+ * Module Requirements:	queue ; memory ; surface
  * Description:		Input Field Widget
  */
 
@@ -11,7 +11,7 @@
 #include CONFIG_H
 #include <stutter/queue.h>
 #include <stutter/memory.h>
-#include <stutter/string.h>
+#include <stutter/macros.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
@@ -205,7 +205,7 @@ static inline int input_save_buffer(struct input_s *input)
 
 	input->buffer[input->end] = '\0';
 	if (node = queue_create_node(sizeof(struct queue_node_s) + input->end + 1)) {
-		node->ptr = (void *) (((size_t) node) + sizeof(struct queue_node_s));
+		node->ptr = (void *) offset_after_struct_m(node, 0);
 		strcpy(node->ptr, input->buffer);
 		((char *) node->ptr)[input->end] = '\0';
 		queue_prepend_node(input->history, node);
