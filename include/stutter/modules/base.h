@@ -20,6 +20,7 @@ int base_cmd_alias(char *, char *);
 int base_cmd_bind(char *, char *);
 int base_cmd_clear(char *, char *);
 int base_cmd_clearline(char *, char *);
+int base_cmd_close(char *, char *);
 int base_cmd_echo(char *, char *);
 int base_cmd_evaluate(char *, char *);
 int base_cmd_exec(char *, char *);
@@ -35,6 +36,7 @@ int base_cmd_scroll(char *, char *);
 int base_cmd_select(char *, char *);
 int base_cmd_set(char *, char *);
 int base_cmd_source(char *, char *);
+int base_cmd_timer(char *, char *);
 int base_cmd_unbind(char *, char *);
 
 /* Signal Handlers */
