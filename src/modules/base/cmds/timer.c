@@ -24,7 +24,7 @@ int base_cmd_timer(char *env, char *args)
 
 	get_param_m(args, time, ' ');
 	secs = util_atoi(time, 10);
-	if (!(str = create_string("%s", args)) || !fe_timer_create(FE_TIMER_BF_ONE_TIME, secs, base_cmd_timer_expired, str))
+	if (!(str = create_string("%s", args)) || !fe_timer_create(FE_TIMER_BF_ONE_TIME, secs, (callback_t) base_cmd_timer_expired, str))
 		return(-1);
 	return(0);
 }
