@@ -12,6 +12,7 @@
 #include <stutter/linear.h>
 #include <stutter/string.h>
 #include <stutter/globals.h>
+#include <stutter/macros.h>
 #include <stutter/modules/irc/user.h>
 #include <stutter/modules/irc/channel.h>
 
@@ -72,7 +73,7 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, char *name, v
 		return(NULL);
 	}
 
-	node->channel.name = (char *) (((size_t) node) + sizeof(struct irc_channel_node));
+	node->channel.name = (char *) offset_after_struct_m(node, 0);
 	strcpy(node->channel.name, name);
 
 	#ifdef IRC_CHANNEL_BITFLAGS
