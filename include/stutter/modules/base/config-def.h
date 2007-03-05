@@ -67,6 +67,7 @@
 	ADD_COMMAND("bind", base_cmd_bind)		\
 	ADD_COMMAND("clear", base_cmd_clear)		\
 	ADD_COMMAND("clearline", base_cmd_clearline)	\
+	ADD_COMMAND("close", base_cmd_close)		\
 	ADD_COMMAND("echo", base_cmd_echo)		\
 	ADD_COMMAND("exec", base_cmd_exec)		\
 	ADD_COMMAND("expand", base_cmd_expand)		\
@@ -81,6 +82,7 @@
 	ADD_COMMAND("select", base_cmd_select)		\
 	ADD_COMMAND("set", base_cmd_set)		\
 	ADD_COMMAND("source", base_cmd_source)		\
+	ADD_COMMAND("timer", base_cmd_timer)		\
 	ADD_COMMAND("unbind", base_cmd_unbind)
 
 /*** Joinpoints ***/

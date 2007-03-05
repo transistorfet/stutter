@@ -8,6 +8,7 @@ OBJS =	init.o \
 	cmds/bind.o \
 	cmds/clear.o \
 	cmds/clearline.o \
+	cmds/close.o \
 	cmds/echo.o \
 	cmds/evaluate.o \
 	cmds/exec.o \
@@ -23,6 +24,7 @@ OBJS =	init.o \
 	cmds/select.o \
 	cmds/set.o \
 	cmds/source.o \
+	cmds/timer.o \
 	cmds/unbind.o \
 	sigs/print.o \
 	types/command.o \
