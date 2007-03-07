@@ -32,10 +32,11 @@ int base_cmd_timer(char *env, char *args)
 
 static int base_cmd_timer_expired(char *args, fe_timer_t *timer)
 {
-	char *cmd;
+	char *cmd, *str;
 
-	get_param_m(args, cmd, ' ');
-	if (util_evaluate_command(cmd, args)) {
+	str = args;
+	get_param_m(str, cmd, ' ');
+	if (util_evaluate_command(cmd, str)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	destroy_string(args);
