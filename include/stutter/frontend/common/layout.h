@@ -9,11 +9,13 @@
 
 #include <stutter/frontend/widget.h>
 
+#define LAYOUT_RT_WIDGET	0x0001
+#define LYAOUT_RT_SURFACE	0x0002
+
 struct layout_s;
 
-typedef struct widget_s *(*layout_create_t)(void *, struct widget_attrib_s *, struct layout_s *);
+typedef void *(*layout_create_t)(void *, struct widget_attrib_s *, struct layout_s *);
 
-// TODO type doesn't seem like the right name here
 struct layout_type_s {
 	char *name;
 	int bitflags;
@@ -34,17 +36,20 @@ struct layout_s {
 int init_layout(void);
 int release_layout(void);
 
-// TODO this shouldn't take the layout
-int add_layout(char *, char *, struct layout_s *layout);
-int remove_layout(char *, char *);
-struct layout_s *find_layout(char *, char *);
-
 int layout_register_type(char *, int, layout_create_t, void *);
 int layout_unregister_type(char *);
 struct layout_type_s *layout_find_type(char *);
 
-struct widget_s *layout_generate_widget(char *, char *, char *);
-struct widget_s *layout_create_widget(struct widget_type_s *, struct widget_attrib_s *, struct layout_s *);
+struct layout_s *make_layout(char *, struct widget_attrib_s *, struct layout_s *, struct layout_s *);
+void destroy_layout(struct layout_s *);
+struct widget_attrib_s *make_layout_attrib(char *, char *, struct widget_attrib_s *);
+void destroy_layout_attrib(struct widget_attrib_s *);
+
+int add_layout(char *, char *, struct layout_s *layout);
+int remove_layout(char *, char *);
+struct layout_s *find_layout(char *, char *);
+
+void *layout_generate_object(char *, char *, int, char *);
 
 #endif
 

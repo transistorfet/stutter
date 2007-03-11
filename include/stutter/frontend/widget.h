@@ -78,6 +78,8 @@ typedef void (*widget_clear_t)(struct widget_s *widget);
 typedef int (*widget_read_t)(struct widget_s *widget, char *buffer, int max);
 typedef int (*widget_control_t)(struct widget_s *widget, int cmd, va_list va);
 
+struct layout_s;
+
 struct widget_attrib_s {
 	char *name;
 	char *value;
@@ -116,6 +118,7 @@ int destroy_widget(struct widget_s *);
 struct widget_s *find_widget(char *);
 
 int widget_control(struct widget_s *, int, ...);
+struct widget_s *generate_widget(struct widget_type_s *, struct widget_attrib_s *, struct layout_s *);
 
 /*** Miscellaneous Macros and Inline Functions ***/
 

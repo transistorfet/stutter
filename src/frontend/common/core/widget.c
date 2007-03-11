@@ -1,7 +1,7 @@
 /*
  * Module Name:		widget.c
  * Version:		0.1
- * Module Requirements:	memory ; signal
+ * Module Requirements:	memory ; signal ; layout
  * Description:		Widget Manager
  */
 
@@ -13,8 +13,7 @@
 #include <stutter/memory.h>
 #include <stutter/signal.h>
 #include <stutter/frontend/widget.h>
-
-#define WIDGET_TYPES_INIT_SIZE		10
+#include <stutter/frontend/common/layout.h>
 
 #define widget_release_node(list, node)		node->widget.type->release(&node->widget);
 #define widget_hash(list, key)			sdbm_hash_icase(key)
@@ -39,7 +38,7 @@ int init_widget(void)
 {
 	if (widget_initialized)
 		return(0);
-	if (!(widget_types = create_hash_table(WIDGET_TYPES_INIT_SIZE, NULL)))
+	if (init_layout())
 		return(-1);
 	widget_init_table(&widget_list, FE_WIDGET_LIST_INIT_SIZE);
 	widget_initialized = 1;
@@ -54,36 +53,16 @@ int release_widget(void)
 	if (!widget_initialized)
 		return(0);
 	widget_release_table(&widget_list);
-	destroy_hash_table(widget_types);
+	release_layout();
 	widget_initialized = 0;
 	return(0);
 }
 
-int add_widget_type(struct widget_type_s *type)
-{
-	struct hash_node_s *node;
-
-	if (!(node = hash_create_node(0)))
-		return(-1);
-	hash_init_node(widget_types, node, type->name, type);
-	hash_add_node(widget_types, node);
-	return(0);
-}
-
-int remove_widget_type(char *name)
-{
-	return(hash_delete_node(widget_types, name));
-}
-
-struct widget_type_s *find_widget_type(char *name)
-{
-	struct hash_node_s *node;
-
-	if (!(node = hash_find_node(widget_types, name)))
-		return(NULL);
-	return(node->ptr);
-}
-
+/**
+ * Creates a new widget of the given type with the given id and parent passing
+ * the given attributes to the widget's creation function.  A pointer to the
+ * new widget is returned or NULL is returned on error.
+ */
 struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widget_s *parent, struct widget_attrib_s *attribs)
 {
 	struct widget_node_s *node;
@@ -110,6 +89,11 @@ struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widg
 	return(&node->widget);
 }
 
+/**
+ * Destroys the given widget and emits the purge_object signal to allow widget
+ * owners a change to clean up.  If the widget cannot be removed, -1 is
+ * returned.  Otherwise 0 is returned.
+ */
 int destroy_widget(struct widget_s *widget)
 {
 	struct widget_node_s *node;
@@ -123,6 +107,9 @@ int destroy_widget(struct widget_s *widget)
 	return(0);
 }
 
+/**
+ * Returns the widget with the given id.
+ */
 struct widget_s *find_widget(char *id)
 {
 	struct widget_node_s *node;
@@ -132,6 +119,10 @@ struct widget_s *find_widget(char *id)
 	return(&node->widget);
 }
 
+/**
+ * Calls the widget control function allowing for direct variable arguments
+ * instead of passing a va_list.
+ */
 int widget_control(struct widget_s *widget, int cmd, ...)
 {
 	int ret;
@@ -141,6 +132,30 @@ int widget_control(struct widget_s *widget, int cmd, ...)
 	ret = widget->type->control(widget, cmd, va);
 	va_end(va);
 	return(ret);
+}
+
+
+/**
+ * A layout creation function that generates a widget of the given widget type
+ * in accordance with the layout generation rules.  This function is intended
+ * to be registered as a layout type with the type of a widget to be generated
+ * used as the associated type pointer.
+ */
+struct widget_s *generate_widget(struct widget_type_s *type, struct widget_attrib_s *attribs, struct layout_s *children)
+{
+	struct layout_s *cur;
+	struct widget_s *widget, *child;
+
+	if (!(widget = create_widget(type, widget_get_attrib(attribs, "id"), NULL, attribs)))
+		return(NULL);
+	for (cur = children;cur;cur = cur->next) {
+		if (cur->type->bitflags != LAYOUT_RT_WIDGET)
+			continue;
+		child = layout_call_create_m(cur->type, cur->attribs, cur->children);
+		if (child)
+			widget_control(widget, WCC_ADD_WIDGET, child);
+	}
+	return(widget);
 }
 
 
