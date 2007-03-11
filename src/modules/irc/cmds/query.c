@@ -25,7 +25,7 @@ int irc_cmd_query(char *env, char *args)
 	if (name[0] == '#' || name[0] == '&' || name[0] == '+' || name[0] == '!')
 		return(-1);
 
-	if (channel = irc_find_channel(server->channels, name))
+	if ((channel = irc_find_channel(server->channels, name)))
 		fe_select_widget("text", NULL, channel->window);
 	else if ((frame = fe_current_widget("frame", NULL))
 	    && (window = fe_create_widget("irc", "text", name, frame))

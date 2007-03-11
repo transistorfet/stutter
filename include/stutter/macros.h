@@ -33,7 +33,7 @@
  */
 #define split_string_m(str, first, rest, ch) {	\
 	first = str;				\
-	if (rest = strchr(str, ch)) {		\
+	if ((rest = strchr(str, ch))) {		\
 		*rest = '\0';			\
 		rest = &rest[1];		\
 	}					\
@@ -49,7 +49,7 @@
  */
 #define get_prefix_m(str, prefix, ch) {		\
 	prefix = str;				\
-	if (str = strchr(str, ch)) {		\
+	if ((str = strchr(str, ch))) {		\
 		*str = '\0';			\
 		str = &str[1];			\
 	}					\

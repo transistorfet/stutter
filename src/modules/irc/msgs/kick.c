@@ -15,7 +15,6 @@
 int irc_msg_kick(char *env, struct irc_msg *msg)
 {
 	char *fmt;
-	void *window;
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))

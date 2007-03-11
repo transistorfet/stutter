@@ -267,7 +267,7 @@ void fe_move(void *widget, short x, short y)
 
 int fe_scroll(void *widget, int diff)
 {
-	widget_control(WIDGET_S(widget), WCC_SCROLL, diff);
+	return(widget_control(WIDGET_S(widget), WCC_SCROLL, diff));
 }
 
 void fe_quit(char *reason)

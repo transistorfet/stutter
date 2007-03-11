@@ -167,7 +167,7 @@ struct irc_channel *irc_server_find_window(void *window)
 	struct irc_server_node *cur;
 
 	linear_foreach_v(server_list, sl, cur) {
-		if (channel = irc_channel_find_window(cur->server.channels, window))
+		if ((channel = irc_channel_find_window(cur->server.channels, window)))
 			return(channel);
 	}
 	return(NULL);
@@ -256,7 +256,7 @@ int irc_broadcast_msg(struct irc_msg *msg)
 	struct irc_server_node *cur;
 
 	linear_foreach_v(server_list, sl, cur) {
-		if (new_msg = irc_duplicate_msg(msg))
+		if ((new_msg = irc_duplicate_msg(msg)))
 			ret = irc_send_msg(&cur->server, new_msg);
 		cur->server.last_ping = time(NULL);
 	}
@@ -335,7 +335,7 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 		text[j] = ch;
 		msg->server = server;
 		emit_signal(NULL, "irc.dispatch_msg", msg);
-		if (ret = irc_send_msg(server, msg) < 0)
+		if ((ret = irc_send_msg(server, msg) < 0))
 			return(ret);
 	} while (j < text_len);
 	return(0);
@@ -364,7 +364,7 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 			return(-1);
 		msg->server = server;
 		emit_signal(NULL, "irc.dispatch_msg", msg);
-		if (ret = irc_send_msg(server, msg))
+		if ((ret = irc_send_msg(server, msg)))
 			return(ret);
 	} while (j < text_len);
 	return(0);
@@ -410,7 +410,6 @@ int irc_ctcp_reply(struct irc_server *server, char *cmd, char *name, char *text)
  */
 static int irc_server_init_connection(struct irc_server *server)
 {
-	int ret = 0;
 	struct irc_msg *msg;
 
 	if (!(server->net = fe_net_connect(server->address, server->port)))
@@ -451,7 +450,7 @@ static int irc_server_receive(struct irc_server *server, fe_network_t desc, fe_n
 {
 	struct irc_msg *msg;
 
-	if (msg = irc_receive_msg(server))
+	if ((msg = irc_receive_msg(server)))
 		emit_signal(NULL, "irc.dispatch_msg", msg);
 	irc_destroy_msg(msg);
 	if (server->bitflags & IRC_SBF_CONNECTED)

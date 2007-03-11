@@ -18,7 +18,6 @@
 
 int base_cmd_set(char *env, char *args)
 {
-	int j = 0;
 	char *name;
 	char *type_name = NULL;
 	struct type_s *type = NULL;

@@ -35,8 +35,6 @@ struct type_s *base_load_command(void)
 
 static void *base_command_create(void *value, char *params, va_list va)
 {
-	void *ptr;
-	callback_t func;
 	struct callback_s *callback;
 
 	if (value)
@@ -56,7 +54,7 @@ static int base_command_evaluate(void *value, void *ptr)
 {
 	struct callback_s *callback;
 
-	if (callback = value)
+	if ((callback = value))
 		execute_callback_m(*callback, ptr);
 	return(-1);
 }

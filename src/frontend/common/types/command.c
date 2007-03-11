@@ -12,7 +12,7 @@
 #include <stutter/memory.h>
 #include <stutter/frontend/widget.h>
 
-typedef (*fe_common_command_func_t)(struct widget_s *, char *);
+typedef int (*fe_common_command_func_t)(struct widget_s *, char *);
 
 struct fe_common_command_s {
 	fe_common_command_func_t func;

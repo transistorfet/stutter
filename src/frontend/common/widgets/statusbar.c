@@ -39,7 +39,7 @@ int statusbar_init(struct statusbar_s *statusbar, struct widget_attrib_s *attrib
 	window_init(WINDOW_S(statusbar), attribs);
 	WIDGET_S(statusbar)->bitflags |= WBF_NEEDS_REFRESH;
 	statusbar->text = NULL;
-	if (value = widget_get_attrib(attribs, "text"))
+	if ((value = widget_get_attrib(attribs, "text")))
 		statusbar_print(statusbar, value, -1);
 	return(0);
 }

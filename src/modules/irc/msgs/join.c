@@ -19,7 +19,7 @@ int irc_msg_join(char *env, struct irc_msg *msg)
 	struct irc_channel *channel;
 
 	if (!strcmp(msg->server->nick, msg->nick)) {
-		if (channel = irc_find_channel(msg->server->channels, msg->params[0]))
+		if ((channel = irc_find_channel(msg->server->channels, msg->params[0])))
 			fe_select_widget("text", NULL, channel->window);
 		else if ((frame = fe_current_widget("frame", NULL))
 		    && (window = fe_create_widget("irc", "text", msg->params[0], frame))

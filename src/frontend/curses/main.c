@@ -73,7 +73,11 @@ extern int release_terminal(void);
 extern int init_frontend(void);
 extern int release_frontend(void);
 
+extern int init_system(void);
+extern int release_system(void);
+
 extern int fe_timer_check(void);
+extern int fe_refresh(void);
 
 struct variable_table_s *fe_table;
 struct variable_table_s *fe_theme;
@@ -132,7 +136,7 @@ int release_curses(void)
 /**
  * Main Entry Point
  */
-main(int argc, char **argv)
+int main(int argc, char **argv)
 {
 	if (init_curses()) {
 		printf("Failed to initialize frontend\n");

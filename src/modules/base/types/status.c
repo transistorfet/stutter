@@ -5,6 +5,7 @@
  * Description:		Status (Stringify Callback) Type
  */
 
+#include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
 

@@ -84,8 +84,6 @@ int region_control(struct region_s *region, int cmd, va_list va)
 		case WCC_MODIFY_SIZE: {
 			int width, height;
 			struct widget_s *child;
-			widget_pos_t cur_pos, ch_pos;
-			widget_size_t cur_min, cur_max, cur_size, ch_size;
 
 			child = va_arg(va, struct widget_s *);
 			width = va_arg(va, int);
@@ -129,9 +127,7 @@ int region_control(struct region_s *region, int cmd, va_list va)
 		}
 		case WCC_ADD_WIDGET:
 		case WCC_INSERT_WIDGET: {
-			widget_pos_t pos;
 			struct widget_s *widget;
-			widget_size_t size, min, max;
 			struct container_node_s *node;
 
 			widget = va_arg(va, struct widget_s *);

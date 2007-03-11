@@ -133,7 +133,7 @@ int irc_traverse_user_list(struct irc_user_list *list, traverse_t func, void *pt
 	struct irc_user_node *cur;
 
 	linear_foreach_v(list->ul, ul, cur) {
-		if (ret = func(&cur->user, ptr))
+		if ((ret = func(&cur->user, ptr)))
 			return(ret);
 	}
 	return(0);
@@ -147,7 +147,7 @@ struct irc_user *irc_user_get_first(struct irc_user_list *list)
 {
 	struct irc_user_node *node;
 
-	if (node = linear_first_v(list->ul))
+	if ((node = linear_first_v(list->ul)))
 		return(&node->user);
 	return(NULL);
 }
@@ -160,7 +160,7 @@ struct irc_user *irc_user_get_next(struct irc_user *user)
 {
 	struct irc_user_node *node;
 
-	if (node = linear_next_v(ul, (struct irc_user_node *) user))
+	if ((node = linear_next_v(ul, (struct irc_user_node *) user)))
 		return(&node->user);
 	return(NULL);
 }

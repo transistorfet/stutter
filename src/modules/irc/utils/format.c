@@ -36,7 +36,6 @@ int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 	int i, k;
 	int j = 0;
 	char *tmp;
-	time_t current_time;
 	struct tm *timestamp;
 	char value[SMALL_STRING_SIZE];
 	struct irc_server *server;
@@ -70,7 +69,7 @@ int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 						msg_copy_str_m(buffer, channel->topic, j, max);
 					break;
 				case 'C':
-					if (tmp = irc_command_name(msg->cmd))
+					if ((tmp = irc_command_name(msg->cmd)))
 						msg_copy_str_m(buffer, tmp, j, max);
 					break;
 				case 'N':

@@ -12,6 +12,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -98,6 +99,7 @@ fe_network_t fe_net_connect(char *server, int port)
 fe_network_t fe_net_listen(int port)
 {
 	// TODO add server capabilities
+	return(NULL);
 }
 
 /**

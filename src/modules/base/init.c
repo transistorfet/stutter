@@ -43,7 +43,6 @@ static void *base_table;
 
 int init_base(void)
 {
-	int i = 0;
 	struct type_s *type;
 
 	add_signal("base.error", 0);
@@ -69,13 +68,12 @@ int init_base(void)
 
 int release_base(void)
 {
-	int i = 0;
 	struct type_s *type;
 
 	BASE_RELEASE_JOINPOINT(base_table)
 
 	/** Remove the whole variable table */
-	if (type = find_type("table")) {
+	if ((type = find_type("table"))) {
 		add_variable(NULL, type, "base", 0, "");
 		remove_variable(NULL, type, "base");
 	}

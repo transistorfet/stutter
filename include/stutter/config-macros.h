@@ -6,6 +6,7 @@
 #ifndef _CONFIG_MACROS_H
 #define _CONFIG_MACROS_H
 
+#include <stdio.h>
 #include <stdarg.h>
 
 #include <stutter/utils.h>

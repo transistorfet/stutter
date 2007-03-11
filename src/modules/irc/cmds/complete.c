@@ -23,7 +23,6 @@ static int irc_cmd_complete_traverse(struct irc_user *, struct irc_complete_info
 int irc_cmd_complete(char *env, char *args)
 {
 	int i;
-	char *str;
 	void *input;
 	char buffer[STRING_SIZE];
 	struct irc_channel *channel;

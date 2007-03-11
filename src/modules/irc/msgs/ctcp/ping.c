@@ -18,7 +18,6 @@ int irc_msg_ctcp_ping(char *env, void *index, struct irc_msg *msg)
 {
 	char number[20];
 	char *fmt, *tmp = NULL;
-	char buffer[STRING_SIZE];
 
 	if (!strcmp_icase(msg->ctcps[0].tag, "PING")) {
 		if (!msg->nick)
@@ -30,7 +29,7 @@ int irc_msg_ctcp_ping(char *env, void *index, struct irc_msg *msg)
 		else if ((msg->cmd == IRC_MSG_NOTICE) && (msg->ctcps[0].args)) {
 			tmp = msg->ctcps[0].args;
 			msg->ctcps[0].args = number;
-			snprintf(number, 20, "%d secs", time(NULL) - atoi(tmp));
+			snprintf(number, 20, "%lu secs", time(NULL) - atoi(tmp));
 			fmt = IRC_FMT_PING_REPLY;
 		}
 		else

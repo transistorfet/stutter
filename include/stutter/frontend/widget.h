@@ -8,6 +8,7 @@
 #define _STUTTER_FRONTEND_WIDGET_H
 
 #include <stdarg.h>
+#include <string.h>
 
 #define WT_DRAWING		0x0004
 #define WT_CONTAINER		0x1000

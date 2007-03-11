@@ -14,7 +14,6 @@
 
 int irc_cmd_reconnect(char *env, char *args)
 {
-	void *window;
 	struct irc_server *server;
 
 	if (!(server = irc_current_server()))

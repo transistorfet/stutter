@@ -15,7 +15,6 @@
  */
 int irc_msg_topic(char *env, struct irc_msg *msg)
 {
-	char buffer[LARGE_STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, ((msg->cmd == IRC_MSG_TOPIC) ? msg->params[0] : msg->params[1]))))

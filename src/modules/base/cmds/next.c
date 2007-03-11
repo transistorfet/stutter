@@ -12,7 +12,7 @@ int base_cmd_next(char *env, char *args)
 {
 	void *window;
 
-	if (window = fe_current_widget("frame", NULL)) {
+	if ((window = fe_current_widget("frame", NULL))) {
 		if (!fe_next_widget("text", window))
 			fe_first_widget("text", window);
 	}

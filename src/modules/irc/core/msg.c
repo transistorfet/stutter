@@ -88,7 +88,7 @@ struct irc_msg *irc_create_msg(int cmd, char *nick, char *host, int num_params, 
 	va_start(va, num_ctcps);
 	for (j = 0;j < num_params;j++)
 		params[j] = va_arg(va, char *);
-	if (info = msg_get_command(cmd)) {
+	if ((info = msg_get_command(cmd))) {
 		if (num_params < info->min_params) {
 			IRC_ERROR_JOINPOINT(IRC_ERR_MSG_NOT_ENOUGH_PARAMS, info->name)
 			return(NULL);
@@ -227,7 +227,7 @@ int irc_marshal_msg(struct irc_msg *msg, char *buffer, int size)
 	if (i >= size)
 		return(0);
 
-	if (cmd = irc_command_name(msg->cmd)) {
+	if ((cmd = irc_command_name(msg->cmd))) {
 		strncpy(&buffer[i], cmd, size - i);
 		i += strlen(cmd);
 	}

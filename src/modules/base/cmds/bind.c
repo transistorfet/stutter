@@ -1,7 +1,7 @@
 /*
  * Command Name:	bind.c
  * Version:		0.1
- * Module Requirements:	type ; utils ; variable ; frontend ; string ; modbase
+ * Module Requirements:	key ; type ; utils ; variable ; frontend ; string ; modbase
  * Description:		Bind Key Command
  */
 
@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include CONFIG_H
+#include <stutter/key.h>
 #include <stutter/type.h>
 #include <stutter/utils.h>
 #include <stutter/macros.h>

@@ -25,7 +25,7 @@ int irc_cmd_server(char *env, char *args)
 	get_param_m(args, port, ' ');
 	portnum = (*port == '\0') ? IRC_DEFAULT_PORT : atoi(port);
 
-	if (server = irc_find_server(address))
+	if ((server = irc_find_server(address)))
 		fe_select_widget("text", NULL, server->status->window);
 	else if ((frame = fe_current_widget("frame", NULL)) && (window = fe_create_widget("irc", "text", address, frame))) {
 		if (!irc_server_connect(address, portnum, IRC_DEFAULT_NICK, window)) {

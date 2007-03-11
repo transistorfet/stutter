@@ -28,6 +28,8 @@ struct callback_s {
 	if ((callback).func)			\
 		((callback).func)((callback).ptr, arg)
 
+#define declare_unused(arg)	((void) arg)
+
 #endif
 
 

@@ -35,7 +35,6 @@ static int terminal_initialized = 0;
 static struct fe_descriptor_s *stdin_desc;
 static struct fe_descriptor_list_s *desc_list;
 static linear_list_v(terminal_s) terminal_list;
-static struct terminal_s *terminal_current = NULL;
 static attrib_t terminal_def_attrib = { 0, SA_NORMAL, { SC_ENC_RGBA, SC_RGBA_WHITE }, { SC_ENC_RGBA, SC_RGBA_BLACK } };
 
 struct surface_type_s terminal_type = {
@@ -86,7 +85,7 @@ int init_terminal(void)
 	scrollok(stdscr, 1);
 	nodelay(stdscr, TRUE);
 
-	if (type = find_type("colour:fe")) {
+	if ((type = find_type("colour:fe"))) {
 		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal_def_attrib.fg);
 		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal_def_attrib.bg);
 	}
@@ -191,7 +190,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 				*widget_ptr = SURFACE_S(terminal)->root;
 			else if (SURFACE_S(terminal)->root)
 				destroy_widget(SURFACE_S(terminal)->root);
-			if (SURFACE_S(terminal)->root = root) {
+			if ((SURFACE_S(terminal)->root = root)) {
 				widget_control(SURFACE_S(terminal)->root, WCC_SET_SURFACE, terminal);
 				widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
 			}

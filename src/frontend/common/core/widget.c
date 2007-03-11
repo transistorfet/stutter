@@ -32,7 +32,6 @@ DEFINE_HASH_TABLE(widget, struct widget_list_s, struct widget_node_s, wl, widget
 
 static int widget_initialized = 0;
 static struct widget_list_s widget_list;
-static struct hash_table_s *widget_types;
 
 int init_widget(void)
 {
@@ -47,9 +46,6 @@ int init_widget(void)
 
 int release_widget(void)
 {
-	int i;
-	struct widget_node_s *cur, *tmp;
-
 	if (!widget_initialized)
 		return(0);
 	widget_release_table(&widget_list);

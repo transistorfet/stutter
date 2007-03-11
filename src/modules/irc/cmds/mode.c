@@ -19,7 +19,7 @@ int irc_cmd_mode(char *env, char *args)
 	get_param_m(args, channel, ' ');
 	if (*args == '\0')
 		return(-1);
-	if (msg = irc_create_msg(IRC_MSG_MODE, NULL, NULL, 2, 0, channel, args))
+	if ((msg = irc_create_msg(IRC_MSG_MODE, NULL, NULL, 2, 0, channel, args)))
 		irc_send_msg(server, msg);
 	return(0);
 }

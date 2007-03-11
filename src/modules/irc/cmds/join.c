@@ -13,13 +13,12 @@ int irc_cmd_join(char *env, char *args)
 {
 	char *name;
 	struct irc_server *server;
-	struct irc_msg *msg = NULL;
 	struct irc_channel *channel;
 
 	get_param_m(args, name, ' ');
 	if ((*name == '\0') || !(server = irc_current_server()))
 		return(-1);
-	if (channel = irc_find_channel(server->channels, name))
+	if ((channel = irc_find_channel(server->channels, name)))
 		fe_select_widget("text", NULL, channel->window);
 	else
 		irc_join_channel(server, name);

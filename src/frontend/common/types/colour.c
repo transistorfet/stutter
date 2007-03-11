@@ -5,6 +5,7 @@
  * Description:		Colour Type
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <stutter/type.h>

@@ -114,8 +114,8 @@ int util_decode_bytes(const char *str, unsigned char *data, int max)
 {
 	int i, j;
 
-	for (i = 0, j = 0;(str[i] != '\0') && (j < max);i++, j++)
-		data[j] = ((str[i] - 0x30) << 4) + (str[++i] - 0x30);
+	for (i = 0, j = 0;(str[i] != '\0') && (j < max);i += 2, j++)
+		data[j] = ((str[i] - 0x30) << 4) + (str[i + 1] - 0x30);
 	return(i);
 }
 
@@ -188,7 +188,7 @@ int util_convert_key(const unsigned char *str, int *key, int max)
 			i++;
 		}
 		else if (str[i] == '\\') {
-			i += util_escape_char(&str[++i], buffer);
+			i += util_escape_char(&str[i + 1], buffer) + 1;
 			key[j++] = buffer[0];
 		}
 		else if (!strncmp_icase(&str[i], "u+", 2)) {

@@ -74,6 +74,7 @@ int destroy_variable_table(struct variable_table_s *table)
 		memory_free(cur);
 	}
 	hash_release_v(table->vl);
+	return(0);
 }
 
 /**
@@ -126,7 +127,7 @@ void *add_variable_real(struct variable_table_s *table, struct type_s *type, cha
         
 		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
 		if (hash_load_v(table->vl) > VARIABLE_LIST_LOAD_FACTOR)
-			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * VARIABLE_LIST_GROWTH_FACTOR), variable_hash_m(table->vl, cur->var.name, strlen(cur->var.name)), NULL);
+			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * VARIABLE_LIST_GROWTH_FACTOR), variable_hash_m(table->vl, cur->var.name, strlen(cur->var.name)), /* do nothing */);
 		return(node->var.value);
 	}
 	else if (name[len] != '\0') {

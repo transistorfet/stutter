@@ -41,7 +41,6 @@ static void *irc_table;
 
 int init_irc(void)
 {
-	int i = 0;
 	struct type_s *type;
 
 	add_signal("irc.error", 0);
@@ -62,13 +61,12 @@ int init_irc(void)
 
 int release_irc(void)
 {
-	int i = 0;
 	struct type_s *type;
 
 	IRC_RELEASE_JOINPOINT(irc_table)
 
 	/** Remove the whole variable table */
-	if (type = find_type("table")) {
+	if ((type = find_type("table"))) {
 		add_variable(NULL, type, "irc", 0, "");
 		remove_variable(NULL, type, "irc");
 	}

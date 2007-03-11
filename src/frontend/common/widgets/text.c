@@ -131,7 +131,6 @@ int text_refresh(struct text_s *text)
 int text_print(struct text_s *text, const char *str, int len)
 {
 	struct text_entry_s *node;
-	struct format_string_s *format;
 
 	if (!text || !str)
 		return(-1);

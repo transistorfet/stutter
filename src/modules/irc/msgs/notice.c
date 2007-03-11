@@ -15,8 +15,6 @@
  */
 int irc_msg_notice(char *env, struct irc_msg *msg)
 {
-	struct irc_channel *channel;
-
 	if (msg->num_ctcps)
 		emit_signal(NULL, "irc.dispatch_ctcp", msg);
 	else {

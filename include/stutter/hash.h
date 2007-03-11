@@ -29,7 +29,7 @@ typedef unsigned int (*hash_t)(void *);
 #define hash_init_v(list, init_size) {									\
 	(list).size = (init_size);										\
 	(list).entries = 0;										\
-	if ((list).table = (typeof((list).table)) memory_alloc((init_size) * sizeof(typeof((list).table[0]))))	\
+	if (((list).table = (typeof((list).table)) memory_alloc((init_size) * sizeof(typeof((list).table[0])))))	\
 		memset((list).table, '\0', (init_size) * sizeof(typeof((list).table[0])));				\
 }
 
@@ -92,7 +92,7 @@ typedef unsigned int (*hash_t)(void *);
 	typeof((list).table[0]) cur;									\
 	typeof((list).table[0]) tmp;									\
 													\
-	if (newtable = (typeof(newtable)) memory_alloc((newsize) * sizeof(typeof(newtable[0])))) {	\
+	if ((newtable = (typeof(newtable)) memory_alloc((newsize) * sizeof(typeof(newtable[0]))))) {	\
 		memset(newtable, '\0', (newsize) * sizeof(typeof(newtable[0])));			\
 		oldsize = (list).size;									\
 		(list).size = newsize;									\

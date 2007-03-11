@@ -16,7 +16,7 @@ int irc_msg_mode(char *env, struct irc_msg *msg)
 {
 	struct irc_channel *channel;
 
-	if (channel = irc_find_channel(msg->server->channels, msg->params[0]))
+	if ((channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		irc_msg_mode_convert(channel, msg);
 	else if (!(channel = msg->server->status))
 		return(-1);
@@ -39,7 +39,7 @@ static inline int irc_msg_mode_convert(struct irc_channel *channel, struct irc_m
 		for (j = 1;msg->params[i][j] != '\0';j++) {
 			switch (msg->params[i][j]) {
 				case 'o': {
-					if (user = irc_find_user(channel->users, msg->params[++cur])) {
+					if ((user = irc_find_user(channel->users, msg->params[++cur]))) {
 						if (method)
 							user->bitflags |= IRC_UBF_MODE_OP;
 						else
@@ -48,7 +48,7 @@ static inline int irc_msg_mode_convert(struct irc_channel *channel, struct irc_m
 					break;
 				}
 				case 'v': {
-					if (user = irc_find_user(channel->users, msg->params[++cur])) {
+					if ((user = irc_find_user(channel->users, msg->params[++cur]))) {
 						if (method)
 							user->bitflags |= IRC_UBF_MODE_VOICE;
 						else

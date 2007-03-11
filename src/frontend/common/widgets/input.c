@@ -204,7 +204,7 @@ static inline int input_save_buffer(struct input_s *input)
 	struct queue_node_s *node;
 
 	input->buffer[input->end] = '\0';
-	if (node = queue_create_node(sizeof(struct queue_node_s) + input->end + 1)) {
+	if ((node = queue_create_node(sizeof(struct queue_node_s) + input->end + 1))) {
 		node->ptr = (void *) offset_after_struct_m(node, 0);
 		strcpy(node->ptr, input->buffer);
 		((char *) node->ptr)[input->end] = '\0';

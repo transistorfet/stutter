@@ -7,6 +7,7 @@
 #ifndef _STUTTER_INIT_H
 #define _STUTTER_INIT_H
 
+#include <stutter/key.h>
 #include <stutter/type.h>
 #include <stutter/signal.h>
 #include <stutter/variable.h>
@@ -100,7 +101,7 @@ struct key_prototype_s {
 	struct type_s *type;				\
 	int key[SMALL_STRING_SIZE];			\
 	for (i = 0;list[i].key;i++) {			\
-		if (value = find_variable(NULL, list[i].var, &type)) {	\
+		if ((value = find_variable(NULL, list[i].var, &type))) {	\
 			util_convert_key(list[i].key, key, SMALL_STRING_SIZE);	\
 			bind_key(NULL, key, value, type, list[i].params);	\
 		}					\
@@ -136,13 +137,13 @@ struct variable_prototype_s {
 	ADD_FIXED_VARIABLE(name, "callback,pointer", func, env)
 
 #define DECLARE_TYPE(type, list)			\
-	{ INIT_FIND_TYPE, type, 0, NULL, NULL },	\
+	{ INIT_FIND_TYPE, type, 0, NULL, { NULL } },	\
 	list
 
 #define DEFINE_VARIABLE_LIST(name, list)		\
 	static struct variable_prototype_s name[] = {	\
 		list					\
-		{ 0, NULL, 0, NULL, NULL }		\
+		{ 0, NULL, 0, NULL, { NULL } }		\
 	}
 
 #define ADD_VARIABLE_LIST(table, list) {				\

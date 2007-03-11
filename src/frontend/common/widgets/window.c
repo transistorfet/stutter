@@ -34,11 +34,11 @@ int window_init(struct window_s *window, struct widget_attrib_s *attribs)
 	char *value;
 
 	window->surface = NULL;
-	if (value = widget_get_attrib(attribs, "width")) {
+	if ((value = widget_get_attrib(attribs, "width"))) {
 		num = util_atoi(value, 10);
 		window->width = num;
 	}
-	if (value = widget_get_attrib(attribs, "height")) {
+	if ((value = widget_get_attrib(attribs, "height"))) {
 		num = util_atoi(value, 10);
 		window->height = num;
 	}
