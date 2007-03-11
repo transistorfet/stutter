@@ -25,7 +25,6 @@ int irc_msg_kick(char *env, struct irc_msg *msg)
 		if (channel->bitflags & IRC_CBF_AUTO_REJOIN)
 			irc_join_channel(msg->server, msg->params[0]);
 		else {
-			fe_destroy_widget(channel->window);
 			irc_remove_channel(msg->server->channels, msg->params[0]);
 			channel = msg->server->status;
 		}

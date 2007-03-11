@@ -27,7 +27,8 @@ int irc_msg_join(char *env, struct irc_msg *msg)
 			fe_select_widget("text", NULL, window);
 		else {
 			irc_leave_channel(msg->server, msg->params[0]);
-			fe_destroy_widget(window);
+			if (!channel && window)
+				fe_destroy_widget(window);
 			IRC_ERROR_JOINPOINT(IRC_ERR_JOIN_ERROR, msg->params[0])
 			return(-1);
 		}

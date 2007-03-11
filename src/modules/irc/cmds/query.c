@@ -5,6 +5,8 @@
  * Description:		Query Channel Command
  */
 
+#include <stdio.h>
+
 #include CONFIG_H
 #include <stutter/macros.h>
 #include <stutter/frontend.h>
@@ -30,7 +32,7 @@ int irc_cmd_query(char *env, char *args)
 	    && (channel = irc_add_channel(server->channels, name, window, server)))
 		fe_select_widget("text", NULL, window);
 	else {
-		if (window)
+		if (!channel && window)
 			fe_destroy_widget(window);
 		IRC_ERROR_JOINPOINT(IRC_ERR_QUERY_ERROR, name)
 		return(-1);

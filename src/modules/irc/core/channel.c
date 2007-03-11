@@ -1,7 +1,7 @@
 /*
  * Module Name:		channel.c
  * Version:		0.1
- * Module Requirements:	memory ; linear ; string ; user
+ * Module Requirements:	memory ; linear ; string ; signal ; user
  * Description:		Channel Interface Manager
  */
 
@@ -11,19 +11,26 @@
 #include <stutter/memory.h>
 #include <stutter/linear.h>
 #include <stutter/string.h>
-#include <stutter/globals.h>
 #include <stutter/macros.h>
+#include <stutter/signal.h>
+#include <stutter/globals.h>
+#include <stutter/frontend.h>
 #include <stutter/modules/irc/user.h>
+#include <stutter/modules/irc/server.h>
 #include <stutter/modules/irc/channel.h>
 
 struct irc_channel_node {
 	struct irc_channel channel;
+	struct signal_handler_s *handler;
 	linear_node_v(irc_channel_node) cl;
 };
 
 struct irc_channel_list {
 	linear_list_v(irc_channel_node) cl;
 };
+
+static int irc_handle_purge_window(struct irc_channel *, void *);
+static inline void irc_destroy_channel_node(struct irc_channel_node *);
 
 /**
  * Create a new list of channels.
@@ -46,11 +53,7 @@ void irc_destroy_channel_list(struct irc_channel_list *list)
 	struct irc_channel_node *cur, *tmp;
 
 	linear_foreach_safe_v(list->cl, cl, cur, tmp) {
-		if (cur->channel.topic)
-			destroy_string(cur->channel.topic);
-		if (cur->channel.users)
-			irc_destroy_user_list(cur->channel.users);
-		memory_free(cur);
+		irc_destroy_channel_node(cur);
 	}
 	memory_free(list);
 }
@@ -82,7 +85,7 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, char *name, v
 	node->channel.window = window;
 	node->channel.server = server;
 	linear_add_node_v(list->cl, cl, node);
-
+	node->handler = signal_connect(window, "purge_object", 10, (signal_t) irc_handle_purge_window, &node->channel);
 	return(&node->channel);
 }
 
@@ -98,11 +101,7 @@ int irc_remove_channel(struct irc_channel_list *list, char *name)
 	if (!node)
 		return(1);
 	linear_remove_node_v(list->cl, cl, node);
-	if (node->channel.topic)
-		destroy_string(node->channel.topic);
-	if (node->channel.users)
-		irc_destroy_user_list(node->channel.users);
-	memory_free(node);
+	irc_destroy_channel_node(node);
 	return(0);
 }
 
@@ -180,5 +179,41 @@ struct irc_channel *irc_channel_get_next(struct irc_channel *channel)
 	return(NULL);
 }
 
+/*** Local Functions ***/
+
+/**
+ * Frees the resources for the given channel and sends the appropriate messages
+ * to the IRC server determined by examining the channel name.
+ */
+static int irc_handle_purge_window(struct irc_channel *channel, void *window)
+{
+	if (channel->window != window)
+		return(-1);
+	channel->window = NULL;
+
+	if (!strcmp(channel->name, IRC_SERVER_STATUS_CHANNEL))
+		irc_server_disconnect(channel->server);
+	else if ((channel->name[0] == '#') || (channel->name[0] == '&') || (channel->name[0] == '+') || (channel->name[0] == '!'))
+		irc_leave_channel(channel->server, channel->name);
+	else
+		irc_remove_channel(channel->server->channels, channel->name);
+	return(0);
+}
+
+/**
+ * Destroy the given channel node freeing all resources.
+ */
+static inline void irc_destroy_channel_node(struct irc_channel_node *node)
+{
+	if (node->handler)
+		signal_disconnect(node->handler);
+	if (node->channel.topic)
+		destroy_string(node->channel.topic);
+	if (node->channel.window)
+		fe_destroy_widget(node->channel.window);
+	if (node->channel.users)
+		irc_destroy_user_list(node->channel.users);
+	memory_free(node);
+}
 
 

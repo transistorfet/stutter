@@ -30,7 +30,6 @@ int irc_cmd_endquery(char *env, char *args)
 
 	if ((channel->name[0] == '#') || (channel->name[0] == '&') || (channel->name[0] == '+') || (channel->name[0] == '!'))
 		return(-1);
-	fe_destroy_widget(channel->window);
 	irc_remove_channel(server->channels, channel->name);
 	return(0);
 }

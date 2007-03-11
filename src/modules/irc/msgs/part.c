@@ -19,10 +19,8 @@ int irc_msg_part(char *env, struct irc_msg *msg)
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		return(-1);
 
-	if (!strcmp(msg->server->nick, msg->nick)) {
-		fe_destroy_widget(channel->window);
+	if (!strcmp(msg->server->nick, msg->nick))
 		irc_remove_channel(msg->server->channels, msg->params[0]);
-	}
 	else {
 		irc_remove_user(channel->users, msg->nick);
 		IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_PART)
