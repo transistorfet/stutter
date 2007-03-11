@@ -13,6 +13,7 @@
 #include <stutter/queue.h>
 #include <stutter/signal.h>
 #include <stutter/globals.h>
+#include <stutter/frontend/common.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/common/layout.h>
@@ -24,6 +25,7 @@ static struct queue_s *surface_list;
 extern int init_terminal(void);
 extern int release_terminal(void);
 
+static int add_builtin_layouts(void);
 static struct surface_s *fe_create_surface(void);
 static int fe_destroy_surface(struct surface_s *);
 static int fe_handle_purge_surface(void *, struct surface_s *);
@@ -38,6 +40,15 @@ int init_frontend(void)
 		return(-1);
 	if (init_terminal())
 		return(-1);
+
+	// TODO this should be moved someplace else
+	layout_register_type("window", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &window_type);
+	layout_register_type("text", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &text_type);
+	layout_register_type("frame", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &frame_type);
+	layout_register_type("input", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &input_type);
+	layout_register_type("statusbar", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &statusbar_type);
+	layout_register_type("region", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &region_type);
+	add_builtin_layouts();
 
 	if (!(fe_create_widget("fe", "root", "root", NULL)))
 		return(-1);
@@ -60,7 +71,7 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 
 	if (!parent && !(surface = fe_create_surface()))
 		return(NULL);
-	if (!(widget = layout_generate_widget(ns, type, id))) {
+	if (!(widget = (struct widget_s *) layout_generate_object(ns, type, LAYOUT_RT_WIDGET, id))) {
 		if (surface)
 			queue_delete_node(surface_list, (void *) surface);
 		return(NULL);
@@ -252,7 +263,7 @@ void fe_move(void *widget, short x, short y)
 
 int fe_scroll(void *widget, int diff)
 {
-	widget_control(WIDGET_S(widget), WCC_SCROLL, diff);
+	return(widget_control(WIDGET_S(widget), WCC_SCROLL, diff));
 }
 
 void fe_quit(char *reason)
@@ -271,6 +282,20 @@ int fe_refresh(void)
 }
 
 /*** Local Functions ***/
+
+// TODO this is here until you can decide on how layouts will be created
+static int add_builtin_layouts(void)
+{
+	struct layout_s *layout;
+
+	layout = make_layout("frame", make_layout_attrib("id", "frame", NULL), NULL, NULL);
+	layout->next = make_layout("statusbar", make_layout_attrib("id", "statusbar", make_layout_attrib("text", FE_STATUSBAR, NULL)), NULL, NULL);
+	layout->next->next = make_layout("input", make_layout_attrib("id", "input", NULL), NULL, NULL);
+
+	add_layout("", "root", make_layout("region", make_layout_attrib("id", "region", make_layout_attrib("width", "80", make_layout_attrib("height", "25", NULL))), layout, NULL));
+	add_layout("", "text", make_layout("text", NULL, NULL, NULL));
+	return(0);
+}
 
 static struct surface_s *fe_create_surface(void)
 {
