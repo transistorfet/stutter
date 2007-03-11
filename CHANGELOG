@@ -11,6 +11,8 @@
 	  templates.
 	- Modified the signals system and interface such that signals are
 	  associated with objects.
+	- Added the close command to destroy widgets directly and modified
+	  widget owners to connect to the purge_object signal for their widgets
 
 0.3.2:
 	- Fixed the key conversion code to properly convert the \x00 into its
