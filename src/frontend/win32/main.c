@@ -73,6 +73,9 @@ extern int release_timer(void);
 extern int init_frontend(void);
 extern int release_frontend(void);
 
+extern int init_system(void);
+extern int release_system(void);
+
 int init_windows(void)
 {
 	struct type_s *type;

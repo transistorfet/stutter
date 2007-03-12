@@ -80,7 +80,7 @@ int release_net(void)
 	while (cur) {
 		tmp = cur->next;
 		shutdown(cur->socket, 2);
-		close(cur->socket);
+		closesocket(cur->socket);
 		memory_free(cur);
 		cur = tmp;
 	}
@@ -96,7 +96,6 @@ int release_net(void)
 fe_network_t fe_net_connect(char *server, int port)
 {
 	int i, j;
-	int sockfd;
 	fe_network_t net;
 	struct hostent *host;
 	struct sockaddr_in saddr;
@@ -144,6 +143,7 @@ fe_network_t fe_net_connect(char *server, int port)
 fe_network_t fe_net_listen(int port)
 {
 	// TODO add server capabilities
+	return(NULL);
 }
 
 /**
@@ -151,7 +151,6 @@ fe_network_t fe_net_listen(int port)
  */
 void fe_net_disconnect(fe_network_t net)
 {
-	int i;
 	fe_network_t cur, prev;
 
 	if (!net)
@@ -172,7 +171,7 @@ void fe_net_disconnect(fe_network_t net)
 	}
 
 	shutdown(net->socket, 2);
-	close(net->socket);
+	closesocket(net->socket);
 	memory_free(net);
 }
 

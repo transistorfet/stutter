@@ -52,7 +52,7 @@ int release_timer(void)
  */
 fe_timer_t fe_timer_create(int bitflags, float interval, callback_t func, void *ptr)
 {
-	struct fe_timer_s *timer, *cur, *prev;
+	struct fe_timer_s *timer;
 
 	if (!(timer = (struct fe_timer_s *) memory_alloc(sizeof(struct fe_timer_s))))
 		return(NULL);
