@@ -123,7 +123,10 @@ void *add_variable_real(struct variable_table_s *table, struct type_s *type, cha
 		strcpy(node->var.name, name);
 		node->var.type = type;
 		node->var.bitflags = bitflags;
-		node->var.value = type->create(NULL, str, va);
+		if (!(node->var.value = type->create(NULL, str, va))) {
+			memory_free(node);
+			return(NULL);
+		}
         
 		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
 		if (hash_load_v(table->vl) > VARIABLE_LIST_LOAD_FACTOR)
