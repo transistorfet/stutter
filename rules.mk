@@ -4,7 +4,7 @@
 # Description:	Make Rules
 #
 
-.SUFFIXES: .o .c .h .cpp .s .asm
+.SUFFIXES: .o .c .h .cpp .s .asm .rc
 .PHONY: $(DIRS)
 
 include $(ROOT)/config.mk
@@ -23,6 +23,9 @@ $(LIB_TARGET): $(DIRS) $(OBJS)
 
 .cpp.o:
 	$(CXX) $(INCPATH) $(CFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+.rc.o:
+	$(RC) $< $@
 
 %.a: FORCE
 	$(MAKE) -C $(dir $*)
