@@ -49,6 +49,7 @@ struct type_s *base_load_status(void);
 struct type_s *base_load_string(void);
 struct type_s *base_load_table(void);
 struct type_s *base_load_time(void);
+struct type_s *base_load_timer(void);
 struct type_s *base_load_wildcard(void);
 
 #endif

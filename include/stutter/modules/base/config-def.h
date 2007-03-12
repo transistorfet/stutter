@@ -47,6 +47,7 @@
 	ADD_TYPE(base_load_string)	\
 	ADD_TYPE(base_load_table)	\
 	ADD_TYPE(base_load_time)	\
+	ADD_TYPE(base_load_timer)	\
 	ADD_TYPE(base_load_wildcard)
 
 #define DEFAULT_BASE_BINDINGS()			\

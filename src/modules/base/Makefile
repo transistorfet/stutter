@@ -33,6 +33,7 @@ OBJS =	init.o \
 	types/string.o \
 	types/table.o \
 	types/time.o \
+	types/timer.o \
 	types/wildcard.o
 
 include $(ROOT)/rules.mk
