@@ -45,8 +45,8 @@ int init_base(void)
 {
 	struct type_s *type;
 
-	add_signal("base.error", 0);
-	add_signal("base.exec_output", 0);
+	add_signal(NULL, "base.error", 0);
+	add_signal(NULL, "base.exec_output", 0);
 
 	ADD_TYPE_LIST(base_types);
 	ADD_HANDLER_LIST(base_handlers);
@@ -80,8 +80,8 @@ int release_base(void)
 
 	REMOVE_HANDLER_LIST(base_handlers);
 
-	remove_signal("base.exec_output");
-	remove_signal("base.error");
+	remove_signal(NULL, "base.exec_output");
+	remove_signal(NULL, "base.error");
 	return(0);
 }
 

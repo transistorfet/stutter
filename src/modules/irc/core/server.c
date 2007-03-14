@@ -44,8 +44,8 @@ int init_irc_server(void)
 	if (server_initialized)
 		return(0);
 	linear_init_v(server_list);
-	add_signal("irc.dispatch_msg", 0);
-	add_signal("irc.dispatch_ctcp", 0);
+	add_signal(NULL, "irc.dispatch_msg", 0);
+	add_signal(NULL, "irc.dispatch_ctcp", 0);
 	irc_ping_watchdog_timer = fe_timer_create(FE_TIMER_BF_PERIODIC, 60, irc_server_ping_watchdog, NULL);
 	server_initialized = 1;
 	return(0);
@@ -57,8 +57,8 @@ int release_irc_server(void)
 
 	if (irc_ping_watchdog_timer)
 		fe_timer_destroy(irc_ping_watchdog_timer);
-	remove_signal("irc.dispatch_msg");
-	remove_signal("irc.dispatch_ctcp");
+	remove_signal(NULL, "irc.dispatch_msg");
+	remove_signal(NULL, "irc.dispatch_ctcp");
 	linear_foreach_safe_v(server_list, sl, cur, tmp) {
 		if (cur->server.channels)
 			irc_destroy_channel_list(cur->server.channels);

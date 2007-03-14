@@ -43,7 +43,7 @@ int init_irc(void)
 {
 	struct type_s *type;
 
-	add_signal("irc.error", 0);
+	add_signal(NULL, "irc.error", 0);
 	init_irc_server();
 
 	ADD_HANDLER_LIST(irc_handlers);
@@ -74,7 +74,7 @@ int release_irc(void)
 	REMOVE_HANDLER_LIST(irc_handlers);
 
 	release_irc_server();
-	remove_signal("irc.error");
+	remove_signal(NULL, "irc.error");
 	return(0);
 }
 

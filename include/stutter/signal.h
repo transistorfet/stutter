@@ -31,8 +31,8 @@ struct signal_handler_s {
 int init_signal(void);
 int release_signal(void);
 
-int add_signal(char *, int);
-int remove_signal(char *);
+int add_signal(void *, char *, int);
+int remove_signal(void *, char *);
 int emit_signal(void *, char *, void *);
 struct signal_handler_s *signal_connect(void *, char *, int, signal_t, void *);
 int signal_disconnect(struct signal_handler_s *);

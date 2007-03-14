@@ -20,7 +20,7 @@ int init_system(void)
 	init_variable();
 	init_key();
 
-	add_signal("general_error", 0);
+	add_signal(NULL, "general_error", 0);
 
 	SYSTEM_INIT_JOINPOINT()
 

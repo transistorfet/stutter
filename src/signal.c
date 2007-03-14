@@ -75,9 +75,16 @@ int release_signal(void)
 /**
  * Add a new signal with the given name to the list of signals.
  */
-int add_signal(char *name, int bitflags)
+int add_signal(void *obj, char *name, int bitflags)
 {
-	if (!create_signal(&signal_list, name, bitflags))
+	struct signal_list_s *list;
+
+	if (!obj)
+		list = &signal_list;
+	else if (!(list = object_find_node(&object_list, obj)) && !(list = create_object(obj)))
+		return(-1);
+
+	if (!create_signal(list, name, bitflags))
 		return(-1);
 	return(0);
 }
@@ -87,9 +94,20 @@ int add_signal(char *name, int bitflags)
  * with that signal.  If the signal cannot be found, -1 is returned,
  * otherwise 0 is returned.
  */
-int remove_signal(char *name)
+int remove_signal(void *obj, char *name)
 {
-	signal_delete_node(&signal_list, name);
+	struct signal_list_s *list;
+
+	if (!obj)
+		list = &signal_list;
+	else if (!name) {
+		object_delete_node(&object_list, obj);
+		return(0);
+	}
+	else if ((list = object_find_node(&object_list, obj))) {
+		signal_delete_node(list, name);
+		return(0);
+	}
 	return(0);
 }
 

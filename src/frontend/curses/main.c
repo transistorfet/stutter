@@ -89,7 +89,7 @@ int init_curses(void)
 	if (init_system())
 		return(-1);
 
-	add_signal("fe.quit", 0);
+	add_signal(NULL, "fe.quit", 0);
 	ADD_TYPE_LIST(fe_types)
 	ADD_HANDLER_LIST(fe_handlers)
 
