@@ -60,8 +60,11 @@ int release_irc_server(void)
 	remove_signal(NULL, "irc.dispatch_msg");
 	remove_signal(NULL, "irc.dispatch_ctcp");
 	linear_foreach_safe_v(server_list, sl, cur, tmp) {
+		irc_server_disconnect(&cur->server);
 		if (cur->server.channels)
 			irc_destroy_channel_list(cur->server.channels);
+		if (cur->server.address)
+			destroy_string(cur->server.address);
 		memory_free(cur);
 	}
 	server_initialized = 0;
@@ -69,20 +72,18 @@ int release_irc_server(void)
 }
 
 /**
- * Create a new server structure and connect/initialize it to the
- * address:port given.
+ * Create a new server structure.
  */
-struct irc_server *irc_server_connect(char *address, int port, char *nick, void *window)
+struct irc_server *irc_create_server(char *nick, void *window)
 {
 	struct irc_server_node *node;
 
-	if (!(node = (struct irc_server_node *) memory_alloc(sizeof(struct irc_server_node) + strlen(address) + 1)))
+	if (!(node = (struct irc_server_node *) memory_alloc(sizeof(struct irc_server_node))))
 		return(NULL);
 	memset(node, '\0', sizeof(struct irc_server_node));
 
-	node->server.address = (char *) offset_after_struct_m(node, 0);
-	strcpy(node->server.address, address);
-	node->server.port = port;
+	node->server.address = NULL;
+	node->server.port = 0;
 	strncpy(node->server.nick, nick, IRC_MAX_NICK);
 	queue_init_v(node->server.send_queue, 0);
 
@@ -90,11 +91,38 @@ struct irc_server *irc_server_connect(char *address, int port, char *nick, void 
 	node->server.status = irc_add_channel(node->server.channels, IRC_SERVER_STATUS_CHANNEL, window, &node->server);
 	linear_add_node_v(server_list, sl, node);
 
-	if (irc_server_init_connection(&node->server) < 0) {
-		irc_server_disconnect(&node->server);
-		return(NULL);
-	}
 	return(&node->server);
+}
+
+/**
+ * Disconnect and destroy the server structure given.
+ */
+int irc_destroy_server(struct irc_server *server)
+{
+	irc_server_disconnect(server);
+	linear_remove_node_v(server_list, sl, (struct irc_server_node *) server);
+	irc_destroy_channel_list(server->channels);
+	if (server->address)
+		destroy_string(server->address);
+	memory_free(server);
+	return(0);
+}
+
+/*
+ * Connect the given server structure to the address:port given.
+ */
+int irc_server_connect(struct irc_server *server, char *address, int port)
+{
+	if (server->address)
+		destroy_string(server->address);
+	server->address = create_string(address);
+	server->port = port;
+
+	if (irc_server_init_connection(server) < 0) {
+		irc_server_disconnect(server);
+		return(-1);
+	}
+	return(0);
 }
 
 /**
@@ -105,7 +133,7 @@ int irc_server_reconnect(struct irc_server *server)
 	struct irc_msg *cur, *tmp;
 
 	if (server->net)
-		fe_net_disconnect(server->net);
+		irc_server_disconnect(server);
 	server->bitflags &= ~IRC_SBF_CONNECTED;
 	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_destroy_msg(cur);
@@ -115,8 +143,7 @@ int irc_server_reconnect(struct irc_server *server)
 	server->attempts++;
 	if (irc_server_init_connection(server)) {
 		IRC_ERROR_JOINPOINT(IRC_ERR_RECONNECT_ERROR, server->address)
-		fe_net_disconnect(server->net);
-		server->net = NULL;
+		irc_server_disconnect(server);
 		return(-1);
 	}
 	server->attempts = 0;
@@ -131,13 +158,14 @@ int irc_server_disconnect(struct irc_server *server)
 {
 	struct irc_msg *cur, *tmp;
 
-	linear_remove_node_v(server_list, sl, (struct irc_server_node *) server);
-	irc_destroy_channel_list(server->channels);
+	if (!server->net)
+		return(1);
+	server->bitflags &= ~IRC_SBF_CONNECTED;
 	fe_net_disconnect(server->net);
+	server->net = NULL;
 	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_destroy_msg(cur);
 	}
-	memory_free(server);
 	return(0);
 }
 
@@ -189,7 +217,8 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 	else {
 		if (server && server->net && msg && (size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
 			ret = fe_net_send(server->net, buffer, size);
-		// TODO should we dispatch messages here instead?
+		if ((msg->cmd == IRC_MSG_PRIVMSG) || (msg->cmd == IRC_MSG_NOTICE))
+			emit_signal(NULL, "irc.dispatch_msg", msg);
 		irc_destroy_msg(msg);
 		server->last_ping = time(NULL);
 		if (ret != size)
@@ -307,9 +336,16 @@ int irc_change_nick(struct irc_server *server, char *nick)
 {
 	struct irc_msg *msg;
 
-	if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, 0, nick)))
-		return(-1);
-	return(irc_send_msg(server, msg));
+	if (server->bitflags & IRC_SBF_CONNECTED) {
+		if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, 0, nick)))
+			return(-1);
+		return(irc_send_msg(server, msg));
+	}
+	else {
+		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
+		msg->server->nick[IRC_MAX_NICK - 1] = '\0';
+	}
+	return(0);
 }
 
 /**
@@ -334,7 +370,6 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
 			return(-1);
 		text[j] = ch;
 		msg->server = server;
-		emit_signal(NULL, "irc.dispatch_msg", msg);
 		if ((ret = irc_send_msg(server, msg) < 0))
 			return(ret);
 	} while (j < text_len);
@@ -363,7 +398,6 @@ int irc_notice(struct irc_server *server, char *name, char *text)
 		if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, 0, name, &text[i])))
 			return(-1);
 		msg->server = server;
-		emit_signal(NULL, "irc.dispatch_msg", msg);
 		if ((ret = irc_send_msg(server, msg)))
 			return(ret);
 	} while (j < text_len);
@@ -382,7 +416,6 @@ int irc_ctcp_msg(struct irc_server *server, char *cmd, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, 1, name, "", cmd, text)))
 		return(-1);
 	msg->server = server;
-	emit_signal(NULL, "irc.dispatch_msg", msg);
 	return(irc_send_msg(server, msg));
 }
 
@@ -398,7 +431,6 @@ int irc_ctcp_reply(struct irc_server *server, char *cmd, char *name, char *text)
 	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, 1, name, "", cmd, text)))
 		return(-1);
 	msg->server = server;
-	emit_signal(NULL, "irc.dispatch_msg", msg);
 	return(irc_send_msg(server, msg));
 }
 

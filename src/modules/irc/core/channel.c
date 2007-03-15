@@ -192,7 +192,7 @@ static int irc_handle_purge_window(struct irc_channel *channel, void *window)
 	channel->window = NULL;
 
 	if (!strcmp(channel->name, IRC_SERVER_STATUS_CHANNEL))
-		irc_server_disconnect(channel->server);
+		irc_destroy_server(channel->server);
 	else if ((channel->name[0] == '#') || (channel->name[0] == '&') || (channel->name[0] == '+') || (channel->name[0] == '!'))
 		irc_leave_channel(channel->server, channel->name);
 	else

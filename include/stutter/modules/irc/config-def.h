@@ -64,6 +64,8 @@
 #define DEFAULT_IRC_QUIT_MSG			"The Pooper Scooper Of Life!"
 #define DEFAULT_IRC_VERSION_RESPONSE		"St-St-Stutter " STUTTER_VERSION
 
+#define DEFAULT_IRC_SERVER_DISCONNECTED		"\022status\022Disconnected from %s"
+
 #define DEFAULT_IRC_ERR_SERVER_DISCONNECTED	"\022error\022Error: Disconnected from %s"
 #define DEFAULT_IRC_ERR_RECONNECT_ERROR		"\022error\022Error: Unable to reconnect to %s"
 #define DEFAULT_IRC_ERR_MSG_NOT_ENOUGH_PARAMS	"\022error\022Error: IRC message, %s, doesn't have enough parameters"
@@ -378,6 +380,10 @@
 #ifndef IRC_VERSION_RESPONSE
 #define IRC_VERSION_RESPONSE \
 	DEFAULT_IRC_VERSION_RESPONSE
+#endif
+#ifndef IRC_SERVER_DISCONNECTED
+#define IRC_SERVER_DISCONNECTED \
+	DEFAULT_IRC_SERVER_DISCONNECTED
 #endif
 #ifndef IRC_ERR_SERVER_DISCONNECTED
 #define IRC_ERR_SERVER_DISCONNECTED \

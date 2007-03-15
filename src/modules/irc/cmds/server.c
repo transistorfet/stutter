@@ -28,8 +28,12 @@ int irc_cmd_server(char *env, char *args)
 	if ((server = irc_find_server(address)))
 		fe_select_widget("text", NULL, server->status->window);
 	else if ((frame = fe_current_widget("frame", NULL)) && (window = fe_create_widget("irc", "text", address, frame))) {
-		if (!irc_server_connect(address, portnum, IRC_DEFAULT_NICK, window)) {
+		if (!(server = irc_create_server(IRC_DEFAULT_NICK, window))) {
 			fe_destroy_widget(window);
+			return(-1);
+		}
+		else if (irc_server_connect(server, address, portnum)) {
+			irc_destroy_server(server);
 			return(-1);
 		}
 		fe_select_widget("text", NULL, window);

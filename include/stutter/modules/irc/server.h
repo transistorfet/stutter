@@ -33,7 +33,10 @@ struct irc_server {
 
 int init_irc_server(void);
 int release_irc_server(void);
-struct irc_server *irc_server_connect(char *, int, char *, void *);
+
+struct irc_server *irc_create_server(char *, void *);
+int irc_destroy_server(struct irc_server *);
+int irc_server_connect(struct irc_server *, char *, int);
 int irc_server_reconnect(struct irc_server *);
 int irc_server_disconnect(struct irc_server *);
 struct irc_server *irc_find_server(char *);
