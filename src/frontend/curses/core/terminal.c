@@ -15,10 +15,12 @@
 #include <stutter/type.h>
 #include <stutter/memory.h>
 #include <stutter/linear.h>
+#include <stutter/globals.h>
 #include <stutter/variable.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
+#include <stutter/frontend/common/layout.h>
 #include <stutter/frontend/common/colourmap.h>
 #include "desc.h"
 #include "terminal.h"
@@ -28,8 +30,6 @@ struct terminal_s {
 	attrib_t attrib;
 	linear_node_v(terminal_s) list;
 };
-
-struct terminal_s *terminal;
 
 static int terminal_initialized = 0;
 static struct fe_descriptor_s *stdin_desc;
@@ -48,6 +48,7 @@ struct surface_type_s terminal_type = {
 	(surface_control_t) terminal_control
 };
 
+struct surface_s *terminal_generate(struct surface_type_s *, struct property_s *, struct layout_s *);
 static int terminal_check_input(void *, struct fe_descriptor_s *);
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
 static inline void terminal_refresh(struct terminal_s *);
@@ -63,6 +64,10 @@ int init_terminal(void)
 		return(0);
 	if (init_colourmap())
 		return(-1);
+	if (init_layout())
+		return(-1);
+	layout_register_type("terminal", LAYOUT_RT_SURFACE, (layout_create_t) terminal_generate, &terminal_type);
+
 	if (!(desc_list = fe_desc_create_list((destroy_t) NULL)))
 		return(-1);
 	if (!(stdin_desc = fe_desc_create(desc_list, 0)))
@@ -99,6 +104,8 @@ int release_terminal(void)
 		return(0);
 	fe_desc_destroy_list(desc_list);
 	endwin();
+	release_layout();
+	release_colourmap();
 	terminal_initialized = 0;
 	return(0);
 }
@@ -259,6 +266,33 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 }
 
 /*** Local Functions ***/
+
+/**
+ * Create a surface through the layout generation interface.
+ */
+struct surface_s *terminal_generate(struct surface_type_s *type, struct property_s *props, struct layout_s *children)
+{
+	struct layout_s *cur;
+	struct widget_s *widget;
+	struct terminal_s *terminal;
+
+	if (linear_first_v(terminal_list))
+		return(NULL);
+	// TODO check the properties for a width and height
+	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
+		return(NULL);
+
+	cur = children;
+	while (cur) {
+		if (LAYOUT_RETURN_TYPE(cur->type) == LAYOUT_RT_WIDGET) {
+			widget = layout_call_create_m(cur->type, cur->props, cur->children);
+			surface_control_m(terminal, SCC_SET_ROOT, widget, NULL);
+			return((struct surface_s *) terminal);
+		}
+		cur = cur->next;
+	}
+	return((struct surface_s *) terminal);
+}
 
 /**
  * Check for keypresses.
