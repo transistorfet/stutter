@@ -36,9 +36,9 @@ static inline int input_delete_char(struct input_s *);
 static inline int input_save_buffer(struct input_s *);
 static inline int input_process_char(struct input_s *, int);
 
-int input_init(struct input_s *input, struct widget_attrib_s *attribs)
+int input_init(struct input_s *input, struct property_s *props)
 {
-	window_init(WINDOW_S(input), attribs);
+	window_init(WINDOW_S(input), props);
 	if (!(input->buffer = (char *) memory_alloc(FE_INPUT_BUFFER_SIZE)))
 		return(-1);
 	input->i = 0;

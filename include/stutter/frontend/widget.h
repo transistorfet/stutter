@@ -10,6 +10,8 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include <stutter/globals.h>
+
 #define WT_DRAWING		0x0004
 #define WT_CONTAINER		0x1000
 #define WT_FRAME		0x1001
@@ -51,12 +53,11 @@ typedef struct widget_pos_s {
 } widget_pos_t;
 
 struct widget_s;
-struct widget_attrib_s;
 
 #define WIDGET_S(widget)	((struct widget_s *) (widget))
 
-#define widget_init_m(widget, attribs)					\
-	( (WIDGET_S(widget)->type->init)(WIDGET_S(widget), attribs) )
+#define widget_init_m(widget, props)					\
+	( (WIDGET_S(widget)->type->init)(WIDGET_S(widget), props) )
 #define widget_release_m(widget)					\
 	( (WIDGET_S(widget)->type->release)(WIDGET_S(widget)) )
 #define widget_refresh_m(widget)					\
@@ -70,8 +71,7 @@ struct widget_attrib_s;
 #define widget_control_m(widget, cmd, va)				\
 	( (WIDGET_S(widget)->type->control)(WIDGET_S(widget), cmd, va) )
 
-// TODO how do we pass in special parameters?  have an array of strings?
-typedef int (*widget_init_t)(struct widget_s *widget, struct widget_attrib_s *attribs);
+typedef int (*widget_init_t)(struct widget_s *widget, struct property_s *props);
 typedef int (*widget_release_t)(struct widget_s *widget);
 typedef void (*widget_refresh_t)(struct widget_s *widget);
 typedef int (*widget_print_t)(struct widget_s *widget, const char *str, int len);
@@ -80,12 +80,6 @@ typedef int (*widget_read_t)(struct widget_s *widget, char *buffer, int max);
 typedef int (*widget_control_t)(struct widget_s *widget, int cmd, va_list va);
 
 struct layout_s;
-
-struct widget_attrib_s {
-	char *name;
-	char *value;
-	struct widget_attrib_s *next;
-};
 
 struct widget_type_s {
 	char *name;
@@ -114,24 +108,12 @@ int add_widget_type(struct widget_type_s *);
 int remove_widget_type(char *);
 struct widget_type_s *find_widget_type(char *);
 
-struct widget_s *create_widget(struct widget_type_s *, char *, struct widget_s *, struct widget_attrib_s *);
+struct widget_s *create_widget(struct widget_type_s *, char *, struct widget_s *, struct property_s *);
 int destroy_widget(struct widget_s *);
 struct widget_s *find_widget(char *);
 
 int widget_control(struct widget_s *, int, ...);
-struct widget_s *generate_widget(struct widget_type_s *, struct widget_attrib_s *, struct layout_s *);
-
-/*** Miscellaneous Macros and Inline Functions ***/
-
-static inline char *widget_get_attrib(struct widget_attrib_s *attribs, char *name)
-{
-	while (attribs) {
-		if (!strcmp(attribs->name, name))
-			return(attribs->value);
-		attribs = attribs->next;
-	}
-	return(NULL);
-}
+struct widget_s *generate_widget(struct widget_type_s *, struct property_s *, struct layout_s *);
 
 #endif
 

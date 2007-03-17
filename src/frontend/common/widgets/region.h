@@ -20,7 +20,7 @@ struct region_s {
 
 extern struct widget_type_s region_type;
 
-int region_init(struct region_s *, struct widget_attrib_s *);
+int region_init(struct region_s *, struct property_s *);
 int region_release(struct region_s *);
 int region_refresh(struct region_s *);
 int region_print(struct region_s *, const char *, int);

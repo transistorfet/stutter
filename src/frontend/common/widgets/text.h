@@ -29,7 +29,7 @@ struct text_s {
 
 extern struct widget_type_s text_type;
 
-int text_init(struct text_s *, struct widget_attrib_s *);
+int text_init(struct text_s *, struct property_s *);
 int text_release(struct text_s *);
 int text_refresh(struct text_s *);
 int text_print(struct text_s *, const char *, int);

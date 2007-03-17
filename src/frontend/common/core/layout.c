@@ -11,6 +11,7 @@
 #include <stutter/hash.h>
 #include <stutter/macros.h>
 #include <stutter/memory.h>
+#include <stutter/globals.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/common/layout.h>
 
@@ -117,13 +118,13 @@ struct layout_type_s *layout_find_type(char *name)
 
 /**
  * Creates a new layout struct with the type of the given type name, the given
- * attributes, the given children, and with the given next layout and returns
+ * properties, the given children, and with the given next layout and returns
  * a poitner to it.  If the type cannot be found or memory not allocated then
  * NULL is returned.  (Note: this function does not add the layout to a list
  * and is the deallocation of it is the responsability of the caller until that
  * responsability is given up).
  */
-struct layout_s *make_layout(char *type_name, struct widget_attrib_s *attribs, struct layout_s *children, struct layout_s *next)
+struct layout_s *make_layout(char *type_name, struct property_s *props, struct layout_s *children, struct layout_s *next)
 {
 	struct layout_s *layout;
 	struct layout_type_s *type;
@@ -133,7 +134,7 @@ struct layout_s *make_layout(char *type_name, struct widget_attrib_s *attribs, s
 	if (!(layout = (struct layout_s *) memory_alloc(sizeof(struct layout_s))))
 		return(NULL);
 	layout->type = type;
-	layout->attribs = attribs;
+	layout->props = props;
 	layout->children = children;
 	layout->next = next;
 	return(layout);
@@ -144,39 +145,39 @@ struct layout_s *make_layout(char *type_name, struct widget_attrib_s *attribs, s
  */
 void destroy_layout(struct layout_s *layout)
 {
-	if (layout->attribs)
-		destroy_layout_attrib(layout->attribs);
+	if (layout->props)
+		destroy_layout_property(layout->props);
 	if (layout->children)
 		destroy_layout(layout->children);
 	memory_free(layout);
 }
 
 /**
- * Creates a new attribute struct with the given name and value and returns
+ * Creates a new property struct with the given name and value and returns
  * a poitner to it.  If an error occurs then NULL is returned.
  */
-struct widget_attrib_s *make_layout_attrib(char *name, char *value, struct widget_attrib_s *next)
+struct property_s *make_layout_property(char *name, char *value, struct property_s *next)
 {
-	struct widget_attrib_s *attrib;
+	struct property_s *prop;
 
-	if (!(attrib = (struct widget_attrib_s *) memory_alloc(sizeof(struct widget_attrib_s) + strlen(name) + strlen(value) + 2)))
+	if (!(prop = (struct property_s *) memory_alloc(sizeof(struct property_s) + strlen(name) + strlen(value) + 2)))
 		return(NULL);
-	attrib->name = (char *) offset_after_struct_m(attrib, 0);
-	strcpy(attrib->name, name);
-	attrib->value = (char *) offset_after_struct_m(attrib, strlen(name) + 1);
-	strcpy(attrib->value, value);
-	attrib->next = next;
-	return(attrib);
+	prop->name = (char *) offset_after_struct_m(prop, 0);
+	strcpy(prop->name, name);
+	prop->value = (char *) offset_after_struct_m(prop, strlen(name) + 1);
+	strcpy(prop->value, value);
+	prop->next = next;
+	return(prop);
 }
 
 /**
- * Destroys the given attributes that were created using make_layout_attrib.
+ * Destroys the given property that were created using make_layout_property.
  */
-void destroy_layout_attrib(struct widget_attrib_s *attribs)
+void destroy_layout_property(struct property_s *props)
 {
-	struct widget_attrib_s *cur, *tmp;
+	struct property_s *cur, *tmp;
 
-	cur = attribs;
+	cur = props;
 	while (cur) {
 		tmp = cur->next;
 		memory_free(cur);
@@ -187,7 +188,7 @@ void destroy_layout_attrib(struct widget_attrib_s *attribs)
 
 /**
  * Adds the given layout to the list of layouts under the given module and
- * name.  The layout and all of the layouts and attributes it links to become
+ * name.  The layout and all of the layouts and properties it links to become
  * the responsability of the layout manager including their deallocation.
  */
 int add_layout(char *module, char *name, struct layout_s *layout)
@@ -242,17 +243,17 @@ struct layout_s *find_layout(char *module, char *name)
 void *layout_generate_object(char *module, char *name, int return_type, char *id)
 {
 	void *obj;
+	struct property_s prop;
 	struct layout_s *layout;
-	struct widget_attrib_s attrib;
 
 	if (!(layout = find_layout(module, name)))
 		return(NULL);
-	if (return_type && (layout->type->bitflags != return_type))
+	if (return_type && (LAYOUT_RETURN_TYPE(layout->type) != return_type))
 		return(NULL);
-	attrib.name = "id";
-	attrib.value = id;
-	attrib.next = layout->attribs;
-	obj = layout_call_create_m(layout->type, &attrib, layout->children);
+	prop.name = "id";
+	prop.value = id;
+	prop.next = layout->props;
+	obj = layout_call_create_m(layout->type, &prop, layout->children);
 	return(obj);
 }
 

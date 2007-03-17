@@ -11,6 +11,7 @@
 #include CONFIG_H
 #include <stutter/utils.h>
 #include <stutter/memory.h>
+#include <stutter/globals.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "window.h"
@@ -28,17 +29,17 @@ struct widget_type_s window_type = {
 	(widget_control_t) window_control
 };
 
-int window_init(struct window_s *window, struct widget_attrib_s *attribs)
+int window_init(struct window_s *window, struct property_s *props)
 {
 	int num;
 	char *value;
 
 	window->surface = NULL;
-	if ((value = widget_get_attrib(attribs, "width"))) {
+	if ((value = get_property(props, "width"))) {
 		num = util_atoi(value, 10);
 		window->width = num;
 	}
-	if ((value = widget_get_attrib(attribs, "height"))) {
+	if ((value = get_property(props, "height"))) {
 		num = util_atoi(value, 10);
 		window->height = num;
 	}

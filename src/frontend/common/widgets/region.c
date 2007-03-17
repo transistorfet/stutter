@@ -32,9 +32,9 @@ struct widget_type_s region_type = {
 static int region_split_insert(struct region_s *, struct container_node_s *, struct container_node_s *);
 static int region_resize(struct region_s *, int);
 
-int region_init(struct region_s *region, struct widget_attrib_s *attribs)
+int region_init(struct region_s *region, struct property_s *props)
 {
-	container_init(CONTAINER_S(region), attribs);
+	container_init(CONTAINER_S(region), props);
 	return(0);
 }
 

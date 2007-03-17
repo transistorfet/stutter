@@ -59,7 +59,7 @@ int release_widget(void)
  * the given attributes to the widget's creation function.  A pointer to the
  * new widget is returned or NULL is returned on error.
  */
-struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widget_s *parent, struct widget_attrib_s *attribs)
+struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widget_s *parent, struct property_s *props)
 {
 	struct widget_node_s *node;
 
@@ -77,7 +77,7 @@ struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widg
 	node->widget.id = (char *) (((size_t) &node->widget) + type->size);
 	strcpy(node->widget.id, id);
 
-	if (type->init(&node->widget, attribs) < 0) {
+	if (type->init(&node->widget, props) < 0) {
 		widget_destroy_node(&widget_list, node);
 		return(NULL);
 	}
@@ -97,6 +97,7 @@ int destroy_widget(struct widget_s *widget)
 	if (!widget)
 		return(-1);
 	emit_signal(widget, "purge_object", NULL);
+	remove_signal(widget, NULL);
 	if (!(node = widget_remove_node(&widget_list, widget->id)) || (&node->widget != widget))
 		return(-1);
 	widget_release_node(&widget_list, node);
@@ -137,17 +138,17 @@ int widget_control(struct widget_s *widget, int cmd, ...)
  * to be registered as a layout type with the type of a widget to be generated
  * used as the associated type pointer.
  */
-struct widget_s *generate_widget(struct widget_type_s *type, struct widget_attrib_s *attribs, struct layout_s *children)
+struct widget_s *generate_widget(struct widget_type_s *type, struct property_s *props, struct layout_s *children)
 {
 	struct layout_s *cur;
 	struct widget_s *widget, *child;
 
-	if (!(widget = create_widget(type, widget_get_attrib(attribs, "id"), NULL, attribs)))
+	if (!(widget = create_widget(type, get_property(props, "id"), NULL, props)))
 		return(NULL);
 	for (cur = children;cur;cur = cur->next) {
-		if (cur->type->bitflags != LAYOUT_RT_WIDGET)
+		if (LAYOUT_RETURN_TYPE(cur->type) != LAYOUT_RT_WIDGET)
 			continue;
-		child = layout_call_create_m(cur->type, cur->attribs, cur->children);
+		child = layout_call_create_m(cur->type, cur->props, cur->children);
 		if (child)
 			widget_control(widget, WCC_ADD_WIDGET, child);
 	}

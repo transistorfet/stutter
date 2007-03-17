@@ -26,7 +26,7 @@ struct input_s {
 
 extern struct widget_type_s input_type;
 
-int input_init(struct input_s *, struct widget_attrib_s *);
+int input_init(struct input_s *, struct property_s *);
 int input_release(struct input_s *);
 int input_refresh(struct input_s *);
 int input_print(struct input_s *, const char *, int);

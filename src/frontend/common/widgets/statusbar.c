@@ -11,6 +11,7 @@
 #include <stutter/utils.h>
 #include <stutter/memory.h>
 #include <stutter/string.h>
+#include <stutter/globals.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "statusbar.h"
@@ -32,14 +33,14 @@ struct widget_type_s statusbar_type = {
 
 extern struct variable_table_s *fe_theme;
 
-int statusbar_init(struct statusbar_s *statusbar, struct widget_attrib_s *attribs)
+int statusbar_init(struct statusbar_s *statusbar, struct property_s *props)
 {
 	char *value;
 
-	window_init(WINDOW_S(statusbar), attribs);
+	window_init(WINDOW_S(statusbar), props);
 	WIDGET_S(statusbar)->bitflags |= WBF_NEEDS_REFRESH;
 	statusbar->text = NULL;
-	if ((value = widget_get_attrib(attribs, "text")))
+	if ((value = get_property(props, "text")))
 		statusbar_print(statusbar, value, -1);
 	return(0);
 }

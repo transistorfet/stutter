@@ -7,6 +7,8 @@
 #ifndef _STUTTER_GLOBALS_H
 #define _STUTTER_GLOBALS_H
 
+#include <string.h>
+
 #define ERR_OUT_OF_MEMORY		-10
 #define ERR_COMMAND_NOT_FOUND		-11
 
@@ -27,6 +29,22 @@ struct callback_s {
 #define execute_callback_m(callback, arg)	\
 	if ((callback).func)			\
 		((callback).func)((callback).ptr, arg)
+
+struct property_s {
+	char *name;
+	char *value;
+	struct property_s *next;
+};
+
+static inline char *get_property(struct property_s *prop, char *name)
+{
+	while (prop) {
+		if (!strcmp(prop->name, name))
+			return(prop->value);
+		prop = prop->next;
+	}
+	return(NULL);
+}
 
 #define declare_unused(arg)	((void) arg)
 

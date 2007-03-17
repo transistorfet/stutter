@@ -21,7 +21,7 @@ struct window_s {
 
 extern struct widget_type_s window_type;
 
-int window_init(struct window_s *, struct widget_attrib_s *);
+int window_init(struct window_s *, struct property_s *);
 int window_release(struct window_s *);
 int window_refresh(struct window_s *);
 int window_print(struct window_s *, const char *, int);

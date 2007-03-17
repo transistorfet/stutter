@@ -36,7 +36,7 @@ extern struct variable_table_s *fe_theme;
 
 static int text_wrap_string(char *, int);
 
-int text_init(struct text_s *text, struct widget_attrib_s *attribs)
+int text_init(struct text_s *text, struct property_s *props)
 {
 	text->cur_line = 0;
 	text->max_lines = FE_TEXT_LOG_SIZE;

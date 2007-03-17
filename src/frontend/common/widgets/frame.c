@@ -29,9 +29,9 @@ struct widget_type_s frame_type = {
 	(widget_control_t) frame_control
 };
 
-int frame_init(struct frame_s *frame, struct widget_attrib_s *attribs)
+int frame_init(struct frame_s *frame, struct property_s *props)
 {
-	container_init(CONTAINER_S(frame), attribs);
+	container_init(CONTAINER_S(frame), props);
 	return(0);
 }
 

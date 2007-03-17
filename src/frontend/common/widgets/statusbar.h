@@ -23,7 +23,7 @@ struct statusbar_s {
 
 extern struct widget_type_s statusbar_type;
 
-int statusbar_init(struct statusbar_s *, struct widget_attrib_s *);
+int statusbar_init(struct statusbar_s *, struct property_s *);
 int statusbar_release(struct statusbar_s *);
 int statusbar_refresh(struct statusbar_s *);
 int statusbar_print(struct statusbar_s *, const char *, int);
