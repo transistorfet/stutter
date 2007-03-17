@@ -26,7 +26,7 @@ extern int init_terminal(void);
 extern int release_terminal(void);
 
 static int add_builtin_layouts(void);
-static struct surface_s *fe_create_surface(void);
+static int fe_add_surface(struct surface_s *);
 static int fe_destroy_surface(struct surface_s *);
 static int fe_handle_purge_surface(void *, struct surface_s *);
 
@@ -69,19 +69,21 @@ void *fe_create_widget(char *ns, char *type, char *id, void *parent)
 	struct widget_s *widget;
 	struct surface_s *surface;
 
-	if (!parent && !(surface = fe_create_surface()))
-		return(NULL);
-	if (!(widget = (struct widget_s *) layout_generate_object(ns, type, LAYOUT_RT_WIDGET, id))) {
-		if (surface)
-			queue_delete_node(surface_list, (void *) surface);
-		return(NULL);
+	if (!parent) {
+		if (!(surface = (struct surface_s *) layout_generate_object(ns, type, LAYOUT_RT_SURFACE, id)))
+			return(NULL);
+		if (fe_add_surface(surface)) {
+			surface_destroy_m(surface);
+			return(NULL);
+		}
+		return(SURFACE_S(surface)->root);
 	}
-
-	if (parent)
+	else {
+		if (!(widget = (struct widget_s *) layout_generate_object(ns, type, LAYOUT_RT_WIDGET, id)))
+			return(NULL);
 		widget_control(parent, WCC_ADD_WIDGET, widget);
-	else
-		surface_control_m(surface, SCC_SET_ROOT, widget, NULL);
-	return(widget);
+		return(widget);
+	}
 }
 
 int fe_destroy_widget(void *widget)
@@ -288,31 +290,28 @@ static int add_builtin_layouts(void)
 {
 	struct layout_s *layout;
 
-	layout = make_layout("frame", make_layout_attrib("id", "frame", NULL), NULL, NULL);
-	layout->next = make_layout("statusbar", make_layout_attrib("id", "statusbar", make_layout_attrib("text", FE_STATUSBAR, NULL)), NULL, NULL);
-	layout->next->next = make_layout("input", make_layout_attrib("id", "input", NULL), NULL, NULL);
+	layout = make_layout("frame", make_layout_property("id", "frame", NULL), NULL, NULL);
+	layout->next = make_layout("statusbar", make_layout_property("id", "statusbar", make_layout_property("text", FE_STATUSBAR, NULL)), NULL, NULL);
+	layout->next->next = make_layout("input", make_layout_property("id", "input", NULL), NULL, NULL);
 
-	add_layout("", "root", make_layout("region", make_layout_attrib("id", "region", make_layout_attrib("width", "80", make_layout_attrib("height", "25", NULL))), layout, NULL));
+	add_layout("", "root", make_layout("region", make_layout_property("id", "region", make_layout_property("width", "80", make_layout_property("height", "25", NULL))), layout, NULL));
 	add_layout("", "text", make_layout("text", NULL, NULL, NULL));
 	return(0);
 }
 
-static struct surface_s *fe_create_surface(void)
+static int fe_add_surface(struct surface_s *surface)
 {
-	struct surface_s *surface;
 	struct queue_node_s *node;
 
 	if (!(node = queue_create_node(0)))
-		return(NULL);
-	if (!(surface = (struct surface_s *) surface_create_m(&terminal_type, NULL, -1, -1, 0)))
-		return(NULL);
+		return(-1);
 	queue_init_node(surface_list, node, surface);
 	queue_append_node(surface_list, node);
 
 	if (!queue_current_node(surface_list))
 		queue_set_current_node(surface_list, node);
 	signal_connect(surface, "purge_object", 10, (signal_t) fe_handle_purge_surface, NULL);
-	return(surface);
+	return(0);
 }
 
 static int fe_destroy_surface(struct surface_s *surface)
