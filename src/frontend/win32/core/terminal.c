@@ -22,7 +22,9 @@
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
+#include <stutter/frontend/common/layout.h>
 #include <stutter/frontend/common/colourmap.h>
+#include "menu.h"
 #include "terminal.h"
 
 #define TERMINAL_DEFAULT_WIDTH		80
@@ -38,6 +40,7 @@ struct terminal_s {
 	HWND window;
 	HDC context;
 	HBITMAP bitmap;
+	struct menu_s *menu;
 	linear_node_v(terminal_s) list;
 };
 
@@ -61,10 +64,12 @@ struct surface_type_s terminal_type = {
 };
 
 LRESULT CALLBACK terminal_callback(HWND, UINT, WPARAM, LPARAM);
+static struct surface_s *terminal_generate(struct surface_type_s *, struct property_s *, struct layout_s *);
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
 static inline int terminal_free(struct terminal_s *);
 static inline void terminal_paint(struct terminal_s *);
 static inline int terminal_resizing(struct terminal_s *, RECT *, int);
+static inline int terminal_adjust_size(struct terminal_s *, RECT *);
 static inline int terminal_convert_char(int);
 static inline int terminal_convert_colour(colour_t);
 
@@ -101,7 +106,10 @@ int init_terminal(void)
 
 	if (init_colourmap())
 		return(-1);
-	if (type = find_type("colour:fe")) {
+	layout_register_type("terminal", LAYOUT_RT_SURFACE, (layout_create_t) terminal_generate, &terminal_type);
+	if (init_menu())
+		return(-1);
+	if ((type = find_type("colour:fe"))) {
 		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal_def_attrib.fg);
 		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal_def_attrib.bg);
 	}
@@ -115,9 +123,12 @@ int release_terminal(void)
 
 	if (!terminal_initialized)
 		return(0);
+	layout_unregister_type("terminal");
 	linear_foreach_safe_v(terminal_list, list, cur, tmp) {
 		terminal_free(cur);
 	}
+	release_menu();
+	release_colourmap();
 	return(0);
 }
 
@@ -127,7 +138,6 @@ int release_terminal(void)
 struct terminal_s *terminal_create(struct terminal_s *parent, short width, short height, int bitflags)
 {
 	HDC hdc;
-	RECT size;
 	TEXTMETRIC tm;
 	struct terminal_s *terminal;
 
@@ -167,6 +177,7 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 	terminal->charx = tm.tmMaxCharWidth;
 	terminal->chary = tm.tmHeight + tm.tmExternalLeading;
 	ReleaseDC(terminal->window, hdc);
+	terminal->menu = NULL;
 
 	terminal_control(terminal, SCC_MODIFY_ATTRIB, SA_METHOD_SET, SA_NORMAL, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR, SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR);
 	terminal_control(terminal, SCC_RESIZE, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
@@ -193,8 +204,6 @@ int terminal_destroy(struct terminal_s *terminal)
  */
 int terminal_print(struct terminal_s *terminal, char *str, int length)
 {
-	int i;
-	char *tmp;
 	if (length == -1)
 		length = strlen(str);
 	terminal_set_attribs(terminal, terminal->attrib);
@@ -259,7 +268,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 				*widget_ptr = SURFACE_S(terminal)->root;
 			else if (SURFACE_S(terminal)->root)
 				destroy_widget(SURFACE_S(terminal)->root);
-			if (SURFACE_S(terminal)->root = root) {
+			if ((SURFACE_S(terminal)->root = root)) {
 				widget_control(SURFACE_S(terminal)->root, WCC_SET_SURFACE, terminal);
 				widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
 			}
@@ -329,7 +338,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 			size.left = 0;
 			size.right = SURFACE_S(terminal)->width * terminal->charx;
 			size.bottom = SURFACE_S(terminal)->height * terminal->chary;
-			AdjustWindowRectEx(&size, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
+			terminal_adjust_size(terminal, &size);
 			SetWindowPos(terminal->window, NULL, 0, 0, size.right - size.left, size.bottom - size.top, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
 			if (SURFACE_S(terminal)->root)
 				widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
@@ -373,19 +382,21 @@ HWND terminal_get_window(struct terminal_s *terminal)
 LRESULT CALLBACK terminal_callback(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	switch (message) {
-		case WM_DESTROY: {
-			int i;
+		case WM_CLOSE: {
+			int i = 0;
 			struct terminal_s *terminal;
 
-			// TODO you need to implement a method of reporting that a widget has been destroyed to parts
-			//	of the core and modules so they can free the resources tied to that widget
 			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
-			if (terminal)
-				terminal_free(terminal);
 			linear_foreach_v(terminal_list, list, terminal)
 				i++;
-			if (!i)
+			if (i <= 1)
 				fe_quit("Lost Terminal");
+			else if (terminal) {
+				emit_signal(terminal, "purge_object", NULL);
+				remove_signal(terminal, NULL);
+				terminal_free(terminal);
+			}
+
 			break;
 		}
 		case WM_KEYDOWN: {
@@ -420,11 +431,48 @@ LRESULT CALLBACK terminal_callback(HWND hwnd, UINT message, WPARAM wparam, LPARA
 				terminal_paint(terminal);
 			break;
 		}
+		case WM_COMMAND: {
+			if (!lparam) {
+				menu_process_request(LOWORD(wparam));
+				InvalidateRect(hwnd, NULL, 1);
+			}
+			break;
+		}
 		default:
 			return(DefWindowProc(hwnd, message, wparam, lparam));
 	}
 
 	return(0);
+}
+
+/**
+ * Create a surface through the layout generation interface.
+ */
+static struct surface_s *terminal_generate(struct surface_type_s *type, struct property_s *props, struct layout_s *children)
+{
+	struct layout_s *cur;
+	struct widget_s *widget;
+	struct terminal_s *terminal;
+
+	// TODO check the properties for a width and height
+	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
+		return(NULL);
+
+	cur = children;
+	while (cur) {
+		if ((LAYOUT_RETURN_TYPE(cur->type) == LAYOUT_RT_WIDGET) && !(SURFACE_S(terminal)->root)) {
+			widget = layout_call_create_m(cur->type, cur->props, cur->children);
+			surface_control_m(terminal, SCC_SET_ROOT, widget, NULL);
+		}
+		else if ((LAYOUT_RETURN_TYPE(cur->type) == LAYOUT_RT_MENU) && !(terminal->menu)) {
+			if ((terminal->menu = layout_call_create_m(cur->type, cur->props, cur->children))) {
+				attach_menu(terminal->menu, terminal->window);
+				terminal_control(terminal, SCC_RESIZE, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
+			}
+		}
+		cur = cur->next;
+	}
+	return((struct surface_s *) terminal);
 }
 
 /**
@@ -463,9 +511,12 @@ static void terminal_set_attribs(struct terminal_s *terminal, attrib_t attrib)
 static inline int terminal_free(struct terminal_s *terminal)
 {
 	linear_remove_node_v(terminal_list, list, terminal);
-	ReleaseDC(terminal->window, terminal->context);
 	if (SURFACE_S(terminal)->root)
 		destroy_widget(WIDGET_S(SURFACE_S(terminal)->root));
+	if (terminal->menu)
+		destroy_menu(terminal->menu);
+	ReleaseDC(terminal->window, terminal->context);
+	DestroyWindow(terminal->window);
 	memory_free(terminal);
 	return(0);
 }
@@ -502,7 +553,7 @@ static inline int terminal_resizing(struct terminal_s *terminal, RECT *rect, int
 	size.left = 0;
 	size.right = 100;
 	size.bottom = 100;
-	AdjustWindowRectEx(&size, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
+	terminal_adjust_size(terminal, &size);
 	size.right -= 100;
 	size.bottom -= 100;
 
@@ -533,10 +584,25 @@ static inline int terminal_resizing(struct terminal_s *terminal, RECT *rect, int
 	else
 		rect->bottom = rect->top + (SURFACE_S(terminal)->height * terminal->chary);
 
-	AdjustWindowRectEx(rect, WS_OVERLAPPEDWINDOW, FALSE, WS_EX_CLIENTEDGE);
+	terminal_adjust_size(terminal, rect);
 	if (SURFACE_S(terminal)->root)
 		widget_control(SURFACE_S(terminal)->root, WCC_SET_WINDOW, 0, 0, SURFACE_S(terminal)->width, SURFACE_S(terminal)->height);
 	return(ret);
+}
+
+/**
+ * Adjust the given rectangle such that when the function returns, rectangle
+ * holds the window size necessary to contain a client area of the size
+ * the rectangle was when the function was called.
+ */
+static inline int terminal_adjust_size(struct terminal_s *terminal, RECT *rect)
+{
+	WINDOWINFO info;
+
+	info.cbSize = sizeof(WINDOWINFO);
+	GetWindowInfo(terminal->window, &info);
+	AdjustWindowRectEx(rect, info.dwStyle, GetMenu(terminal->window) ? TRUE : FALSE, info.dwExStyle);
+	return(0);
 }
 
 /**
