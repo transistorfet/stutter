@@ -8,6 +8,7 @@ OBJS =	main.o \
 	cmds/play.o \
 	core/fe.o \
 	core/net.o \
+	core/menu.o \
 	core/timer.o \
 	core/execute.o \
 	core/terminal.o \
