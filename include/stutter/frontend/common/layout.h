@@ -11,6 +11,7 @@
 
 #define LAYOUT_RT_WIDGET	0x0001
 #define LAYOUT_RT_SURFACE	0x0002
+#define LAYOUT_RT_MENU		0x0003
 
 #define LAYOUT_RETURN_TYPE(type)	( (type)->bitflags )
 
