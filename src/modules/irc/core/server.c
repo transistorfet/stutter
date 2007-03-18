@@ -336,14 +336,14 @@ int irc_change_nick(struct irc_server *server, char *nick)
 {
 	struct irc_msg *msg;
 
-	if (server->bitflags & IRC_SBF_CONNECTED) {
+	if (server->net) {
 		if (!(msg = irc_create_msg(IRC_MSG_NICK, NULL, NULL, 1, 0, nick)))
 			return(-1);
 		return(irc_send_msg(server, msg));
 	}
 	else {
 		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
-		msg->server->nick[IRC_MAX_NICK - 1] = '\0';
+		server->nick[IRC_MAX_NICK - 1] = '\0';
 	}
 	return(0);
 }
