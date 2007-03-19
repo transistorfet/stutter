@@ -102,7 +102,7 @@ int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 					if (msg) {
 						k = fmt[++i] - 0x30;
 						if ((k >= 0) && (k < msg->num_ctcps))
-							msg_copy_str_m(buffer, msg->ctcps[k].args, j, max);
+							j += irc_format_parse_text(msg->ctcps[k].args, &buffer[j], max - j + 1);
 					}
 					break;
 				case '%':
