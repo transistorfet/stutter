@@ -18,27 +18,27 @@
 #include <stutter/frontend/surface.h>
 
 static attrib_t attrib_table[] = {
-	{ 0, 0, { SC_ENC_MAPPING, 1 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 2 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 3 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 4 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 5 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 6 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 7 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 8 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 9 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 10 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 11 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 12 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 13 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 14 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
-	{ 0, 0, { SC_ENC_MAPPING, 15 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } }
+	{ 0, 0, { SC_ENC_RGBA, 0x7F7F7F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, 0, { SC_ENC_RGBA, 0x00007F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, 0, { SC_ENC_RGBA, 0x007F00 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, 0, { SC_ENC_RGBA, 0x7F0000 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, 0, { SC_ENC_RGBA, 0x007F7F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, 0, { SC_ENC_RGBA, 0x7F7F00 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, 0, { SC_ENC_RGBA, 0x7F007F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, SA_BOLD, { SC_ENC_RGBA, 0x7F7F7F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, SA_BOLD, { SC_ENC_RGBA, 0x00007F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, SA_BOLD, { SC_ENC_RGBA, 0x007F00 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, SA_BOLD, { SC_ENC_RGBA, 0x7F0000 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, SA_BOLD, { SC_ENC_RGBA, 0x007F7F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, SA_BOLD, { SC_ENC_RGBA, 0x7F7F00 }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
+	{ 0, SA_BOLD, { SC_ENC_RGBA, 0x7F007F }, { SC_ENC_MAPPING, SC_MAP_DEFAULT_COLOUR } },
 };
 
 static struct type_s *attrib_type;
 
 static void *fe_common_hashattrib_create(void *, char *, va_list);
 static void fe_common_hashattrib_destroy(void *);
+static void *fe_common_hashattrib_add(void *, struct type_s *, char *, int, char *, va_list);
 static void *fe_common_hashattrib_index(void *, char *, struct type_s **);
 
 struct type_s *fe_common_load_hashattrib(void)
@@ -51,7 +51,7 @@ struct type_s *fe_common_load_hashattrib(void)
 		0,
 		(type_create_t) fe_common_hashattrib_create,
 		(type_destroy_t) fe_common_hashattrib_destroy,
-		NULL,
+		(type_add_t) fe_common_hashattrib_add,
 		NULL,
 		(type_index_t) fe_common_hashattrib_index,
 		NULL,
@@ -72,6 +72,18 @@ static void *fe_common_hashattrib_create(void *value, char *params, va_list va)
 static void fe_common_hashattrib_destroy(void *value)
 {
 	return;
+}
+
+static void *fe_common_hashattrib_add(void *value, struct type_s *type, char *name, int bitflags, char *params, va_list va)
+{
+	void *field;
+	struct type_s *type_ptr;
+
+	if (!(field = fe_common_hashattrib_index(value, name, &type_ptr)))
+		return(NULL);
+	if (type && (type != type_ptr))
+		return(NULL);
+	return(type_ptr->create(field, params, va));
 }
 
 static void *fe_common_hashattrib_index(void *value, char *name, struct type_s **type_ptr)
