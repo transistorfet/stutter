@@ -1,30 +1,22 @@
 
-	* should irc_server_disconnect send the quit message (the quit message being passed to the function?)
-	* this is a possible issue with irc connecting such that if the server struct is created but the
-	  actual connection fails then the window will be destroyed by the server_disconnect.  Make server
-	  connect and disconnect and the creation of a server struct seperate
+	* think about adding more modules such as a frontend system.  What needs thinking about the most is
+	  how do you handle binding contexts for something like arrow keys where they should operate the
+	  history when the command line is selected and navigate through a list when a list widget of files
+	  is selected (as well as enter activating a list entry vs causing a command to execute).  Related
+	  to this is focus of input
 
-	* make a timer type that creates periodic timer events such that they can be destroyed through the
-	  variable system
-
-	* I guess there should be a generate function for surface but that would more likely be in the
-	  terminal specifically (not such an issue for curses but for win32, it would allow you to do the
-	  menu stuff as a terminal specific thing).  The terminal init function would then register itself
-	  with the layout.
-	* modify fe.c for both frontends to use the ability of the layout generator to generate surfaces as
-	  well as widgets and modify the root layout to include the surface as well
-
-	* the source command strips out #.*\n which includes channel names in the script =(
-
-	* change the comment block format at the top of each source file and modify things so that the help
-	  information is embedded (such as the command help).
-	* add a handler for the purge_object signal that deletes the object from the signal list in signal.c
-	  (this requires a purge_object with a NULL object signal to be emitted)
-	* figure out how the add_signal function will work with the new object thing
-
+	* finish implementing the win32 menu system
+	* make a config system things for adding layout types (a way to register widget types) (init.h macros?)
 	* make a header in frontend/common that has static inline functions for all the API function that
 	  fe.c can use thus allowing you to maintain a single common implementation for all frontends that
 	  use the common fe system
+
+	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
+	  of pointers that is passed to the handlers along with the size of the array?  Would this make
+	  things to specific to a particular signal that is handled?  Is that a bad thing?
+
+	* change the comment block format at the top of each source file and modify things so that the help
+	  information is embedded (such as the command help).
 
 	* consider converting code to use constants and enums for some of the things that aren't configs
 	* consider converting bitflags to bitfield structs unioned with the bitflags (so that it's still
@@ -36,14 +28,7 @@
 	* make dispatch into a whole bunch of joinpoints? (what dispatch am i talking about?)  Oh i think
 	  this is related to the evaluating of commands based on signals (make irc dispatch into joinpoints
 	  with the default joinpoint being the message handler
-	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
-	  of pointers that is passed to the handlers along with the size of the array?  Would this make
-	  things to specific to a particular signal that is handled?  Is that a bad thing?
 
-	* what should be used as a reference to a layout (name, etc)?  what methods of describing layouts
-	  will there be?  (hard-coded, xml, etc)? and how will they be expressed to layout?
-	* implement the layout method of registering "type" creation functions and make a callback for
-	  surfaces that calls something in fe.c as well as a callback for win32 terminal to create a menu.
 	* how will you specify things like "create a text widget and add it to the current frame"?  Who will
 	  add the widget to the frame, how does it know to do that, and how will it have access to that?
 	  (Will the surface be resolved and the root widget of that surface passed to layout which makes
@@ -82,12 +67,6 @@
 	* make bind key do the variable lookup itself but if you do, should you allow a path index lookup
 	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
 	  the /bind command use path.<name> for the command name (at least if no . is found).
-
-	* it might be possible to make it so that every server has it's own frame of channel widgets and
-	  when you use the next command, it will find the current frame, find the next text widget in that
-	  frame, and if there is no next widget, instead of going to the first, it finds the next frame
-	  (which should go to the next frame or go to the same frame if there is only one) and then go
-	  to the first text widget in that frame.
 
 	* work on API documentation
 	* finish/fix up region particularily the handling of MODIFY_SIZE and possibly re-write split
@@ -214,10 +193,11 @@ General:
 	* make everything unicode/UTF-8 capable
 	* fix fonts in win32 fe (particularily adding the expression of the bold attribute)
 
+	* should irc_server_disconnect send the quit message (the quit message being passed to the function?)
 	* add server name to notice messages
 	* report when a command fails
 	* make the disconnect error print to all windows instead of just the current one (using joinpoints)
-	* add a timer response type and make an email checker timed event
+	* make an email checker timed event
 	* add irc variables and types for servers and channels and so on in a similar fashion to the colour
 	  type in the frontend
 
