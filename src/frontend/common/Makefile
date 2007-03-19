@@ -10,6 +10,7 @@ OBJS =	cmds/insert.o \
 	types/attrib.o \
 	types/colour.o \
 	types/command.o \
+	types/hashattrib.o \
 	types/style.o \
 	utils/format.o \
 	widgets/container.o \
