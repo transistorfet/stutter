@@ -48,7 +48,7 @@ struct surface_type_s terminal_type = {
 	(surface_control_t) terminal_control
 };
 
-struct surface_s *terminal_generate(struct surface_type_s *, struct property_s *, struct layout_s *);
+static struct surface_s *terminal_generate(struct surface_type_s *, struct property_s *, struct layout_s *);
 static int terminal_check_input(void *, struct fe_descriptor_s *);
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
 static inline void terminal_refresh(struct terminal_s *);
@@ -63,8 +63,6 @@ int init_terminal(void)
 	if (terminal_initialized)
 		return(0);
 	if (init_colourmap())
-		return(-1);
-	if (init_layout())
 		return(-1);
 	layout_register_type("terminal", LAYOUT_RT_SURFACE, (layout_create_t) terminal_generate, &terminal_type);
 
@@ -102,6 +100,7 @@ int release_terminal(void)
 {
 	if (!terminal_initialized)
 		return(0);
+	layout_unregister_type("terminal");
 	fe_desc_destroy_list(desc_list);
 	endwin();
 	release_layout();
@@ -270,7 +269,7 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 /**
  * Create a surface through the layout generation interface.
  */
-struct surface_s *terminal_generate(struct surface_type_s *type, struct property_s *props, struct layout_s *children)
+static struct surface_s *terminal_generate(struct surface_type_s *type, struct property_s *props, struct layout_s *children)
 {
 	struct layout_s *cur;
 	struct widget_s *widget;
