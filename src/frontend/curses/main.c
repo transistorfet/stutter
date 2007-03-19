@@ -29,6 +29,7 @@ DEFINE_TYPE_LIST(fe_types,
 	ADD_TYPE(fe_common_load_colour)
 	ADD_TYPE(fe_common_load_style)
 	ADD_TYPE(fe_common_load_attrib)
+	ADD_TYPE(fe_common_load_hashattrib)
 	ADD_TYPE(fe_common_load_command)
 );
 
@@ -43,6 +44,9 @@ DEFINE_KEY_LIST(fe_keys,
 DEFINE_VARIABLE_LIST(fe_variables,
 	DECLARE_TYPE("attrib:fe",
 		FE_COMMON_ATTRIBS()
+	)
+	DECLARE_TYPE("hashattrib:fe",
+		ADD_FIXED_VARIABLE("theme.nicktable", "")
 	)
 	DECLARE_TYPE("command:fe",
 		FE_COMMON_COMMANDS()
