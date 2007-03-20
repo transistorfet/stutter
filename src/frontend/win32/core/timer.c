@@ -111,6 +111,17 @@ int fe_timer_reset(fe_timer_t timer)
 }
 
 /**
+ * Expires the given timer.  If an error occurs then -1 is returned,
+ * otherwise 0 is returned.
+ */
+int fe_timer_expire(fe_timer_t timer)
+{
+	fe_timer_remove((struct fe_timer_s *) timer);
+	((struct fe_timer_s *) timer)->bitflags |= FE_TIMER_BF_EXPIRED;
+	return(0);
+}
+
+/**
  * Set the given timer's interval to the given interval without resetting
  * the timer's time so far.  If the timer has already expired, 1 will be
  * returned.  If an error occurs, -1 will be returned.  Otherwise 0 is

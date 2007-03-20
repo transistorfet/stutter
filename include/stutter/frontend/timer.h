@@ -22,6 +22,7 @@ struct callback_s fe_timer_get_callback(fe_timer_t timer);
 void fe_timer_set_callback(fe_timer_t timer, callback_t func, void *ptr);
 
 int fe_timer_reset(fe_timer_t timer);
+int fe_timer_expire(fe_timer_t timer);
 int fe_timer_set_interval(fe_timer_t timer, float interval);
 
 
