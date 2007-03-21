@@ -56,7 +56,7 @@ struct context_list_s {
 };
 
 static struct context_list_s context_list;
-static struct key_map_s *current_context, *current_map;
+static struct key_map_s *root_context = NULL, *current_context = NULL, *current_map = NULL;
 
 static inline void key_map_release_node(struct key_map_s *, struct key_s *);
 static inline struct key_map_s *create_context(char *);
@@ -68,20 +68,24 @@ DEFINE_HASH_TABLE(context, struct context_list_s, struct key_map_s, cl, context,
 
 int init_key(void)
 {
-	if (current_context)
+	if (root_context)
 		return(0);
 	context_init_table(&context_list, KEY_CONTEXT_LIST_INIT_SIZE);
-	if (!(current_context = create_context(""))) {
+	if (!(root_context = create_context(""))) {
 		release_key();
 		return(-1);
 	}
+	current_context = root_context;
 	current_map = current_context;
 	return(0);
 }
 
 int release_key(void)
 {
+	if (root_context)
+		return(0);
 	context_release_table(&context_list);
+	root_context = NULL;
 	current_context = NULL;
 	current_map = NULL;
 	return(0);
@@ -208,8 +212,18 @@ int process_key(int ch)
 	string_t args;
 	struct key_s *node;
 
-	if (!(node = key_map_find_node(current_map, (void *) ch)))
-		return(-1);
+	if (!(node = key_map_find_node(current_map, (void *) ch))) {
+		if ((current_map != current_context) || (current_context == root_context)) {
+			current_map = current_context;
+			return(-1);
+		}
+		else {
+			if (!(node = key_map_find_node(root_context, (void *) ch)))
+				return(-1);
+			current_map = root_context;
+		}
+	}
+
 	if (node->bitflags & KEY_KBF_SUBMAP)
 		current_map = node->data.submap;
 	else {
@@ -232,6 +246,8 @@ int select_key_context(char *context)
 {
 	struct key_map_s *root;
 
+	if (!context)
+		context = "";
 	if (!(root = context_find_node(&context_list, context)) && !(root = create_context(context)))
 		return(-1);
 	current_context = root;
