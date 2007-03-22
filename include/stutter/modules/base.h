@@ -47,6 +47,7 @@ struct type_s *base_load_command(void);
 struct type_s *base_load_format(void);
 struct type_s *base_load_status(void);
 struct type_s *base_load_string(void);
+struct type_s *base_load_string_ref(void);
 struct type_s *base_load_table(void);
 struct type_s *base_load_time(void);
 struct type_s *base_load_timer(void);

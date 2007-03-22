@@ -31,6 +31,7 @@ OBJS =	init.o \
 	types/format.o \
 	types/status.o \
 	types/string.o \
+	types/string-ref.o \
 	types/table.o \
 	types/time.o \
 	types/timer.o \
