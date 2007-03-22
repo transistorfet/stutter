@@ -10,6 +10,7 @@
 #include <stutter/memory.h>
 #include <stutter/linear.h>
 #include <stutter/string.h>
+#include <stutter/macros.h>
 #include <stutter/globals.h>
 #include <stutter/modules/irc/user.h>
 
@@ -63,7 +64,7 @@ struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitfla
 		return(NULL);
 	node->user.nick = create_string("%s", nick);
 	node->user.bitflags = bitflags;
-	linear_add_node_sorted_v(list->ul, ul, node, (strcmp(cur->user.nick, nick) > 0));
+	linear_add_node_sorted_v(list->ul, ul, node, (strcmp_icase(cur->user.nick, nick) > 0));
 	return(&node->user);
 }
 
@@ -77,7 +78,7 @@ int irc_remove_user(struct irc_user_list *list, char *nick)
 
 	if (!list)
 		return(-1);
-	linear_find_node_v(list->ul, ul, node, !strcmp(cur->user.nick, nick));
+	linear_find_node_v(list->ul, ul, node, !strcmp_icase(cur->user.nick, nick));
 	if (!node)
 		return(1);
 	linear_remove_node_v(list->ul, ul, node);
@@ -96,7 +97,7 @@ struct irc_user *irc_find_user(struct irc_user_list *list, char *nick)
 
 	if (!list)
 		return(NULL);
-	linear_find_node_v(list->ul, ul, node, !strcmp(cur->user.nick, nick));
+	linear_find_node_v(list->ul, ul, node, !strcmp_icase(cur->user.nick, nick));
 	if (!node)
 		return(NULL);
 	return(&node->user);
@@ -112,7 +113,7 @@ int irc_change_user_nick(struct irc_user_list *list, char *oldnick, char *newnic
 
 	if (!list)
 		return(-1);
-	linear_find_node_v(list->ul, ul, node, !strcmp(cur->user.nick, oldnick));
+	linear_find_node_v(list->ul, ul, node, !strcmp_icase(cur->user.nick, oldnick));
 	if (!node)
 		return(1);
 	destroy_string(node->user.nick);

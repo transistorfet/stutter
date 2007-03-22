@@ -97,7 +97,7 @@ int irc_remove_channel(struct irc_channel_list *list, char *name)
 {
 	struct irc_channel_node *node;
 
-	linear_find_node_v(list->cl, cl, node, !strcmp(cur->channel.name, name));
+	linear_find_node_v(list->cl, cl, node, !strcmp_icase(cur->channel.name, name));
 	if (!node)
 		return(1);
 	linear_remove_node_v(list->cl, cl, node);
@@ -113,7 +113,7 @@ struct irc_channel *irc_find_channel(struct irc_channel_list *list, char *name)
 {
 	struct irc_channel_node *node;
 
-	linear_find_node_v(list->cl, cl, node, !strcmp(cur->channel.name, name));
+	linear_find_node_v(list->cl, cl, node, !strcmp_icase(cur->channel.name, name));
 	if (!node)
 		return(NULL);
 	return(&node->channel);
@@ -191,7 +191,7 @@ static int irc_handle_purge_window(struct irc_channel *channel, void *window)
 		return(-1);
 	channel->window = NULL;
 
-	if (!strcmp(channel->name, IRC_SERVER_STATUS_CHANNEL))
+	if (!strcmp_icase(channel->name, IRC_SERVER_STATUS_CHANNEL))
 		irc_destroy_server(channel->server);
 	else if ((channel->name[0] == '#') || (channel->name[0] == '&') || (channel->name[0] == '+') || (channel->name[0] == '!'))
 		irc_leave_channel(channel->server, channel->name);
