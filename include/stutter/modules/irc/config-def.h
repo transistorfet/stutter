@@ -75,6 +75,14 @@
 
 #define DEFAULT_IRC_OUT_ATTEMPTING_RECONNECT	"\022status\022Attempting to reconnect in %d seconds"
 
+#define DEFAULT_IRC_TYPES()		\
+	ADD_TYPE(irc_load_user_type)	\
+	ADD_TYPE(irc_load_user_list)	\
+	ADD_TYPE(irc_load_channel_type)	\
+	ADD_TYPE(irc_load_channel_list)	\
+	ADD_TYPE(irc_load_server_type)	\
+	ADD_TYPE(irc_load_server_list)
+
 #define DEFAULT_IRC_BINDINGS()			\
 	BIND_KEY("\x09", "irc.complete", "")
 
@@ -412,6 +420,10 @@
 #ifndef IRC_OUT_ATTEMPTING_RECONNECT
 #define IRC_OUT_ATTEMPTING_RECONNECT \
 	DEFAULT_IRC_OUT_ATTEMPTING_RECONNECT
+#endif
+#ifndef IRC_TYPES
+#define IRC_TYPES() \
+	DEFAULT_IRC_TYPES()
 #endif
 #ifndef IRC_BINDINGS
 #define IRC_BINDINGS() \

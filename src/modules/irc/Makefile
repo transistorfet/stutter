@@ -49,6 +49,12 @@ OBJS =	init.o \
 	sigs/dispatch.o \
 	sigs/exec.o \
 	sigs/quit.o \
+	types/channel.o \
+	types/channel-list.o \
+	types/server.o \
+	types/server-list.o \
+	types/user.o \
+	types/user-list.o \
 	utils/current.o \
 	utils/format.o
 

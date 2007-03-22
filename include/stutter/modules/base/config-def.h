@@ -45,6 +45,7 @@
 	ADD_TYPE(base_load_format)	\
 	ADD_TYPE(base_load_status)	\
 	ADD_TYPE(base_load_string)	\
+	ADD_TYPE(base_load_string_ref)	\
 	ADD_TYPE(base_load_table)	\
 	ADD_TYPE(base_load_time)	\
 	ADD_TYPE(base_load_timer)	\

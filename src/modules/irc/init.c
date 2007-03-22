@@ -20,7 +20,14 @@ DEFINE_HANDLER_LIST(irc_handlers,
 	IRC_HANDLERS()
 );
 
+DEFINE_TYPE_LIST(irc_types,
+	IRC_TYPES()
+);
+
 DEFINE_VARIABLE_LIST(irc_variables,
+	DECLARE_TYPE("server-list:irc",
+		ADD_FIXED_VARIABLE("servers", "")
+	)
 	DECLARE_TYPE("string",
 		ADD_FIXED_VARIABLE("version", "string", IRC_VERSION_RESPONSE)
 	)
@@ -46,6 +53,7 @@ int init_irc(void)
 	add_signal(NULL, "irc.error", 0);
 	init_irc_server();
 
+	ADD_TYPE_LIST(irc_types);
 	ADD_HANDLER_LIST(irc_handlers);
 
 	if (!(type = find_type("table")) || !(irc_table = add_variable(NULL, type, "irc", 0, "")))

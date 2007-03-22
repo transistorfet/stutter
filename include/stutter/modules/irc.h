@@ -64,6 +64,14 @@ int irc_sig_dispatch_msg(char *, int, struct irc_msg *);
 int irc_sig_exec(void *, void *, char *);
 int irc_sig_quit(void *, void *, char *);
 
+/* Types */
+struct type_s *irc_load_channel_list(void);
+struct type_s *irc_load_channel_type(void);
+struct type_s *irc_load_server_list(void);
+struct type_s *irc_load_server_type(void);
+struct type_s *irc_load_user_list(void);
+struct type_s *irc_load_user_type(void);
+
 /* Utils */
 int irc_format_msg(struct irc_msg *, char *, char *, int);
 
