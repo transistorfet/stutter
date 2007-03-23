@@ -29,8 +29,6 @@ struct variable_table_s {
 
 static struct variable_table_s *variable_root;
 
-static int variable_validate_name(char *);
-
 int init_variable(void)
 {
 	init_type();
@@ -106,12 +104,13 @@ void *add_variable_real(struct variable_table_s *table, struct type_s *type, cha
 	int len;
 	struct variable_node_s *node;
 
-	if (variable_validate_name(name))
-		return(NULL);
-	else if (!table)
+	if (!table)
 		table = variable_root;
 
-	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
+	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) {
+		if (!is_variable_char_m(name[len]))
+			return(NULL);
+	}
 
 	hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
 	if (!node) {
@@ -242,20 +241,4 @@ int traverse_variable_table(struct variable_table_s *table, struct type_s *type,
 	return(0);
 }
 
-/*** Local Functions ***/
-
-/**
- * Check that the given string only contains legal variable name characters
- * and return 0 if it does or -1 otherwise.
- */
-static int variable_validate_name(char *str)
-{
-	int i;
-
-	for (i = 0;str[i] != '\0';i++) {
-		if (!is_variable_char_m(str[i]))
-			return(-1);
-	}
-	return(0);
-}
 

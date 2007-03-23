@@ -41,7 +41,7 @@ int traverse_variable_table(struct variable_table_s *, struct type_s *, type_tra
  * Returns true if the given char is a valid variable name char otherwise false.
  */
 #define is_variable_char_m(ch)	\
-	(((str[i] >= 'A') && (str[i] <= 'Z')) || ((str[i] >= 'a') && (str[i] <= 'z')) || ((str[i] >= '0') && (str[i] <= '9')) || (str[i] == NAME_SEPARATOR) || (str[i] == '_') || (str[i] == '-'))
+	(((ch >= 'A') && (ch <= 'Z')) || ((ch >= 'a') && (ch <= 'z')) || ((ch >= '0') && (ch <= '9')) || (ch == NAME_SEPARATOR) || (ch == '_') || (ch == '-'))
 
 /**
  * Find the variable in the given table (or the root table if NULL) with the
