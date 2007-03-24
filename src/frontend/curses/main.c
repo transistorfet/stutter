@@ -42,6 +42,9 @@ DEFINE_KEY_LIST(fe_keys,
 );
 
 DEFINE_VARIABLE_LIST(fe_variables,
+	DECLARE_TYPE("string",
+		ADD_FIXED_VARIABLE("type", "string", "curses")
+	)
 	DECLARE_TYPE("attrib:fe",
 		FE_COMMON_ATTRIBS()
 	)
