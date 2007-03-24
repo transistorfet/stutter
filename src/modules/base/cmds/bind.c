@@ -22,8 +22,8 @@ int base_cmd_bind(char *env, char *args)
 {
 	void *value;
 	char *key, *name;
+	char *context = "";
 	struct type_s *type;
-	char *context = NULL;
 	int buffer[SMALL_STRING_SIZE];
 
 	trim_whitespace_m(args);

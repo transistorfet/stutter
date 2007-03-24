@@ -20,7 +20,7 @@
 
 int base_cmd_unbind(char *env, char *args)
 {
-	char *context = NULL;
+	char *context = "";
 	int buffer[SMALL_STRING_SIZE];
 
 	trim_whitespace_m(args);
