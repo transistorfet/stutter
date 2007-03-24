@@ -16,19 +16,22 @@ int irc_cmd_server(char *env, char *args)
 {
 	int portnum;
 	void *window, *frame;
-	char *address, *port;
 	struct irc_server *server;
+	char *address, *port, *nick;
 
 	if ((*args == '\0'))
 		return(-1);
 	get_param_m(args, address, ' ');
 	get_param_m(args, port, ' ');
 	portnum = (*port == '\0') ? IRC_DEFAULT_PORT : atoi(port);
+	get_param_m(args, nick, ' ');
+	if (*nick == '\0')
+		nick = IRC_DEFAULT_NICK;
 
 	if ((server = irc_find_server(address)))
 		fe_select_widget("text", NULL, server->status->window);
 	else if ((frame = fe_current_widget("frame", NULL)) && (window = fe_create_widget("irc", "text", address, frame))) {
-		if (!(server = irc_create_server(IRC_DEFAULT_NICK, window))) {
+		if (!(server = irc_create_server(nick, window))) {
 			fe_destroy_widget(window);
 			return(-1);
 		}
