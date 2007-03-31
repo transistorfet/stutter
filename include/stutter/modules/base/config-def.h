@@ -54,9 +54,7 @@
 #define DEFAULT_BASE_BINDINGS()			\
 	BIND_KEY("\n", "base.parse", "")	\
 	BIND_KEY("\x03", "base.quit", "")	\
-	BIND_KEY("\x18", "base.next", "")	\
 	BIND_KEY("\x15", "base.clearline", "")	\
-	BIND_KEY("\x11", "base.previous", "")	\
 	BIND_KEY("\x10", "base.scroll", "1")	\
 	BIND_KEY("\x19", "base.scroll", "-1")
 
@@ -74,9 +72,7 @@
 	ADD_COMMAND("exec", base_cmd_exec)		\
 	ADD_COMMAND("expand", base_cmd_expand)		\
 	ADD_COMMAND("get", base_cmd_get)		\
-	ADD_COMMAND("next", base_cmd_next)		\
 	ADD_COMMAND("parse", base_cmd_parse)		\
-	ADD_COMMAND("previous", base_cmd_previous)	\
 	ADD_COMMAND("quit", base_cmd_quit)		\
 	ADD_COMMAND("redirect", base_cmd_redirect)	\
 	ADD_COMMAND("remove", base_cmd_remove)		\

@@ -20,6 +20,10 @@
 #define DEFAULT_FE_WIDGET_LIST_LOAD_FACTOR	0.75
 #define DEFAULT_FE_WIDGET_LIST_GROWTH_FACTOR	1.75
 
+#define DEFAULT_FE_SURFACE_LIST_INIT_SIZE	20
+#define DEFAULT_FE_SURFACE_LIST_LOAD_FACTOR	0.75
+#define DEFAULT_FE_SURFACE_LIST_GROWTH_FACTOR	1.75
+
 #define DEFAULT_FE_LAYOUT_TYPES_INIT_SIZE	20
 #define DEFAULT_FE_LAYOUT_TYPES_LOAD_FACTOR	0.75
 #define DEFAULT_FE_LAYOUT_TYPES_GROWTH_FACTOR	1.75
@@ -59,14 +63,18 @@
 	ADD_FIXED_VARIABLE("theme.timestamp", "string", FE_THEME_TIMESTAMP)	\
 	ADD_FIXED_VARIABLE("theme.topic", "string", FE_THEME_TOPIC)
 
-#define DEFAULT_FE_COMMON_COMMANDS()						\
-	ADD_FIXED_VARIABLE("insert", "callback,widget", fe_common_cmd_insert, NULL)
+#define DEFAULT_FE_COMMON_COMMANDS()							\
+	ADD_FIXED_VARIABLE("insert", "callback,widget", fe_common_cmd_insert, NULL)	\
+	ADD_FIXED_VARIABLE("next", "callback,widget", fe_common_cmd_next, NULL)		\
+	ADD_FIXED_VARIABLE("previous", "callback,widget", fe_common_cmd_previous, NULL)
 
 #define DEFAULT_FE_COMMON_FORMATS()						\
 	ADD_FIXED_VARIABLE("statusbar", "string", FE_STATUSBAR_DEFAULT)
 
-#define DEFAULT_FE_BINDINGS()				\
-	BIND_KEY("\x0b", "fe.insert", "\x03")
+#define DEFAULT_FE_BINDINGS()			\
+	BIND_KEY("\x0b", "fe.insert", "\x03")	\
+	BIND_KEY("\x18", "fe.next", "")		\
+	BIND_KEY("\x11", "fe.previous", "")
 
 /*** Joinpoints ***/
 
@@ -113,6 +121,18 @@
 #ifndef FE_WIDGET_LIST_GROWTH_FACTOR
 #define FE_WIDGET_LIST_GROWTH_FACTOR \
 	DEFAULT_FE_WIDGET_LIST_GROWTH_FACTOR
+#endif
+#ifndef FE_SURFACE_LIST_INIT_SIZE
+#define FE_SURFACE_LIST_INIT_SIZE \
+	DEFAULT_FE_SURFACE_LIST_INIT_SIZE
+#endif
+#ifndef FE_SURFACE_LIST_LOAD_FACTOR
+#define FE_SURFACE_LIST_LOAD_FACTOR \
+	DEFAULT_FE_SURFACE_LIST_LOAD_FACTOR
+#endif
+#ifndef FE_SURFACE_LIST_GROWTH_FACTOR
+#define FE_SURFACE_LIST_GROWTH_FACTOR \
+	DEFAULT_FE_SURFACE_LIST_GROWTH_FACTOR
 #endif
 #ifndef FE_LAYOUT_TYPES_INIT_SIZE
 #define FE_LAYOUT_TYPES_INIT_SIZE \

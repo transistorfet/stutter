@@ -11,6 +11,8 @@
 
 /* Commands */
 int fe_common_cmd_insert(char *, char *);
+int fe_common_cmd_next(char *, char *);
+int fe_common_cmd_previous(char *, char *);
 
 /* Types */
 struct type_s *fe_common_load_attrib(void);
