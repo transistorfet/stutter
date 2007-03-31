@@ -1,0 +1,44 @@
+
+
+Frontend:
+
+The frontend API is mean to abstract as much of the frontend away as possible.
+The formatting and display should be seperated from the core program.
+
+All widgets are owned by a surface or by other widgets.  A widget with no
+parent is owned by a surface.  Surfaces can be owned by other surfaces. A
+surface with no parent is a root surface.  The widgets of different surfaces
+should not be associated with eachother.  A root widget (one with no parent)
+should control its owner surface as it would a parent widget.  Non-root
+surfaces should control their surface parents as a widget would treat its
+parent (within the surface framework).
+
+Input:
+
+Input widgets can have a context (string) associated with them and when they
+get the focus, they can set the key context to that context name.  This allows
+different widgets to have different functions associated with different keys.
+
+
+
+
+Rough Stuff:
+
+	* so the main problem left is how does the frontend end up setting the activation command.  You can
+	  either have a fixed activation command that emits an "activate" signal with the focus widget as the
+	  object with a handler connected to it that evaluates a command specified in the data or you modify
+	  the key binding system to have an additional "context" that corresponds to the widget where the
+	  call to process_key passes the focus as a parameter (??) thus for each focus widget you can specify
+	  a different key that evaluates a command.  The problem with that way is that whatever binds that
+	  key has to know what key to associate with the activation function but with the signal system method
+	  it has the extra step (but also less complexity in the key binding).  The key binding method is
+	  somewhat cleaner but it requires that the key manager knows about the focus (which might not be that
+	  bad).  Another option is to have an activate command that causes an evaluation of a special command
+	  that the frontend sets according to the focus widget (eg. fe.focus.activate where focus is a special
+	  type that acts as an alias for the current focus widget which is represented as a widget type and
+	  the activate variable is perhaps an alias to a command.  For each widget there would be a variable
+	  table with the widget id (fe.input, fe.statusbar, fe.#philosophy (?)) where you can store the
+	  special variables??).  It's not entirely a bad idea but it's not particularily clean nor is it
+	  very flexible.  Who knows
+
+

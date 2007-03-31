@@ -13,6 +13,19 @@
 	  associated with objects.
 	- Added the close command to destroy widgets directly and modified
 	  widget owners to connect to the purge_object signal for their widgets
+	- Added the IRC nick colourifier that colours each nick differently
+	  based on a hash of the name.
+	- Added types for accessing the IRC server, channel, and user data
+	  through the variable system.
+	- Modified the variable table's add_variable function to only check
+	  the variable name up to the first seperator character for invalid
+	  characters instead of checking the whole name
+	- Removed the fe_current_widget, fe_next_widget, fe_previous_widget,
+	  fe_first_widget, and fe_last_widget functions from the frontend
+	  interface and replaced the functionality with frontend-side commands
+	  and the focus and target functions.
+	- Replaced the fe_select_widget with the fe_show_widget function which
+	  has a slightly different function/parameters.
 
 0.3.2:
 	- Fixed the key conversion code to properly convert the \x00 into its

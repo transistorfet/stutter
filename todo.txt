@@ -1,9 +1,19 @@
 
-	* think about adding more modules such as a frontend system.  What needs thinking about the most is
-	  how do you handle binding contexts for something like arrow keys where they should operate the
-	  history when the command line is selected and navigate through a list when a list widget of files
-	  is selected (as well as enter activating a list entry vs causing a command to execute).  Related
-	  to this is focus of input
+	* add traverse functions to the channel and user list types.
+	* modify the irc types to return list types if referenced with direct names instead of returning NULL
+	* add SCC_SET_FOCUS handler to win32 terminal
+	* test the win32 terminal free/destroy code to make sure it all works correctly (which is not likely)
+	* convert the terminal def_attrib variable to an attrib:fe type so you can set the style
+	* add a WM_FOCUS handler to the win32 frontend
+
+	* perhaps you can add a sorta WCC_SET_INVISIBLE/WCC_SET_VISIBLE and have them set bitflags so that
+	  it is easy to know if a widget is visible or not (and then you can do scrollbar things as well)
+	* should all widgets inherit from a widget superclass?
+	* how will you initialize the target widget of input and how will you change/set the target widget?
+
+	* make a command to replace parse that has as its env a command (sortof like the alias command)
+	  (how will you free the env string?)  and if you evaluate, it finds the widget with focus, reads
+	  the string from that widget, combines it with the env command portion and evaluates that.
 
 	* finish implementing the win32 menu system
 	* make a config system things for adding layout types (a way to register widget types) (init.h macros?)
@@ -14,9 +24,6 @@
 	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
 	  of pointers that is passed to the handlers along with the size of the array?  Would this make
 	  things to specific to a particular signal that is handled?  Is that a bad thing?
-
-	* change the comment block format at the top of each source file and modify things so that the help
-	  information is embedded (such as the command help).
 
 	* consider converting code to use constants and enums for some of the things that aren't configs
 	* consider converting bitflags to bitfield structs unioned with the bitflags (so that it's still
@@ -29,17 +36,10 @@
 	  this is related to the evaluating of commands based on signals (make irc dispatch into joinpoints
 	  with the default joinpoint being the message handler
 
-	* how will you specify things like "create a text widget and add it to the current frame"?  Who will
-	  add the widget to the frame, how does it know to do that, and how will it have access to that?
-	  (Will the surface be resolved and the root widget of that surface passed to layout which makes
-	  the widget and does whatever it needs to with the root widget it has been given?)
+	* how will you specify things like adding a widget to the current frame?  Who will add the widget
+	  to the frame, how does it know to do that, and how will it have access to that?
 	* where should the xml parser go?  in the frontend or the core?
 
-	* add a signal handler that connects to things like irc_dispatch_msg and executes commands when
-	  particular messages come in.  You could even use some FEAT_ configs inside of this handler which
-	  enable and disable features like reading a variable to get a list of commands to execute, and
-	  sending a new uniquie signal for the message (wouldn't this belong in dispatch? or another signal
-	  handler?)
 	* you could have special variable tables like irc.on_msg where you add variables that are commands
 	  and when a message comes in, it traverses all the variables in the table and evaluates them with
 	  a particular formulation of parameters.  So you'd "/alias irc.on_msg.respond irc.say hey man"
@@ -56,14 +56,6 @@
 	  instead allow widgets to be added when they don't fit or should you just size region before the
 	  terminal resizes it properly?
 
-	* KEEP IN MIND: the frontend API is mean to abstract as much of the frontend away as possible.  The
-	  formatting and display should be seperated from the core program
-	* All widgets are owned by a surface or by other widgets.  A widget with no parent is owned by a
-	  surface.  Surfaces can be owned by other surfaces (or possibly by widgets).  A surface with no
-	  parent is controlled by the central list.
-
-	* add to timer the ability to expire a timer prematurely
-
 	* make bind key do the variable lookup itself but if you do, should you allow a path index lookup
 	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
 	  the /bind command use path.<name> for the command name (at least if no . is found).
@@ -76,8 +68,13 @@
 
 	* you could make the list a void * and type pair which means it can be tied to the variable tree but
 	  it doesn't have to be.  The list widget would then want to do a traverse and stringify for each entry
-	  which hopefully would do what is wanted.
-	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
+	  which hopefully would do what is wanted.  Or should there be perhaps a more advanced list widget
+	  that can collect bits of information into entries (ie. for an irc list of nicks in a channel, it
+	  gets the list.name entry for the name and the list.is_op entry to decide if it should display a gold
+	  star icon next to the entry) (either way it is an entirely frontend based system that uses a
+	  list in the variable system with only the possibly of an unattached list needing direct input from
+	  outside of the frontend).
+ 	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
 	  or is it the job of the code that sets the surface to also do a resize?
 
 Structural Issues:
@@ -111,7 +108,9 @@ Structural Issues:
 	  in and which are modifiable variables?  how will we handle this for all the things in config.h
 	* should the stringify and evaluate type functions take a parameter (string or number?) to specify
 	  the "type" of operation?  This for example, would let you get the real value and formatted value
-	  of a format type
+	  of a format type.  For stringify it could be a string that specifies the format.  It could be
+	  used by things like the nicks list for a channel where colour formatting can be added to the string
+	  or you can choose to have the @ and + added as well
 	* how do we handle the case where a pointer is stored with a callback and then the callback is
 	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
 	  it will never be needed again so even if we can access it, we have no way to know that we can
@@ -146,6 +145,9 @@ Structural Issues:
 	  to get each item in the list and stringify is done on it.
 	* should widget types be stored in a dedicated list or as a system variable or even at all?  Should
 	  there only be the layout types and have widgets add their type to that?
+	* how will you deal with adding a new widget?  There should be a way to specify (perhaps in the layout
+	  if possible) where the new widget should be put (such as in a particularily named frame).  Then the
+	  content portion does not need to know where the widget goes.
 
 	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages? instead of just
 	  dispatching select messages like privmsg and notice (which would require a rewrite of the message
@@ -154,6 +156,8 @@ Structural Issues:
 	* can/should we make complex and/or expensive operations compile-time options (at least as long
 	  as the operation can be disabled without causing trouble)? (like vim does with its FEAT_...)
 	* should you move the commmon/utils headers to the include/ dir?
+	* /msg transistor hey caused a segfault on turkey
+	* a msg to who I think was transistor from work to home didn't show up
 
 Bugs:
 	* there is a bug such that if you try to say something in the status window, the server says no such
@@ -172,9 +176,15 @@ Bugs:
 	  messages to the current window and not to windows properly associated with that server
 	* is kick message handling working properly (it seems like stutter printed that logarithm quit in
 	  #philosophy after he had been kicked and then quit).
+	* in irc_private_msg and irc_notice (at least) there is a bug such that if the text was blank
+	  ("/msg person") then it uses the constant "" and but the function tries to change it which causes
+	  a segfault so change server.c or msg.c (which might be better).
 
 General:
 	* work on the new build system
+	* add an X11 frontend
+	* make a jabber module?
+
 	* convert some of the modules that use linear lists to use the static inlines version of it instead
 	* fix text.c to properly display tab characters (perhaps you could modify irc_format_msg instead
 	  to expand tabs and/or to filter out non-printable characters such as backspace and other control
@@ -182,8 +192,10 @@ General:
 
 	* add scrollwheel message handlers to the win32 frontend and use joinpoints to define the behaviour
 	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
+	* change the comment block format at the top of each source file and modify things so that the help
+	  information is embedded (such as the command help).
 
-	* add a string variable to the frontends to identify what frontend is compiled in
+	* add a way to disable the nicktable feature
 	* add a version string
 	* implement execute.c for win32
 	* add a function fe_prompt(char *prompt, char *buffer, int max) that prompts the user for input
