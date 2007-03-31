@@ -48,7 +48,6 @@ struct surface_type_s terminal_type = {
 	(surface_control_t) terminal_control
 };
 
-static struct surface_s *terminal_generate(struct surface_type_s *, struct property_s *, struct layout_s *);
 static int terminal_check_input(void *, struct fe_descriptor_s *);
 static void terminal_set_attribs(struct terminal_s *, attrib_t);
 static inline void terminal_refresh(struct terminal_s *);
@@ -64,7 +63,7 @@ int init_terminal(void)
 		return(0);
 	if (init_colourmap())
 		return(-1);
-	layout_register_type("terminal", LAYOUT_RT_SURFACE, (layout_create_t) terminal_generate, &terminal_type);
+	layout_register_type("terminal", LAYOUT_RT_SURFACE, (layout_create_t) generate_surface, &terminal_type);
 
 	if (!(desc_list = fe_desc_create_list((destroy_t) NULL)))
 		return(-1);
@@ -88,7 +87,7 @@ int init_terminal(void)
 	scrollok(stdscr, 1);
 	nodelay(stdscr, TRUE);
 
-	if ((type = find_type("colour:fe"))) {
+	if ((type = find_type("attrib:fe"))) {
 		add_variable(NULL, type, "fe.fg", 0, "pointer", &terminal_def_attrib.fg);
 		add_variable(NULL, type, "fe.bg", 0, "pointer", &terminal_def_attrib.bg);
 	}
@@ -114,6 +113,8 @@ struct terminal_s *terminal_create(struct terminal_s *parent, short width, short
 	struct terminal_s *terminal;
 	int screen_width, screen_height;
 
+	if (linear_first_v(terminal_list))
+		return(NULL);
 	if (!(terminal = memory_alloc(sizeof(struct terminal_s))))
 		return(NULL);
 	SURFACE_S(terminal)->type = &terminal_type;
@@ -267,43 +268,16 @@ int terminal_control(struct terminal_s *terminal, int cmd, ...)
 /*** Local Functions ***/
 
 /**
- * Create a surface through the layout generation interface.
- */
-static struct surface_s *terminal_generate(struct surface_type_s *type, struct property_s *props, struct layout_s *children)
-{
-	struct layout_s *cur;
-	struct widget_s *widget;
-	struct terminal_s *terminal;
-
-	if (linear_first_v(terminal_list))
-		return(NULL);
-	// TODO check the properties for a width and height
-	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
-		return(NULL);
-
-	cur = children;
-	while (cur) {
-		if (LAYOUT_RETURN_TYPE(cur->type) == LAYOUT_RT_WIDGET) {
-			widget = layout_call_create_m(cur->type, cur->props, cur->children);
-			surface_control_m(terminal, SCC_SET_ROOT, widget, NULL);
-			return((struct surface_s *) terminal);
-		}
-		cur = cur->next;
-	}
-	return((struct surface_s *) terminal);
-}
-
-/**
  * Check for keypresses.
  */
 static int terminal_check_input(void *ptr, struct fe_descriptor_s *desc)
 {
 	int ch;
-	struct widget_s *input;
+	struct widget_s *focus;
 
 	// TODO modify to find the corresponding terminal somehow and use that as ref
-	if ((ch = terminal_convert_char(getch())) && process_key(ch) && (input = (struct widget_s *) fe_current_widget("input", NULL)))
-		widget_control(input, WCC_PROCESS_CHAR, ch);
+	if ((ch = terminal_convert_char(getch())) && process_key(ch) && (focus = (struct widget_s *) fe_get_focus(NULL)))
+		widget_control(focus, WCC_PROCESS_CHAR, ch);
 	return(0);
 }
 
