@@ -190,6 +190,8 @@ static int irc_handle_purge_window(struct irc_channel *channel, void *window)
 	if (channel->window != window)
 		return(-1);
 	channel->window = NULL;
+	signal_disconnect(((struct irc_channel_node *) channel)->handler);
+	((struct irc_channel_node *) channel)->handler = NULL;
 
 	if (!strcmp_icase(channel->name, IRC_SERVER_STATUS_CHANNEL))
 		irc_destroy_server(channel->server);
