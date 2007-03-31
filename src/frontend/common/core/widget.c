@@ -98,9 +98,14 @@ int destroy_widget(struct widget_s *widget)
 		return(-1);
 	emit_signal(widget, "purge_object", NULL);
 	remove_signal(widget, NULL);
-	if (!(node = widget_remove_node(&widget_list, widget->id)) || (&node->widget != widget))
+	if (!(node = widget_remove_node(&widget_list, widget->id)))
 		return(-1);
-	widget_release_node(&widget_list, node);
+	// TODO this should really try to find the widget but that first requires the capability in hash.h
+	if (&node->widget != widget) {
+		widget_add_node(&widget_list, node);
+		return(-1);
+	}
+	widget_destroy_node(&widget_list, node);
 	return(0);
 }
 
