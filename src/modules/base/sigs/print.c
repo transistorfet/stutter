@@ -11,7 +11,7 @@
 
 int base_sig_print(void *window, void *index, char *str)
 {
-	if (!window && !(window = fe_current_widget("text", NULL)) && !(window = fe_first_widget("text", NULL)))
+	if (!window && !(window = fe_get_target(NULL, "text")))
 		return(-1);
 	fe_print(window, str);
 	return(0);

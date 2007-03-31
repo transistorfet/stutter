@@ -13,7 +13,7 @@ int base_cmd_echo(char *env, char *args)
 {
 	void *window;
 
-	if (!(window = fe_current_widget("text", NULL)) && !(window = fe_first_widget("text", NULL)))
+	if (!(window = fe_get_target(NULL, "text")))
 		return(-1);
 	fe_print(window, args);
 	return(0);

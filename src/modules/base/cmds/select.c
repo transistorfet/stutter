@@ -17,7 +17,7 @@ int base_cmd_select(char *env, char *args)
 	get_param_m(args, id, ' ');
 	if (!(window = fe_find_widget(id)))
 		return(-1);
-	if (!fe_select_widget("text", NULL, window))
+	if (!fe_show_widget(window))
 		return(-1);
 	return(0);
 }

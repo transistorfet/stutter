@@ -18,12 +18,11 @@ short fe_get_height(void *widget);
 void *fe_find_widget(char *id);
 int fe_resize_widget(void *widget, int x, int y);
 
-void *fe_current_widget(char *context, void *ref);
-int fe_select_widget(char *context, void *ref, void *widget);
-void *fe_next_widget(char *context, void *ref);
-void *fe_previous_widget(char *context, void *ref);
-void *fe_first_widget(char *context, void *ref);
-void *fe_last_widget(char *context, void *ref);
+void *fe_get_focus(char *type);
+int fe_set_focus(void *widget);
+void *fe_get_target(void *widget, char *type);
+int fe_set_target(void *widget);
+int fe_show_widget(void *widget);
 
 int fe_print(void *widget, const char *str);
 char *fe_read(void *widget, char *buffer, int max);

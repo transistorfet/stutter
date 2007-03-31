@@ -21,7 +21,7 @@ struct irc_server *irc_current_server(void)
 {
 	void *window;
 
-	if (!(window = fe_current_widget("text", NULL)) && !(window = fe_first_widget("text", NULL)))
+	if (!(window = fe_get_target(NULL, "text")))
 		return(NULL);
 	if (!last_window || (last_window != window)) {
 		last_window = window;
@@ -41,7 +41,7 @@ struct irc_channel *irc_current_channel(void)
 {
 	void *window;
 
-	if (!(window = fe_current_widget("text", NULL)) && !(window = fe_first_widget("text", NULL)))
+	if (!(window = fe_get_target(NULL, "text")))
 		return(NULL);
 	if (!last_window || (last_window != window)) {
 		last_window = window;

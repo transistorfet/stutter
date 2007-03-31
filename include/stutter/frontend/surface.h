@@ -41,6 +41,7 @@
 #define SC_RGBA_TURQUOISE	0x007F7F
 
 #define SCC_SET_ROOT		0x0011
+#define SCC_SET_FOCUS		0x0012
 #define SCC_REFRESH		0x0020
 #define SCC_GET_ATTRIB		0x0030
 #define SCC_SET_ATTRIB		0x0031
@@ -113,6 +114,18 @@ struct surface_s {
 	short height;
 	struct widget_s *root;
 };
+
+int init_surface(void);
+int release_surface(void);
+
+struct surface_s *create_surface(struct surface_type_s *, struct surface_s *, short, short, int);
+int destroy_surface(struct surface_s *);
+void refresh_surface(struct surface_s *);
+
+struct surface_s *surface_get_current(void);
+void surface_set_current(struct surface_s *);
+
+struct surface_s *generate_surface(struct surface_type_s *, struct property_s *, struct layout_s *);
 
 /*** Miscellaneous Macros and Inline Functions ***/
 

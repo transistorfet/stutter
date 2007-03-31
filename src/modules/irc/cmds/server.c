@@ -29,8 +29,8 @@ int irc_cmd_server(char *env, char *args)
 		nick = IRC_DEFAULT_NICK;
 
 	if ((server = irc_find_server(address)))
-		fe_select_widget("text", NULL, server->status->window);
-	else if ((frame = fe_current_widget("frame", NULL)) && (window = fe_create_widget("irc", "text", address, frame))) {
+		fe_show_widget(server->status->window);
+	else if ((frame = fe_get_target(NULL, "frame")) && (window = fe_create_widget("irc", "text", address, frame))) {
 		if (!(server = irc_create_server(nick, window))) {
 			fe_destroy_widget(window);
 			return(-1);
@@ -39,7 +39,7 @@ int irc_cmd_server(char *env, char *args)
 			irc_destroy_server(server);
 			return(-1);
 		}
-		fe_select_widget("text", NULL, window);
+		fe_show_widget(window);
 	}
 	return(0);
 }

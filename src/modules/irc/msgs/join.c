@@ -15,16 +15,16 @@
  */
 int irc_msg_join(char *env, struct irc_msg *msg)
 {
-	void *window, *frame;
+	void *window = NULL, *frame;
 	struct irc_channel *channel;
 
 	if (!strcmp(msg->server->nick, msg->nick)) {
 		if ((channel = irc_find_channel(msg->server->channels, msg->params[0])))
-			fe_select_widget("text", NULL, channel->window);
-		else if ((frame = fe_current_widget("frame", NULL))
+			fe_show_widget(channel->window);
+		else if ((frame = fe_get_target(NULL, "frame"))
 		    && (window = fe_create_widget("irc", "text", msg->params[0], frame))
 		    && (channel = irc_add_channel(msg->server->channels, msg->params[0], window, msg->server)))
-			fe_select_widget("text", NULL, window);
+			fe_show_widget(window);
 		else {
 			irc_leave_channel(msg->server, msg->params[0]);
 			if (!channel && window)

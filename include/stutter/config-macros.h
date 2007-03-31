@@ -22,12 +22,12 @@
 #define EMIT_STRING(obj, name, ...) \
 	util_emit_str(obj, name, __VA_ARGS__);
 
-#define PRINT_TO_CURRENT(...) {										\
-	void *window;											\
-	char buffer[STRING_SIZE];									\
-	if (((window = fe_current_widget("text", NULL)) || (window = fe_first_widget("text", NULL)))	\
-	    && (snprintf(buffer, STRING_SIZE, __VA_ARGS__) >= 0))					\
-		fe_print(window, buffer);								\
+#define PRINT_TO_CURRENT(...) {						\
+	void *window;							\
+	char buffer[STRING_SIZE];					\
+	if (((window = fe_get_target(NULL, "text")))			\
+	    && (snprintf(buffer, STRING_SIZE, __VA_ARGS__) >= 0))	\
+		fe_print(window, buffer);				\
 }
 
 #endif

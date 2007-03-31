@@ -28,7 +28,7 @@ int irc_cmd_complete(char *env, char *args)
 	struct irc_channel *channel;
 	struct irc_complete_info_s info = { 0, 0, 0, 0, 0 };
 
-	if (!(channel = irc_current_channel()) || !(input = fe_current_widget("input", NULL)))
+	if (!(channel = irc_current_channel()) || !(input = fe_get_focus("input")))
 		return(-1);
 	fe_read(input, buffer, STRING_SIZE);
 

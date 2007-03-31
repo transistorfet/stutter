@@ -19,7 +19,8 @@ int base_cmd_parse(char *env, char *args)
 	char *str, *cmd;
 	char buffer[FE_INPUT_BUFFER_SIZE];
 
-	if (!(input = fe_current_widget("input", NULL)))
+	// TODO should this instead accept any focus widget?
+	if (!(input = fe_get_focus("input")))
 		return(-1);
 	str = fe_read(input, buffer, FE_INPUT_BUFFER_SIZE);
 	fe_clear(input);
@@ -33,6 +34,8 @@ int base_cmd_parse(char *env, char *args)
 	else
 		cmd = BASE_NULL_COMMAND;
 
+	// TODO don't split but use the given args as the command instead of getting it from the string
+	//	but first figure out how the NULL_COMMAND will work if moved to evaluate
 	if (util_evaluate_command(cmd, str)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}

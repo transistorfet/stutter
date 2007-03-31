@@ -19,7 +19,7 @@ int base_cmd_close(char *env, char *args)
 		if (!(window = fe_find_widget(name)))
 			return(-1);
 	}
-	else if (!(window = fe_current_widget("text", NULL)))
+	else if (!(window = fe_get_target(NULL, "text")))
 		return(-1);
 	fe_destroy_widget(window);
 	return(0);

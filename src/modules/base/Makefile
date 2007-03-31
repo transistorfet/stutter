@@ -14,9 +14,7 @@ OBJS =	init.o \
 	cmds/exec.o \
 	cmds/expand.o \
 	cmds/get.o \
-	cmds/next.o \
 	cmds/parse.o \
-	cmds/previous.o \
 	cmds/quit.o \
 	cmds/redirect.o \
 	cmds/remove.o \
