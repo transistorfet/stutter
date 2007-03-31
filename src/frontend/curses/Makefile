@@ -18,5 +18,5 @@ LIBS = -lncurses
 
 include $(ROOT)/rules.mk
 
-
+core/fe.o: ../../../include/stutter/frontend/common/api.h
 
