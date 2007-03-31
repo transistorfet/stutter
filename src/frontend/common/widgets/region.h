@@ -14,6 +14,7 @@
 
 struct region_s {
 	struct container_s container;
+	struct widget_s *focus;
 };
 
 #define REGION_S(widget)	((struct region_s *) widget)

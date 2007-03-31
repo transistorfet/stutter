@@ -9,12 +9,15 @@
 
 #include <stdarg.h>
 
+#include <stutter/string.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include "window.h"
 
 struct input_s {
 	struct window_s window;
+	string_t context;
+	struct widget_s *target;
 	int i;
 	int end;
 	int max;
