@@ -68,6 +68,7 @@
 	ADD_COMMAND("clear", base_cmd_clear)		\
 	ADD_COMMAND("clearline", base_cmd_clearline)	\
 	ADD_COMMAND("close", base_cmd_close)		\
+	ADD_COMMAND("context", base_cmd_context)	\
 	ADD_COMMAND("echo", base_cmd_echo)		\
 	ADD_COMMAND("exec", base_cmd_exec)		\
 	ADD_COMMAND("expand", base_cmd_expand)		\

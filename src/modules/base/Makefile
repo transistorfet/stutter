@@ -9,6 +9,7 @@ OBJS =	init.o \
 	cmds/clear.o \
 	cmds/clearline.o \
 	cmds/close.o \
+	cmds/context.o \
 	cmds/echo.o \
 	cmds/evaluate.o \
 	cmds/exec.o \
