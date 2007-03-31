@@ -125,6 +125,27 @@ int region_control(struct region_s *region, int cmd, va_list va)
 			}
 			return(0);
 		}
+		case WCC_SHOW_WIDGET: {
+			return(0);
+		}
+		case WCC_SET_FOCUS: {
+			struct widget_s *widget;
+
+			widget = va_arg(va, struct widget_s *);
+			region->focus = widget;
+			if (WIDGET_S(region)->parent)
+				return(widget_control(WIDGET_S(region)->parent, WCC_SET_FOCUS, region));
+			else if (WINDOW_S(region)->surface)
+				surface_control_m(WINDOW_S(region)->surface, SCC_SET_FOCUS, NULL);
+			return(0);
+		}
+		case WCC_GET_FOCUS: {
+			struct container_node_s *node;
+
+			if (!(region->focus) && (!(node = container_widgets_first_node(CONTAINER_S(region))) || !(region->focus = node->widget)))
+				return(-1);
+			return(widget_control_m(region->focus, WCC_GET_FOCUS, va));
+		}
 		case WCC_ADD_WIDGET:
 		case WCC_INSERT_WIDGET: {
 			struct widget_s *widget;
@@ -147,41 +168,13 @@ int region_control(struct region_s *region, int cmd, va_list va)
 				return(-1);
 			}
 			widget_control(widget, WCC_SET_SURFACE, WINDOW_S(region)->surface);
-			widget->parent = (struct widget_s *) region;
+			widget_control(widget, WCC_SET_PARENT, region);
 			return(0);
 		}
 		case WCC_REMOVE_WIDGET: {
 			if (container_control(CONTAINER_S(region), cmd, va))
 				return(-1);
 			// TODO do a resize
-			return(0);
-		}
-		case WCC_CURRENT_WIDGET: {
-			va_list args;
-			char *context;
-			struct widget_s **widget;
-			struct container_node_s *cur;
-
-			args = va;
-			widget = va_arg(va, struct widget_s **);
-			context = va_arg(va, char *);
-			if (!widget)
-				return(-1);
-			if (!(cur = container_widgets_current_node(CONTAINER_S(region))))
-				cur = container_widgets_first_node(CONTAINER_S(region));
-			while (cur) {
-				if (!widget_control_m(cur->widget, cmd, args) && *widget)
-					return(0);
-				else if (strstr(cur->widget->type->name, context)) {
-					*widget = cur->widget;
-					return(0);
-				}
-				if (!(cur = container_widgets_next_node(cur)) && container_widgets_current_node(CONTAINER_S(region)))
-					cur = container_widgets_first_node(CONTAINER_S(region));
-				if (cur == container_widgets_current_node(CONTAINER_S(region)))
-					break;
-			}
-			*widget = NULL;
 			return(0);
 		}
 		default:

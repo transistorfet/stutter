@@ -1,7 +1,7 @@
 /*
  * Widget Name:		input.c
  * Version:		0.1
- * Module Requirements:	queue ; memory ; surface
+ * Module Requirements:	key ; queue ; memory ; surface
  * Description:		Input Field Widget
  */
 
@@ -9,9 +9,11 @@
 #include <stdarg.h>
 
 #include CONFIG_H
+#include <stutter/key.h>
 #include <stutter/queue.h>
 #include <stutter/memory.h>
 #include <stutter/macros.h>
+#include <stutter/string.h>
 #include <stutter/frontend/widget.h>
 #include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
@@ -38,9 +40,14 @@ static inline int input_process_char(struct input_s *, int);
 
 int input_init(struct input_s *input, struct property_s *props)
 {
+	char *context;
+
 	window_init(WINDOW_S(input), props);
 	if (!(input->buffer = (char *) memory_alloc(FE_INPUT_BUFFER_SIZE)))
 		return(-1);
+	context = get_property(props, "context");
+	input->context = create_string("%s", context ? context : "");
+	input->target = WIDGET_S(input)->parent;
 	input->i = 0;
 	input->end = 0;
 	input->max = FE_INPUT_BUFFER_SIZE;
@@ -102,6 +109,51 @@ int input_read(struct input_s *input, char *buffer, int max)
 int input_control(struct input_s *input, int cmd, va_list va)
 {
 	switch (cmd) {
+		case WCC_SET_FOCUS: {
+			struct widget_s *widget;
+
+			widget = va_arg(va, struct widget_s *);
+			if (widget && (WIDGET_S(input) != widget))
+				return(-1);
+			else if (WIDGET_S(input)->parent) {
+				if (widget_control(WIDGET_S(input)->parent, WCC_SET_FOCUS, input))
+					return(-1);
+				select_key_context(input->context);
+			}
+			else if (WINDOW_S(input)->surface)
+				surface_control_m(WINDOW_S(input)->surface, SCC_SET_FOCUS, NULL);
+			return(0);
+		}
+		case WCC_GET_FOCUS: {
+			struct widget_s **widget;
+
+			widget = va_arg(va, struct widget_s **);
+			if (widget)
+				*widget = WIDGET_S(input);
+			return(0);
+		}
+		case WCC_GET_TARGET: {
+			struct widget_s **widget;
+
+			// TODO should this do anything like ask for the target of the target?
+			widget = va_arg(va, struct widget_s **);
+			if (widget)
+				*widget = input->target;
+			return(0);
+		}
+		case WCC_SET_TARGET: {
+			input->target = va_arg(va, struct widget_s *);
+			return(0);
+		}
+		case WCC_SET_PARENT: {
+			struct widget_s *parent;
+
+			parent = va_arg(va, struct widget_s *);
+			WIDGET_S(input)->parent = parent;
+			input->target = parent;
+			widget_control(WIDGET_S(input), WCC_SET_FOCUS, NULL);
+			return(0);
+		}
 		case WCC_GET_MIN_MAX_SIZE: {
 			widget_size_t *min, *max;
 			min = va_arg(va, widget_size_t *);

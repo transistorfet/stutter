@@ -74,6 +74,13 @@ int window_read(struct window_s *window, char *buffer, int max)
 int window_control(struct window_s *window, int cmd, va_list va)
 {
 	switch (cmd) {
+		case WCC_SET_PARENT: {
+			struct widget_s *parent;
+
+			parent = va_arg(va, struct widget_s *);
+			WIDGET_S(window)->parent = parent;
+			return(0);
+		}
 		case WCC_GET_SURFACE: {
 			struct surface_s **surface;
 			surface = va_arg(va, struct surface_s **);

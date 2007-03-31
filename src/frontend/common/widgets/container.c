@@ -80,9 +80,41 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			}
 			return(0);
 		}
+		case WCC_SHOW_WIDGET: {
+			struct widget_s *widget;
+			struct container_node_s *node;
+
+			widget = va_arg(va, struct widget_s *);
+			if (!(node = container_widgets_find_node(container, widget)))
+				return(-1);
+			container_widgets_set_current_node(container, node);
+			return(0);
+		}
+		case WCC_SET_FOCUS: {
+			struct widget_s *widget;
+			struct container_node_s *node;
+
+			widget = va_arg(va, struct widget_s *);
+			if (!(node = container_widgets_find_node(container, widget)))
+				return(-1);
+			container_widgets_set_current_node(container, node);
+			if (WIDGET_S(container)->parent)
+				return(widget_control(WIDGET_S(container)->parent, WCC_SET_FOCUS, container));
+			else if (WINDOW_S(container)->surface)
+				surface_control_m(WINDOW_S(container)->surface, SCC_SET_FOCUS, NULL);
+			return(0);
+		}
+		case WCC_GET_FOCUS: {
+			struct container_node_s *node;
+
+			if (!(node = container_widgets_current_node(container)) && !(node = container_widgets_first_node(container)))
+				return(-1);
+			return(widget_control_m(node->widget, WCC_GET_FOCUS, va));
+		}
 		case WCC_ADD_WIDGET: {
 			struct widget_s *widget;
 			struct container_node_s *node;
+
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
@@ -95,12 +127,13 @@ int container_control(struct container_s *container, int cmd, va_list va)
 				container_widgets_destroy_node(container, node);
 				return(-1);
 			}
-			widget->parent = WIDGET_S(container);
+			widget_control(widget, WCC_SET_PARENT, container);
 			return(0);
 		}
 		case WCC_INSERT_WIDGET: {
 			struct widget_s *widget;
 			struct container_node_s *node;
+
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
@@ -113,12 +146,13 @@ int container_control(struct container_s *container, int cmd, va_list va)
 				container_widgets_destroy_node(container, node);
 				return(-1);
 			}
-			widget->parent = WIDGET_S(container);
+			widget_control(widget, WCC_SET_PARENT, container);
 			return(0);
 		}
 		case WCC_REMOVE_WIDGET: {
 			struct widget_s *widget;
 			struct container_node_s *node;
+
 			widget = va_arg(va, struct widget_s *);
 			if (!widget)
 				return(-1);
@@ -131,40 +165,28 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			if (!container_widgets_current_node(container))
 				container_widgets_set_current_node(container, container_widgets_first_node(container));
 			WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
-			widget->parent = NULL;
+			widget_control(widget, WCC_SET_PARENT, NULL);
 			return(0);
 		}
+
 		case WCC_CURRENT_WIDGET: {
-			va_list args;
-			char *context;
 			struct widget_s **widget;
 			struct container_node_s *cur;
 
-			args = va;
 			widget = va_arg(va, struct widget_s **);
-			context = va_arg(va, char *);
-			if (!widget || (!(cur = container_widgets_current_node(container)) && !(cur = container_widgets_first_node(container))))
+			if (!(cur = container_widgets_current_node(container)) && !(cur = container_widgets_first_node(container)))
 				return(-1);
-			if (!widget_control_m(cur->widget, cmd, args) && *widget)
-				return(0);
-			else if (strstr(cur->widget->type->name, context))
-				*widget = cur->widget;
-			else
-				*widget = NULL;
+			*widget = cur->widget;
 			return(0);
 		}
 		case WCC_SELECT_WIDGET: {
-			va_list args;
-			char *context;
 			struct widget_s *widget;
 			struct container_node_s *cur, *node;
 
-			args = va;
-			context = va_arg(va, char *);
 			widget = va_arg(va, struct widget_s *);
 			node = container_widgets_current_node(container);
 			container_widgets_foreach(container, cur) {
-				if ((cur->widget == widget) || !widget_control_m(cur->widget, cmd, args)) {
+				if (cur->widget == widget) {
 					container_widgets_set_current_node(container, cur);
 					WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
 					return(0);
@@ -176,46 +198,50 @@ int container_control(struct container_s *container, int cmd, va_list va)
 		}
 		case WCC_NEXT_WIDGET: {
 			struct widget_s **widget;
+			struct container_node_s *node;
+
 			widget = va_arg(va, struct widget_s **);
-			if (!widget)
+			if (!(node = container_widgets_set_current_node(container, container_widgets_next_node(container_widgets_current_node(container)))))
 				return(-1);
-			if (!container_widgets_set_current_node(container, container_widgets_next_node(container_widgets_current_node(container))))
-				return(-1);
-			*widget = container_widgets_current_node(container)->widget;
 			WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
+			if (widget)
+				*widget = node->widget;
 			return(0);
 		}
 		case WCC_PREVIOUS_WIDGET: {
 			struct widget_s **widget;
+			struct container_node_s *node;
+
 			widget = va_arg(va, struct widget_s **);
-			if (!widget)
+			if (!(node = container_widgets_set_current_node(container, container_widgets_previous_node(container_widgets_current_node(container)))))
 				return(-1);
-			if (!container_widgets_set_current_node(container, container_widgets_previous_node(container_widgets_current_node(container))))
-				return(-1);
-			*widget = container_widgets_current_node(container)->widget;
 			WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
+			if (widget)
+				*widget = node->widget;
 			return(0);
 		}
 		case WCC_FIRST_WIDGET: {
 			struct widget_s **widget;
+			struct container_node_s *node;
+
 			widget = va_arg(va, struct widget_s **);
-			if (!widget)
+			if (!(node = container_widgets_set_current_node(container, container_widgets_first_node(container))))
 				return(-1);
-			if (!container_widgets_set_current_node(container, container_widgets_first_node(container)))
-				return(-1);
-			*widget = container_widgets_current_node(container)->widget;
 			WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
+			if (widget)
+				*widget = node->widget;
 			return(0);
 		}
 		case WCC_LAST_WIDGET: {
 			struct widget_s **widget;
+			struct container_node_s *node;
+
 			widget = va_arg(va, struct widget_s **);
-			if (!widget)
+			if (!(node = container_widgets_set_current_node(container, container_widgets_last_node(container))))
 				return(-1);
-			if (!container_widgets_set_current_node(container, container_widgets_last_node(container)))
-				return(-1);
-			*widget = container_widgets_current_node(container)->widget;
 			WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
+			if (widget)
+				*widget = node->widget;
 			return(0);
 		}
 		default:

@@ -177,6 +177,13 @@ int text_read(struct text_s *text, char *buffer, int max)
 int text_control(struct text_s *text, int cmd, va_list va)
 {
 	switch (cmd) {
+		case WCC_SET_PARENT: {
+			struct widget_s *parent;
+
+			parent = va_arg(va, struct widget_s *);
+			WIDGET_S(text)->parent = parent;
+			return(0);
+		}
 		case WCC_SET_WINDOW: {
 			WIDGET_S(text)->bitflags |= WBF_NEEDS_REFRESH;
 			return(0);
