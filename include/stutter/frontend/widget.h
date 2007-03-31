@@ -13,12 +13,20 @@
 #include <stutter/globals.h>
 
 #define WT_DRAWING		0x0004
-#define WT_CONTAINER		0x1000
-#define WT_FRAME		0x1001
-#define WT_REGION		0x1002
+#define WT_CONTAINER		0x1000		/** A widget that has children widgets */
+#define WT_FRAME		0x1001		/** A container in which only one child is visible */
+#define WT_REGION		0x1002		/** A container in which all children are always visible */
 
 #define WBF_NEEDS_REFRESH	0x0001
 #define WBF_FORCE_REFRESH	0x0002
+
+#define WCC_SET_PARENT		0x0001
+#define WCC_SHOW_WIDGET		0x0002
+
+#define WCC_GET_FOCUS		0x0003
+#define WCC_SET_FOCUS		0x0004
+#define WCC_GET_TARGET		0x0005
+#define WCC_SET_TARGET		0x0006
 
 #define WCC_GET_SURFACE		0x0010
 #define WCC_SET_SURFACE		0x0011
@@ -38,9 +46,9 @@
 #define WCC_FIRST_WIDGET	0x0027
 #define WCC_LAST_WIDGET		0x0028
 
-#define WCC_SCROLL		0x0030
-#define WCC_INSERT_CHAR		0x0031
-#define WCC_PROCESS_CHAR	0x0032
+#define WCC_SCROLL		0x0040
+#define WCC_INSERT_CHAR		0x0041
+#define WCC_PROCESS_CHAR	0x0042
 
 typedef struct widget_size_s {
 	short width;
@@ -103,10 +111,6 @@ struct widget_s {
 
 int init_widget(void);
 int release_widget(void);
-
-int add_widget_type(struct widget_type_s *);
-int remove_widget_type(char *);
-struct widget_type_s *find_widget_type(char *);
 
 struct widget_s *create_widget(struct widget_type_s *, char *, struct widget_s *, struct property_s *);
 int destroy_widget(struct widget_s *);
