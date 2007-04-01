@@ -18,7 +18,10 @@ int base_cmd_evaluate(char *env, char *args)
 	char *str, *cmd;
 	char buffer[STRING_SIZE];
 
-	strncpy(buffer, env, STRING_SIZE);
+	if (env)
+		strncpy(buffer, env, STRING_SIZE);
+	else
+		buffer[0] = '\0';
 	str = strncat(buffer, args, STRING_SIZE);
 	if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
 		str = &str[strlen(BASE_COMMAND_PREFIX)];

@@ -72,6 +72,7 @@
 	ADD_COMMAND("echo", base_cmd_echo)		\
 	ADD_COMMAND("exec", base_cmd_exec)		\
 	ADD_COMMAND("expand", base_cmd_expand)		\
+	ADD_COMMAND("evaluate", base_cmd_evaluate)	\
 	ADD_COMMAND("get", base_cmd_get)		\
 	ADD_COMMAND("parse", base_cmd_parse)		\
 	ADD_COMMAND("quit", base_cmd_quit)		\
