@@ -88,6 +88,7 @@ int container_control(struct container_s *container, int cmd, va_list va)
 			if (!(node = container_widgets_find_node(container, widget)))
 				return(-1);
 			container_widgets_set_current_node(container, node);
+			WIDGET_S(container)->bitflags |= WBF_FORCE_REFRESH;
 			return(0);
 		}
 		case WCC_SET_FOCUS: {
