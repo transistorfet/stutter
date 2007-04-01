@@ -184,7 +184,7 @@ static int irc_format_parse_text(char *str, char *buffer, int max)
 					j += util_encode_bytes((unsigned char *) &attrib, sizeof(attrib_t), &buffer[j], max - j + 1);
 					attrib = def_attrib;
 				}
-				if ((str[i] >= 0x1F) && (str[i] != 0xFF)) 
+				if (str[i] >= 0x1F) 
 					buffer[j++] = str[i];
 				i++;
 				break;
