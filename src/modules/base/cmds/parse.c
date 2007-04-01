@@ -22,9 +22,10 @@ int base_cmd_parse(char *env, char *args)
 	// TODO should this instead accept any focus widget?
 	if (!(input = fe_get_focus("input")))
 		return(-1);
-	str = fe_read(input, buffer, FE_INPUT_BUFFER_SIZE);
+	fe_read(input, buffer, FE_INPUT_BUFFER_SIZE);
 	fe_clear(input);
 
+	str = buffer;
 	if (*str == '\0')
 		return(0);
 	if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX))) {

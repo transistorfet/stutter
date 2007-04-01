@@ -105,7 +105,7 @@ int fe_print(void *widget, const char *str)
 	return(fe_common_api_print(widget, str));
 }
 
-char *fe_read(void *widget, char *buffer, int max)
+int fe_read(void *widget, char *buffer, int max)
 {
 	return(fe_common_api_read(widget, buffer, max));
 }

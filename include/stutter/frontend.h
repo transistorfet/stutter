@@ -25,7 +25,7 @@ int fe_set_target(void *widget);
 int fe_show_widget(void *widget);
 
 int fe_print(void *widget, const char *str);
-char *fe_read(void *widget, char *buffer, int max);
+int fe_read(void *widget, char *buffer, int max);
 void fe_clear(void *widget);
 void fe_move(void *widget, short x, short y);
 int fe_scroll(void *widget, int diff);

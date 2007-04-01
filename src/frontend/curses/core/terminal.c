@@ -99,6 +99,7 @@ int release_terminal(void)
 {
 	if (!terminal_initialized)
 		return(0);
+	// TODO you don't destroy the terminal list here (but beware of the gremlin)
 	layout_unregister_type("terminal");
 	fe_desc_destroy_list(desc_list);
 	endwin();

@@ -198,11 +198,9 @@ static inline int fe_common_api_print(void *widget, const char *str)
 	return(widget_print_m(widget, str, -1));
 }
 
-static inline char *fe_common_api_read(void *widget, char *buffer, int max)
+static inline int fe_common_api_read(void *widget, char *buffer, int max)
 {
-	if (widget_read_m(widget, buffer, max))
-		return(NULL);
-	return(buffer);
+	return(widget_read_m(widget, buffer, max));
 }
 
 static inline void fe_common_api_clear(void *widget)

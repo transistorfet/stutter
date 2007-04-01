@@ -103,7 +103,7 @@ int input_read(struct input_s *input, char *buffer, int max)
 {
 	strncpy(buffer, input->buffer, max - 1);
 	buffer[max - 1] = '\0';
-	return(0);
+	return(strlen(buffer));
 }
 
 int input_control(struct input_s *input, int cmd, va_list va)
