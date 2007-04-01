@@ -204,7 +204,7 @@ int fe_net_send(fe_network_t net, char *msg, int size)
 
 	if (!net)
 		return(0);
-	DEBUG_LOG("raw.out", msg);
+	DEBUG_LOG("raw.out", "%s", msg);
 	do {
 		if ((sent = send(net->socket, (void *) msg, size, 0)) < 0)
 			return(-1);
@@ -245,7 +245,7 @@ int fe_net_receive(fe_network_t net, char *msg, int size)
 	}
 
 	msg[i] = '\0';
-	DEBUG_LOG("raw.in", msg);
+	DEBUG_LOG("raw.in", "%s", msg);
 	return(i);
 }
 
@@ -290,7 +290,7 @@ int fe_net_receive_str(fe_network_t net, char *msg, int size, char ch)
 	}
 
 	msg[i + 1] = '\0';
-	DEBUG_LOG("raw.in", msg);
+	DEBUG_LOG("raw.in", "%s", msg);
 	return(i);
 }
 
