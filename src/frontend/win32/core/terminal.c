@@ -125,10 +125,12 @@ int release_terminal(void)
 		return(0);
 	layout_unregister_type("terminal");
 	linear_foreach_safe_v(terminal_list, list, cur, tmp) {
+		destroy_surface(SURFACE_S(cur));
 		terminal_free(cur);
 	}
 	release_menu();
 	release_colourmap();
+	terminal_initialized = 0;
 	return(0);
 }
 
@@ -391,12 +393,22 @@ LRESULT CALLBACK terminal_callback(HWND hwnd, UINT message, WPARAM wparam, LPARA
 				i++;
 			if (i <= 1)
 				fe_quit("Lost Terminal");
-			else if (terminal) {
-				emit_signal(terminal, "purge_object", NULL);
-				remove_signal(terminal, NULL);
-				terminal_free(terminal);
-			}
+			else if (terminal)
+				DestroyWindow(terminal->window);
+			break;
+		}
+		case WM_DESTROY: {
+			struct terminal_s *terminal;
 
+			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
+			terminal_free(terminal);
+			break;
+		}
+		case WM_SETFOCUS: {
+			struct terminal_s *terminal;
+
+			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
+			surface_set_current(SURFACE_S(terminal));
 			break;
 		}
 		case WM_KEYDOWN: {
@@ -404,12 +416,12 @@ LRESULT CALLBACK terminal_callback(HWND hwnd, UINT message, WPARAM wparam, LPARA
 				break;
 		}
 		case WM_CHAR: {
-			struct widget_s *input;
+			struct widget_s *focus;
 			struct terminal_s *terminal;
 
 			linear_find_node_v(terminal_list, list, terminal, (cur->window == hwnd));
-			if (process_key(wparam) && terminal && SURFACE_S(terminal)->root && (input = (struct input_s *) fe_current_widget("input", SURFACE_S(terminal)->root)))
-				widget_control(input, WCC_PROCESS_CHAR, wparam);
+			if (process_key(wparam) && terminal && (focus = (struct widget_s *) fe_get_focus(NULL)))
+				widget_control(focus, WCC_PROCESS_CHAR, wparam);
 			InvalidateRect(hwnd, NULL, 1);
 			break;
 		}
@@ -455,7 +467,7 @@ static struct surface_s *terminal_generate(struct surface_type_s *type, struct p
 	struct terminal_s *terminal;
 
 	// TODO check the properties for a width and height
-	if (!(terminal = terminal_create(NULL, -1, -1, 0)))
+	if (!(terminal = (struct terminal_s *) create_surface(type, NULL, -1, -1, 0)))
 		return(NULL);
 
 	cur = children;
@@ -516,7 +528,7 @@ static inline int terminal_free(struct terminal_s *terminal)
 	if (terminal->menu)
 		destroy_menu(terminal->menu);
 	ReleaseDC(terminal->window, terminal->context);
-	DestroyWindow(terminal->window);
+	remove_signal(terminal, NULL);
 	memory_free(terminal);
 	return(0);
 }

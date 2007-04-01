@@ -12,6 +12,7 @@ OBJS =	main.o \
 	core/timer.o \
 	core/execute.o \
 	core/terminal.o \
+	win32.o \
 	$(ROOT)/src/frontend/common/fecommon.a \
 	$(MODULES) \
 	$(ROOT)/src/main.a
