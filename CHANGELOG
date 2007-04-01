@@ -26,6 +26,8 @@
 	  and the focus and target functions.
 	- Replaced the fe_select_widget with the fe_show_widget function which
 	  has a slightly different function/parameters.
+	- Changed the return type of fe_read to int so that it can return the
+	  number of bytes read.
 
 0.3.2:
 	- Fixed the key conversion code to properly convert the \x00 into its
