@@ -7,6 +7,7 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -18,7 +19,7 @@ int irc_msg_join(char *env, struct irc_msg *msg)
 	void *window = NULL, *frame;
 	struct irc_channel *channel;
 
-	if (!strcmp(msg->server->nick, msg->nick)) {
+	if (!strcmp_icase(msg->server->nick, msg->nick)) {
 		if ((channel = irc_find_channel(msg->server->channels, msg->params[0])))
 			fe_show_widget(channel->window);
 		else if ((frame = fe_get_target(NULL, "frame"))

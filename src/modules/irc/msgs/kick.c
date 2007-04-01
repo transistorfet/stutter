@@ -6,6 +6,7 @@
  */
 
 #include CONFIG_H
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -20,7 +21,7 @@ int irc_msg_kick(char *env, struct irc_msg *msg)
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		return(-1);
 
-	if (!strcmp(msg->server->nick, msg->params[1])) {
+	if (!strcmp_icase(msg->server->nick, msg->params[1])) {
 		if (channel->bitflags & IRC_CBF_AUTO_REJOIN)
 			irc_join_channel(msg->server, msg->params[0]);
 		else {

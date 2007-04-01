@@ -6,6 +6,7 @@
  */
 
 #include CONFIG_H
+#include <stutter/macros.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -19,7 +20,7 @@ int irc_msg_part(char *env, struct irc_msg *msg)
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])))
 		return(-1);
 
-	if (!strcmp(msg->server->nick, msg->nick))
+	if (!strcmp_icase(msg->server->nick, msg->nick))
 		irc_remove_channel(msg->server->channels, msg->params[0]);
 	else {
 		irc_remove_user(channel->users, msg->nick);

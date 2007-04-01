@@ -495,7 +495,7 @@ static int irc_server_receive(struct irc_server *server, fe_network_t desc, fe_n
  */
 static int irc_server_rejoin_channel(struct irc_channel *channel, struct irc_server *server)
 {
-	if (strcmp(channel->name, IRC_SERVER_STATUS_CHANNEL))
+	if (strcmp_icase(channel->name, IRC_SERVER_STATUS_CHANNEL))
 		return(irc_join_channel(server, channel->name));
 	return(0);
 }
