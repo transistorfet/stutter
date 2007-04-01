@@ -22,7 +22,7 @@ int irc_msg_privmsg(char *env, struct irc_msg *msg)
 	if (msg->num_ctcps)
 		emit_signal(NULL, "irc.dispatch_ctcp", msg);
 	else {
-		if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])) && ((strcmp(msg->server->nick, msg->params[0])) || !(channel = irc_find_channel(msg->server->channels, msg->nick)))) {
+		if (!(channel = irc_find_channel(msg->server->channels, msg->params[0])) && ((strcmp_icase(msg->server->nick, msg->params[0])) || !msg->nick || !(channel = irc_find_channel(msg->server->channels, msg->nick)))) {
 			if ((msg->params[0][0] == '#') || (msg->params[0][0] == '&') || (msg->params[0][0] == '+')
 			    || (msg->params[0][0] == '!') || !(channel = irc_current_channel()))
 				return(-1);
