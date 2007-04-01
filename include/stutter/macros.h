@@ -31,14 +31,14 @@
  * string after ch.  If the ch character is not found, first equals str
  * and rest equals "".
  */
-#define split_string_m(str, first, rest, ch) {	\
-	first = str;				\
-	if ((rest = strchr(str, ch))) {		\
-		*rest = '\0';			\
-		rest = &rest[1];		\
-	}					\
-	else					\
-		rest = "";			\
+#define split_string_m(str, first, rest, ch) {		\
+	(first) = (str);				\
+	if (((rest) = strchr((str), (ch)))) {		\
+		*(rest) = '\0';				\
+		(rest) = &(rest)[1];			\
+	}						\
+	else						\
+		(rest) = "";				\
 }
 
 /**
@@ -48,14 +48,14 @@
  * and str is unchanged.
  */
 #define get_prefix_m(str, prefix, ch) {		\
-	prefix = str;				\
-	if ((str = strchr(str, ch))) {		\
-		*str = '\0';			\
-		str = &str[1];			\
+	(prefix) = (str);			\
+	if (((str) = strchr((str), (ch)))) {	\
+		*(str) = '\0';			\
+		(str) = &(str)[1];		\
 	}					\
 	else {					\
-		str = prefix;			\
-		prefix = NULL;			\
+		(str) = (prefix);		\
+		(prefix) = NULL;		\
 	}					\
 }
 
@@ -65,8 +65,8 @@
  * is a space, tab, line feed, or carriage return.
  */
 #define trim_whitespace_m(str)		\
-	while ((*str == ' ') || (*str == '\t') || (*str == '\n') || (*str == '\r'))	\
-		str++;
+	while ((*(str) == ' ') || (*(str) == '\t') || (*(str) == '\n') || (*(str) == '\r'))	\
+		(str)++;
 
 /**
  * Compare two strings case insensitively.
