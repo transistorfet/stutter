@@ -150,6 +150,8 @@ static inline void *fe_common_api_get_target(void *widget, char *type)
 	if (!widget && !(widget = fe_common_api_get_focus(NULL)))
 		return(NULL);
 	widget_control(WIDGET_S(widget), WCC_GET_TARGET, &target);
+	if (!type)
+		return(target);
 	while (target) {
 		if (strstr(target->type->name, type))
 			return(target);
