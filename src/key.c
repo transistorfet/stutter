@@ -71,7 +71,7 @@ int init_key(void)
 	if (root_context)
 		return(0);
 	context_init_table(&context_list, KEY_CONTEXT_LIST_INIT_SIZE);
-	if (!(root_context = create_context(""))) {
+	if (!(root_context = create_context("global"))) {
 		release_key();
 		return(-1);
 	}
@@ -247,7 +247,7 @@ int select_key_context(char *context)
 	struct key_map_s *root;
 
 	if (!context)
-		context = "";
+		context = "global";
 	if (!(root = context_find_node(&context_list, context)) && !(root = create_context(context)))
 		return(-1);
 	current_context = root;
@@ -308,7 +308,7 @@ static inline struct key_map_s *create_key_map(char *context, int size)
 	struct key_map_s *map;
 
 	if (!context)
-		context = "";
+		context = "global";
 	if (!(map = context_create_node(sizeof(struct key_map_s) + strlen(context) + 1)))
 		return(NULL);
 	map->context = (char *) (((size_t) map) + sizeof(struct key_map_s));

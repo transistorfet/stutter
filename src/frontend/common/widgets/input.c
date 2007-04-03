@@ -46,7 +46,7 @@ int input_init(struct input_s *input, struct property_s *props)
 	if (!(input->buffer = (char *) memory_alloc(FE_INPUT_BUFFER_SIZE)))
 		return(-1);
 	context = get_property(props, "context");
-	input->context = create_string("%s", context ? context : "");
+	input->context = create_string("%s", context ? context : "global");
 	input->target = WIDGET_S(input)->parent;
 	input->i = 0;
 	input->end = 0;

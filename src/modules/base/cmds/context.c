@@ -11,9 +11,12 @@
 
 int base_cmd_context(char *env, char *args)
 {
-	char *context;
+	char *context = NULL;
 
-	get_param_m(args, context, ' ');
+	trim_whitespace_m(args);
+	if (*args != '\0') {
+		get_param_m(args, context, ' ');
+	}
 	if (select_key_context(context))
 		return(-1);
 	return(0);
