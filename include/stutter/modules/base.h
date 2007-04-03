@@ -21,6 +21,7 @@ int base_cmd_bind(char *, char *);
 int base_cmd_clear(char *, char *);
 int base_cmd_clearline(char *, char *);
 int base_cmd_close(char *, char *);
+int base_cmd_concat(char *, char *);
 int base_cmd_context(char *, char *);
 int base_cmd_echo(char *, char *);
 int base_cmd_evaluate(char *, char *);

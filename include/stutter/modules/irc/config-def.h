@@ -118,7 +118,7 @@
 	ADD_COMMAND("topic", irc_cmd_topic)		\
 	ADD_COMMAND("whois", irc_cmd_whois)		\
 	ADD_COMMAND("whowas", irc_cmd_whowas)		\
-	ADD_COMMAND("", irc_cmd_say)
+	ADD_COMMAND_ENV("activate", base_cmd_evaluate, "irc.say")
 
 /*** Joinpoints ***/
 

@@ -2,7 +2,8 @@
  * Command Name:	evaluate.c
  * Version:		0.1
  * Module Requirements:	utils ; frontend ; string
- * Description:		Concatenate env and args and evaluate as a command
+ * Description:		Evaluate the command in env with args unless args
+ * 			starts with the command prefix
  */
 
 #include <string.h>
@@ -16,18 +17,18 @@
 int base_cmd_evaluate(char *env, char *args)
 {
 	char *str, *cmd;
-	char buffer[STRING_SIZE];
 
-	if (env)
-		strncpy(buffer, env, STRING_SIZE);
+	if (!strncmp(args, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX))) {
+		args = &args[strlen(BASE_COMMAND_PREFIX)];
+		get_param_m(args, cmd, ' ');
+	}
+	else if (!env) {
+		get_param_m(args, cmd, ' ');
+	}
 	else
-		buffer[0] = '\0';
-	str = strncat(buffer, args, STRING_SIZE);
-	if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
-		str = &str[strlen(BASE_COMMAND_PREFIX)];
-	get_param_m(str, cmd, ' ');
+		cmd = env;
 
-	if (util_evaluate_command(cmd, str)) {
+	if (util_evaluate_command(cmd, args)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	return(0);

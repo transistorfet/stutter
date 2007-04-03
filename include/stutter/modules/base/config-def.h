@@ -27,7 +27,7 @@
 #define DEFAULT_BASE_FMT_SET			"Variable: %s <= %s"
 #define DEFAULT_BASE_FMT_UNBIND			"Key %s is not longer bound"
 
-#define DEFAULT_BASE_ERR_UNKNOWN_COMMAND	"\022error\022Error: Unknown Command %s"
+#define DEFAULT_BASE_ERR_UNKNOWN_COMMAND	"\022error\022Error: Unknown Command %s."
 #define DEFAULT_BASE_ERR_UNABLE_TO_OPEN_FILE	"\022error\022Error: Unable to open the file %s"
 #define DEFAULT_BASE_ERR_VARIABLE_NOT_FOUND	"\022error\022Error: %s variable not found"
 #define DEFAULT_BASE_ERR_TYPE_NOT_FOUND		"\022error\022Error: %s type not found"
@@ -51,11 +51,11 @@
 	ADD_TYPE(base_load_timer)	\
 	ADD_TYPE(base_load_wildcard)
 
-#define DEFAULT_BASE_BINDINGS()			\
-	BIND_KEY("\n", "base.parse", "")	\
-	BIND_KEY("\x03", "base.quit", "")	\
-	BIND_KEY("\x15", "base.clearline", "")	\
-	BIND_KEY("\x10", "base.scroll", "1")	\
+#define DEFAULT_BASE_BINDINGS()				\
+	BIND_KEY("\n", "base.parse", "base.evaluate")	\
+	BIND_KEY("\x03", "base.quit", "")		\
+	BIND_KEY("\x15", "base.clearline", "")		\
+	BIND_KEY("\x10", "base.scroll", "1")		\
 	BIND_KEY("\x19", "base.scroll", "-1")
 
 #define DEFAULT_BASE_HANDLERS()						\
@@ -68,6 +68,7 @@
 	ADD_COMMAND("clear", base_cmd_clear)		\
 	ADD_COMMAND("clearline", base_cmd_clearline)	\
 	ADD_COMMAND("close", base_cmd_close)		\
+	ADD_COMMAND("concat", base_cmd_concat)		\
 	ADD_COMMAND("context", base_cmd_context)	\
 	ADD_COMMAND("echo", base_cmd_echo)		\
 	ADD_COMMAND("exec", base_cmd_exec)		\

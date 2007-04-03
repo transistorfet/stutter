@@ -1,7 +1,7 @@
 /*
  * Module Name:		init.c
  * Version:		0.1
- * Module Requirements:	type ; signal ; string ; variable ; modirc
+ * Module Requirements:	type ; signal ; string ; variable ; modbase ; modirc
  * Description:		IRC Module Initializer
  */
 
@@ -15,6 +15,7 @@
 #include <stutter/globals.h>
 #include <stutter/variable.h>
 #include <stutter/modules/irc.h>
+#include <stutter/modules/base.h>
 
 DEFINE_HANDLER_LIST(irc_handlers,
 	IRC_HANDLERS()
