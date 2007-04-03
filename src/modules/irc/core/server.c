@@ -158,11 +158,11 @@ int irc_server_disconnect(struct irc_server *server)
 {
 	struct irc_msg *cur, *tmp;
 
-	if (!server->net)
-		return(1);
+	if (server->net) {
+		fe_net_disconnect(server->net);
+		server->net = NULL;
+	}
 	server->bitflags &= ~IRC_SBF_CONNECTED;
-	fe_net_disconnect(server->net);
-	server->net = NULL;
 	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_destroy_msg(cur);
 	}
@@ -245,8 +245,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, server->address)
 			if (IRC_RECONNECT_RETRIES && (server->attempts > IRC_RECONNECT_RETRIES))
 				return(NULL);
-			fe_net_disconnect(server->net);
-			server->net = NULL;
+			irc_server_disconnect(server);
 			if (fe_timer_create(FE_TIMER_BF_PERIODIC, IRC_RETRY_DELAY, (callback_t) irc_server_auto_reconnect, server)) {
 				IRC_OUTPUT_JOINPOINT(IRC_OUT_ATTEMPTING_RECONNECT, IRC_RETRY_DELAY)
 			}
@@ -468,6 +467,10 @@ static int irc_server_auto_reconnect(struct irc_server *server, fe_timer_t timer
 {
 	int ret;
 
+	if (server->bitflags & IRC_SBF_CONNECTED) {
+		fe_timer_destroy(timer);
+		return(0);
+	}
 	ret = irc_server_reconnect(server);
 	if (!ret || !IRC_RECONNECT_RETRIES || (server->attempts <= IRC_RECONNECT_RETRIES))
 		fe_timer_destroy(timer);
