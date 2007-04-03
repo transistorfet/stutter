@@ -26,6 +26,7 @@ OBJS =	init.o \
 	cmds/source.o \
 	cmds/timer.o \
 	cmds/unbind.o \
+	cmds/window.o \
 	sigs/print.o \
 	types/command.o \
 	types/format.o \

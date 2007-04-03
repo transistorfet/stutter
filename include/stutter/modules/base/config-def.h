@@ -84,7 +84,8 @@
 	ADD_COMMAND("set", base_cmd_set)		\
 	ADD_COMMAND("source", base_cmd_source)		\
 	ADD_COMMAND("timer", base_cmd_timer)		\
-	ADD_COMMAND("unbind", base_cmd_unbind)
+	ADD_COMMAND("unbind", base_cmd_unbind)		\
+	ADD_COMMAND("window", base_cmd_window)
 
 /*** Joinpoints ***/
 
