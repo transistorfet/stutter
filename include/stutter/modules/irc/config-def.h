@@ -83,7 +83,8 @@
 	ADD_TYPE(irc_load_server_type)	\
 	ADD_TYPE(irc_load_server_list)
 
-#define DEFAULT_IRC_BINDINGS()			\
+#define DEFAULT_IRC_BINDINGS()				\
+	BIND_KEY("\n", "base.parse", "irc.activate")	\
 	BIND_KEY("\x09", "irc.complete", "")
 
 #define DEFAULT_IRC_HANDLERS()							\
