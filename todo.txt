@@ -1,56 +1,43 @@
 
+	* make an irc key context
+	* add a way to get the current context name (perhaps through a variable)
+	* fix certain commands such as bind and perhaps context and many others to check for proper
+	  parameters instead of attempting to evaluate the command anyways
+
+	* work on API documentation
+
 	* add traverse functions to the channel and user list types.
 	* modify the irc types to return list types if referenced with direct names instead of returning NULL
 	* add SCC_SET_FOCUS handler to win32 terminal
-	* test the win32 terminal free/destroy code to make sure it all works correctly (which is not likely)
 	* convert the terminal def_attrib variable to an attrib:fe type so you can set the style
-	* add a WM_FOCUS handler to the win32 frontend
 
 	* perhaps you can add a sorta WCC_SET_INVISIBLE/WCC_SET_VISIBLE and have them set bitflags so that
 	  it is easy to know if a widget is visible or not (and then you can do scrollbar things as well)
-	* should all widgets inherit from a widget superclass?
 	* how will you initialize the target widget of input and how will you change/set the target widget?
-
-	* make a command to replace parse that has as its env a command (sortof like the alias command)
-	  (how will you free the env string?)  and if you evaluate, it finds the widget with focus, reads
-	  the string from that widget, combines it with the env command portion and evaluates that.
+	* make a config system things for adding layout types (a way to register widget types) (init.h macros?)
 
 	* finish implementing the win32 menu system
-	* make a config system things for adding layout types (a way to register widget types) (init.h macros?)
-	* make a header in frontend/common that has static inline functions for all the API function that
-	  fe.c can use thus allowing you to maintain a single common implementation for all frontends that
-	  use the common fe system
-
-	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
-	  of pointers that is passed to the handlers along with the size of the array?  Would this make
-	  things to specific to a particular signal that is handled?  Is that a bad thing?
-
-	* consider converting code to use constants and enums for some of the things that aren't configs
-	* consider converting bitflags to bitfield structs unioned with the bitflags (so that it's still
-	  easy to copy them).
 	* you can have a command "fe.dialogue <diag-name> <params>" in the win32 frontend that pops up a
 	  dialogue by the given name (stored in a list probably by a dialogue.c manager in the core)
-
 	* how is the win32 config defs going to work?
-	* make dispatch into a whole bunch of joinpoints? (what dispatch am i talking about?)  Oh i think
-	  this is related to the evaluating of commands based on signals (make irc dispatch into joinpoints
-	  with the default joinpoint being the message handler
 
 	* how will you specify things like adding a widget to the current frame?  Who will add the widget
-	  to the frame, how does it know to do that, and how will it have access to that?
+	  to the frame, how does it know to do that, and how will it have access to that?  Perhaps it can be
+	  in the properties for the widget
 	* where should the xml parser go?  in the frontend or the core?
 
 	* you could have special variable tables like irc.on_msg where you add variables that are commands
 	  and when a message comes in, it traverses all the variables in the table and evaluates them with
 	  a particular formulation of parameters.  So you'd "/alias irc.on_msg.respond irc.say hey man"
 	  to have it send "hey man" whenever you get a message.
+	* make dispatch into a whole bunch of joinpoints? (what dispatch am i talking about?)  Oh i think
+	  this is related to the evaluating of commands based on signals (make irc dispatch into joinpoints
+	  with the default joinpoint being the message handler
 
 	* should we disallow widgets to have the same id?  should we allow multiple ids and always add a
 	  unique numbered id?  (this could cause a problem with the widget remove which at the moment uses
 	  the id to find the widget).
 
-	* the context is ignored in select/next/previous/etc but should it be? Should the behave like
-	  the CURRENT_WIDGET command in region.c?  Change all the widget and fe.c functions
 	* region rejects widgets being added before we've resized it but that is causing some troubles with
 	  initialization (you have to make region a non-zero size before adding widget).  Should region
 	  instead allow widgets to be added when they don't fit or should you just size region before the
@@ -60,9 +47,10 @@
 	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
 	  the /bind command use path.<name> for the command name (at least if no . is found).
 
-	* work on API documentation
 	* finish/fix up region particularily the handling of MODIFY_SIZE and possibly re-write split
 	* finish the fe_resize implementation in fe.c
+ 	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
+	  or is it the job of the code that sets the surface to also do a resize?
 	* add something to the hash/linear/etc lists that allowing you to find multiple entires with the
 	  same "key"
 
@@ -74,8 +62,6 @@
 	  star icon next to the entry) (either way it is an entirely frontend based system that uses a
 	  list in the variable system with only the possibly of an unattached list needing direct input from
 	  outside of the frontend).
- 	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
-	  or is it the job of the code that sets the surface to also do a resize?
 
 Structural Issues:
 	* should windows be able to have 2 or more names ("#philosophy", "1", "otherside/#philosophy") or
@@ -93,14 +79,17 @@ Structural Issues:
 
 	* you need to re-evaluate the whole config system.  The biggest fuckup is with things that take
 	  multiple options like lists of commands and joinpoints and such.  A perl script of some sort might
-	  be useful for configuring these.  (as well as for enabling/disabling features)
+	  be useful for configuring these.  (as well as for enabling/disabling features)  See the options
+	  example file.  The options files could be stored in the module directories
 
+	* is there a way to have multiple layers of key contexts so for example, a global context and then
+	  an irc context an irc:userlist context (for doing stuff inside of a userlist widget)? Could this
+	  even be implemented without a structural change, just using context names with funny characters?
+	  (If a key is not found in userlist:irc then it checks irc and then global).
 	* can anything be done about the sorta messiness of the joinpoints?
 	* should joinpoint's default settings be defined inside the appropriate source file using an #ifndef
 	  check?  If this was the case, every file would have to have its own joinpoint for something and
 	  a global default value would still have to be around that the default values refer to
-	* should you make bind_key take a command and args pair instead of a void *, type * and args pair
-	  so that you wont have an issue with variables bound to keys being removed
 	* should all instances of stringify that are accessable to the user do an index (path lookup) so
 	  that all variables can be accessed indirectly and not just commands? (eg /get current_nick will
 	  stringify "irc.current_nick")
@@ -126,10 +115,12 @@ Structural Issues:
 	  naming conflicts (macros mostly).
 	* should we make net and exec be able to have a different callback for each different condition?
 	  (read/write/error/etc).
+	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
+	  of pointers that is passed to the handlers along with the size of the array?  Would this make
+	  things too specific to a particular signal that is handled?  Is that a bad thing?
 
 	* should there be 2 region widgets (one handling horizontal and one vertical organization) or should
 	  there be one that handles both directions (but not necessarily at the same time)?
-	* should we change fe_read to return an int instead of char *?
 	* should you add a bunch of variables to the frontends which return common environment variables
 	  and values such as the homedir and the current user's username?  should there also be a way to
 	  access environment variables through a function and how would that be supported?
@@ -143,11 +134,12 @@ Structural Issues:
 	  be an variable (either assigned as a name that is looked up or as just a value and type (which means
 	  it doesn't have to acutally be added to the variable list)) and then the traverse function is used
 	  to get each item in the list and stringify is done on it.
-	* should widget types be stored in a dedicated list or as a system variable or even at all?  Should
-	  there only be the layout types and have widgets add their type to that?
 	* how will you deal with adding a new widget?  There should be a way to specify (perhaps in the layout
 	  if possible) where the new widget should be put (such as in a particularily named frame).  Then the
-	  content portion does not need to know where the widget goes.
+	  content portion does not need to know where the widget goes.  It could perhaps be a property in the
+	  root widget's definition or perhaps a "special" layout type that instead of generating a widget,
+	  creates a widget defined as a child and then adds it via the method specified in its properties
+	* should all widgets inherit from a widget superclass?
 
 	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages? instead of just
 	  dispatching select messages like privmsg and notice (which would require a rewrite of the message
@@ -156,8 +148,6 @@ Structural Issues:
 	* can/should we make complex and/or expensive operations compile-time options (at least as long
 	  as the operation can be disabled without causing trouble)? (like vim does with its FEAT_...)
 	* should you move the commmon/utils headers to the include/ dir?
-	* /msg transistor hey caused a segfault on turkey
-	* a msg to who I think was transistor from work to home didn't show up
 
 Bugs:
 	* there is a bug such that if you try to say something in the status window, the server says no such
@@ -176,9 +166,14 @@ Bugs:
 	  messages to the current window and not to windows properly associated with that server
 	* is kick message handling working properly (it seems like stutter printed that logarithm quit in
 	  #philosophy after he had been kicked and then quit).
-	* in irc_private_msg and irc_notice (at least) there is a bug such that if the text was blank
+	* in irc_private_msg and irc_notice (at least) there is a bug such that if the text is blank
 	  ("/msg person") then it uses the constant "" and but the function tries to change it which causes
-	  a segfault so change server.c or msg.c (which might be better).
+	  a segfault.
+
+	* Overnight (2007-04-01 ~01:19) there was a segfault on turkey while reconnecting after a timeout.
+	  Connected to otherside and freenode, in #philosophy, #coffeelounge, and #osdev with #philosophy
+	  as the current channel.  The reconnect worked but a few seconds after rejoining the channel the
+	  segfault occurred.
 
 General:
 	* work on the new build system
@@ -186,14 +181,19 @@ General:
 	* make a jabber module?
 
 	* convert some of the modules that use linear lists to use the static inlines version of it instead
+	* consider converting code to use constants and enums for some of the things that aren't configs
+	* consider converting bitflags to bitfield structs unioned with the bitflags (so that it's still
+	  easy to copy them).
+	* go through and make use of const where possible in parameters
 	* fix text.c to properly display tab characters (perhaps you could modify irc_format_msg instead
 	  to expand tabs and/or to filter out non-printable characters such as backspace and other control
 	  codes)
 
 	* add scrollwheel message handlers to the win32 frontend and use joinpoints to define the behaviour
 	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
-	* change the comment block format at the top of each source file and modify things so that the help
-	  information is embedded (such as the command help).
+	* change the comment block format at the top of each source file
+	* for each command write a proper description of the command's use in the source file itself either
+	  as a comment or as a variable of some kind that is accessable to some kind of help system.
 
 	* add a way to disable the nicktable feature
 	* add a version string
@@ -207,17 +207,15 @@ General:
 
 	* should irc_server_disconnect send the quit message (the quit message being passed to the function?)
 	* add server name to notice messages
-	* report when a command fails
+	* report when a command fails?
 	* make the disconnect error print to all windows instead of just the current one (using joinpoints)
 	* make an email checker timed event
-	* add irc variables and types for servers and channels and so on in a similar fashion to the colour
-	  type in the frontend
 
 	* do better parsing of args in commands and such (so you can use "" in particular)
 	* add dcc support
 	* have an "activity" status indicator in the status bar so you know when stuff has been said and
 	  in what channels
-	* have keybindings for targeting specific windows (does this require window numbers?)
+	* can you make generic keybindings for selecting windows (does this require window numbers?)?
 	* get realname, nick from current user's info (on unix) (store in a "realname" variable?)
 	* pass realname to server when connecting (base it on a "realname" variable?)
 	* add list command
@@ -228,8 +226,6 @@ General:
 	* add channel and user mode bit stringification (probably through some kind of variable type)
 
 	* add UDP support to the net interface.
-	* for each command write a proper description of the command's use in the source file itself either
-	  as a comment or as a variable of some kind that is accessable to some kind of help system.
 	* make ping do milliseconds
 	* make a directory of configs for runtime configuration files
 	* do better parsing of arguments in execute.c
@@ -239,7 +235,7 @@ General:
 	  addresses)
 	* add a function to key.c to get the current binding of a key sequence (without processing)
 	* can you make the frontend colour type common colour names system a little nicer and fuller?
-	* add a prompt to the input widget that you can set through the variable system
+	* add a prompt to the input widget (that you can set through the variable system?)
 	* make all the colour mappings reassignable
 	* make an online help system
 
@@ -255,6 +251,10 @@ Features:
 	* winamp control and display plugin
 	* ability to reorder windows
 	* skins for frontends
+	* jabber (other IM) modules
+	* telnet module
+	* file manager module/capability
+	* shell capabilities
 
 	* scripting support (possible scripts/applets could be random picture displayer, system monitor,
 	  RSS, etc) (google desktop)
