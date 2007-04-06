@@ -15,10 +15,10 @@ int irc_msg_inuse(char *env, struct irc_msg *msg)
 
 	if (msg->server && !(msg->server->bitflags & IRC_SBF_CONNECTED)) {
 		for (i = 0;(i < IRC_MAX_NICK) && (msg->server->nick[i] != '\0');i++) ;
-		if (i < IRC_MAX_NICK - 1) {
-			msg->server->nick[i] = '_';
-			msg->server->nick[i + 1] = '\0';
-		}
+		if (i >= IRC_MAX_NICK - 2)
+			i = IRC_MAX_NICK - 2;
+		msg->server->nick[i] = '_';
+		msg->server->nick[i + 1] = '\0';
 		irc_change_nick(msg->server, msg->server->nick);
 	}
 
