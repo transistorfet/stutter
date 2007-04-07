@@ -193,14 +193,10 @@ int text_control(struct text_s *text, int cmd, va_list va)
 
 			amount = va_arg(va, int);
 			text->cur_line += amount;
-			if (text->cur_line < 0) {
+			if (text->cur_line < 0)
 				text->cur_line = 0;
-				return(-1);
-			}
-			else if (text->cur_line > queue_size_v(text->log)) {
+			else if (text->cur_line > queue_size_v(text->log))
 				text->cur_line = queue_size_v(text->log);
-				return(-1);
-			}
 			WIDGET_S(text)->bitflags |= WBF_NEEDS_REFRESH;
 			return(0);
 		}
