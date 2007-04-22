@@ -16,6 +16,8 @@ static int irc_msg_quit_traverse(struct irc_channel *, struct irc_msg *);
  */
 int irc_msg_quit(char *env, struct irc_msg *msg)
 {
+	if (!msg->nick)
+		return(-1);
 	irc_traverse_channel_list(msg->server->channels, (traverse_t) irc_msg_quit_traverse, msg);
 	return(0);
 }
