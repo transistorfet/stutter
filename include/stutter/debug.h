@@ -18,7 +18,7 @@
 		}						\
 	}
 #else
-	#define DEBUG_LOG(file, str)
+	#define DEBUG_LOG(file, ...)
 #endif
 
 #ifdef DEBUG
