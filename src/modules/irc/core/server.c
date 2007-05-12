@@ -166,6 +166,7 @@ int irc_server_disconnect(struct irc_server *server)
 	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
 		irc_destroy_msg(cur);
 	}
+	queue_release_v(server->send_queue);
 	return(0);
 }
 
