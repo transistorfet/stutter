@@ -29,15 +29,23 @@ sub main {
 sub build_config_h {
 	my ($decls, $file) = @_;
 
+	# TODO the file being produced here needs to be more structured than it currently is ouput as
 	(my $fd = new IO::File("$file", "w")) or (print "Unable to open $file for writing\n" and return);
+	# TODO print file header
 	foreach my $key (keys(%{ $decls })) {
 		my $decl = $decls->{ $key };
 		if ($decl->{'type'} eq "table") {
 			my $types = build_typed_list($decl->{'decls'}, $decl->{'name'});
 			emit_variable_declarations($fd, $types, $key);
 		}
-		elsif ($decl->{'type'} eq "") {
-			# TODO i guess these could be root variables as well as #define'd constants (code)
+		elsif ($decl->{'type'} eq "code") {
+			# TODO can we somehow group all of these and print them out at once?
+			my $name = uc($decl->{'name'});
+			my $define = align_string("#define $name ", 48);
+			print $fd "$define$decl->{'value'}\n";
+		}
+		else {
+			# TODO all module independant variables (?)
 		}
 	}
 	close($fd);
@@ -46,16 +54,18 @@ sub build_config_h {
 sub emit_variable_declarations {
 	my ($fd, $types, $module) = @_;
 
-# TODO finish this once you sort out how to structure the macros
 	$module = uc($module);
-	print $fd "#define LOAD_$module_VARIABLES()	\\\n";
+	print $fd "#define DEFINE_${module}_VARIABLES()	\\\n";
 	foreach my $key (keys(%{ $types })) {
 		print $fd "	DECLARE_TYPE(\"$key\",	\\\n";
-		foreach my $var (@{ $types->{ $key }) {
-			print $fd "		ADD_VARIABLE(\"$var->[0]\", )	\\\n";	
+		foreach my $var (@{ $types->{ $key } }) {
+			# TODO use const
+			my $value = format_value($var->[1]);
+			print $fd "		ADD_VARIABLE(\"$var->[0]\", \"string\", $value)	\\\n";	
 		}
 		print $fd "	)	\\\n";
 	}
+	print $fd "\n\n";
 }
 
 sub process_configuration {
@@ -91,6 +101,7 @@ sub build_declaration_list {
 	my $fatal_error = 0;
 	my $namespace = "";
 	my $decls = { };
+	# TODO collect types and do type checking on variables
 	foreach my $element (@{ $tree }) {
 		if ($element->{'type'} eq "namespace") {
 			if ($element->{'name'} !~ /^\w(\w|\.)*?\w+$/) {
@@ -283,15 +294,22 @@ sub build_typed_list {
 		}
 		else {
 			my ($keyword, $type, $value) = ($decls->{ $key }->{'keyword'}, $decls->{ $key }->{'type'}, $decls->{ $key }->{'value'});
-			if ($keyword eq "code"); {
+			if ($keyword eq "code") {
 				$type = "code";
 				$name = $key;
 			}
 			$types->{ $type } = [ ] unless (defined($types->{ $type }));
-			push($types->{ $type }, [ $name, $value, ($keyword eq "const") ? 1 : 0 ];
+			push(@{ $types->{ $type } }, [ $name, $value, (($keyword eq "const") ? 1 : 0) ]);
 		}
 	}
 	return($types);
+}
+
+sub format_value {
+	my ($value) = @_;
+
+	return($value) if ($value =~ /^\"/);
+	return("\"$value\"");
 }
 
 sub expand_wildcards {
@@ -347,6 +365,16 @@ sub read_line {
 	$line =~ s/(|\r)\n//;			## Remove line break
 	$$lineref++;				## Keep track of linenumbers
 	return($line);
+}
+
+sub align_string {
+	my ($str, $num) = @_;
+
+	my $whitespace;
+	for (length($str)..$num) {
+		$whitespace .= " ";
+	}
+	return($str . $whitespace);
 }
 
 sub encode_regex {
