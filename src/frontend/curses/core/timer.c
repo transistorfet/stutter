@@ -112,7 +112,6 @@ int fe_timer_reset(fe_timer_t timer)
  */
 int fe_timer_expire(fe_timer_t timer)
 {
-	fe_timer_remove((struct fe_timer_s *) timer);
 	((struct fe_timer_s *) timer)->bitflags |= FE_TIMER_BF_EXPIRED;
 	return(0);
 }
@@ -192,5 +191,7 @@ static void fe_timer_remove(struct fe_timer_s *timer)
 		timer_list = timer->next;
 	if (timer->next)
 		timer->next->prev = timer->prev;
+	timer->prev = NULL;
+	timer->next = NULL;
 }
 
