@@ -29,7 +29,7 @@
 #define FE_NET_ATTEMPTS		3
 #endif
 
-typedef struct fe_descriptor_s *fe_network_t;
+#define FE_DESC_S(ptr)		( (struct fe_descriptor_s *) ptr )
 
 static struct fe_descriptor_list_s *net_list;
 
@@ -143,7 +143,7 @@ int fe_net_send(fe_network_t desc, char *msg, int size)
 		return(0);
 	DEBUG_LOG("raw.out", "%s", msg);
 	do {
-		if ((sent = send(desc->read, (void *) msg, size, 0)) < 0)
+		if ((sent = send(FE_DESC_S(desc)->read, (void *) msg, size, 0)) < 0)
 			return(-1);
 		else if (!sent)
 			return(0);
@@ -167,15 +167,15 @@ int fe_net_receive(fe_network_t desc, char *msg, int size)
 
 	size--;
 	for (i = 0;i < size;i++) {
-		if (desc->read_pos >= desc->read_length)
+		if (FE_DESC_S(desc)->read_pos >= FE_DESC_S(desc)->read_length)
 			break;
-		msg[i] = desc->read_buffer[desc->read_pos++];
+		msg[i] = FE_DESC_S(desc)->read_buffer[FE_DESC_S(desc)->read_pos++];
 	}
 
 	if (i < size) {
 		FD_ZERO(&rd);
-		FD_SET(desc->read, &rd);
-		if (select(desc->read + 1, &rd, NULL, NULL, &timeout) && ((j = recv(desc->read, &msg[i], size - i, 0)) > 0))
+		FD_SET(FE_DESC_S(desc)->read, &rd);
+		if (select(FE_DESC_S(desc)->read + 1, &rd, NULL, NULL, &timeout) && ((j = recv(FE_DESC_S(desc)->read, &msg[i], size - i, 0)) > 0))
 			i += j;
 		if (j <= 0)
 			return(-1);
@@ -202,9 +202,9 @@ int fe_net_receive_str(fe_network_t desc, char *msg, int size, char ch)
 
 	size--;
 	for (i = 0;i < size;i++) {
-		if (desc->read_pos >= desc->read_length) {
+		if (FE_DESC_S(desc)->read_pos >= FE_DESC_S(desc)->read_length) {
 			FD_ZERO(&rd);
-			FD_SET(desc->read, &rd);
+			FD_SET(FE_DESC_S(desc)->read, &rd);
 			// TODO if either of these fail, we return a partial message which the server
 			//	doesn't check for and can't deal with so what we really need to do is
 			//	copy what we've read (in msg) to the buffer and return 0 but what
@@ -213,15 +213,15 @@ int fe_net_receive_str(fe_network_t desc, char *msg, int size, char ch)
 			//	as a msg that hasn't been fully recieved.  We could send a signal to report
 			//	the error somehow (which raises the question of should we do (and how would
 			//	we do) socket specific signals.
-			if (!select(desc->read + 1, &rd, NULL, NULL, &timeout)) {
+			if (!select(FE_DESC_S(desc)->read + 1, &rd, NULL, NULL, &timeout)) {
 				msg[i + 1] = '\0';
 				return(i);
 			}
-			if ((desc->read_length = recv(desc->read, desc->read_buffer, DESC_READ_BUFFER, 0)) <= 0)
+			if ((FE_DESC_S(desc)->read_length = recv(FE_DESC_S(desc)->read, FE_DESC_S(desc)->read_buffer, DESC_READ_BUFFER, 0)) <= 0)
 				return(-1);
-			desc->read_pos = 0;
+			FE_DESC_S(desc)->read_pos = 0;
 		}
-		msg[i] = desc->read_buffer[desc->read_pos++];
+		msg[i] = FE_DESC_S(desc)->read_buffer[FE_DESC_S(desc)->read_pos++];
 		if (msg[i] == ch)
 			break;
 	}
