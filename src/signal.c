@@ -254,6 +254,8 @@ static inline struct signal_s *create_signal(struct signal_list_s *list, char *n
 {
 	struct signal_s *signal;
 
+	if ((signal = signal_find_node(list, name)))
+		return(signal);
 	if (!(signal = signal_create_node(sizeof(struct signal_s) + strlen(name) + 1)))
 		return(NULL);
 	signal->name = (char *) offset_after_struct_m(signal, 0);
