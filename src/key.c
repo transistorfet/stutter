@@ -11,6 +11,7 @@
 #include <stutter/key.h>
 #include <stutter/type.h>
 #include <stutter/hash.h>
+#include <stutter/macros.h>
 #include <stutter/memory.h>
 #include <stutter/string.h>
 

@@ -14,6 +14,7 @@
 #include <stutter/memory.h>
 #include <stutter/linear.h>
 #include <stutter/signal.h>
+#include <stutter/macros.h>
 #include <stutter/globals.h>
 #include <stutter/frontend/net.h>
 #include <stutter/frontend/timer.h>

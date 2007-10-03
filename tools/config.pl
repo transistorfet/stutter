@@ -8,198 +8,455 @@
 use strict;
 use IO::File;
 
+my @srcdirs = ("src");
+
+##
+# This variable can be set anywhere and will cause the program to bail out
+# at the next most convenient spot.
+my $fatal_error = 0;
+
+##
+# These lists are used to collect the final processed set of data from
+# which the ouputs are created.
+my $decls = { };
+my $adds = { 'table' => { } };
+my $binds = { };
+my $options = { };
+my $enables = { };
+my $modules = { };
+my $patterns = { };
+my $emits = [ ];
+
+#########
+# Start #
+#########
+
 main();
 exit(0);
 
 sub main {
+	## Parse the file
 	my $tree = parse_file($ARGV[0]);
 	return(0) unless ($tree);
 
-	my $decls = build_declaration_list($tree);
-	return(0) unless ($decls);
+	## Convert all names to full names
+	return(0) if (convert_names($tree, ""));
 
-	if (process_configuration($tree, $decls)) {
-		return(0);
-	}
+	## Process all variable assignments to find the final value for each variable
+	return(0) if (process_configuration($tree));
 
-	build_config_h($decls, "config.h.out");
+	# TODO do a dependancy check
+	# TODO implement a way to specify that a part of a pattern should be verified
+	# TODO implement a verification that all commands/types/variables/etc are declared
+	## Check all variable declarations to ensure their type is in the types list
+	#return(0) if (check_types($decls, $types));
+
+	## Build and write the config.h file to disc
+	build_config_h("config.h");
 	return(0);
 }
 
-sub build_config_h {
-	my ($decls, $file) = @_;
+###########################
+# Name Conversion Section #
+###########################
 
-	# TODO the file being produced here needs to be more structured than it currently is ouput as
-	(my $fd = new IO::File("$file", "w")) or (print "Unable to open $file for writing\n" and return);
-	# TODO print file header
-	foreach my $key (keys(%{ $decls })) {
-		my $decl = $decls->{ $key };
-		if ($decl->{'type'} eq "table") {
-			my $types = build_typed_list($decl->{'decls'}, $decl->{'name'});
-			emit_variable_declarations($fd, $types, $key);
-		}
-		elsif ($decl->{'type'} eq "code") {
-			# TODO can we somehow group all of these and print them out at once?
-			my $name = uc($decl->{'name'});
-			my $define = align_string("#define $name ", 48);
-			print $fd "$define$decl->{'value'}\n";
-		}
-		else {
-			# TODO all module independant variables (?)
-		}
-	}
-	close($fd);
-}
+sub convert_names {
+	my ($tree, $namespace) = @_;
 
-sub emit_variable_declarations {
-	my ($fd, $types, $module) = @_;
-
-	$module = uc($module);
-	print $fd "#define DEFINE_${module}_VARIABLES()	\\\n";
-	foreach my $key (keys(%{ $types })) {
-		print $fd "	DECLARE_TYPE(\"$key\",	\\\n";
-		foreach my $var (@{ $types->{ $key } }) {
-			# TODO use const
-			my $value = format_value($var->[1]);
-			print $fd "		ADD_VARIABLE(\"$var->[0]\", \"string\", $value)	\\\n";	
-		}
-		print $fd "	)	\\\n";
-	}
-	print $fd "\n\n";
-}
-
-sub process_configuration {
-	my ($tree, $decls) = @_;
-
-	my $fatal_error = 0;
-	my $namespace = "";
+	# TODO do option name substitutions in the body of the option
 	foreach my $element (@{ $tree }) {
 		if ($element->{'type'} eq "namespace") {
-			$namespace = $element->{'name'};
-		}
-		elsif ($element->{'type'} eq "set") {
-			my $name = $element->{'name'};
-			my $full_name = "$namespace.$name" if ($namespace);
-			my $value = get_decl($decls, $full_name);
-			$value = get_decl($decls, $name) unless (defined($value));
-			if (!defined($value)) {
-				print "Error: $element->{'info'}: Variable \"$name\" not declared\n";
+			if ($element->{'name'} !~ /^\w(\w|\.)*?\w+$/) {
+				print "Error: $element->{'info'}: Invalid namespace name \"$element->{'name'}\"\n";
 				$fatal_error = 1;
-				next;
 			}
-			$value->{'value'} = $element->{'value'};
-
+			else {
+				$namespace = ($element->{'name'} eq "null") ? "" : $element->{'name'};
+			}
+		}
+		elsif (($element->{'type'} eq "option")
+		    or ($element->{'type'} eq "declaration")
+		    or ($element->{'type'} eq "require")
+		    or ($element->{'type'} eq "enable")
+		    or ($element->{'type'} eq "code")
+		    or ($element->{'type'} eq "set")
+		    or (($element->{'type'} eq "add") and ($element->{'specifier'} ne "type"))) {
+			if ($element->{'name'} !~ /^(\w|\.)+$/) {
+				print "Error: $element->{'info'}: Invalid name \"$element->{'name'}\"\n";
+				$fatal_error = 1;
+			}
+			else {
+				if ($element->{'name'} =~ /^\./) {
+					$element->{'name'} =~ s/^\.//;
+				}
+				elsif ($namespace) {
+					$element->{'name'} = "$namespace.$element->{'name'}";
+				}
+				convert_names($element->{'block'}, $namespace) if ($element->{'type'} eq "option");
+			}
+		}
+		elsif ($element->{'type'} eq "bind") {
+			if ($element->{'command'} !~ /^(\w|\.)+$/) {
+				print "Error: $element->{'info'}: Invalid name \"$element->{'command'}\"\n";
+				$fatal_error = 1;
+			}
+			elsif ($element->{'command'} =~ /^\./) {
+				$element->{'command'} =~ s/^\.//;
+			}
+			elsif ($namespace) {
+				$element->{'command'} = "$namespace.$element->{'command'}";
+			}
 		}
 	}
 	return(-1) if ($fatal_error);
 	return(0);
 }
 
-sub build_declaration_list {
+#######################
+# Interpreter Section #
+#######################
+
+sub process_configuration {
 	my ($tree) = @_;
 
-	my $fatal_error = 0;
-	my $namespace = "";
-	my $decls = { };
-	# TODO collect types and do type checking on variables
 	foreach my $element (@{ $tree }) {
-		if ($element->{'type'} eq "namespace") {
-			if ($element->{'name'} !~ /^\w(\w|\.)*?\w+$/) {
-				print "Error: $element->{'info'}: Invalid namespace name \"$element->{'name'}\"\n";
-				$fatal_error = 1;
-				next;
-			}
-			$namespace = $element->{'name'};
+		if ($element->{'type'} eq "emit") {
+			push(@{ $emits }, $element->{'code'});
 		}
-		elsif ($element->{'type'} eq "declaration") {
+		elsif ($element->{'type'} eq "option") {
 			my $name = $element->{'name'};
-			$name = "$namespace.$name" if ($namespace and ($element->{'keyword'} ne "code"));
-			my $value = {
-				'name' => $name,
-				'keyword' => $element->{'keyword'},
-				'type' => $element->{'vartype'},
-				'value' => $element->{'value'}
-			};
-			if (set_decl($decls, $name, $value)) {
-				print "Error: $element->{'info'}: Invalid variable name \"$name\"\n";
+			$options->{ $name } = [ ] unless (defined($options->{ $name }));
+			push(@{ $options->{ $name } }, $element);
+		}
+		elsif ($element->{'type'} eq "register") {
+			my $name = $element->{'name'};
+			if (defined($patterns->{ $name })) {
+				print "Error: $element->{'info'}: Pattern \"$name\" is already declared.\n";
 				$fatal_error = 1;
-				next;
+			}
+			else {
+				$patterns->{ $name } = $element;
+			}
+		}
+		elsif ($element->{'type'} eq "require") {
+
+		}
+		elsif ($element->{'type'} eq "enable") {
+			my $name = $element->{'name'};
+			if (!defined($options->{ $name })) {
+				print "Error: $element->{'info'}: Option \"$name\" not declared.\n";
+				$fatal_error = 1;
+			}
+			else {
+				# TODO take the specifier into account
+				$enables->{ $name } = $element;
+				foreach my $option (@{ $options->{ $name } }) {
+					process_configuration($option->{'block'});
+				}
+			}
+		}
+		elsif ($element->{'type'} eq "module") {
+			$modules->{ $element->{'name'} } = $element;
+		}
+		elsif ($element->{'type'} eq "add") {
+			my ($specifier, $name) = ($element->{'specifier'}, $element->{'name'});
+			$adds->{ $specifier } = { } unless (defined($adds->{ $specifier }));
+			# TODO implement the "duplicate" argument (in $patterns)
+			if (!defined($patterns->{ $specifier })) {
+				print "Error: $element->{'info'}: Specifier \"$specifier\" is not registered.\n";
+				$fatal_error = 1;
+			}
+			elsif (defined($adds->{ $specifier }->{ $name })) {
+				print "Error: $element->{'info'}: " . ucfirst($specifier) . " \"$name\" is already declared.\n";
+				$fatal_error = 1;
+			}
+			else {
+				$adds->{ $specifier }->{ $name } = $element;
+			}
+		}
+		elsif ($element->{'type'} eq "bind") {
+			$binds->{ $element->{'name'} } = $element;
+		}
+		elsif (($element->{'type'} eq "declaration") or ($element->{'type'} eq "code")) {
+			# TODO the order that types are initialized is important (attrib:fe)
+			my $name = $element->{'name'};
+			if (defined($decls->{ $name })) {
+				print "Error: $element->{'info'}: Duplicate declaration: \"$name\"\n";
+				$fatal_error = 1;
+			}
+			else {
+				add_tables($name, $adds);
+				$decls->{ $name } = { %{ $element } };
+			}
+		}
+		elsif ($element->{'type'} eq "set") {
+			my $name = $element->{'name'};
+			if (!defined($decls->{ $name })) {
+				print "Error: $element->{'info'}: Variable \"$name\" not declared\n";
+				$fatal_error = 1;
+			}
+			else {
+				$decls->{ $name }->{'value'} = $element->{'value'};
 			}
 		}
 	}
-	return(undef) if ($fatal_error);
-	return($decls);
+	return(-1) if ($fatal_error);
+	return(0);
 }
+
+sub add_tables {
+	my ($name, $adds) = @_;
+
+	my $table = $name;
+	while (1) {
+		return unless ($table =~ /^(.*)\.(.*?)/);
+		$table = $1;
+		return if (!$table or defined($adds->{ 'table' }->{ $table }));
+		$adds->{ 'table' }->{ $table } = {
+			'info' => $name,
+			'type' => "add",
+			'specifier' => "table",
+			'name' => $table,
+			'values' => [ ]
+		};
+	}
+}
+
+########################
+# Type Checker Section #
+########################
+
+=not used atm
+sub check_types {
+	my ($decls, $types) = @_;
+
+	foreach my $name (keys(%{ $decls })) {
+		my $type = $decls->{ $name }->{'type'}; 
+		if ($type eq "table") {
+			$fatal_error = 1 if (check_types($decls->{ $name }->{'decls'}, $types));
+		}
+		elsif (($type ne "code") and !defined($types->{ $type })) {
+			print "Error: The type \"$type\" of variable \"$name\" is not declared.\n";
+			$fatal_error = 1;
+		}
+	}
+	return(-1) if ($fatal_error);
+	return(0);
+}
+=cut
+
+##################
+# Output Section #
+##################
+
+sub build_config_h {
+	my ($file) = @_;
+
+	my ($vars, $code) = sort_by_type($decls);
+	(my $fd = new IO::File("$file", "w")) or (print "Unable to open $file for writing\n" and return);
+	# TODO print file header
+	print $fd "/*\n";
+	print $fd " * Automatically generated configuration\n";
+	print $fd " */\n\n";
+	print $fd "#ifndef _CONFIG_H\n";
+	print $fd "#define _CONFIG_H\n\n";
+
+	print $fd "/** Emits */\n";
+	foreach my $line (@{ $emits }) {
+		print $fd "$line\n";
+	}
+	print $fd "\n\n";
+
+	print $fd "/** Modules */\n";
+	my $includes = "";
+	my $init_macro = "#define INIT_MODULES()\t\\\n";
+	my $release_macro = "#define RELEASE_MODULES()\t\\\n";
+	foreach my $key (sort(keys(%{ $modules }))) {
+		my $name = lc($key);
+		$includes .= "#include <stutter/modules/$name.h>\n";
+		$init_macro .= "\tinit_$name();\t\\\n";
+		$release_macro .= "\trelease_$name();\t\\\n";
+	}
+	print $fd "$includes\n";
+	print $fd "$init_macro\n";
+	print $fd "$release_macro\n";
+	print $fd "\n";
+
+	print $fd "/** Configuration Options */\n";
+	foreach my $key (sort(keys(%{ $enables }))) {
+		my $name = $key;
+		$name =~ tr/a-zA-Z0-9_/_/cs;
+		$name = uc($name);
+		print $fd "#define CONFIG_$name\n";
+	}
+	print $fd "\n\n";
+
+	print $fd "/** Definitions */\n";
+	foreach my $key (sort(keys(%{ $code }))) {
+		my $value = $code->{ $key }->{'value'};
+		my $name = uc($key);
+		$name =~ tr/a-zA-Z0-9_/_/cs;
+		print $fd align_string("#define $name", 48) . "$value\n";
+	}
+	print $fd "\n\n";
+
+	foreach my $specifier (sort(keys(%{ $patterns }))) {
+		next if ($patterns->{ $specifier }->{'args'} =~ /v/);
+		my $header = $patterns->{ $specifier }->{'header'};
+		$header = "#define ADD_%NS()" unless ($header);
+		print $fd format_add_header($specifier, $header) . "\t\\\n";
+		if (defined($adds->{ $specifier })) {
+			foreach my $key (sort(keys(%{ $adds->{ $specifier } }))) {
+				print $fd "\t" . format_add_output($adds->{ $specifier }->{ $key }, $specifier) . "\t\\\n";
+			}
+		}
+		print $fd "$patterns->{ $specifier }->{'footer'}\t\\\n" if ($patterns->{ $specifier }->{'footer'});
+		print $fd "\n\n";
+	}
+
+	print $fd "/** Key Bindings */\n";
+	print $fd "#define ADD_BINDINGS()\t\\\n";
+	foreach my $key (sort(keys(%{ $binds }))) {
+		my ($name, $cmd, $value) = ($binds->{ $key }->{'name'}, $binds->{ $key }->{'command'}, $binds->{ $key }->{'value'});
+		$name = format_value($name);
+		$cmd = format_value($cmd);
+		$value = $value ? format_value($value) : "NULL";
+		print $fd "\tBIND_KEY($name, $cmd, $value)\t\\\n";
+	}
+	print $fd "\n\n";
+
+	print $fd "/** Variables */\n";
+	print $fd "#define ADD_VARIABLES()\t\\\n";
+	foreach my $specifier (sort(keys(%{ $patterns }))) {
+		next if ($patterns->{ $specifier }->{'args'} !~ /v/);
+		my $header = $patterns->{ $specifier }->{'header'};
+		$header = "DECLARE_TYPE(\"%n\"," unless ($header);
+		print $fd "\t" . format_add_header($specifier, $header) . "\t\\\n";
+		if (defined($adds->{ $specifier })) {
+			foreach my $key (sort(keys(%{ $adds->{ $specifier } }))) {
+				print $fd "\t\t" . format_add_output($adds->{ $specifier }->{ $key }, $specifier) . "\t\\\n";
+			}
+		}
+		if ($patterns->{ $specifier }->{'footer'}) {
+			print $fd "\t$patterns->{ $specifier }->{'footer'}\t\\\n";
+		}
+		else {
+			print $fd "\t)\t\\\n";
+		}
+	}
+	foreach my $vartype (sort(keys(%{ $vars }))) {
+		my $typename = format_value($vartype);
+		print $fd "\tDECLARE_TYPE($typename,\t\\\n";
+		foreach my $key (sort(keys(%{ $vars->{ $vartype } }))) {
+			my $name = format_value($key);
+			my $value = format_value($vars->{ $vartype }->{ $key }->{'value'});
+			print $fd "\t\tADD_VARIABLE($name, \"string\", $value)\t\\\n";
+		}
+		print $fd "\t)\t\\\n";
+	}
+	print $fd "\n\n";
+
+	print $fd "#endif\n\n";
+	close($fd);
+}
+
+sub format_add_output {
+	my ($add, $specifier) = @_;
+
+	my ($name, $value, @values) = ($add->{'name'}, $add->{'value'}, @{ $add->{'values'} });
+	my $str = $patterns->{ $specifier }->{'pattern'};
+	if (!defined($str)) {
+		print "Error $add->{'info'}: The specifier \"$specifier\" is not registered.\n";
+		$fatal_error = 1;
+	}
+	else {
+		for my $i (1..5) {
+			$str =~ s/\%p$i/ $values[$i - 1] ? $values[$i - 1] : "NULL" /eg;
+			$str =~ s/\%s$i/ $values[$i - 1] ? format_value($values[$i - 1]) : "NULL" /eg;
+		}
+		$str =~ s/\%n/$name/g;
+		$str =~ s/\%s/\"$name\"/g;
+		$str =~ s/\%a/$value/g;
+	}
+	return($str);
+}
+
+sub format_add_header {
+	my ($name, $pattern) = @_;
+
+	my $NAME = uc($name);
+	$NAME =~ tr/a-zA-Z0-9_/_/cs;
+	my $str = $pattern;
+	$str =~ s/\%n/$name/g;
+	$str =~ s/\%N/$NAME/g;
+	return($str);
+}
+
+sub sort_by_type {
+	my ($decls) = @_;
+
+	my ($vars, $code) = ({ }, { });
+	foreach my $name (keys(%{ $decls })) {
+		my $vartype = $decls->{ $name }->{'vartype'};
+		if ($vartype) {
+			$vars->{ $vartype } = { } unless (defined($vars->{ $vartype }));
+			$vars->{ $vartype }->{ $name } = $decls->{ $name };
+		}
+		else {
+			$code->{ $name } = $decls->{ $name };
+		}
+	}
+	return($vars, $code);
+}
+
+##################
+# Parser Section #
+##################
 
 sub parse_file {
 	my ($file) = @_;
 
 	$file =~ /(.*)(\/|\\)(.*?)/;
 	my $dir = $1;
-	my $fatal_error = 0;
-	my ($linenum, $thisline) = (0, 0);
+	my ($linenum, $thisline) = (1, 1);
 
 	my $tree = [ ];
 	(my $fd = new IO::File("$file", "r")) or (print "Error: Unable to open $file\n" and return);
 	while (defined(my $line = read_line($fd, \$linenum))) {
-		($thisline = $linenum and next) if (!$line);
-		if ($line =~ /^\s*include\s+(.*?)\s*$/i) {
-			foreach my $file (expand_wildcards($dir, $1)) {
-				push(@{ $tree }, @{ parse_file($file) });
+		if (!$line) {
+			## Ignore blank lines
+		}
+		elsif ($line =~ /^\s*include\s+(.*?)\s*$/i) {
+			# TODO you need to fix namespaces here. I have a feeling the namespace set in an
+			#	include will carry on to the host file
+			my $filename = (($1 =~ /^\//) or !$dir) ? $1 : "$dir/$1";
+			parse_include_file($filename, $tree, "$file:$thisline");
+		}
+		elsif ($line =~ /^\s*option\s+(\S+?)(|\s+(.+?))\s*$/i) {
+			my ($name, $cmd) = (lc($1), $3);
+			my $option = {
+				'info' => "$file:$thisline",
+				'type' => "option",
+				'name' => $name,
+				'block' => [ ]
+			};
+			if ($cmd) {
+				## Substitute the option name into the command
+				$cmd =~ s/\%/$name/g;
+				if (($cmd !~ /^\s*end\s*$/) and parse_statement($cmd, $option->{'block'}, "$file:$thisline")) {
+					$fatal_error = 1;
+					print "Error $file:$thisline: Parse error at \"$cmd\"\n";
+				}
 			}
+			else {
+				# TODO do substitution inside the block
+				push(@{ $option->{'block'} }, @{ parse_block($fd, $file, $dir, \$linenum) });
+			}
+			push(@{ $tree }, $option);
 		}
-		elsif ($line =~ /^\s*namespace\s+(.+?)\s*$/i) {
-			my ($name) = ($1);
-			push(@{ $tree }, {
-				'info' => "$file:$thisline",
-				'type' => "namespace",
-				'name' => $name
-			});
-		}
-		elsif ($line =~ /^\s*command\s+(\S+?)\s+(\S+?)(|\s+(.*?))\s*$/i) {
-			my ($name, $func, $value) = ($1, $2, $4);
-			push(@{ $tree }, {
-				'info' => "$file:$thisline",
-				'type' => "command",
-				'name' => $name,
-				'func' => $func,
-				'value' => $value
-			});
-		}
-		elsif ($line =~ /^\s*bind\s+(\S+?)\s+(\S+?)(|\s+(.*?))\s*$/i) {
-			my ($name, $func, $value) = ($1, $2, $4);
-			push(@{ $tree }, {
-				'info' => "$file:$thisline",
-				'type' => "bind",
-				'name' => $name,
-				'func' => $func,
-				'value' => $value
-			});
-		}
-		elsif ($line =~ /^\s*(var|const|code)\s+(\S+?)\s*(|:\s*(\S+?)\s*)=\s*(.+?)\s*$/i) {
-			my ($keyword, $name, $type, $value) = ($1, $2, $4, $5);
-			$type = "code" if ($keyword eq "code");
-			push(@{ $tree }, {
-				'info' => "$file:$thisline",
-				'type' => "declaration",
-				'keyword' => $keyword,
-				'name' => $name,
-				'vartype' => $type,
-				'value' => $value
-			});
-		}
-		elsif (($line =~ /^\s*(\S+?)\s*=\s*(.+?)\s*$/i) or ($line =~ /^\s*set\s+(\S+?)\s+(.+?)\s*$/i)) {
-			my ($name, $value) = ($1, $2);
-			push(@{ $tree }, {
-				'info' => "$file:$thisline",
-				'type' => "set",
-				'name' => $name,
-				'value' => $value
-			});
-		}
-		else {
+		elsif (parse_statement($line, $tree, "$file:$thisline")) {
 			$fatal_error = 1;
-			print "Error $file:$thisline: Invalid syntax at \"$line\"\n";
+			print "Error $file:$thisline: Parse error at \"$line\"\n";
 		}
 		$thisline = $linenum;
 	}
@@ -208,103 +465,170 @@ sub parse_file {
 	return($tree);
 }
 
-=stop this crazy thing
-
 sub parse_block {
-	my ($fd, $dir, $file, $line_num) = @_;
+	my ($fd, $file, $dir, $linenum) = @_;
 
-	my $block = [ ];
-	while (my $line = read_line($fd)) {
-		next if (!$line);
-		if ($line =~ /^\s*end\s*$/) {
-			return($block);
+	my $thisline = $$linenum;
+
+	my $tree = [ ];
+	while (defined(my $line = read_line($fd, $linenum))) {
+		if (!$line) {
+			## Ignore blank lines
 		}
-		elsif ($line =~ /^\s*source\s+(.+?)\s*$/i) {
-			push(@{ $block }, { 'type' => "source", 'name' => expand_wildcards($dir, $1) });
+		elsif ($line =~ /^\s*end\s*$/) {
+			return($tree);
 		}
-		elsif ($line =~ /^\s*library\s+(.+?)\s*$/i) {
-			push(@{ $block }, { 'type' => "library", 'name' => expand_wildcards($dir, $1) });
+		elsif (parse_statement($line, $tree, "$file:$thisline")) {
+			$fatal_error = 1;
+			print "Error $file:$thisline: Parse error at \"$line\"\n";
 		}
-		elsif ($line =~ /^\s*use\s+(modules)\s*$/i) {
-			push(@{ $block }, { 'type' => "use", 'name' => $1 });
+		$thisline = $$linenum;
+	}
+	return($tree);
+}
+
+sub parse_statement {
+	my ($line, $tree, $info) = @_;
+
+	if ($line =~ /^\s*emit\s+(.+?)\s*$/i) {
+		my ($code) = ($1);
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => "emit",
+			'code' => $code
+		});
+	}
+	elsif ($line =~ /^\s*namespace\s+(.+?)\s*$/i) {
+		my ($name) = (lc($1));
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => "namespace",
+			'name' => $name
+		});
+	}
+	elsif ($line =~ /^\s*register(?:\s+-([dv]+)|)\s+(\S+?)\s+(?:\[\s*(.*?)\s*\]\s*|)(.*?)\s*(?:\[\s*(.*?)\s*\]\s*|)$/i) {
+		my ($args, $name, $header, $pattern, $footer) = ($1, lc($2), $3, $4, $5);
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => "register",
+			'name' => $name,
+			'args' => $args,
+			'header' => $header,
+			'footer' => $footer,
+			'pattern' => $pattern
+		});
+	}
+	elsif ($line =~ /^\s*(enable|require)\s+(?:(\S+):|)(\S+?)\s*$/i) {
+		my ($keyword, $specifier, $name) = (lc($1), lc($2), lc($3));
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => $keyword,
+			'specifier' => $specifier,
+			'name' => $name
+		});
+	}
+	elsif ($line =~ /^\s*(module|frontend)\s+(\S+?)\s*$/i) {
+		my ($keyword, $name) = (lc($1), lc($2));
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => $keyword,
+			'name' => $name
+		});
+		my $dir = get_module_dir($name, $keyword);
+		parse_include_file("$dir/defaults.cfg", $tree, $info) if ($dir);
+	}
+	elsif ($line =~ /^\s*add\s+(\S+?)\s+(\S+?)\s+(.*?)\s*$/i) {
+		my ($specifier, $name, $value) = (lc($1), lc($2), $3);
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => "add",
+			'specifier' => $specifier,
+			'name' => $name,
+			'value' => $value,
+			'values' => [ parse_values($value) ]
+		});
+	}
+	elsif ($line =~ /^\s*bind\s+(\S+?)\s+(\S+?)(?:\s+(.*?)|)\s*$/i) {
+		# TODO add the context option
+		my ($name, $cmd, $value) = (lc($1), $2, $3);
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => "bind",
+			'name' => $name,
+			'command' => $cmd,
+			'value' => $value
+		});
+	}
+	elsif ($line =~ /^\s*code\s+(\S+?)\s+(.+?)\s*$/i) {
+		my ($name, $value) = (lc($1), $2);
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => "code",
+			'name' => $name,
+			'value' => $value
+		});
+	}
+	elsif ($line =~ /^\s*set\s+(?:-(\S+?)\s+|)(\S+?)\s+(.+?)\s*$/i) {
+		my ($vartype, $name, $value) = (lc($1), lc($2), $3);
+		my $type = $vartype ? "declaration" : "set";
+		push(@{ $tree }, {
+			'info' => $info,
+			'type' => $type,
+			'name' => $name,
+			'vartype' => $vartype,
+			'value' => $value
+		});
+	}
+	else {
+		return(-1);
+	}
+	return(0);
+}
+
+sub parse_values {
+	my ($values) = @_;
+
+	my @ret = ();
+	while ($values) {
+		my $value;
+		if ($values =~ /\"([^"]+)\"/) {
+			$value = $1;
+			$values =~ s/\"([^"]+)\"(\s+|)//;
+		}
+		elsif ($values =~ /([^\s"]+)/) {
+			$value = $1;
+			$values =~ s/([^\s"]+)(\s+|)//;
 		}
 		else {
-			print "Error $file:$$line_num: Invalid syntax at \"$line\"\n";
+			last;
 		}
-		$$line_num++;
+		push(@ret, $value);
 	}
-	return($block);
+	return(@ret);
 }
 
-=cut
+sub parse_include_file {
+	my ($filename, $tree, $info) = @_;
 
-sub get_decl {
-	my ($decls, $name, $value) = @_;
-
-	while ($name) {
-		if ($name =~ /^(\w+?)(|\.(.*))$/) {
-			my ($table, $rest) = ($1, $3);
-			if ($rest) {
-				return(undef) if (!defined($decls->{ $table }));
-				$decls = $decls->{ $table }->{'decls'};
-				$name = $rest;
-			}
-			else {
-				return($decls->{ $name });
-			}
-		}
+	my $filetree = parse_file($filename);
+	if (!defined($filetree)) {
+		$fatal_error = 1;
+		print "Error $info: Error parsing include file \"$filename\"\n";
+		return(-1);
 	}
-	return(undef);
-}
-
-sub set_decl {
-	my ($decls, $name, $value) = @_;
-
-	my $complete_name = $name;
-	while ($name) {
-		if ($name =~ /^(\w+?)(|\.(.*))$/) {
-			my ($table, $rest) = ($1, $3);
-			if ($rest) {
-				if (!defined($decls->{ $table })) {
-					$decls->{ $table } = { "name" => $complete_name, 'type' => "table", 'decls' => { } };
-				}
-				$decls = $decls->{ $table }->{'decls'};
-				$name = $rest;
-			}
-			else {
-				$decls->{ $name } = $value if (defined($value));
-				return(0);
-			}
-		}
-		else {
-			return(-1);
-		}
+	else {
+		push(@{ $tree }, @{ $filetree });
+		return(0);
 	}
 }
 
-sub build_typed_list {
-	my ($decls, $lead, $types) = @_;
+###########################
+# Miscellaneous Functions #
+###########################
 
-	$types = { } unless (defined($types));
-	foreach my $key (keys(%{ $decls })) {
-		my $name = $key;
-		$name = "$lead.$name" if ($lead);
-		if ($decls->{ $key }->{'type'} eq "table") {
-			build_typed_list($decls->{ $key }->{'decls'}, $name, $types);
-		}
-		else {
-			my ($keyword, $type, $value) = ($decls->{ $key }->{'keyword'}, $decls->{ $key }->{'type'}, $decls->{ $key }->{'value'});
-			if ($keyword eq "code") {
-				$type = "code";
-				$name = $key;
-			}
-			$types->{ $type } = [ ] unless (defined($types->{ $type }));
-			push(@{ $types->{ $type } }, [ $name, $value, (($keyword eq "const") ? 1 : 0) ]);
-		}
-	}
-	return($types);
-}
-
+##
+# Format a given value into acceptable C code
+#
 sub format_value {
 	my ($value) = @_;
 
@@ -312,9 +636,16 @@ sub format_value {
 	return("\"$value\"");
 }
 
+=not used atm
+
+##
+# Transform a widcard-contaning filename into a list of files using $dir as
+# the base directory.
+#
 sub expand_wildcards {
 	my ($dir, $file) = @_;
 
+	# TODO FIX EXPAND_WILDCARDS()
 	$file =~ /(.*?)((\/|\\)(.*)|$)/;
 	my ($name, $file) = ($1, $4);
 	if ($name =~ /(.*)\*(.*)/) {
@@ -351,11 +682,40 @@ sub expand_wildcards {
 	return(());
 }
 
+=cut
+
+##
+# Find the directory containing the source for the module (or frontend) of the
+# given name.  The type must be "module", "frontend", or "" (in which case
+# "module" is assumed).
+#
+sub get_module_dir {
+	my ($name, $type) = @_;
+
+	if (!$type or ($type eq "module")) {
+		$type = "modules";
+	}
+	elsif (!($type eq "frontend")) {
+		return("");
+	}
+
+	foreach my $dir (@srcdirs) {
+		return("$dir/$type/$name") if (-e "$dir/$type/$name");
+	}
+	return("");
+}
+
+##
+# Read a line of input from a file in a standardized way, remove comments,
+# and keep track of the line number.
+#
 sub read_line {
 	my ($fd, $lineref) = @_;
 
 	return(undef) unless (my $line = <$fd>);
-	$line =~ s/\s*\#.*$//;			## Strip comments
+	$line =~ s/(^|[^\\])\#.*$/$1/;		## Strip comments
+	$line =~ s/\s*$//;
+	$line =~ s/\\\#/\#/;
 	while ($line =~ /(\\\s*(|\r)\n)$/) {	## If the line ends with '\' then read in the next line
 		$line =~ s/\Q$1\E//;		## Removed the '\' and linebreak
 		$line .= <$fd>;
@@ -367,6 +727,9 @@ sub read_line {
 	return($line);
 }
 
+##
+# Insert spaces after the given string to produce a string of length $num.
+#
 sub align_string {
 	my ($str, $num) = @_;
 
@@ -377,6 +740,9 @@ sub align_string {
 	return($str . $whitespace);
 }
 
+##
+# Convert a basic wildcard-contaning string into a perl-compatible regex
+#
 sub encode_regex {
 	my ($str) = @_;
 	$str =~ s/(\\|\/|\^|\.|\~|\@|\$|\||\(|\)|\[|\]|\+|\?|\{|\})/\\$1/g;
@@ -384,6 +750,9 @@ sub encode_regex {
 	return($str);
 }
 
+##
+# Generate a nicely formatted timestamp string from localtime()
+#
 sub get_timestamp {
 	my ($sec, $min, $hour, $mday, $mon, $year, $wday) = localtime(time);
 	$mon++;
