@@ -9,20 +9,10 @@
 
 #include <stutter/key.h>
 #include <stutter/type.h>
+#include <stutter/utils.h>
 #include <stutter/signal.h>
+#include <stutter/macros.h>
 #include <stutter/variable.h>
-
-/*** Modules ***/
-
-#define LOAD_MODULE(name) {			\
-	extern int init_##name(void);		\
-	init_##name();				\
-}
-
-#define RELEASE_MODULE(name) {			\
-	extern int release_##name(void);	\
-	release_##name();			\
-}
 
 /*** Types ***/
 
