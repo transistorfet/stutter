@@ -13,6 +13,9 @@
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/channel.h>
 
+// TODO change nick to a string_t
+#define IRC_MAX_NICK			20
+
 #define IRC_SERVER_STATUS_CHANNEL	"status"
 
 #define IRC_SBF_CONNECTED		0x01
