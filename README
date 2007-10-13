@@ -13,9 +13,9 @@ Introduction:
 
 Compiling & Installing:
 	Stutter has a number of compiled in default values and settings that
-	can be changed by adding #define's to config.h.  All the available
-	values are listed in the config-def.h files (one for each module,
-	one for the frontends, and a global one).  Do not edit the config-def.h
+	can be changed by overriding them in config.cfg.  All the available
+	values are listed in the defaults.cfg files (one for each module,
+	one for the frontends, and a global one).  Do not edit the defaults.cfg
 	files directly.  The frontend and modules to compile in can be selected
 	by modifying config.mk.  Once all the desired options and
 	configurations have been done, just make the binary with:
