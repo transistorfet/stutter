@@ -40,6 +40,4 @@ OBJS =	init.o \
 
 include $(ROOT)/rules.mk
 
-init.o: $(CONFIG_H) $(ROOT)/include/stutter/modules/base/config-def.h
-$(CONFIG_H):
 
