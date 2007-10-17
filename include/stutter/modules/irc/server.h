@@ -7,14 +7,11 @@
 #ifndef _STUTTER_MODULES_IRC_SERVER_H
 #define _STUTTER_MODULES_IRC_SERVER_H
 
-#include CONFIG_H
 #include <stutter/queue.h>
+#include <stutter/string.h>
 #include <stutter/frontend/net.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/channel.h>
-
-// TODO change nick to a string_t
-#define IRC_MAX_NICK			20
 
 #define IRC_SERVER_STATUS_CHANNEL	"status"
 
@@ -22,13 +19,13 @@
 
 struct irc_server {
 	int bitflags;
-	char *address;
+	string_t address;
 	int port;
 
 	fe_network_t net;
 	time_t last_ping;
 	int attempts;
-	char nick[IRC_MAX_NICK];
+	string_t nick;
 	queue_list_v(irc_msg) send_queue;
 	struct irc_channel *status;
 	struct irc_channel_list *channels;
