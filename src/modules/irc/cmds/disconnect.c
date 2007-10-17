@@ -5,6 +5,7 @@
  * Description:		Server Disconnect Command
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 

@@ -17,8 +17,9 @@ int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
 			/** Some servers have a limit to the nick length so
 			    make sure we are using the right nick */
 			if (strcmp(msg->server->nick, msg->params[0])) {
-				strncpy(msg->server->nick, msg->params[0], IRC_MAX_NICK - 1);
-				msg->server->nick[IRC_MAX_NICK - 1] = '\0';
+				if (msg->server->nick)
+					destroy_string(msg->server->nick);
+				msg->server->nick = create_string(msg->params[0]);
 			}
 			msg->server->bitflags |= IRC_SBF_CONNECTED;
 		case 002:

@@ -5,6 +5,7 @@
  * Description:		Send a quit message when the program is terminated.
  */
 
+#include CONFIG_H
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 

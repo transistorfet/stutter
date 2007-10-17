@@ -5,6 +5,7 @@
  * Description:		Nick Complete (Tab Complete) Command
  */
 
+#include CONFIG_H
 #include <stutter/macros.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>

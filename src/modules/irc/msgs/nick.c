@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include CONFIG_H
 #include <stutter/string.h>
 #include <stutter/macros.h>
 #include <stutter/frontend.h>
@@ -20,8 +21,9 @@ static int irc_msg_nick_traverse(struct irc_channel *, struct irc_msg *);
 int irc_msg_nick(char *env, struct irc_msg *msg)
 {
 	if (!strcmp_icase(msg->server->nick, msg->nick)) {
-		strncpy(msg->server->nick, msg->params[0], IRC_MAX_NICK - 1);
-		msg->server->nick[IRC_MAX_NICK - 1] = '\0';
+		if (msg->server->nick)
+			destroy_string(msg->server->nick);
+		msg->server->nick = create_string(msg->params[0]);
 	}
 	irc_traverse_channel_list(msg->server->channels, (traverse_t) irc_msg_nick_traverse, msg);
 	return(0);

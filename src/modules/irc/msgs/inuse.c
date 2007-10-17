@@ -11,14 +11,12 @@
 
 int irc_msg_inuse(char *env, struct irc_msg *msg)
 {
-	int i;
+	string_t tmp;
 
-	if (msg->server && !(msg->server->bitflags & IRC_SBF_CONNECTED)) {
-		for (i = 0;(i < IRC_MAX_NICK) && (msg->server->nick[i] != '\0');i++) ;
-		if (i >= IRC_MAX_NICK - 2)
-			i = IRC_MAX_NICK - 2;
-		msg->server->nick[i] = '_';
-		msg->server->nick[i + 1] = '\0';
+	if (msg->server && !(msg->server->bitflags & IRC_SBF_CONNECTED) && msg->server->nick) {
+		tmp = msg->server->nick;
+		msg->server->nick = create_string("%s_", tmp);
+		destroy_string(tmp);
 		irc_change_nick(msg->server, msg->server->nick);
 	}
 

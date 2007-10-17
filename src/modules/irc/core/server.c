@@ -11,6 +11,7 @@
 
 #include CONFIG_H
 #include <stutter/queue.h>
+#include <stutter/string.h>
 #include <stutter/memory.h>
 #include <stutter/linear.h>
 #include <stutter/signal.h>
@@ -66,6 +67,8 @@ int release_irc_server(void)
 			irc_destroy_channel_list(cur->server.channels);
 		if (cur->server.address)
 			destroy_string(cur->server.address);
+		if (cur->server.nick)
+			destroy_string(cur->server.nick);
 		memory_free(cur);
 	}
 	server_initialized = 0;
@@ -85,7 +88,7 @@ struct irc_server *irc_create_server(char *nick, void *window)
 
 	node->server.address = NULL;
 	node->server.port = 0;
-	strncpy(node->server.nick, nick, IRC_MAX_NICK);
+	node->server.nick = create_string(nick);
 	queue_init_v(node->server.send_queue, 0);
 
 	node->server.channels = irc_create_channel_list();
@@ -105,6 +108,8 @@ int irc_destroy_server(struct irc_server *server)
 	irc_destroy_channel_list(server->channels);
 	if (server->address)
 		destroy_string(server->address);
+	if (server->nick)
+		destroy_string(server->nick);
 	memory_free(server);
 	return(0);
 }
@@ -343,8 +348,9 @@ int irc_change_nick(struct irc_server *server, char *nick)
 		return(irc_send_msg(server, msg));
 	}
 	else {
-		strncpy(server->nick, nick, IRC_MAX_NICK - 1);
-		server->nick[IRC_MAX_NICK - 1] = '\0';
+		if (server->nick)
+			destroy_string(server->nick);
+		server->nick = create_string(nick);
 	}
 	return(0);
 }
