@@ -166,10 +166,11 @@ sub process_configuration {
 				print "Error: $element->{'info'}: Specifier \"$specifier\" is not registered.\n";
 				$fatal_error = 1;
 			}
-			elsif (defined($adds->{ $specifier }->{ $name })) {
-				print "Error: $element->{'info'}: " . ucfirst($specifier) . " \"$name\" is already declared.\n";
-				$fatal_error = 1;
-			}
+			# TODO if you enable something twice, this causes an error
+			#elsif (defined($adds->{ $specifier }->{ $name })) {
+			#	print "Error: $element->{'info'}: " . ucfirst($specifier) . " \"$name\" is already declared.\n";
+			#	$fatal_error = 1;
+			#}
 			else {
 				$adds->{ $specifier }->{ $name } = $element;
 			}
@@ -261,12 +262,6 @@ sub build_config_h {
 	print $fd "#ifndef _CONFIG_H\n";
 	print $fd "#define _CONFIG_H\n\n";
 
-	print $fd "/** Emits */\n";
-	foreach my $line (@{ $emits }) {
-		print $fd "$line\n";
-	}
-	print $fd "\n\n";
-
 	print $fd "/** Modules */\n";
 	my $includes = "";
 	my $init_macro = "#define INIT_MODULES()\t\\\n";
@@ -306,11 +301,11 @@ sub build_config_h {
 		$header = "#define ADD_%NS()" unless ($header);
 		print $fd format_add_header($specifier, $header) . "\t\\\n";
 		if (defined($adds->{ $specifier })) {
-			foreach my $key (sort(keys(%{ $adds->{ $specifier } }))) {
+			foreach my $key (sort_elements($adds->{ $specifier })) {
 				print $fd "\t" . format_add_output($adds->{ $specifier }->{ $key }, $specifier) . "\t\\\n";
 			}
 		}
-		print $fd "$patterns->{ $specifier }->{'footer'}\t\\\n" if ($patterns->{ $specifier }->{'footer'});
+		print $fd "$patterns->{ $specifier }->{'footer'}\n" if ($patterns->{ $specifier }->{'footer'});
 		print $fd "\n\n";
 	}
 
@@ -353,6 +348,12 @@ sub build_config_h {
 			print $fd "\t\tADD_VARIABLE($name, \"string\", $value)\t\\\n";
 		}
 		print $fd "\t)\t\\\n";
+	}
+	print $fd "\n\n";
+
+	print $fd "/** Emits */\n";
+	foreach my $line (@{ $emits }) {
+		print $fd "$line\n";
 	}
 	print $fd "\n\n";
 
@@ -537,13 +538,16 @@ sub parse_statement {
 		my $dir = get_module_dir($name, $keyword);
 		parse_include_file("$dir/defaults.cfg", $tree, $info) if ($dir);
 	}
-	elsif ($line =~ /^\s*add\s+(\S+?)\s+(\S+?)\s+(.*?)\s*$/i) {
-		my ($specifier, $name, $value) = (lc($1), lc($2), $3);
+	elsif ($line =~ /^\s*add\s+(\S+?)\s+(\S+?)(?:\s*=\s*(\S+?)|)\s+(.*?)\s*$/i) {
+		my ($specifier, $name, $priority, $value) = (lc($1), lc($2), $3, $4);
+		return(-1) unless ($priority =~ /^(-|)\d*(\.|)\d*$/);
+		$priority += 0;		## Force the string into a number
 		push(@{ $tree }, {
 			'info' => $info,
 			'type' => "add",
 			'specifier' => $specifier,
 			'name' => $name,
+			'priority' => $priority,
 			'value' => $value,
 			'values' => [ parse_values($value) ]
 		});
@@ -634,6 +638,18 @@ sub format_value {
 
 	return($value) if ($value =~ /^\"/);
 	return("\"$value\"");
+}
+
+##
+# Sort the keys of the given hash according to name and priority.
+#
+sub sort_elements {
+	my ($elements) = @_;
+
+	return sort {
+		my $ret = $elements->{ $b }->{'priority'} <=> $elements->{ $a }->{'priority'};
+		return($a cmp $b) unless ($ret);
+	} keys(%{ $elements });
 }
 
 =not used atm
