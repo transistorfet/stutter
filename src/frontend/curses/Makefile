@@ -14,7 +14,7 @@ OBJS =	main.o \
 	$(MODULES) \
 	$(ROOT)/src/main.a
 
-LIBS = -lncurses -L$(ROOT)/src/modules/sdrl/lib/sdrl/lib -lbase -lsdrl
+LIBS = -lncurses
 
 include $(ROOT)/rules.mk
 
