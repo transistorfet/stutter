@@ -1,4 +1,28 @@
 
+	* if you make advice macros be inline functions instead, you have issue with the now missing semicolon
+	* remove the silly stuff from the comments block
+	* convert macros to the all caps scheme!
+	* clean up irc server, especially try to combine the destruction of the server struct into a single
+	  function (right now there is 2 destroys, one in release and one in destroy)
+
+	* change server irc.nick storage method
+	* possibly change the naming scheme for types
+	* add the ordering ability thing to the config script
+	* add a simple makefile/.mk file output from the config script (since the config file has module and
+	  frontend statements and therefore knows what to attempt to compile)
+	* write a scripty thing to compile a list of all the default settings in the config scripts and write
+	  them into a file as comments (a file that the user will edit) so that they know what options are
+	  available
+
+
+	* segfault once occurred with a bt showing fe_timer_check() at line 148
+	* segfaulty thing when there was a netsplit and we were doing an autoreconnect there was a segfault
+	  at the actual call to shutdown() on the socket most likely because we forget to set server->net
+	  to NULL at one point.
+
+	* add an active IRC ping thing
+	* modify fe.insert to allow escapes to insert unusual characters
+	* see how vim handles/converts input and see if you can have vim's key names
 	* make an irc key context
 	* add a way to get the current context name (perhaps through a variable)
 	* fix certain commands such as bind and perhaps context and many others to check for proper
@@ -174,6 +198,8 @@ Bugs:
 	  Connected to otherside and freenode, in #philosophy, #coffeelounge, and #osdev with #philosophy
 	  as the current channel.  The reconnect worked but a few seconds after rejoining the channel the
 	  segfault occurred.
+	* Segfault in text_print after allocating the node's memory, the node address appears to be non-zero
+	  yet invalid (viewed in a coredump.  i have no idea why this would have happened)
 
 General:
 	* work on the new build system
@@ -243,7 +269,7 @@ General:
 	  from the list before checking the flag and readding it when it finds it's not suppose to remove it?
 	* optimize for space and speed (re-evaluate things).
 	* add the slab allocator
-	* catch the ^C signal to cancel a connect
+	* catch the ^C signal to cancel a connect (make a way to interrupt an operation)
 	* add a SIGWINCH handler to curses terminal
 
 Features:
