@@ -143,7 +143,7 @@ static int add_builtin_layouts(void)
 	struct layout_s *layout;
 
 	layout = make_layout("frame", make_layout_property("id", "frame", NULL), NULL, NULL);
-	layout->next = make_layout("statusbar", make_layout_property("id", "statusbar", make_layout_property("text", FE_STATUSBAR, NULL)), NULL, NULL);
+	layout->next = make_layout("statusbar", make_layout_property("id", "statusbar", make_layout_property("text", FE_DEFAULT_STATUSBAR, NULL)), NULL, NULL);
 	layout->next->next = make_layout("input", make_layout_property("id", "input", NULL), NULL, NULL);
 
 	add_layout("", "root", make_layout("terminal", NULL, make_layout("region", make_layout_property("id", "region", make_layout_property("width", "80", make_layout_property("height", "25", NULL))), layout, NULL), NULL));

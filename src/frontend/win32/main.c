@@ -23,49 +23,34 @@
 
 int handle_quit(char *, void *, char *);
 
-DEFINE_TYPE_LIST(fe_types,
-	ADD_TYPE(fe_common_load_colour)
-	ADD_TYPE(fe_common_load_style)
-	ADD_TYPE(fe_common_load_attrib)
-	ADD_TYPE(fe_common_load_hashattrib)
-	ADD_TYPE(fe_common_load_command)
+DEFINE_TYPE_LIST(types_list,
+	ADD_TYPES()
 );
 
-DEFINE_HANDLER_LIST(fe_handlers,
+DEFINE_HANDLER_LIST(handlers_list,
 	ADD_HANDLER(NULL, "fe.quit", 0, handle_quit, NULL)
+	ADD_HANDLERS()
 );
 
-DEFINE_KEY_LIST(fe_keys,
-	FE_BINDINGS()
+DEFINE_KEY_LIST(keys_list,
+	ADD_BINDINGS()
 );
 
 DEFINE_VARIABLE_LIST(fe_variables,
-	DECLARE_TYPE("string",
-		ADD_FIXED_VARIABLE("type", "string", "win32")
-	)
-	DECLARE_TYPE("attrib:fe",
-		FE_COMMON_ATTRIBS()
+	DECLARE_TYPE("table",
+		ADD_TABLES()
 	)
 	DECLARE_TYPE("hashattrib:fe",
 		ADD_FIXED_VARIABLE("theme.nicktable", "")
 	)
-	DECLARE_TYPE("command:fe",
-		FE_COMMON_COMMANDS()
-	)
-	DECLARE_TYPE("command",
-		FE_WIN32_COMMANDS()
-	)
-	DECLARE_TYPE("format",
-		FE_COMMON_FORMATS()
-	)
+	ADD_VARIABLES()
 );
 
-DEFINE_COMMAND_LIST(fe_commands,
-	STUTTER_INIT_COMMANDS()
+DEFINE_COMMAND_LIST(execution_list,
+	ADD_INITS()
 );
 
 HINSTANCE this_instance;
-struct variable_table_s *fe_table;
 struct variable_table_s *fe_theme;
 
 extern int init_net(void);
@@ -91,8 +76,8 @@ int init_windows(void)
 		return(-1);
 
 	add_signal(NULL, "fe.quit", 0);
-	ADD_TYPE_LIST(fe_types)
-	ADD_HANDLER_LIST(fe_handlers)
+	ADD_TYPE_LIST(types_list)
+	ADD_HANDLER_LIST(handlers_list)
 
 	if (init_net())
 		return(-1);
@@ -101,17 +86,12 @@ int init_windows(void)
 	if (init_timer())
 		return(-1);
 
-	#undef MODULE
-	#define MODULE(name)	LOAD_MODULE(name)
-	MODULE_LIST()
+	INIT_MODULES()
 
-	if (!(type = find_type("table")) || !(fe_table = add_variable(NULL, type, "fe", 0, "")))
-		return(-1);
-	fe_theme = add_variable(fe_table, type, "theme", 0, "");
+	ADD_VARIABLE_LIST(NULL, variables_list)
+	ADD_KEY_LIST(keys_list)
 
-	ADD_VARIABLE_LIST(fe_table, fe_variables)
-	ADD_KEY_LIST(fe_keys)
-
+	fe_theme = (struct variable_table_s *) find_variable(NULL, "fe.theme", &type);
 	if (init_frontend()) 
 		return(-1);
 	return(0);
@@ -119,9 +99,7 @@ int init_windows(void)
 
 int release_windows(void)
 {
-	#undef MODULE
-	#define MODULE(name)	RELEASE_MODULE(name)
-	MODULE_LIST()
+	RELEASE_MODULES()
 
 	release_frontend();
 	release_timer();
@@ -147,11 +125,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR argv, int WinMode
 		return(0);
 	}
 
-	EVALUATE_COMMAND_LIST(fe_commands)
-
-	#ifdef STUTTER_INIT
-	STUTTER_INIT(argc, argv);
-	#endif
+	EVALUATE_COMMAND_LIST(execution_list)
 
 	/*** Main Loop ***/
 	while (GetMessage(&msg, NULL, 0, 0)) {
