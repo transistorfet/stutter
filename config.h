@@ -391,7 +391,6 @@
 	ADD_TYPE(base_load_command)	\
 	ADD_TYPE(fe_common_load_command)	\
 	ADD_TYPE(base_load_format)	\
-	ADD_TYPE(fe_common_load_hashattrib)	\
 	ADD_TYPE(irc_load_server_list)	\
 	ADD_TYPE(irc_load_server_type)	\
 	ADD_TYPE(base_load_status)	\
@@ -405,6 +404,7 @@
 	ADD_TYPE(irc_load_user_type)	\
 	ADD_TYPE(base_load_wildcard)	\
 	ADD_TYPE(fe_common_load_attrib)	\
+	ADD_TYPE(fe_common_load_hashattrib)	\
 
 
 /** Key Bindings */
@@ -468,6 +468,9 @@
 		ADD_COMMAND_ENV("irc.server", irc_cmd_server, NULL)	\
 		ADD_COMMAND_ENV("irc.whois", irc_cmd_whois, NULL)	\
 		ADD_COMMAND_ENV("irc.whowas", irc_cmd_whowas, NULL)	\
+	)	\
+	DECLARE_TYPE("hashattrib",	\
+		ADD_VARIABLE("fe.theme.nicktable", "", "")	\
 	)	\
 	DECLARE_TYPE("status",	\
 		ADD_VARIABLE("irc.current_channel", "stringify,pointer", irc_stringify_channel, NULL)	\
