@@ -5,9 +5,6 @@
 #ifndef _CONFIG_H
 #define _CONFIG_H
 
-
-
-
 /** Modules */
 #include <stutter/modules/base.h>
 #include <stutter/modules/irc.h>
@@ -207,30 +204,37 @@
 #define VARIABLE_LIST_LOAD_FACTOR                0.75
 
 
-#define BASE_COMMAND_RESPONSE_JOINPOINT(...)	\
-	BASE_OUTPUT_JOINPOINT(__VA_ARGS__)	\
+#define BASE_COMMAND_RESPONSE_JOINPOINT(...) {	\
+	BASE_OUTPUT_JOINPOINT(__VA_ARGS__);	\
+}
 
 
-#define BASE_ERROR_JOINPOINT(...)	\
-	ERROR_JOINPOINT("base.error", __VA_ARGS__)	\
+#define BASE_ERROR_JOINPOINT(...) {	\
+	ERROR_JOINPOINT("base.error", __VA_ARGS__);	\
+}
 
 
-#define BASE_INIT_JOINPOINT()	\
+#define BASE_INIT_JOINPOINT() {	\
+}
 
 
-#define BASE_OUTPUT_JOINPOINT(...)	\
-	OUTPUT_JOINPOINT("base.output", __VA_ARGS__)	\
+#define BASE_OUTPUT_JOINPOINT(...) {	\
+	OUTPUT_JOINPOINT("base.output", __VA_ARGS__);	\
+}
 
 
-#define BASE_RELEASE_JOINPOINT()	\
+#define BASE_RELEASE_JOINPOINT() {	\
+}
 
 
-#define ERROR_JOINPOINT(name, ...)	\
-	PRINT_TO_CURRENT(__VA_ARGS__)	\
+#define ERROR_JOINPOINT(name, ...) {	\
+	PRINT_TO_CURRENT(__VA_ARGS__);	\
+}
 
 
-#define FE_NET_ERROR_JOINPOINT(...)	\
-	ERROR_JOINPOINT("fe.error", __VA_ARGS__)	\
+#define FE_NET_ERROR_JOINPOINT(...) {	\
+	ERROR_JOINPOINT("fe.error", __VA_ARGS__);	\
+}
 
 
 #define ADD_HANDLERS()	\
@@ -248,104 +252,129 @@
 	EVALUATE_COMMAND("base.alias getcolour get fe.theme.")	\
 
 
-#define IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_PRINT_TO_CHANNEL(channel, msg, fmt)	\
+#define IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_PRINT_TO_CHANNEL(channel, msg, fmt);	\
+}
 
 
-#define IRC_ERROR_JOINPOINT(...)	\
-	ERROR_JOINPOINT("irc.error", __VA_ARGS__)	\
+#define IRC_ERROR_JOINPOINT(...) {	\
+	ERROR_JOINPOINT("irc.error", __VA_ARGS__);	\
+}
 
 
-#define IRC_INIT_JOINPOINT()	\
+#define IRC_INIT_JOINPOINT() {	\
+}
 
 
-#define IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT(msg, fmt)	\
-	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt)	\
+#define IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT(msg, fmt) {	\
+	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt);	\
+}
 
 
-#define IRC_MSG_CTCP_UNKNOWN_OUTPUT_JOINPOINT(msg, fmt)	\
-	IRC_PRINT_TO_CURRENT(msg, fmt)	\
+#define IRC_MSG_CTCP_UNKNOWN_OUTPUT_JOINPOINT(msg, fmt) {	\
+	IRC_PRINT_TO_CURRENT(msg, fmt);	\
+}
 
 
-#define IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT(msg, fmt)	\
-	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt)	\
+#define IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT(msg, fmt) {	\
+	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt);	\
+}
 
 
-#define IRC_MSG_CURRENT_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_CURRENT_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_DEFAULT_OUTPUT_JOINPOINT(msg, fmt)	\
-	IRC_SERVER_OUTPUT_JOINPOINT(msg->server, msg, fmt)	\
+#define IRC_MSG_DEFAULT_OUTPUT_JOINPOINT(msg, fmt) {	\
+	IRC_SERVER_OUTPUT_JOINPOINT(msg->server, msg, fmt);	\
+}
 
 
-#define IRC_MSG_INUSE_OUTPUT_JOINPOINT(msg, fmt)	\
-	IRC_PRINT_TO_CURRENT(msg, fmt)	\
+#define IRC_MSG_INUSE_OUTPUT_JOINPOINT(msg, fmt) {	\
+	IRC_PRINT_TO_CURRENT(msg, fmt);	\
+}
 
 
-#define IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_KICK_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_KICK_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
 #define IRC_MSG_MODE_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
 
 
-#define IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_NICK_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_NICK_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_NOTICE_OUTPUT_JOINPOINT(msg, fmt)	\
-	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt)	\
+#define IRC_MSG_NOTICE_OUTPUT_JOINPOINT(msg, fmt) {	\
+	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt);	\
+}
 
 
-#define IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_PRIVMSG_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_PRIVMSG_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_MSG_TOPIC_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt)	\
+#define IRC_MSG_TOPIC_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
+	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
+}
 
 
-#define IRC_OUTPUT_JOINPOINT(...)	\
-	OUTPUT_JOINPOINT("irc.output", __VA_ARGS__)	\
+#define IRC_OUTPUT_JOINPOINT(...) {	\
+	OUTPUT_JOINPOINT("irc.output", __VA_ARGS__);	\
+}
 
 
-#define IRC_RELEASE_JOINPOINT()	\
+#define IRC_RELEASE_JOINPOINT() {	\
+}
 
 
-#define IRC_SERVER_OUTPUT_JOINPOINT(server, msg, fmt)	\
-	IRC_PRINT_TO_STATUS(server, msg, fmt)	\
+#define IRC_SERVER_OUTPUT_JOINPOINT(server, msg, fmt) {	\
+	IRC_PRINT_TO_STATUS(server, msg, fmt);	\
+}
 
 
-#define OUTPUT_JOINPOINT(name, ...)	\
-	PRINT_TO_CURRENT(__VA_ARGS__)	\
+#define OUTPUT_JOINPOINT(name, ...) {	\
+	PRINT_TO_CURRENT(__VA_ARGS__);	\
+}
 
 
-#define SYSTEM_INIT_JOINPOINT()	\
+#define SYSTEM_INIT_JOINPOINT() {	\
+}
 
 
-#define SYSTEM_RELEASE_JOINPOINT()	\
+#define SYSTEM_RELEASE_JOINPOINT() {	\
+}
 
 
 #define ADD_TABLES()	\
@@ -374,13 +403,13 @@
 	ADD_TYPE(base_load_timer)	\
 	ADD_TYPE(irc_load_user_list)	\
 	ADD_TYPE(irc_load_user_type)	\
-	ADD_TYPE(fe_common_load_attrib)	\
 	ADD_TYPE(base_load_wildcard)	\
+	ADD_TYPE(fe_common_load_attrib)	\
 
 
 /** Key Bindings */
 #define ADD_BINDINGS()	\
-	BIND_KEY("\n", "irc.activate", NULL)	\
+	BIND_KEY("\n", "base.parse", "irc.activate")	\
 	BIND_KEY("\x03", "base.quit", NULL)	\
 	BIND_KEY("\x09", "irc.complete", NULL)	\
 	BIND_KEY("\x0b", "fe.insert", "\x03")	\
@@ -477,9 +506,11 @@
 		ADD_VARIABLE("path", "string", ";irc;base")	\
 	)	\
 
+
 /** Emits */
 #include <stutter/advice.h>
 #include <stutter/modules/irc/advice.h>
+
 
 #endif
 
