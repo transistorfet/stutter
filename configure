@@ -8,7 +8,7 @@
 echo -n "Checking for /usr/bin/perl... "
 if [ -x "/usr/bin/perl" ]; then
 	echo "yes."
-	/usr/bin/perl tools/config.pl $1 $2 $3 $4 $5 $6 $7 $8 $9
+	/usr/bin/perl tools/config.pl config.cfg $1 $2 $3 $4 $5 $6 $7 $8 $9
 else
 	echo "no."
 	echo "Perl was not found or is installed in a non-standard location.  Perl"
