@@ -469,7 +469,7 @@
 		ADD_COMMAND_ENV("irc.whois", irc_cmd_whois, NULL)	\
 		ADD_COMMAND_ENV("irc.whowas", irc_cmd_whowas, NULL)	\
 	)	\
-	DECLARE_TYPE("hashattrib",	\
+	DECLARE_TYPE("hashattrib:fe",	\
 		ADD_VARIABLE("fe.theme.nicktable", "", "")	\
 	)	\
 	DECLARE_TYPE("status",	\
