@@ -1,7 +1,5 @@
 /*
  * Module Name:		fe.c
- * Version:		0.1
- * Module Requirements:	queue ; signal ; widget ; surface ; layout
  * Description:		Curses Frontend
  */
 

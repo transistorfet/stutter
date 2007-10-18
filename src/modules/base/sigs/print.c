@@ -1,7 +1,5 @@
 /*
  * Handler Name:	print.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Send a string to the window stored with the handler or
  *			the current window if NULL is given as the window.
  */

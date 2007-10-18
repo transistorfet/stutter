@@ -1,7 +1,5 @@
 /*
  * Widget Name:		statusbar.c
- * Version:		0.1
- * Module Requirements: utils ; memory ; string ; surface ; window
  * Description:		Status Bar Widget
  */
 

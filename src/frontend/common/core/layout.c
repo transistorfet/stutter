@@ -1,7 +1,5 @@
 /*
  * Module Name:		layout.c
- * Version:		0.1
- * Module Requirements:	memory ; widget
  * Description:		Widget Layout Manager
  */
 

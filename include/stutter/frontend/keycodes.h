@@ -1,6 +1,5 @@
 /*
  * Header Name:		keycodes.h
- * Version:		0.1
  * Description:		Key Code Definitions
  */
 

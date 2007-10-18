@@ -1,6 +1,5 @@
 /*
  * Header Name:		container.h
- * Version:		0.1
  * Description:		Generic Container Widget Header
  */
 

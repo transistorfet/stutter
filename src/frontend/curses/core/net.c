@@ -1,7 +1,5 @@
 /*
  * Module Name:		net.c
- * Version:		0.1
- * Module Requirements:	debug
  * System Requirements:	Unix Sockets
  * Description:		Network Interface Manager
  */

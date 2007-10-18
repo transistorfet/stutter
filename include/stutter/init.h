@@ -1,6 +1,5 @@
 /*
  * Header Name:		init.h
- * Version:		0.1
  * Description:		Initialization Structures and Macros
  */
 

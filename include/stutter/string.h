@@ -1,6 +1,5 @@
 /*
  * Header Name:		string.h
- * Version:		0.1
  * Description:		String Type Header
  */
 

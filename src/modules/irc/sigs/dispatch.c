@@ -1,7 +1,5 @@
 /*
  * Module Name:		dispatch.c
- * Version:		0.1
- * Module Requirements:	modirc
  * Description:		IRC Message Receiver/Dispatcher
  */
 

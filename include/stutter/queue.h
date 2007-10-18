@@ -1,6 +1,5 @@
 /*
  * Virtual Module Name:	queue.h
- * Version:		0.1
  * Description:		Queue Virtual Interface
  */
 

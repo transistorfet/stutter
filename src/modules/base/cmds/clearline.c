@@ -1,7 +1,5 @@
 /*
  * Command Name:	clearline.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Clear Current Input Field Command
  */
 

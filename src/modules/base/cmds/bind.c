@@ -1,7 +1,5 @@
 /*
  * Command Name:	bind.c
- * Version:		0.1
- * Module Requirements:	key ; type ; utils ; variable ; frontend ; string ; modbase
  * Description:		Bind Key Command
  */
 

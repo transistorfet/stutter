@@ -1,6 +1,5 @@
 /*
  * Header Name:		widget.h
- * Version:		0.1
  * Description:		Frontend Widget Header
  */
 

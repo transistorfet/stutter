@@ -1,7 +1,5 @@
 /*
  * Command Name:	notice.c
- * Version:		0.1
- * Module Requirements:	modirc
  * Description:		Notice Command
  */
 

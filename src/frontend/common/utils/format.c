@@ -1,7 +1,5 @@
 /*
  * Module Name:		format.c
- * Version:		0.1
- * Module Requirements:	type ; variable ; memory ; surface
  * Description:		Format String Parser
  */
 

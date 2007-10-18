@@ -1,6 +1,5 @@
 /*
  * Header Name:		menu.h
- * Version:		0.1
  * Description:		Menu Manager Header
  */
 

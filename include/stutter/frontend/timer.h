@@ -1,6 +1,5 @@
 /*
  * Header Name:		timer.h
- * Version:		0.1
  * Description:		Frontend Timer Header
  */
 

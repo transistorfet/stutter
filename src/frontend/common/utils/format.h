@@ -1,6 +1,5 @@
 /*
  * Header Name:		format.h
- * Version:		0.1
  * Description:		Format Parser Header
  */
 

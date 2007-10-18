@@ -1,7 +1,5 @@
 /*
  * Module Name:		server.c
- * Version:		0.1
- * Module Requirements:	frontend ; queue ; memory ; linear ; msg ; channel
  * Description:		Server Interface Manager
  */
 

@@ -1,7 +1,5 @@
 /*
  * Type Name:		attrib.c
- * Version:		0.1
- * Module Requirements:	type ; utils ; string ; modbase
  * Type Requirements:	attrib:fe
  * Description:		Attribute Type
  */

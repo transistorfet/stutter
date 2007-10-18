@@ -1,7 +1,5 @@
 /*
  * Command Name:	query.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Query Channel Command
  */
 

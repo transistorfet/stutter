@@ -1,7 +1,5 @@
 /*
  * Command Name:	window.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		New Window Command
  */
 

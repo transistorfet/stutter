@@ -1,7 +1,5 @@
 /*
  * Module Name:		mode.c
- * Version:		0.1
- * Module Requirements:	frontend ; string ; modirc
  * Description:		Mode Change Notification Message
  */
 

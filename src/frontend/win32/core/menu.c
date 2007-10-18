@@ -1,7 +1,5 @@
 /*
  * Module Name:		menu.c
- * Version:		0.1
- * Module Requirements:	utils ; memory ; string
  * System Requirements:	Windows OS
  * Description:		Win32 Menu Manager
  */

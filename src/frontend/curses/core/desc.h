@@ -1,6 +1,5 @@
 /*
  * Header Name:		desc.h
- * Version:		0.1
  * Description:		Descriptor Manager Header
  */
 

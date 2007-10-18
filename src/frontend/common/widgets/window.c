@@ -1,7 +1,5 @@
 /*
  * Widget Name:		window.c
- * Version:		0.1
- * Module Requirements:	utils ; memory ; surface
  * Description:		Generic Window Widget
  */
 

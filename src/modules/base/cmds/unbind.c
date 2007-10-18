@@ -1,7 +1,5 @@
 /*
  * Command Name:	unbind.c
- * Version:		0.1
- * Module Requirements:	key ; type ; utils ; variable ; frontend ; string ; modbase
  * Description:		Unbind Key Command
  */
 

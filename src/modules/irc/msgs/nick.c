@@ -1,7 +1,5 @@
 /*
  * Module Name:		nick.c
- * Version:		0.1
- * Module Requirements:	frontend ; string ; modirc
  * Description:		Nick Change Notification Message
  */
 

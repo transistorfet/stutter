@@ -1,7 +1,5 @@
 /*
  * Module Name:		terminal.c
- * Version:		0.1
- * Module Requirements:	key ; type ; variable ; memory ; linear ; surface ; colourmap ; desc
  * System Requirements:	Curses Library
  * Description:		Curses Terminal Manager
  */

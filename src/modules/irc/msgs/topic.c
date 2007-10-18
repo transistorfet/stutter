@@ -1,7 +1,5 @@
 /*
  * Module Name:		topic.c
- * Version:		0.1
- * Module Requirements:	frontend ; string ; modirc
  * Description:		Topic Change Notification Message
  */
 

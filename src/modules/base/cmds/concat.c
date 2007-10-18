@@ -1,7 +1,5 @@
 /*
  * Command Name:	concat.c
- * Version:		0.1
- * Module Requirements:	utils ; frontend ; string
  * Description:		Concatenate env and args and evaluate as a command
  */
 

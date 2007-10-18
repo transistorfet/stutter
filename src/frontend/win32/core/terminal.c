@@ -1,8 +1,5 @@
 /*
  * Module Name:		terminal.c
- * Version:		0.1
- * Interface:		surface
- * Module Requirements:	key ; type ; variable ; memory ; linear ; surface ; colourmap
  * System Requirements:	Windows OS
  * Description:		Windows Terminal Manager
  */

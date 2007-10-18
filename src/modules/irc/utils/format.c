@@ -1,7 +1,5 @@
 /*
  * Module Name:		format.c
- * Version:		0.1
- * Module Requirements:	utils ; string ; modirc ; modbase
  * Description:		IRC Message Formatter
  */
 

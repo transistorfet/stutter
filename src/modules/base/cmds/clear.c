@@ -1,7 +1,5 @@
 /*
  * Command Name:	clear.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Clear Current Window Command
  */
 

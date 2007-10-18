@@ -1,7 +1,5 @@
 /*
  * Module Name:		ping.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Ping CTCP Message
  */
 

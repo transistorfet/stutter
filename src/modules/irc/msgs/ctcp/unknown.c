@@ -1,7 +1,5 @@
 /*
  * Module Name:		unknown.c
- * Version:		0.1
- * Module Requirements:	frontend ; variable ; modirc
  * Description:		Unknown CTCP Message
  */
 

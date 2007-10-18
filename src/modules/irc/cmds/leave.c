@@ -1,7 +1,5 @@
 /*
  * Command Name:	leave.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Leave Channel Command
  */
 

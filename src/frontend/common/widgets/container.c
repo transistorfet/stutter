@@ -1,7 +1,5 @@
 /*
  * Widget Name:		container.c
- * Version:		0.1
- * Module Requirements:	queue ; memory ; surface
  * Description:		Generic Container Widget
  */
 

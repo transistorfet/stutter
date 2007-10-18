@@ -1,6 +1,5 @@
 /*
  * Header Name:		memory.h
- * Version:		0.1
  * Description:		Memory Allocator and Tracker Header
  */
 

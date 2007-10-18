@@ -1,6 +1,5 @@
 /*
  * Header Name:		window.h
- * Version:		0.1
  * Description:		Window Manager Header
  */
 

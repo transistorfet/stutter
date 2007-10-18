@@ -1,7 +1,5 @@
 /*
  * Command Name:	insert.c
- * Version:		0.1
- * Module Requirements:	widget
  * Description:		Echo Command
  */
 

@@ -1,6 +1,5 @@
 /*
  * Header Name:		irc.h
- * Version:		0.1
  * Description:		IRC Module Header
  */
 

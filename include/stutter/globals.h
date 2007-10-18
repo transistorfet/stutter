@@ -1,6 +1,5 @@
 /*
  * Header Name:		globals.h
- * Version:		0.1
  * Description:		Global Definitions
  */
 

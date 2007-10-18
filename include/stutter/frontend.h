@@ -1,6 +1,5 @@
 /*
  * Header Name:		frontend.h
- * Version:		0.1
  * Description:		Frontend Header
  */
 

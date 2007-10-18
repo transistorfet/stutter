@@ -1,7 +1,5 @@
 /*
  * Command Name:	parse.c
- * Version:		0.1
- * Module Requirements:	utils ; frontend ; string
  * Description:		Parse Input as a Command
  */
 

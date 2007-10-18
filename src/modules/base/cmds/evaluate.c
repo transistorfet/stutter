@@ -1,7 +1,5 @@
 /*
  * Command Name:	evaluate.c
- * Version:		0.1
- * Module Requirements:	utils ; frontend ; string
  * Description:		Evaluate the command in env with args unless args
  * 			starts with the command prefix
  */

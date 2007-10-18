@@ -1,7 +1,5 @@
 /*
  * Command Name:	server.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Connect to Server Command
  */
 

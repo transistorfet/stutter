@@ -1,7 +1,5 @@
 /*
  * Command Name:	whois.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Whois Command
  */
 

@@ -1,7 +1,5 @@
 /*
  * Module Name:		utils.c
- * Version:		0.1
- * Module Requirements:	type ; string ; variable
  * Description:		Utilities
  */
 

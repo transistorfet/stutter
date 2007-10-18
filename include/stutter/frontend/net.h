@@ -1,6 +1,5 @@
 /*
  * Header Name:		net.h
- * Version:		0.1
  * Description:		Frontend Networking Header
  */
 

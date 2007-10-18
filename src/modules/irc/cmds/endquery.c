@@ -1,7 +1,5 @@
 /*
  * Command Name:	endquery.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		End Query Command
  */
 

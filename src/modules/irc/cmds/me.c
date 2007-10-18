@@ -1,7 +1,5 @@
 /*
  * Command Name:	me.c
- * Version:		0.1
- * Module Requirements:	string ; modirc
  * Description:		Action Message Command
  */
 

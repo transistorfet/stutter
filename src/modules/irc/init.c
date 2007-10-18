@@ -1,7 +1,5 @@
 /*
  * Module Name:		init.c
- * Version:		0.1
- * Module Requirements:	type ; signal ; string ; variable ; modbase ; modirc
  * Description:		IRC Module Initializer
  */
 

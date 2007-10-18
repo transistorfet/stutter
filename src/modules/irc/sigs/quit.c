@@ -1,7 +1,5 @@
 /*
  * Handler Name:	quit.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Send a quit message when the program is terminated.
  */
 

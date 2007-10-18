@@ -1,7 +1,5 @@
 /*
  * Widget Name:		region.c
- * Version:		0.1
- * Module Requirements:	queue ; memory ; surface
  * Description:		Frame Container Widget
  */
 

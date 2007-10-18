@@ -1,6 +1,5 @@
 /*
  * Header Name:		input.h
- * Version:		0.1
  * Description:		Input Buffer Header
  */
 

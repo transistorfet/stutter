@@ -1,7 +1,5 @@
 /*
  * Command Name:	close.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Close Window Command
  */
 

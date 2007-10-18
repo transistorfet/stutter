@@ -1,6 +1,5 @@
 /*
  * Header Name:		key.h
- * Version:		0.1
  * Description:		Key Manager Header
  */
 

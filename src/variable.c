@@ -1,7 +1,5 @@
 /*
  * Module Name:		variable.c
- * Version:		0.1
- * Module Requirements:	type ; hash ; memory
  * Description:		Variable Manager
  */
 

@@ -1,7 +1,5 @@
 /*
  * Module Name:		stringt.c
- * Version:		0.1
- * Module Requirements:	memory
  * Description:		String Type
  */
 

@@ -1,7 +1,5 @@
 /*
  * Widget Name:		input.c
- * Version:		0.1
- * Module Requirements:	key ; queue ; memory ; surface
  * Description:		Input Field Widget
  */
 

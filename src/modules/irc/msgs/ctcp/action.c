@@ -1,7 +1,5 @@
 /*
  * Module Name:		action.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Action CTCP Message
  */
 

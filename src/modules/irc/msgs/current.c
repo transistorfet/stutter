@@ -1,7 +1,5 @@
 /*
  * Module Name:		current.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Generic Print-to-Current-Window Notification Message
  */
 

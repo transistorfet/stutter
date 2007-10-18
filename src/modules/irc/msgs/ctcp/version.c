@@ -1,7 +1,5 @@
 /*
  * Module Name:		version.c
- * Version:		0.1
- * Module Requirements:	frontend ; variable ; modirc
  * Description:		Version CTCP Message
  */
 

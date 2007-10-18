@@ -1,6 +1,5 @@
 /*
  * Header Name:		surface.h
- * Version:		0.1
  * Description:		Frontend Drawing Surface Header
  */
 

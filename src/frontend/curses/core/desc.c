@@ -1,6 +1,5 @@
 /*
  * Module Name:		desc.c
- * Version:		0.1
  * System Requirements:	Unix
  * Description:		Descriptor Manager
  */

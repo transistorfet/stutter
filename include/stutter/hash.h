@@ -1,6 +1,5 @@
 /*
  * Virtual Module Name:	hash.h
- * Version:		0.1
  * Description:		Hash Table Virtual Interface
  */
 

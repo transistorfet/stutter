@@ -1,7 +1,5 @@
 /*
  * Type Name:		status.c
- * Version:		0.1
- * Module Requirements:	type ; memory ; string ; modbase
  * Description:		Status (Stringify Callback) Type
  */
 

@@ -1,7 +1,5 @@
 /*
  * Command Name:	select.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Select Window Command
  */
 

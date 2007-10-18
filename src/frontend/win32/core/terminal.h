@@ -1,6 +1,5 @@
 /*
  * Header Name:		terminal.h
- * Version:		0.1
  * Description:		Terminal Manager Interface
  */
 

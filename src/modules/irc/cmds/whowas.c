@@ -1,7 +1,5 @@
 /*
  * Command Name:	whowas.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Whowas Command
  */
 

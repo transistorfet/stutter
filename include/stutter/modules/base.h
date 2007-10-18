@@ -1,6 +1,5 @@
 /*
  * Header Name:		base.h
- * Version:		0.1
  * Description:		Base Module Header
  */
 

@@ -1,6 +1,5 @@
 /*
  * Header Name:		common.h
- * Version:		0.1
  * Description:		Common Frontend Header
  */
 

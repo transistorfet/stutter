@@ -1,6 +1,5 @@
 /*
  * Header Name:		macros.h
- * Version:		0.1
  * Description:		Macro Definitions
  */
 

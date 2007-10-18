@@ -1,7 +1,5 @@
 /*
  * Module Name:		inuse.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Error Nickname In Use Message
  */
 

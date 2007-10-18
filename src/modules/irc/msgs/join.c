@@ -1,7 +1,5 @@
 /*
  * Module Name:		join.c
- * Version:		0.1
- * Module Requirements:	utils ; frontend ; modirc
  * Description:		Join Channel Notification Message
  */
 

@@ -1,7 +1,5 @@
 /*
  * Command Name:	source.c
- * Version:		0.1
- * Module Requirements:	utils ; frontend ; string
  * Description:		Parse a File as a List of Commands
  */
 

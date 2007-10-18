@@ -1,7 +1,5 @@
 /*
  * Module Name:		init.c
- * Version:		0.1
- * Module Requirements:	type ; signal ; string ; variable ; modbase
  * Description:		Base Module Initializer
  */
 

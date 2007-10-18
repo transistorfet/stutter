@@ -1,6 +1,5 @@
 /*
  * Header Name:		execute.h
- * Version:		0.1
  * Description:		Frontend Program Execution Header
  */
 

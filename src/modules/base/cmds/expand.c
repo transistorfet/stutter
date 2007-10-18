@@ -1,7 +1,5 @@
 /*
  * Command Name:	expand.c
- * Version:		0.1
- * Module Requirements:	utils ; frontend ; string
  * Description:		Expand all variables and evaluate as a command
  */
 

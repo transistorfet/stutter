@@ -1,7 +1,5 @@
 /*
  * Module Name:		main.c
- * Version:		0.1
- * Module Requirements:	type ; signal ; string ; variable ; net ; terminal
  * Description:		Curses Frontend Main Loop
  */
 

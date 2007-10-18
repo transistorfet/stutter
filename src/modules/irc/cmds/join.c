@@ -1,7 +1,5 @@
 /*
  * Command Name:	join.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Join Channel Command
  */
 

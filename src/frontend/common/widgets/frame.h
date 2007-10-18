@@ -1,6 +1,5 @@
 /*
  * Header Name:		frame.h
- * Version:		0.1
  * Description:		Frame Widget Header
  */
 

@@ -1,7 +1,5 @@
 /*
  * Module Name:		key.c
- * Version:		0.1
- * Module Requirements:	type ; hash ; memory ; string
  * Description:		Key Manager
  */
 

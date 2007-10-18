@@ -1,7 +1,5 @@
 /*
  * Widget Name:		text.c
- * Version:		0.1
- * Module Requirements:	queue ; memory ; surface ; window
  * Description:		Text Window Widget
  */
 

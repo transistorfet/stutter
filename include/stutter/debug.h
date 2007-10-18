@@ -1,6 +1,5 @@
 /*
  * Header Name:		debug.h
- * Version:		0.1
  * Description:		Debug Macros Header
  */
 

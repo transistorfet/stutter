@@ -1,7 +1,5 @@
 /*
  * Command Name:	play.c
- * Version:		0.1
- * Module Requirements:	frontend
  * System Requirements:	Windows
  * Description:		Play Sound Command
  */

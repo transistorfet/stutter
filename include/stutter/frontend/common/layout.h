@@ -1,6 +1,5 @@
 /*
  * Header Name:		layout.h
- * Version:		0.1
  * Description:		Widget Layout Manager Interface
  */
 

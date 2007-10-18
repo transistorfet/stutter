@@ -1,7 +1,5 @@
 /*
  * Command Name:	topic.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Topic Command
  */
 

@@ -1,7 +1,5 @@
 /*
  * Type Name:		string.c
- * Version:		0.1
- * Module Requirements:	type ; string ; modbase
  * Description:		String Type
  */
 

@@ -1,7 +1,5 @@
 /*
  * Type Name:		format.c
- * Version:		0.1
- * Module Requirements:	type ; utils ; string ; modbase
  * Description:		Format String Type
  */
 

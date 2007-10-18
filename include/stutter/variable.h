@@ -1,6 +1,5 @@
 /*
  * Header Name:		variable.h
- * Version:		0.1
  * Description:		Variable Manager Header
  */
 

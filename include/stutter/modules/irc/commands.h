@@ -1,6 +1,5 @@
 /*
  * Header Name:		commands.h
- * Version:		0.1
  * Description:		Message Command Numbers
  */
 

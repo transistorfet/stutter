@@ -1,6 +1,5 @@
 /*
  * Header Name:		type.h
- * Version:		0.1
  * Description:		Type Manager Header
  */
 

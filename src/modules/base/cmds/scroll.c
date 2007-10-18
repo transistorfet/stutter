@@ -1,7 +1,5 @@
 /*
  * Command Name:	scroll.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Scroll Current Window Command
  */
 

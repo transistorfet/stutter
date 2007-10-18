@@ -1,6 +1,5 @@
 /*
  * Header Name:		user.h
- * Version:		0.1
  * Description:		User Interface Manager Header
  */
 

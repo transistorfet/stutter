@@ -1,6 +1,5 @@
 /*
  * Header Name:		text.h
- * Version:		0.1
  * Description:		Text Window Header
  */
 

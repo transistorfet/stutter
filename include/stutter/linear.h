@@ -1,6 +1,5 @@
 /*
  * Virtual Module Name:	linear.h
- * Version:		0.1
  * Description:		Linked List Virtual Interface
  */
 

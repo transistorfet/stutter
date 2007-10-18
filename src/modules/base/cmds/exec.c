@@ -1,7 +1,5 @@
 /*
  * Command Name:	exec.c
- * Version:		0.1
- * Module Requirements:	signal ; frontend ; modbase
  * Description:		Execute External Program Command
  */
 

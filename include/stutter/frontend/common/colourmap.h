@@ -1,6 +1,5 @@
 /*
  * Header Name:		colourmap.h
- * Version:		0.1
  * Description:		Colour Map Manager Interface
  */
 

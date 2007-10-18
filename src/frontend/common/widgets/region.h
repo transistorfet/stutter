@@ -1,6 +1,5 @@
 /*
  * Header Name:		region.h
- * Version:		0.1
  * Description:		Frame Widget Header
  */
 

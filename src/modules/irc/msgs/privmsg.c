@@ -1,7 +1,5 @@
 /*
  * Module Name:		privmsg.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Private Message Notification Message
  */
 

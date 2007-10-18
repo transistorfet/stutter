@@ -1,7 +1,5 @@
 /*
  * Module Name:		timer.c
- * Version:		0.1
- * System Requirements:	windows.h
  * Description:		Timer Manager
  */
 

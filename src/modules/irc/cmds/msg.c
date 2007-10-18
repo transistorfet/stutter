@@ -1,7 +1,5 @@
 /*
  * Command Name:	msg.c
- * Version:		0.1
- * Module Requirements:	modirc
  * Description:		Private Message Command
  */
 

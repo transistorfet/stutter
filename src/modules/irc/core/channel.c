@@ -1,7 +1,5 @@
 /*
  * Module Name:		channel.c
- * Version:		0.1
- * Module Requirements:	memory ; linear ; string ; signal ; user
  * Description:		Channel Interface Manager
  */
 

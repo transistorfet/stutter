@@ -1,6 +1,5 @@
 /*
  * Header Name:		win32.h
- * Version:		0.1
  * Description:		Win32 Frontend Header
  */
 

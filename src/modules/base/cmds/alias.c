@@ -1,7 +1,5 @@
 /*
  * Command Name:	alias.c
- * Version:		0.1
- * Module Requirements:	type ; variable ; frontend ; modbase
  * Description:		Create Alias Command
  */
 

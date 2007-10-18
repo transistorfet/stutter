@@ -1,7 +1,5 @@
 /*
  * Command Name:	get.c
- * Version:		0.1
- * Module Requirements:	type ; variable ; frontend ; string ; modbase
  * Description:		Get Variable Command
  */
 

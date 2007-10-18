@@ -1,6 +1,5 @@
 /*
  * Header Name:		server.h
- * Version:		0.1
  * Description:		Server Interface Manager Header
  */
 

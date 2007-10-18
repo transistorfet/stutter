@@ -1,7 +1,5 @@
 /*
  * Command Name:	redirect.c
- * Version:		0.1
- * Module Requirements:	signal ; frontend ; modbase
  * Description:		Redirect Signal to Window Command
  */
 

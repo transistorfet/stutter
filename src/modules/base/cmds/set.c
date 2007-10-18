@@ -1,7 +1,5 @@
 /*
  * Command Name:	set.c
- * Version:		0.1
- * Module Requirements:	type ; variable ; frontend ; string ; modbase
  * Description:		Set Variable Command
  */
 

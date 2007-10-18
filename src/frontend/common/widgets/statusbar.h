@@ -1,6 +1,5 @@
 /*
  * Header Name:		statusbar.h
- * Version:		0.1
  * Description:		Status Bar Widget Header
  */
 

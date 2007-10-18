@@ -1,6 +1,5 @@
 /*
  * Module Name:		execute.c
- * Version:		0.1
  * System Requirements:	unistd.h
  * Description:		Program Execution Manager
  */

@@ -1,7 +1,5 @@
 /*
  * Module Name:		init.c
- * Version:		0.1
- * Module Requirements:	key ; type ; signal ; variable
  * Description:		System Initialization
  */
 

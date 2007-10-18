@@ -1,7 +1,5 @@
 /*
  * Module Name:		notice.c
- * Version:		0.1
- * Module Requirements:	frontend ; string ; modirc
  * Description:		Notice Notification Message
  */
 

@@ -1,7 +1,5 @@
 /*
  * Handler Name:	exec.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Sends the output of the exec command to the current channel
  */
 

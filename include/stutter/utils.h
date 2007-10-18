@@ -1,6 +1,5 @@
 /*
  * Header Name:		utils.h
- * Version:		0.1
  * Description:		Utilities Header
  */
 

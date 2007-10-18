@@ -1,7 +1,5 @@
 /*
  * Type Name:		time.c
- * Version:		0.1
- * Module Requirements:	type ; string ; modbase
  * Description:		Time Stamp Type
  */
 

@@ -1,7 +1,5 @@
 /*
  * Command Name:	echo.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Echo Command
  */
 

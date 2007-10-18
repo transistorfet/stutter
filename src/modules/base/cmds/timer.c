@@ -1,7 +1,5 @@
 /*
  * Command Name:	timer.c
- * Version:		0.1
- * Module Requirements:	utils ; string ; frontend ; timer
  * Description:		Set a timer event and evaluate the given command when
  *			it expires.
  */

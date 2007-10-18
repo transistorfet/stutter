@@ -1,7 +1,5 @@
 /*
  * Command Name:	ping.c
- * Version:		0.1
- * Module Requirements:	string ; modirc
  * Description:		CTCP Ping Command
  */
 

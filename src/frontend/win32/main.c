@@ -1,7 +1,5 @@
 /*
  * Module Name:		main.c
- * Version:		0.1
- * Module Requirements:	string
  * System Requirements:	Windows OS
  * Description:		Windows Frontend Main Loop
  */

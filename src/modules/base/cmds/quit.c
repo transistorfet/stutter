@@ -1,7 +1,5 @@
 /*
  * Command Name:	quit.c
- * Version:		0.1
- * Module Requirements:	frontend ; modbase
  * Description:		Quit Command
  */
 

@@ -1,7 +1,5 @@
 /*
  * Command Name:	context.c
- * Version:		0.1
- * Module Requirements:	key ; modbase
  * Description:		Key Context Command
  */
 

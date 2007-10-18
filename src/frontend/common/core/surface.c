@@ -1,7 +1,5 @@
 /*
  * Module Name:		surface.c
- * Version:		0.1
- * Module Requirements:	memory ; signal ; layout
  * Description:		Surface Manager
  */
 

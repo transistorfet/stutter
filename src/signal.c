@@ -1,7 +1,5 @@
 /*
  * Module Name:		signal.c
- * Version:		0.1
- * Module Requirements:	memory ; hash
  * Description:		Signal Manager
  */
 

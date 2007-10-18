@@ -1,6 +1,5 @@
 /*
  * Header Name:		channel.h
- * Version:		0.1
  * Description:		Channel Interface Manager Header
  */
 

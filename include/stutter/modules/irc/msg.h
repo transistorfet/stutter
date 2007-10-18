@@ -1,6 +1,5 @@
 /*
  * Header Name:		msg.h
- * Version:		0.1
  * Description:		Message Manager Header
  */
 

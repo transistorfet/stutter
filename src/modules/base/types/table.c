@@ -1,7 +1,5 @@
 /*
  * Type Name:		table.c
- * Version:		0.1
- * Module Requirements:	type ; variable ; memory
  * Description:		Command Type
  */
 

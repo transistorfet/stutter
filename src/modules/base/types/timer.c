@@ -1,7 +1,5 @@
 /*
  * Type Name:		timer.c
- * Version:		0.1
- * Module Requirements:	type ; memory ; timer ; modbase
  * Description:		Periodic Timer Type
  */
 

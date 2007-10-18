@@ -1,7 +1,5 @@
 /*
  * Command Name:	remove.c
- * Version:		0.1
- * Module Requirements:	type ; variable ; frontend ; string ; modbase
  * Description:		Remove Variable Command
  */
 

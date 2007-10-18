@@ -1,7 +1,5 @@
 /*
  * Type Name:		command.c
- * Version:		0.1
- * Module Requirements:	type ; memory
  * Description:		Frontend Widget Command Type
  */
 

@@ -1,6 +1,5 @@
 /*
  * Header Name:		signal.h
- * Version:		0.1
  * Description:		Signal Manager Header
  */
 

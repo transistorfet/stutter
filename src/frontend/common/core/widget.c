@@ -1,7 +1,5 @@
 /*
  * Module Name:		widget.c
- * Version:		0.1
- * Module Requirements:	memory ; signal ; layout
  * Description:		Widget Manager
  */
 

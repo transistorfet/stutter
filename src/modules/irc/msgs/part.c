@@ -1,7 +1,5 @@
 /*
  * Module Name:		part.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Part Channel Notification Message
  */
 

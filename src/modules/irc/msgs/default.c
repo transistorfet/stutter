@@ -1,7 +1,5 @@
 /*
  * Module Name:		default.c
- * Version:		0.1
- * Module Requirements:	frontend ; modirc
  * Description:		Default Notification Message (for Unhandled Messages)
  */
 

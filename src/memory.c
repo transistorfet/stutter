@@ -1,7 +1,5 @@
 /*
  * Module Name:		memory.c
- * Version:		0.1
- * Module Requirements:	(none)
  * Description:		Memory Allocator and Tracker
  */
 

@@ -1,7 +1,5 @@
 /*
  * Module Name:		user.c
- * Version:		0.1
- * Module Requirements:	memory ; linear ; string
  * Description:		User Interface Manager
  */
 

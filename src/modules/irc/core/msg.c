@@ -1,7 +1,5 @@
 /*
  * Module Name:		msg.c
- * Version:		0.1
- * Module Requirements:	utils ; memory
  * Description:		Message Manager
  */
 

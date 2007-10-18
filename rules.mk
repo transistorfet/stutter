@@ -1,6 +1,5 @@
 #
 # Name:		rules.mk
-# Version:	0.1
 # Description:	Make Rules
 #
 
