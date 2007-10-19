@@ -84,7 +84,6 @@ int init_curses(void)
 
 	add_signal(NULL, "fe.quit", 0);
 	ADD_TYPE_LIST(types_list)
-	ADD_HANDLER_LIST(handlers_list)
 
 	if (init_desc())
 		return(-1);
@@ -97,6 +96,7 @@ int init_curses(void)
 
 	INIT_MODULES()
 
+	ADD_HANDLER_LIST(handlers_list)
 	ADD_VARIABLE_LIST(NULL, variables_list)
 	ADD_KEY_LIST(keys_list)
 
