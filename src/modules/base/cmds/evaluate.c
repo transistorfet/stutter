@@ -14,7 +14,7 @@
 
 int base_cmd_evaluate(char *env, char *args)
 {
-	char *str, *cmd;
+	char *cmd;
 
 	if (!strncmp(args, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX))) {
 		args = &args[strlen(BASE_COMMAND_PREFIX)];
