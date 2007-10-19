@@ -291,7 +291,7 @@ sub build_config_h {
 		my $value = $code->{ $key }->{'value'};
 		my $name = uc($key);
 		$name =~ tr/a-zA-Z0-9_/_/cs;
-		print $fd align_string("#define $name", 48) . "$value\n";
+		print $fd (align_string("#define $name", 48) . "$value\n");
 	}
 	print $fd "\n\n";
 
@@ -299,7 +299,7 @@ sub build_config_h {
 		next if ($patterns->{ $specifier }->{'args'} =~ /v/);
 		my $header = $patterns->{ $specifier }->{'header'};
 		$header = "#define ADD_%NS()" unless ($header);
-		print $fd format_add_header($specifier, $header) . "\t\\\n";
+		print $fd (format_add_header($specifier, $header) . "\t\\\n");
 		if (defined($adds->{ $specifier })) {
 			foreach my $key (sort_elements($adds->{ $specifier })) {
 				print $fd "\t" . format_add_output($adds->{ $specifier }->{ $key }, $specifier) . "\t\\\n";
