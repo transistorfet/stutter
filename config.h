@@ -242,7 +242,7 @@
 	ADD_HANDLER(NULL, "base.exec_output", 10, irc_sig_exec, NULL)	\
 	ADD_HANDLER(NULL, "error_general", 10, base_sig_print, NULL)	\
 	ADD_HANDLER(NULL, "fe.quit", 10, irc_sig_quit, NULL)	\
-	ADD_HANDLER(NULL, "irc.dispatch_ctcp", 5, irc_msg_ctcp_action, NULL)	\
+	ADD_HANDLER(NULL, "irc.dispatch_ctcp", 10, irc_sig_dispatch_ctcp_msg, NULL)	\
 	ADD_HANDLER(NULL, "irc.dispatch_msg", 10, irc_sig_dispatch_msg, NULL)	\
 
 
