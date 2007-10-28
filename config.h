@@ -469,17 +469,17 @@
 		ADD_COMMAND_ENV("irc.whois", irc_cmd_whois, NULL)	\
 		ADD_COMMAND_ENV("irc.whowas", irc_cmd_whowas, NULL)	\
 	)	\
+	DECLARE_TYPE("command:fe",	\
+		ADD_FIXED_VARIABLE("fe.insert", "callback,widget", fe_common_cmd_insert, NULL)	\
+		ADD_FIXED_VARIABLE("fe.next", "callback,widget", fe_common_cmd_next, NULL)	\
+		ADD_FIXED_VARIABLE("fe.previous", "callback,widget", fe_common_cmd_previous, NULL)	\
+	)	\
 	DECLARE_TYPE("hashattrib:fe",	\
 		ADD_VARIABLE("fe.theme.nicktable", "", "")	\
 	)	\
 	DECLARE_TYPE("status",	\
 		ADD_VARIABLE("irc.current_channel", "stringify,pointer", irc_stringify_channel, NULL)	\
 		ADD_VARIABLE("irc.current_nick", "stringify,pointer", irc_stringify_nick, NULL)	\
-	)	\
-	DECLARE_TYPE("widget-command",	\
-		ADD_FIXED_VARIABLE("fe.insert", "callback,widget", fe_common_cmd_insert, NULL)	\
-		ADD_FIXED_VARIABLE("fe.next", "callback,widget", fe_common_cmd_next, NULL)	\
-		ADD_FIXED_VARIABLE("fe.previous", "callback,widget", fe_common_cmd_previous, NULL)	\
 	)	\
 	DECLARE_TYPE("attrib:fe",	\
 		ADD_VARIABLE("fe.theme.bracket", "string", ",,bold")	\
