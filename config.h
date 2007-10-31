@@ -71,6 +71,7 @@
 #define CONFIG_IRC_RECONNECT
 #define CONFIG_IRC_SAY
 #define CONFIG_IRC_SERVER
+#define CONFIG_IRC_TOPIC
 #define CONFIG_IRC_WHOIS
 #define CONFIG_IRC_WHOWAS
 #define CONFIG_NORMAL
@@ -466,6 +467,7 @@
 		ADD_COMMAND_ENV("irc.reconnect", irc_cmd_reconnect, NULL)	\
 		ADD_COMMAND_ENV("irc.say", irc_cmd_say, NULL)	\
 		ADD_COMMAND_ENV("irc.server", irc_cmd_server, NULL)	\
+		ADD_COMMAND_ENV("irc.topic", irc_cmd_topic, NULL)	\
 		ADD_COMMAND_ENV("irc.whois", irc_cmd_whois, NULL)	\
 		ADD_COMMAND_ENV("irc.whowas", irc_cmd_whowas, NULL)	\
 	)	\
