@@ -18,18 +18,21 @@
 
 int base_cmd_unbind(char *env, char *args)
 {
+	int pos = 0;
 	char *context = NULL;
 	int buffer[SMALL_STRING_SIZE];
 
-	trim_whitespace_m(args);
-	if (*args == '-')
-		split_string_m(&args[1], context, args, ' ');
+	TRIM_WHITESPACE(args);
+	if (*args == '-') {
+		pos = 1;
+		context = util_get_arg(&args[1], &pos);
+	}
 
-	if ((util_convert_key(args, buffer, SMALL_STRING_SIZE) < 0) || unbind_key(context, buffer)) {
-		BASE_ERROR_JOINPOINT(BASE_ERR_UNBINDING_FAILED, args);
+	if ((util_convert_key(&args[pos], buffer, SMALL_STRING_SIZE) < 0) || unbind_key(context, buffer)) {
+		BASE_ERROR_JOINPOINT(BASE_ERR_UNBINDING_FAILED, &args[pos]);
 		return(-1);
 	}
-	BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_UNBIND, args)
+	BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_UNBIND, &args[pos])
 	return(0);
 }
 

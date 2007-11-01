@@ -336,3 +336,35 @@ int util_evaluate_command(char *cmd, char *str)
 	return(0);
 }
 
+/**
+ * Isolate an argument from the given argument string and return a pointer to
+ * that string.  If the given int * is not NULL, then add the index to the end
+ * of the returned argument to the int pointed to by the pointer.
+ */
+char *util_get_arg(char *buffer, int *str_count)
+{
+	int i = 0, j;
+	char ch = ' ';
+
+	/* Remove leading whitespace */
+	for (;buffer[i] == ' ';i++) ;
+
+	/* Check if we should parse a quoted argument */
+	if (buffer[i] == '\"') {
+		ch = '\"';
+		i++;
+	}
+
+	/* Save the position of the start of the argument */
+	j = i;
+	for (;(buffer[i] != '\0') && (buffer[i] != ch);i++) ;
+
+	if (buffer[i] != '\0') {
+		buffer[i++] = '\0';
+		for (;buffer[i] == ' ';i++) ;
+	}
+	if (str_count)
+		*str_count += i;
+	return(&buffer[j]);
+}
+

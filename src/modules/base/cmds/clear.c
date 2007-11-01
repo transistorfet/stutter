@@ -5,7 +5,6 @@
 
 #include <stdlib.h>
 
-#include <stutter/macros.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 

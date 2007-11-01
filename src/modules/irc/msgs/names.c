@@ -4,7 +4,7 @@
  */
 
 #include CONFIG_H
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -13,18 +13,20 @@
  */
 int irc_msg_names(char *env, struct irc_msg *msg)
 {
+	char *name;
+	int pos = 0;
 	int bitflags;
-	char *str, *name;
+	char buffer[STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[2])) && !(channel = irc_current_channel()))
 		return(-1);
 	IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_NAMES)
 
-	str = msg->text;
-	while (*str != '\0') {
+	strcpy(buffer, msg->text);
+	while (buffer[pos] != '\0') {
 		bitflags = 0;
-		get_param_m(str, name, ' ');
+		name = util_get_arg(&buffer[pos], &pos);
 		if ((name[0] == '@') || (name[0] == '+')) {
 			bitflags = (name[0] == '@') ? IRC_UBF_MODE_OP : IRC_UBF_MODE_VOICE ;
 			name = &name[1];

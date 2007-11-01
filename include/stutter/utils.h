@@ -16,6 +16,7 @@ int util_expand_str(const char *, char *, int);
 int util_expand_variable(const char *, char *, int, int *);
 int util_emit_str(void *, char *, char *, ...);
 int util_evaluate_command(char *, char *);
+char *util_get_arg(char *, int *);
 
 #endif
 

@@ -4,6 +4,7 @@
  */
 
 #include CONFIG_H
+#include <stutter/utils.h>
 #include <stutter/macros.h>
 #include <stutter/signal.h>
 #include <stutter/frontend.h>
@@ -14,19 +15,20 @@ static int base_cmd_exec_display(void *, fe_execute_t);
 
 int base_cmd_exec(char *env, char *args)
 {
+	int pos = 0;
 	char *flags;
 	void *window;
 	fe_execute_t exec;
 
 	window = fe_get_target(NULL, "text");
-	trim_whitespace_m(args);
+	TRIM_WHITESPACE(args);
 	if (args[0] == '-') {
-		get_param_m(args, flags, ' ');
+		flags = util_get_arg(args, &pos);
 		if (flags[1] == 'o')
 			window = NULL;
 	}
 
-	if (!(exec = fe_execute_open(args, 0)))
+	if (!(exec = fe_execute_open(&args[pos], 0)))
 		return(-1);
 	fe_execute_set_callback(exec, IO_COND_READ, base_cmd_exec_display, window);
 	return(0);

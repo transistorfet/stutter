@@ -8,25 +8,24 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/macros.h>
 #include <stutter/string.h>
 #include <stutter/frontend.h>
 
 int base_cmd_evaluate(char *env, char *args)
 {
 	char *cmd;
+	int pos = 0;
 
 	if (!strncmp(args, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX))) {
 		args = &args[strlen(BASE_COMMAND_PREFIX)];
-		get_param_m(args, cmd, ' ');
+		cmd = util_get_arg(args, &pos);
 	}
-	else if (!env) {
-		get_param_m(args, cmd, ' ');
-	}
+	else if (!env)
+		cmd = util_get_arg(args, &pos);
 	else
 		cmd = env;
 
-	if (util_evaluate_command(cmd, args)) {
+	if (util_evaluate_command(cmd, &args[pos])) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	return(0);

@@ -4,17 +4,15 @@
  */
 
 #include <stutter/key.h>
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_context(char *env, char *args)
 {
 	char *context = NULL;
 
-	trim_whitespace_m(args);
-	if (*args != '\0') {
-		get_param_m(args, context, ' ');
-	}
+	if (*args != '\0')
+		context = util_get_arg(args, NULL);
 	if (select_key_context(context))
 		return(-1);
 	return(0);

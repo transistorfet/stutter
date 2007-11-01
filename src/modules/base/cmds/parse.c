@@ -7,7 +7,6 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/macros.h>
 #include <stutter/string.h>
 #include <stutter/frontend.h>
 

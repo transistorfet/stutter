@@ -170,7 +170,7 @@ struct variable_prototype_s {
 	}
 
 #define EVALUATE_COMMAND_LIST(list) {					\
-	int i;								\
+	int i, pos;							\
 	char *str, *cmd;						\
 	char buffer[STRING_SIZE];					\
 	for (i = 0;list[i];i++) {					\
@@ -178,8 +178,9 @@ struct variable_prototype_s {
 		str = buffer;						\
 		if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))	\
 			str = &str[strlen(BASE_COMMAND_PREFIX)];	\
-		get_param_m(str, cmd, ' ');				\
-		if (util_evaluate_command(cmd, str)) {			\
+		pos = 0;						\
+		cmd = util_get_arg(str, &pos);				\
+		if (util_evaluate_command(cmd, &str[pos])) {			\
 			BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)	\
 		}							\
 	}								\

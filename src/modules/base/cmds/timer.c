@@ -8,7 +8,6 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/macros.h>
 #include <stutter/string.h>
 #include <stutter/frontend.h>
 #include <stutter/frontend/timer.h>
@@ -18,11 +17,12 @@ static int base_cmd_timer_expired(char *, fe_timer_t *);
 int base_cmd_timer(char *env, char *args)
 {
 	int secs;
+	int pos = 0;
 	char *time, *str;
 
-	get_param_m(args, time, ' ');
+	time = util_get_arg(args, &pos);
 	secs = util_atoi(time, 10);
-	if (!(str = create_string("%s", args)) || !fe_timer_create(FE_TIMER_BF_ONE_TIME, secs, (callback_t) base_cmd_timer_expired, str))
+	if (!(str = create_string("%s", &args[pos])) || !fe_timer_create(FE_TIMER_BF_ONE_TIME, secs, (callback_t) base_cmd_timer_expired, str))
 		return(-1);
 	return(0);
 }
@@ -30,11 +30,11 @@ int base_cmd_timer(char *env, char *args)
 
 static int base_cmd_timer_expired(char *args, fe_timer_t *timer)
 {
-	char *cmd, *str;
+	char *cmd;
+	int pos = 0;
 
-	str = args;
-	get_param_m(str, cmd, ' ');
-	if (util_evaluate_command(cmd, str)) {
+	cmd = util_get_arg(args, &pos);
+	if (util_evaluate_command(cmd, &args[pos])) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	destroy_string(args);

@@ -3,24 +3,27 @@
  * Description:		Kick Command
  */
 
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_kick(char *env, char *args)
 {
+	int pos = 0;
 	struct irc_msg *msg;
 	char *channel, *nick;
 	struct irc_server *server;
 
-	if ((*args == '\0') || !(server = irc_current_server()))
+	if (!(server = irc_current_server()))
 		return(-1);
-	get_param_m(args, channel, ' ');
-	get_param_m(args, nick, ' ');
-	if (*args == '\0')
+	channel = util_get_arg(args, &pos);
+	nick = util_get_arg(&args[pos], &pos);
+	if ((*channel == '\0') || (*nick == '\0'))
+		return(-1);
+	if (args[pos] == '\0')
 		msg = irc_create_msg(IRC_MSG_KICK, NULL, NULL, 2, 0, channel, nick);
 	else
-		msg = irc_create_msg(IRC_MSG_KICK, NULL, NULL, 3, 0, channel, nick, args);
+		msg = irc_create_msg(IRC_MSG_KICK, NULL, NULL, 3, 0, channel, nick, &args[pos]);
 	if (!msg)
 		return(-1);
 	irc_send_msg(server, msg);

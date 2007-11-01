@@ -7,6 +7,7 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
+#include <stutter/utils.h>
 #include <stutter/macros.h>
 #include <stutter/memory.h>
 #include <stutter/modules/base.h>
@@ -81,14 +82,14 @@ static void base_timer_destroy(void *value)
 
 static int base_timer_expired(struct base_timer_s *bt, fe_timer_t *timer)
 {
-	char *cmd, *str;
+	char *cmd;
+	int pos = 0;
 	char buffer[STRING_SIZE];
 
 	strncpy(buffer, bt->str, STRING_SIZE - 1);
 	buffer[STRING_SIZE - 1] = '\0';
-	str = buffer;
-	get_param_m(str, cmd, ' ');
-	if (util_evaluate_command(cmd, str)) {
+	cmd = util_get_arg(buffer, &pos);
+	if (util_evaluate_command(cmd, &buffer[pos])) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	return(0);

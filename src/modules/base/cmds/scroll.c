@@ -5,7 +5,7 @@
 
 #include <stdlib.h>
 
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 
@@ -16,7 +16,7 @@ int base_cmd_scroll(char *env, char *args)
 
 	if (!(window = fe_get_target(NULL, "text")))
 		return(-1);
-	get_param_m(args, num, ' ');
+	num = util_get_arg(args, NULL);
 	fe_scroll(window, atoi(num));
 	return(0);
 }

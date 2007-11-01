@@ -4,24 +4,24 @@
  */
 
 #include CONFIG_H
+#include <stutter/utils.h>
 #include <stutter/macros.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_ctcp(char *env, char *args)
 {
-	int i;
+	int pos = 0;
 	char *nick, *cmd;
 	struct irc_server *server;
 
-	if (*args == '\0' || !(server = irc_current_server()))
+	if (!(server = irc_current_server()))
 		return(-1);
-	get_param_m(args, nick, ' ');
-	get_param_m(args, cmd, ' ');
-	for (i = 0;cmd[i] != '\0';i++) {
-		if ((cmd[i] >= 'a') && (cmd[i] <= 'z'))
-			cmd[i] -= 0x20;
-	}
-	irc_ctcp_msg(server, cmd, nick, args);
+	nick = util_get_arg(args, &pos);
+	cmd = util_get_arg(&args[pos], &pos);
+	if ((*nick == '\0') || (*cmd == '\0'))
+		return(-1);
+	UPPERCASE(cmd);
+	irc_ctcp_msg(server, cmd, nick, &args[pos]);
 	return(0);
 }
 

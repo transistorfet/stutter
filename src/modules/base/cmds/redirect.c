@@ -4,21 +4,21 @@
  */
 
 #include CONFIG_H
+#include <stutter/utils.h>
 #include <stutter/signal.h>
-#include <stutter/macros.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_redirect(char *env, char *args)
 {
+	int pos = 0;
 	void *window;
 	char *name, *target;
 
-	trim_whitespace_m(args);
-	get_param_m(args, name, ' ');
-	get_param_m(args, target, ' ');
+	name = util_get_arg(args, &pos);
+	target = util_get_arg(&args[pos], &pos);
 
-	if (*args != '\0')
+	if ((*name == '\0') || (args[pos] != '\0'))
 		return(-1);
 	else if (!strcmp(target, "none")) {
 		signal_disconnect(signal_find_handler(NULL, name, (signal_t) base_sig_print, NULL));

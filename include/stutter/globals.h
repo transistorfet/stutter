@@ -8,9 +8,6 @@
 
 #include <string.h>
 
-#define ERR_OUT_OF_MEMORY		-10
-#define ERR_COMMAND_NOT_FOUND		-11
-
 #define IO_COND_READ			0x01
 #define IO_COND_WRITE			0x02
 #define IO_COND_ERROR			0x04

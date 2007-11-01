@@ -16,10 +16,11 @@
 int base_cmd_source(char *env, char *args)
 {
 	FILE *fptr;
+	int pos = 0;
 	char *str, *cmd;
 	char buffer[STRING_SIZE];
 
-	get_param_m(args, str, ' ');
+	str = util_get_arg(args, NULL);
 	// TODO replace this getenv with something that can get you a home dir on windows too
 	if ((*str == '~') && (cmd = getenv("HOME"))) {
 		snprintf(buffer, STRING_SIZE, "%s%s", cmd, &str[1]);
@@ -32,14 +33,14 @@ int base_cmd_source(char *env, char *args)
 	}
 
 	while ((str = fgets(buffer, STRING_SIZE, fptr))) {
-		trim_whitespace_m(str);
+		TRIM_WHITESPACE(str);
 		if ((cmd = strpbrk(str, "\n\r")))
 			*cmd = '\0';
 		if ((*str != '\0') && (*str != '#')) {
 			if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
 				str = &str[strlen(BASE_COMMAND_PREFIX)];
-			get_param_m(str, cmd, ' ');
-			if (util_evaluate_command(cmd, str)) {
+			cmd = util_get_arg(str, &pos);
+			if (util_evaluate_command(cmd, &str[pos])) {
 				BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 			}
 		}

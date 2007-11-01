@@ -6,23 +6,23 @@
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_server(char *env, char *args)
 {
-	int portnum;
+	int portnum, pos = 0;
 	void *window, *frame;
 	struct irc_server *server;
 	char *address, *port, *nick;
 
-	if ((*args == '\0'))
+	if (*args == '\0')
 		return(-1);
-	get_param_m(args, address, ' ');
-	get_param_m(args, port, ' ');
+	address = util_get_arg(args, &pos);
+	port = util_get_arg(&args[pos], &pos);
 	portnum = (*port == '\0') ? IRC_DEFAULT_PORT : atoi(port);
-	get_param_m(args, nick, ' ');
+	nick = util_get_arg(&args[pos], &pos);
 	if (*nick == '\0')
 		nick = IRC_DEFAULT_NICK;
 

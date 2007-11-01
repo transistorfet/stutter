@@ -8,7 +8,7 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/string.h>
 #include <stutter/variable.h>
 #include <stutter/frontend.h>
@@ -18,8 +18,8 @@ int base_cmd_remove(char *env, char *args)
 {
 	char *name;
 
-	get_param_m(args, name, ' ');
-	if (remove_variable(NULL, NULL, name)) {
+	name = util_get_arg(args, NULL);
+	if ((*name == '\0') || remove_variable(NULL, NULL, name)) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_REMOVE_FAILED, name)
 		return(-1);
 	}

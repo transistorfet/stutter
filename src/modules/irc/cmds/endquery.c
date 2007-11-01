@@ -4,7 +4,7 @@
  */
 
 #include CONFIG_H
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -17,8 +17,7 @@ int irc_cmd_endquery(char *env, char *args)
 	if (!(server = irc_current_server()))
 		return(-1);
 
-	get_param_m(args, name, ' ');
-
+	name = util_get_arg(args, NULL);
 	if (*name != '\0') {
 		if (!(channel = irc_find_channel(server->channels, name)))
 			return(-1);

@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 #include CONFIG_H
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
@@ -17,7 +17,7 @@ int irc_cmd_query(char *env, char *args)
 	struct irc_server *server;
 	struct irc_channel *channel;
 
-	get_param_m(args, name, ' ');
+	name = util_get_arg(args, NULL);
 	if ((*name == '\0') || !(server = irc_current_server()))
 		return(-1);
 	if (name[0] == '#' || name[0] == '&' || name[0] == '+' || name[0] == '!')

@@ -3,7 +3,7 @@
  * Description:		Close Window Command
  */
 
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 
@@ -12,7 +12,7 @@ int base_cmd_close(char *env, char *args)
 	char *name;
 	void *window;
 
-	get_param_m(args, name, ' ');
+	name = util_get_arg(args, NULL);
 	if (*name != '\0') {
 		if (!(window = fe_find_widget(name)))
 			return(-1);

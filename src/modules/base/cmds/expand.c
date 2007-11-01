@@ -7,12 +7,12 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/macros.h>
 #include <stutter/string.h>
 #include <stutter/frontend.h>
 
 int base_cmd_expand(char *env, char *args)
 {
+	int pos = 0;
 	char *str, *cmd;
 	char buffer[LARGE_STRING_SIZE];
 
@@ -21,9 +21,9 @@ int base_cmd_expand(char *env, char *args)
 	str = buffer;
 	if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
 		str = &str[strlen(BASE_COMMAND_PREFIX)];
-	get_param_m(str, cmd, ' ');
+	cmd = util_get_arg(str, &pos);
 
-	if (util_evaluate_command(cmd, str)) {
+	if (util_evaluate_command(cmd, &str[pos])) {
 		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
 	}
 	return(0);

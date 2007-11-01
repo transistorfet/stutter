@@ -3,7 +3,7 @@
  * Description:		Select Window Command
  */
 
-#include <stutter/macros.h>
+#include <stutter/utils.h>
 #include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 
@@ -12,7 +12,7 @@ int base_cmd_select(char *env, char *args)
 	char *id;
 	void *window;
 
-	get_param_m(args, id, ' ');
+	id = util_get_arg(args, NULL);
 	if (!(window = fe_find_widget(id)))
 		return(-1);
 	if (!fe_show_widget(window))
