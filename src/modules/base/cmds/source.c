@@ -15,8 +15,8 @@
 
 int base_cmd_source(char *env, char *args)
 {
+	int pos;
 	FILE *fptr;
-	int pos = 0;
 	char *str, *cmd;
 	char buffer[STRING_SIZE];
 
@@ -33,6 +33,7 @@ int base_cmd_source(char *env, char *args)
 	}
 
 	while ((str = fgets(buffer, STRING_SIZE, fptr))) {
+		pos = 0;
 		TRIM_WHITESPACE(str);
 		if ((cmd = strpbrk(str, "\n\r")))
 			*cmd = '\0';
