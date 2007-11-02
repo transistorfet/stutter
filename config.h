@@ -411,14 +411,14 @@
 /** Key Bindings */
 #define ADD_BINDINGS()	\
 	BIND_KEY("\n", "base.parse", "irc.activate")	\
-	BIND_KEY("\x03", "base.quit", NULL)	\
-	BIND_KEY("\x09", "irc.complete", NULL)	\
-	BIND_KEY("\x0b", "fe.insert", "\x03")	\
-	BIND_KEY("\x10", "base.scroll", "1")	\
-	BIND_KEY("\x11", "fe.previous", NULL)	\
-	BIND_KEY("\x15", "base.clearline", NULL)	\
-	BIND_KEY("\x18", "fe.next", NULL)	\
-	BIND_KEY("\x19", "base.scroll", "-1")	\
+	BIND_KEY("\t", "irc.complete", NULL)	\
+	BIND_KEY("^c^x", "base.quit", NULL)	\
+	BIND_KEY("^k", "fe.insert", "\x03")	\
+	BIND_KEY("^p", "base.scroll", "1")	\
+	BIND_KEY("^q", "fe.previous", NULL)	\
+	BIND_KEY("^u", "base.clearline", NULL)	\
+	BIND_KEY("^x", "fe.next", NULL)	\
+	BIND_KEY("^y", "base.scroll", "-1")	\
 
 
 /** Variables */
