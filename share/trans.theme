@@ -1,0 +1,19 @@
+#
+# Name:		trans.theme
+# Description:	My default colour theme
+#
+
+set fe.fg white
+set fe.bg black
+set fe.theme.bracket default,default,bold
+set fe.theme.channel green
+set fe.theme.error bright red
+set fe.theme.message white
+set fe.theme.nick white
+set fe.theme.server white
+set fe.theme.status blue
+set fe.theme.statusbar ,,inverse
+set fe.theme.timestamp white
+set fe.theme.topic green
+
+
