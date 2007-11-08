@@ -1,0 +1,15 @@
+
+set fe.fg white
+set fe.bg black
+set fe.theme.bracket default,default,bold
+set fe.theme.channel green
+set fe.theme.error bright red
+set fe.theme.message blue,,bold
+set fe.theme.nick green,,bold
+set fe.theme.server white
+set fe.theme.status blue
+set fe.theme.statusbar ,,inverse
+set fe.theme.timestamp red,,bold
+set fe.theme.topic green
+
+
