@@ -301,6 +301,9 @@ int fe_net_handle_message(int socket, int condition, int error)
 	fe_network_t cur;
 	struct timeval timeout = { 0, 0 };
 
+	if (condition != FD_READ)
+		return(-1);
+
 	cur = net_list;
 	while (cur) {
 		if (cur->socket == socket) {
