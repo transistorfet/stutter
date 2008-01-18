@@ -16,14 +16,15 @@ int irc_msg_names(char *env, struct irc_msg *msg)
 	char *name;
 	int pos = 0;
 	int bitflags;
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 	struct irc_channel *channel;
 
 	if (!(channel = irc_find_channel(msg->server->channels, msg->params[2])) && !(channel = irc_current_channel()))
 		return(-1);
 	IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_NAMES)
 
-	strcpy(buffer, msg->text);
+	strncpy(buffer, msg->text, LARGE_STRING_SIZE - 1);
+	buffer[LARGE_STRING_SIZE] = '\0';
 	while (buffer[pos] != '\0') {
 		bitflags = 0;
 		name = util_get_arg(&buffer[pos], &pos);
