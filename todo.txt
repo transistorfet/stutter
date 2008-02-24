@@ -1,54 +1,41 @@
 
-	* if you make advice macros be inline functions instead, you have issue with the now missing semicolon
-	* remove the silly stuff from the comments block
-	* convert macros to the all caps scheme!
-	* clean up irc server, especially try to combine the destruction of the server struct into a single
-	  function (right now there is 2 destroys, one in release and one in destroy)
+   ****** CHANGE THE WAY YOU DO POINTER ARITHMETIC! apparently i just need to do (ptr + 1) so long as ptr is
+	  cast to the type i want to add
 
-	* change server irc.nick storage method
-	* possibly change the naming scheme for types
-	* add the ordering ability thing to the config script
-	* add a simple makefile/.mk file output from the config script (since the config file has module and
-	  frontend statements and therefore knows what to attempt to compile)
-	* write a scripty thing to compile a list of all the default settings in the config scripts and write
-	  them into a file as comments (a file that the user will edit) so that they know what options are
-	  available
+	* When a list is created, an offset is associated with it such that all items passed to the list
+	  adjust for the offset
+	* comparison/hash functions are defined in the module that includes the list header (?)
 
-
-	* segfault once occurred with a bt showing fe_timer_check() at line 148
-	* segfaulty thing when there was a netsplit and we were doing an autoreconnect there was a segfault
-	  at the actual call to shutdown() on the socket most likely because we forget to set server->net
-	  to NULL at one point.
-
-	* add an active IRC ping thing
-	* modify fe.insert to allow escapes to insert unusual characters
-	* see how vim handles/converts input and see if you can have vim's key names
-	* make an irc key context
-	* add a way to get the current context name (perhaps through a variable)
 	* fix certain commands such as bind and perhaps context and many others to check for proper
 	  parameters instead of attempting to evaluate the command anyways
+	* if you make advice macros be inline functions instead, you have issue with the now missing semicolon
+	  (but you can add a semicolon to the register joinpoint specifier)
 
-	* work on API documentation
+	* move over to git
+	* should, given git's submodule system, stutter's directory structure be changed so that modules can
+	  be stored in git as submodules?
 
-	* add traverse functions to the channel and user list types.
-	* modify the irc types to return list types if referenced with direct names instead of returning NULL
-	* add SCC_SET_FOCUS handler to win32 terminal
-	* convert the terminal def_attrib variable to an attrib:fe type so you can set the style
+	* make it so that you can use stutter as a platform for writing command line utilies/servers so that
+	  if you compile stutter a certain way, you can make a simple network server using a few config
+	  options such as one to control a media player through exec and it's command line utilities. (ie.
+	  sits on the network as a server and exec's commands as requests come in)
 
-	* perhaps you can add a sorta WCC_SET_INVISIBLE/WCC_SET_VISIBLE and have them set bitflags so that
-	  it is easy to know if a widget is visible or not (and then you can do scrollbar things as well)
-	* how will you initialize the target widget of input and how will you change/set the target widget?
-	* make a config system things for adding layout types (a way to register widget types) (init.h macros?)
+Structural Issues:
 
-	* finish implementing the win32 menu system
-	* you can have a command "fe.dialogue <diag-name> <params>" in the win32 frontend that pops up a
-	  dialogue by the given name (stored in a list probably by a dialogue.c manager in the core)
-	* how is the win32 config defs going to work?
-
-	* how will you specify things like adding a widget to the current frame?  Who will add the widget
-	  to the frame, how does it know to do that, and how will it have access to that?  Perhaps it can be
-	  in the properties for the widget
-	* where should the xml parser go?  in the frontend or the core?
+	* where should errors generally be printed from even using joinpoints?  Is it ok to have the net
+	  code printing errors (in the case of the retries there isn't *that* much choice but perhaps there
+	  is).  Would it be better for the command that attempts to connect to report the failure to connect
+	  or should net_connect do that before it returns NULL?  (For example, the net.c's failed to connect
+	  message is always printed before the unable to reconnect message when stutter is disconnected from
+	  irc.)
+	* can we use macros to implement the ability to set at compile time which parameters are compiled
+	  in and which are modifiable variables?  how will we handle this for all the things in config.h
+	* should you make a seperate include/ dir for each module/frontend?
+	* can/should we make complex and/or expensive operations compile-time options (at least as long
+	  as the operation can be disabled without causing trouble)? (like vim does with its FEAT_...)
+	* should you move the commmon/utils headers to the include/ dir?
+	* can you add special comments that a perl script can use to create at least part of the defaults.cfg
+	  file?  Is this even a good idea?
 
 	* you could have special variable tables like irc.on_msg where you add variables that are commands
 	  and when a message comes in, it traverses all the variables in the table and evaluates them with
@@ -58,67 +45,18 @@
 	  this is related to the evaluating of commands based on signals (make irc dispatch into joinpoints
 	  with the default joinpoint being the message handler
 
-	* should we disallow widgets to have the same id?  should we allow multiple ids and always add a
-	  unique numbered id?  (this could cause a problem with the widget remove which at the moment uses
-	  the id to find the widget).
+	* where should the xml parser go?  in the frontend or the core?
 
-	* region rejects widgets being added before we've resized it but that is causing some troubles with
-	  initialization (you have to make region a non-zero size before adding widget).  Should region
-	  instead allow widgets to be added when they don't fit or should you just size region before the
-	  terminal resizes it properly?
-
-	* make bind key do the variable lookup itself but if you do, should you allow a path index lookup
-	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
-	  the /bind command use path.<name> for the command name (at least if no . is found).
-
-	* finish/fix up region particularily the handling of MODIFY_SIZE and possibly re-write split
-	* finish the fe_resize implementation in fe.c
- 	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
-	  or is it the job of the code that sets the surface to also do a resize?
-	* add something to the hash/linear/etc lists that allowing you to find multiple entires with the
-	  same "key"
-
-	* you could make the list a void * and type pair which means it can be tied to the variable tree but
-	  it doesn't have to be.  The list widget would then want to do a traverse and stringify for each entry
-	  which hopefully would do what is wanted.  Or should there be perhaps a more advanced list widget
-	  that can collect bits of information into entries (ie. for an irc list of nicks in a channel, it
-	  gets the list.name entry for the name and the list.is_op entry to decide if it should display a gold
-	  star icon next to the entry) (either way it is an entirely frontend based system that uses a
-	  list in the variable system with only the possibly of an unattached list needing direct input from
-	  outside of the frontend).
-
-Structural Issues:
-	* should windows be able to have 2 or more names ("#philosophy", "1", "otherside/#philosophy") or
-	  should it be able to have only one name and a number which can be easily changed so that windows
-	  can be accessed by number and the order can be switched. (or both?)  Could we have all the names
-	  in one string like "otherside/#philosophy,#philosophy".  It probably is possible to do this using
-	  multiple entries for the same node in the table and using strstr or something to compare the names
-	  after the hash number has been found.
-	* where should errors generally be printed from even using joinpoints?  Is it ok to have the net
-	  code printing errors (in the case of the retries there isn't *that* much choice but perhaps there
-	  is).  Would it be better for the command that attempts to connect to report the failure to connect
-	  or should net_connect do that before it returns NULL?  (For example, the net.c's failed to connect
-	  message is always printed before the unable to reconnect message when stutter is disconnected from
-	  irc.)
-
-	* you need to re-evaluate the whole config system.  The biggest fuckup is with things that take
-	  multiple options like lists of commands and joinpoints and such.  A perl script of some sort might
-	  be useful for configuring these.  (as well as for enabling/disabling features)  See the options
-	  example file.  The options files could be stored in the module directories
+    Core:
 
 	* is there a way to have multiple layers of key contexts so for example, a global context and then
 	  an irc context an irc:userlist context (for doing stuff inside of a userlist widget)? Could this
 	  even be implemented without a structural change, just using context names with funny characters?
 	  (If a key is not found in userlist:irc then it checks irc and then global).
 	* can anything be done about the sorta messiness of the joinpoints?
-	* should joinpoint's default settings be defined inside the appropriate source file using an #ifndef
-	  check?  If this was the case, every file would have to have its own joinpoint for something and
-	  a global default value would still have to be around that the default values refer to
 	* should all instances of stringify that are accessable to the user do an index (path lookup) so
 	  that all variables can be accessed indirectly and not just commands? (eg /get current_nick will
 	  stringify "irc.current_nick")
-	* can we use macros to implement the ability to set at compile time which parameters are compiled
-	  in and which are modifiable variables?  how will we handle this for all the things in config.h
 	* should the stringify and evaluate type functions take a parameter (string or number?) to specify
 	  the "type" of operation?  This for example, would let you get the real value and formatted value
 	  of a format type.  For stringify it could be a string that specifies the format.  It could be
@@ -134,14 +72,45 @@ Structural Issues:
 	  sending an optional destroy function that can is called when a type is destroyed.  For things
 	  where the pointer may be used multiple times but still needs to be destroyed, a simple refcount
 	  can be used in the pointer and the destroy func.
-	* should you make a seperate include/ dir for each module/frontend?
-	* should you add parameter names to all function prototypes?  The difference is just readability vs
-	  naming conflicts (macros mostly).
 	* should we make net and exec be able to have a different callback for each different condition?
 	  (read/write/error/etc).
 	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
 	  of pointers that is passed to the handlers along with the size of the array?  Would this make
 	  things too specific to a particular signal that is handled?  Is that a bad thing?
+	* make bind key do the variable lookup itself but if you do, should you allow a path index lookup
+	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
+	  the /bind command use path.<name> for the command name (at least if no . is found).
+
+    IRC Module:
+
+	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages? instead of just
+	  dispatching select messages like privmsg and notice (which would require a rewrite of the message
+	  handlers to check for an outbound message))
+
+    Frontend:
+
+	* can you make a special frontend/module pair such that the stutter core can be a daemon process and
+	  you connect through a socket/dbus/something with a frontend version.  You then can use the frontend
+	  locally or remotely to control the core where all the functionality is.
+	* you could make the list a void * and type pair which means it can be tied to the variable tree but
+	  it doesn't have to be.  The list widget would then want to do a traverse and stringify for each entry
+	  which hopefully would do what is wanted.  Or should there be perhaps a more advanced list widget
+	  that can collect bits of information into entries (ie. for an irc list of nicks in a channel, it
+	  gets the list.name entry for the name and the list.is_op entry to decide if it should display a gold
+	  star icon next to the entry) (either way it is an entirely frontend based system that uses a
+	  list in the variable system with only the possibly of an unattached list needing direct input from
+	  outside of the frontend).
+	* how can you control a list widget such as a users list where names are added and deleted?  It could
+	  be an variable (either assigned as a name that is looked up or as just a value and type (which means
+	  it doesn't have to acutally be added to the variable list)) and then the traverse function is used
+	  to get each item in the list and stringify is done on it.
+	* should windows be able to have 2 or more names ("#philosophy", "1", "otherside/#philosophy") or
+	  should it be able to have only one name and a number which can be easily changed so that windows
+	  can be accessed by number and the order can be switched. (or both?)  Could we have all the names
+	  in one string like "otherside/#philosophy,#philosophy".  It probably is possible to do this using
+	  multiple entries for the same node in the table and using strstr or something to compare the names
+	  after the hash number has been found.
+	* how will multiple terminals work in curses?  how will input work with multiple terminal?
 
 	* should there be 2 region widgets (one handling horizontal and one vertical organization) or should
 	  there be one that handles both directions (but not necessarily at the same time)?
@@ -153,31 +122,43 @@ Structural Issues:
 	  so we could do the same thing as with MODIFY_SIZE
 	* should there be a function in the fe that returns the id of a widget given a pointer to it?  Should
 	  there be a way to change the id?  properties (such as title)?
-	* how will multiple terminals work in curses?  how will input work with multiple terminal?
-	* how can you control a list widget such as a users list where names are added and deleted?  It could
-	  be an variable (either assigned as a name that is looked up or as just a value and type (which means
-	  it doesn't have to acutally be added to the variable list)) and then the traverse function is used
-	  to get each item in the list and stringify is done on it.
+
 	* how will you deal with adding a new widget?  There should be a way to specify (perhaps in the layout
 	  if possible) where the new widget should be put (such as in a particularily named frame).  Then the
 	  content portion does not need to know where the widget goes.  It could perhaps be a property in the
 	  root widget's definition or perhaps a "special" layout type that instead of generating a widget,
 	  creates a widget defined as a child and then adds it via the method specified in its properties
 	* should all widgets inherit from a widget superclass?
+	* should we disallow widgets to have the same id?  should we allow multiple ids and always add a
+	  unique numbered id?  (this could cause a problem with the widget remove which at the moment uses
+	  the id to find the widget).
+	* how will you specify things like adding a widget to the current frame?  Who will add the widget
+	  to the frame, how does it know to do that, and how will it have access to that?  Perhaps it can be
+	  in the properties for the widget
+	* perhaps you can add a sorta WCC_SET_INVISIBLE/WCC_SET_VISIBLE and have them set bitflags so that
+	  it is easy to know if a widget is visible or not (and then you can do scrollbar things as well)
+	* how will you initialize the target widget of input and how will you change/set the target widget?
 
-	* should irc_send_msg dispatch the message (and thus dispatch all outbound messages? instead of just
-	  dispatching select messages like privmsg and notice (which would require a rewrite of the message
-	  handlers to check for an outbound message))
-
-	* can/should we make complex and/or expensive operations compile-time options (at least as long
-	  as the operation can be disabled without causing trouble)? (like vim does with its FEAT_...)
-	* should you move the commmon/utils headers to the include/ dir?
+	* region rejects widgets being added before we've resized it but that is causing some troubles with
+	  initialization (you have to make region a non-zero size before adding widget).  Should region
+	  instead allow widgets to be added when they don't fit or should you just size region before the
+	  terminal resizes it properly?
+ 	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
+	  or is it the job of the code that sets the surface to also do a resize?
+	* how is the win32 config defs going to work?
 
 Bugs:
+
+	* there is a bug such that if you quit using the keybinding (^C^X) then it prints (null) as the
+	  quit message instead of printing the default quit message
+
+	* there is a bug such that a CTCP action message coming from freenode caused a NULL string to be
+	  passed from irc_format_msg to irc_format_parse_text.  The NULL string was part of the CTCP struct
+	  in the irc_msg struct.  The CTCP in queostion appears to have been \x01ACTION \0x1.  This appears
+	  to be a parsing issue in msg.c
+
 	* there is a bug such that if you try to say something in the status window, the server says no such
 	  nick
-	* the windows version sometimes hangs up when printing the motd and wont change the display but you
-	  can still type and the statusbar updates.
 	* when a character that is displayed with 2 characters is entered (such as ^C) the cursor is only
 	  moved one character forward so when you enter more characters, they show up in further to the left
 	  than expected
@@ -200,77 +181,128 @@ Bugs:
 	  segfault occurred.
 	* Segfault in text_print after allocating the node's memory, the node address appears to be non-zero
 	  yet invalid (viewed in a coredump.  i have no idea why this would have happened)
+	* segfaulty thing when there was a netsplit and we were doing an autoreconnect there was a segfault
+	  at the actual call to shutdown() on the socket most likely because we forget to set server->net
+	  to NULL at one point.
+
+    Frontend:
+
+	* the windows version sometimes hangs up when printing the motd and wont change the display but you
+	  can still type and the statusbar updates.
 
 General:
-	* work on the new build system
-	* add an X11 frontend
-	* make a jabber module?
 
-	* convert some of the modules that use linear lists to use the static inlines version of it instead
-	* consider converting code to use constants and enums for some of the things that aren't configs
+	* in types/command.c, evaluate function always returns -1 but i don't know why.  Is it a hack?
+	* get doxygen working
+	* work on API documentation
+
+    Refactoring:
+
+	* convert macros to the all caps scheme!
+	* go through and make use of const where possible in parameters
 	* consider converting bitflags to bitfield structs unioned with the bitflags (so that it's still
 	  easy to copy them).
-	* go through and make use of const where possible in parameters
+	* consider converting code to use constants and enums for some of the things that aren't configs
+	* convert some of the modules that use linear lists to use the static inlines version of it instead
+	* possibly change the naming scheme for types
+
+    Config System:
+
+	* can you make it possible to refer to #define values in values (variables) defined in the config
+	* add the irc.version variable
+	* add the ability to have duplicate "add" things (for handlers) (you need a way to pervent duplicate
+	  entries where for example an option in enabled twice)
+	* add type checking to the config script things (make sure values are a string with "" or a number
+	  without and possibly automatically add semicolons to joinpoints)
+	* add a simple makefile/.mk file output from the config script (since the config file has module and
+	  frontend statements and therefore knows what to attempt to compile)
+	* write a scripty thing to compile a list of all the default settings in the config scripts and write
+	  them into a file as comments (a file that the user will edit) so that they know what options are
+	  available
+	* add a way to define widget layouts.  This might be a different system that uses XML
+
+    IRC Module:
+
+	* clean up irc server, especially try to combine the destruction of the server struct into a single
+	  function (right now there is 2 destroys, one in release and one in destroy)
+
+	* fix the version response (probably due to a missing irc.version variable)
+	* make an irc key context
+	* add channel and user mode bit stringification (probably through some kind of variable type)
+	* add server name to notice messages
+	* add traverse functions to the channel and user list types.
+	* modify the irc types to return list types if referenced with direct names instead of returning NULL
+
+	* make ping do milliseconds
+	* modify channel.c to use a hash table instead of the linear list for storing users
+	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
+	  addresses)
+
+	* convert text.c and server.c/msg.c to use the new queue functions if it is easily possible
+	* should irc_server_disconnect send the quit message (the quit message being passed to the function?)
+	* get realname, nick from current user's info (on unix) (store in a "realname" variable?)
+	* add an irc list command
+	* pass realname to server when connecting (base it on a "realname" variable?)
+	* add dcc support
+	* add an active IRC ping thing
+
+    Frontend:
+
+	* modify fe.insert to allow escapes to insert unusual characters
 	* fix text.c to properly display tab characters (perhaps you could modify irc_format_msg instead
 	  to expand tabs and/or to filter out non-printable characters such as backspace and other control
 	  codes)
-
-	* add scrollwheel message handlers to the win32 frontend and use joinpoints to define the behaviour
-	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
-	* change the comment block format at the top of each source file
-	* for each command write a proper description of the command's use in the source file itself either
-	  as a comment or as a variable of some kind that is accessable to some kind of help system.
-
-	* add a way to disable the nicktable feature
-	* add a version string
-	* implement execute.c for win32
-	* add a function fe_prompt(char *prompt, char *buffer, int max) that prompts the user for input
-	  by some appropriate frontend method (to be used for example to prompt yes or no when quitting)
-	* add a flag option to the quit command that causes it to prompt yes/no before quitting
-	* convert text.c and server.c/msg.c to use the new queue functions if it is easily possible
-	* make everything unicode/UTF-8 capable
-	* fix fonts in win32 fe (particularily adding the expression of the bold attribute)
-
-	* should irc_server_disconnect send the quit message (the quit message being passed to the function?)
-	* add server name to notice messages
-	* report when a command fails?
-	* make the disconnect error print to all windows instead of just the current one (using joinpoints)
-	* make an email checker timed event
-
-	* do better parsing of args in commands and such (so you can use "" in particular)
-	* add dcc support
-	* have an "activity" status indicator in the status bar so you know when stuff has been said and
-	  in what channels
-	* can you make generic keybindings for selecting windows (does this require window numbers?)?
-	* get realname, nick from current user's info (on unix) (store in a "realname" variable?)
-	* pass realname to server when connecting (base it on a "realname" variable?)
-	* add list command
-	* add home/end functions to be keybound
 	* add functions for insert_char, delete_char, move cursor, scroll history, etc (command variables)
-	* add unalias command
 	* add a beep (maybe using an fe_beep() function which is called from irc_format_msg)?
-	* add channel and user mode bit stringification (probably through some kind of variable type)
-
-	* add UDP support to the net interface.
-	* make ping do milliseconds
-	* make a directory of configs for runtime configuration files
-	* do better parsing of arguments in execute.c
-	* make a configuration/compilation script that builds the makefiles
-	* modify channel.c to use a hash table instead of the linear list?
-	* distinguish between server and irc network? (a network is an "irc_server" with a list of server
-	  addresses)
-	* add a function to key.c to get the current binding of a key sequence (without processing)
 	* can you make the frontend colour type common colour names system a little nicer and fuller?
 	* add a prompt to the input widget (that you can set through the variable system?)
 	* make all the colour mappings reassignable
-	* make an online help system
+	* add UDP support to the net interface.
+	* can you make a method of specifying windows (in order to select them) through numbers such that it
+	  is possible to have key bindings for ALT-# keys to switch windows?
+	* convert the terminal def_attrib variable to an attrib:fe type so you can set the style
 
+	* have an "activity" status indicator in the status bar so you know when stuff has been said and
+	  in what channels
+	* add a function fe_prompt(char *prompt, char *buffer, int max) that prompts the user for input
+	  by some appropriate frontend method (to be used for example to prompt yes or no when quitting)
+	* finish/fix up region particularily the handling of MODIFY_SIZE and possibly re-write split
+	* finish the fe_resize implementation in fe.c
+
+	* fix up colour handling in curses/terminal.c (the add colour pair stuff)
+
+	* add SCC_SET_FOCUS handler to win32 terminal
+	* fix fonts in win32 fe (particularily adding the expression of the bold attribute)
+	* implement execute.c for win32
+	* add scrollwheel message handlers to the win32 frontend and use joinpoints to define the behaviour
+	* finish implementing the win32 menu system
+	* you can have a command "fe.dialogue <diag-name> <params>" in the win32 frontend that pops up a
+	  dialogue by the given name (stored in a list probably by a dialogue.c manager in the core)
+
+    Core:
+
+	* add a way to get the current context name (perhaps through a variable)
+	* add a find_next function to hash/linear/queue
+	* add a version string
+	* add unalias command
+	* make a common method of identifying keys to be bound (particularily keys like home/end/etc)
+	* do better parsing of arguments in execute.c
+	* add a function to key.c to get the current binding of a key sequence (without processing)
+	* make the disconnect error print to all windows instead of just the current one (using joinpoints)
+	* add a system of returning common error codes from commands and printing generic error messages
+	  for those commands common to all commands (such as command failed messages)
+
+	* add a flag option to the quit command that causes it to prompt yes/no before quitting
+	* make an online help system
 	* can we fix the handling of the no remove flag in variables so that is doesn't remove the node
 	  from the list before checking the flag and readding it when it finds it's not suppose to remove it?
 	* optimize for space and speed (re-evaluate things).
 	* add the slab allocator
 	* catch the ^C signal to cancel a connect (make a way to interrupt an operation)
 	* add a SIGWINCH handler to curses terminal
+	* make an email checker timed event
+
+	* make everything unicode/UTF-8 capable
 
 Features:
 	* logging plugin
@@ -282,7 +314,14 @@ Features:
 	* file manager module/capability
 	* shell capabilities
 
+	* X11 frontend
+	* jabber module?
+
 	* scripting support (possible scripts/applets could be random picture displayer, system monitor,
 	  RSS, etc) (google desktop)
 
+Website:
+	* add documentation to the website
+	* add screenshots to your own website page
+	* maybe make it look a bit more pretty?
 
