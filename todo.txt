@@ -1,4 +1,27 @@
 
+	* should we move keybindings to the frontend (at least the common frontend)?
+	* should we remove signals/hooks?
+	* make everything stored in a variable be an object with a central object system
+	* make timers more secure through the object system by making them objects themselves or making them
+	  part of the objects they control (same with signals/hooks if we keep them around?)
+	* we could possibly remove the frontend API completely and instead use commands and signals for
+	  everything but that might be a bit too limiting, at least at this point
+
+	* there is still a bug in timer or something, after a reconnect, the value of cur (linke 141) was
+	  invalid, i assume from the timer being destroyed at some point.
+
+	* i don't like the way signals are currently done, it seems too complex.  Or maybe it just needs
+	  better safety and stability
+	* maybe we can change the names/perspective of signals to "hooks"?
+	* joinpoints are ugly and complex. can we fix this?
+	* i don't like the way the irc msg dispatch works currently
+	* i don't like the lack of isolation between the frontend and the rest of the system.  Can we
+	  modify it so that all callbacks use the signals/hooks system (semitransparently perhaps, this might
+	  require improvements in the signals/hooks functions).  It should be a simple matter to completely
+	  detatch the frontend from the core although this might still require a basic frontend to convert
+	  all calls between the 2 seperate processes into a datastream.
+
+
    ****** CHANGE THE WAY YOU DO POINTER ARITHMETIC! apparently i just need to do (ptr + 1) so long as ptr is
 	  cast to the type i want to add
 
