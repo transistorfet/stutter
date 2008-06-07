@@ -196,7 +196,7 @@
 #define SIGNAL_OBJECTS_LOAD_FACTOR               0.75
 #define SMALL_STRING_SIZE                        128
 #define STRING_SIZE                              512
-#define STUTTER_VERSION                          "0.4-alpha"
+#define STUTTER_VERSION                          "0.4"
 #define TYPE_LIST_GROWTH_FACTOR                  1.75
 #define TYPE_LIST_INIT_SIZE                      20
 #define TYPE_LIST_LOAD_FACTOR                    0.75

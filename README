@@ -1,15 +1,15 @@
 
-Stutter 0.3
-2007/01/22
+Stutter 0.4
+2008/06/06
 
 Introduction:
 	Stutter is modular communications platform.  Currently it has an IRC
 	module and a unix curses and windows frontend.
 
-	A lot has changed since v0.2 (again mostly backend type stuff).  There
-	are now 2 working frontends (but still only the IRC module).  Colours
-	are now supported but the frontends are not yet dynamically
-	configurable (but they are closer to being so).
+	A lot has changed since v0.3 (again mostly backend type stuff).  This
+	release has been ready but unreleased for a while and the release of it
+	is fairly rushed.  Version 0.5 is already in development with much
+	refactoring being done.  This release also is the first to use git.
 
 Compiling & Installing:
 	Stutter has a number of compiled in default values and settings that
