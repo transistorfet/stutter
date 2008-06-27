@@ -3,13 +3,14 @@
  * Description:		Utilities
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #include CONFIG_H
-#include <stutter/type.h>
 #include <stutter/signal.h>
 #include <stutter/macros.h>
 #include <stutter/string.h>
+#include <stutter/object.h>
 #include <stutter/variable.h>
 #include <stutter/utils.h>
 
@@ -281,7 +282,7 @@ int util_expand_variable(const char *str, char *buffer, int max, int *str_count)
 		delim = ' ';
 
 	name = buffer;
-	for (k = 0;(str[i] != '\0') && (str[i] != delim) && is_variable_char_m(str[i]) && (k < max - 1);k++, i++)
+	for (k = 0;(str[i] != '\0') && (str[i] != delim) && IS_VARIABLE_CHAR(str[i]) && (k < max - 1);k++, i++)
 		buffer[k] = str[i];
 	buffer[k] = '\0';
 	if (stringify_variable(NULL, name, value, STRING_SIZE) >= 0) {
@@ -314,7 +315,9 @@ int util_emit_str(void *obj, char *name, char *fmt, ...)
 	va_start(va, fmt);
 	if (vsnprintf(buffer, STRING_SIZE, fmt, va) < 0)
 		return(-1);
-	return(emit_signal(obj, name, buffer));
+	// TODO decide on how to do signals
+	//return(emit_signal(obj, name, buffer));
+	return(-1);
 }
 
 /**
@@ -323,16 +326,16 @@ int util_emit_str(void *obj, char *name, char *fmt, ...)
  * of that variable passing it the rest of the command string.  If an error
  * occurs then -1 is returned otherwise 0 is returned.
  */
-int util_evaluate_command(char *cmd, char *str)
+int util_evaluate_command(char *cmd, char *args)
 {
-	void *value;
-	struct type_s *type;
+	struct variable_s *var;
 
-	if (!(value = index_variable(NULL, PATH_VARIABLE_NAME, cmd, &type)) && !(value = find_variable(NULL, cmd, &type)))
+	if (!(var = index_variable(NULL, PATH_VARIABLE_NAME, cmd, NULL))
+	    && !(var = find_variable(NULL, cmd, NULL)))
 		return(-1);
-	if (!type || !type->evaluate)
+	if (!VARIABLE_GET_TYPE(var)->evaluate)
 		return(-1);
-	type->evaluate(value, str);
+	VARIABLE_GET_TYPE(var)->evaluate(var, args);
 	return(0);
 }
 

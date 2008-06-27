@@ -8,80 +8,79 @@
 #include <stdarg.h>
 
 #include CONFIG_H
-#include <stutter/type.h>
 #include <stutter/utils.h>
 #include <stutter/macros.h>
 #include <stutter/string.h>
 #include <stutter/memory.h>
+#include <stutter/variable.h>
 #include <stutter/frontend/surface.h>
+#include <stutter/frontend/common/types.h>
 
-static struct type_s *style_type;
-static struct type_s *colour_type;
+struct variable_type_s fe_attrib_type = { {
+	OBJECT_TYPE_S(&variable_type),
+	"attrib",
+	sizeof(struct fe_attrib),
+	NULL,
+	(object_init_t) fe_attrib_init,
+	(object_release_t) fe_attrib_release },
+	(variable_add_t) NULL,
+	(variable_remove_t) NULL,
+	(variable_index_t) NULL,
+	(variable_traverse_t) NULL,
+	(variable_stringify_t) NULL,
+	(variable_evaluate_t) base_command_evaluate
+};
 
-static void *fe_common_attrib_create(attrib_t *, char *, va_list);
-static void fe_common_attrib_destroy(attrib_t *);
-static void *fe_common_attrib_add(attrib_t *, struct type_s *, char *, int, char *, va_list);
-static void *fe_common_attrib_index(attrib_t *, char *, struct type_s **);
-static int fe_common_attrib_stringify(attrib_t *, char *, int);
 
-struct type_s *fe_common_load_attrib(void)
-{
-	if (!(style_type = find_type("style:fe")))
-		return(NULL);
-	if (!(colour_type = find_type("colour:fe")))
-		return(NULL);
-
-	return(add_type(
-		"attrib:fe",
-		0,
-		(type_create_t) fe_common_attrib_create,
-		(type_destroy_t) fe_common_attrib_destroy,
-		(type_add_t) fe_common_attrib_add,
-		NULL,
-		(type_index_t) fe_common_attrib_index,
-		NULL,
-		(type_stringify_t) fe_common_attrib_stringify,
-		NULL
-	));
-}
-
-/*** Local Functions ***/
-
-static void *fe_common_attrib_create(attrib_t *value, char *params, va_list va)
+int fe_attrib_init(struct fe_attrib *var, const char *params, va_list va)
 {
 	int i;
 	char *str;
 	char buffer[SMALL_STRING_SIZE];
 
-	if (!value && !(value = memory_alloc(sizeof(attrib_t))))
-		return(NULL);
-
-	if (!strcmp(params, "string")) {
-		str = va_arg(va, char *);
-		if (!strcmp_icase(str, "default")) {
-			value->style = SA_NORMAL;
-			value->fg.enc = SC_ENC_MAPPING;
-			value->fg.colour = SC_MAP_DEFAULT_COLOUR;
-			value->bg.enc = SC_ENC_MAPPING;
-			value->bg.colour = SC_MAP_DEFAULT_COLOUR;
-		}
-		else {
-			i = strcpy_lcase(str, buffer, SMALL_STRING_SIZE, ',');
-			type_create(colour_type, &value->fg, "string", buffer);
-			i += strcpy_lcase(&str[i], buffer, SMALL_STRING_SIZE, ',');
-			type_create(colour_type, &value->bg, "string", buffer);
-			i += strcpy_lcase(&str[i], buffer, SMALL_STRING_SIZE, ',');
-			type_create(style_type, &value->style, "string", buffer);
-		}
+	if (params[0] != 's')
+		return(-1);
+	str = va_arg(va, char *);
+	if (!strcmp_icase(str, "default")) {
+		var->attrib.style = SA_NORMAL;
+		var->attrib.fg.enc = SC_ENC_MAPPING;
+		var->attrib.fg.colour = SC_MAP_DEFAULT_COLOUR;
+		var->attrib.bg.enc = SC_ENC_MAPPING;
+		var->attrib.bg.colour = SC_MAP_DEFAULT_COLOUR;
 	}
-	return(value);
+	else {
+		i = strcpy_lcase(str, buffer, SMALL_STRING_SIZE, ',');
+		type_create(colour_type, &value->fg, "string", buffer);
+		i += strcpy_lcase(&str[i], buffer, SMALL_STRING_SIZE, ',');
+		type_create(colour_type, &value->bg, "string", buffer);
+		i += strcpy_lcase(&str[i], buffer, SMALL_STRING_SIZE, ',');
+		type_create(style_type, &value->style, "string", buffer);
+	}
+	return(0);
 }
 
-static void fe_common_attrib_destroy(attrib_t *value)
+int fe_attrib_stringify(struct fe_attrib *var, char *buffer, int max)
 {
-	if (value)
-		memory_free(value);
+	int i = 0;
+	int no_bg = 1;
+
+	if ((var->attrib.fg.enc != SC_ENC_MAPPING) || (var->attrib.fg.colour != SC_MAP_CURRENT_COLOUR))
+		i += colour_type->stringify(&value->fg, buffer, max);
+	if ((var->attrib.bg.enc != SC_ENC_MAPPING) || (var->attrib.colour != SC_MAP_CURRENT_COLOUR)) {
+		no_bg = 0;
+		buffer[i++] =',';
+		i += colour_type->stringify(&var->attrib.bg, &buffer[i], max - i);
+	}
+	if (var->attrib.style != SA_NORMAL) {
+		if (no_bg)
+			buffer[i++] =',';
+		buffer[i++] =',';
+		i += style_type->stringify(&var->attrib.style, &buffer[i], max - i);
+	}
+	buffer[i] = '\0';
+	return(i);
 }
+
 
 static void *fe_common_attrib_add(attrib_t *value, struct type_s *type, char *name, int bitflags, char *params, va_list va)
 {

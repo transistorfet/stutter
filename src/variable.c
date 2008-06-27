@@ -3,85 +3,84 @@
  * Description:		Variable Manager
  */
 
-
 #include <string.h>
 
 #include CONFIG_H
-#include <stutter/type.h>
 #include <stutter/hash.h>
 #include <stutter/macros.h>
 #include <stutter/memory.h>
+#include <stutter/object.h>
 #include <stutter/variable.h>
 
-#define variable_hash_m(list, str, len)		(sdbm_partial_hash_icase(str, len) % hash_size_v(list))
-#define variable_compare_m(str, len)		(!strncmp_icase(cur->var.name, str, len) && (strlen(cur->var.name) == len))
-
-struct variable_node_s {
-	struct variable_s var;
-	hash_node_v(variable_node_s) vl;
+struct object_type_s variable_type = {
+	NULL,
+	"variable",
+	sizeof(struct variable_s),
+	NULL,
+	(object_init_t) NULL,
+	(object_release_t) variable_release
 };
 
-struct variable_table_s {
-	hash_list_v(variable_node_s) vl;
+struct variable_type_s variable_table_type = { {
+	OBJECT_TYPE_S(&variable_type),
+	"table",
+	sizeof(struct variable_table_s),
+	NULL,
+	(object_init_t) variable_table_init,
+	(object_release_t) variable_table_release },
+	(variable_add_t) add_variable_real,
+	(variable_remove_t) remove_variable,
+	(variable_index_t) find_variable,
+	(variable_traverse_t) traverse_variable_table,
+	(variable_stringify_t) NULL,
+	(variable_evaluate_t) NULL
 };
 
 static struct variable_table_s *variable_root;
 
 int init_variable(void)
 {
-	init_type();
-	if (!(variable_root = create_variable_table()))
+	object_register_type(OBJECT_TYPE_S(&variable_table_type));
+	if (!(variable_root = VARIABLE_TABLE_S(create_object(OBJECT_TYPE_S(&variable_table_type), ""))))
 		return(-1);
 	return(0);
 }
 
 int release_variable(void)
 {
-	destroy_variable_table(variable_root);
-	release_type();
+	destroy_object(OBJECT_S(variable_root));
+	object_deregister_type(OBJECT_TYPE_S(&variable_table_type));
 	return(0);
 }
 
-/**
- * Create a new variable table and return a pointer to it or NULL on error.
- */
-struct variable_table_s *create_variable_table(void)
+void variable_release(struct variable_s *var)
 {
-	struct variable_table_s *table;
-
-	if (!(table = (struct variable_table_s *) memory_alloc(sizeof(struct variable_table_s))))
-		return(NULL);
-	hash_init_v(table->vl, VARIABLE_LIST_INIT_SIZE);
-	return(table);
+	destroy_string(var->name);
 }
 
-/**
- * Destroy the given variable table and all the variables it contains.  A
- * 0 is returned on success or a -1 on failure.
- */
-int destroy_variable_table(struct variable_table_s *table)
+int variable_table_init(struct variable_table_s *table, const char *params, va_list va)
 {
-	int i;
-	struct variable_node_s *cur, *tmp;
-
-	hash_foreach_safe_v(table->vl, vl, i, cur, tmp) {
-		if (cur->var.type->destroy)
-			cur->var.type->destroy(cur->var.value);
-		memory_free(cur);
-	}
-	hash_release_v(table->vl);
+	if (!(table->hash = create_hash(0, -1, (destroy_t) destroy_object)))
+		return(-1);
 	return(0);
+}
+
+void variable_table_release(struct variable_table_s *table)
+{
+	if (table->hash)
+		destroy_hash(table->hash);
+	variable_release(VARIABLE_S(table));
 }
 
 /**
  * This is a wrapper for add_variable_real.
  */
-void *add_variable(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, ...)
+struct variable_s *add_variable(struct variable_table_s *table, struct object_type_s *type, const char *name, int bitflags, const char *params, ...)
 {
 	va_list va;
 
-	va_start(va, str);
-	return(add_variable_real(table, type, name, bitflags, str, va));
+	va_start(va, params);
+	return(add_variable_real(table, type, name, bitflags, params, va));
 }
 
 /**
@@ -97,50 +96,47 @@ void *add_variable(struct variable_table_s *table, struct type_s *type, char *na
  * invalid, or the function fails, NULL is returned.  Otherwise the pointer to the
  * variable is returned.
  */
-void *add_variable_real(struct variable_table_s *table, struct type_s *type, char *name, int bitflags, char *str, va_list va)
+struct variable_s *add_variable_real(struct variable_table_s *table, struct object_type_s *type, const char *name, int bitflags, const char *params, va_list va)
 {
 	int len;
-	struct variable_node_s *node;
+	struct variable_s *var;
 
 	if (!table)
 		table = variable_root;
 
 	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) {
-		if (!is_variable_char_m(name[len]))
+		if (!IS_VARIABLE_CHAR(name[len]))
 			return(NULL);
 	}
 
-	hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
-	if (!node) {
-		if ((name[len] != '\0') || !type || !type->create)
+	if (!(var = hash_find(table->hash, name, len))) {
+		if ((name[len] != '\0') || !type)
 			return(NULL);
-		if (!(node = memory_alloc(sizeof(struct variable_node_s) + strlen(name) + 1)))
+		if (!(var = (struct variable_s *) create_object_real(type, params, va)))
 			return(NULL);
-		node->var.name = (char *) offset_after_struct_m(node, 0);
-		strcpy(node->var.name, name);
-		node->var.type = type;
-		node->var.bitflags = bitflags;
-		if (!(node->var.value = type->create(NULL, str, va))) {
-			memory_free(node);
-			return(NULL);
-		}
-        
-		hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
-		if (hash_load_v(table->vl) > VARIABLE_LIST_LOAD_FACTOR)
-			hash_rehash_v(table->vl, vl, (hash_size_v(table->vl) * VARIABLE_LIST_GROWTH_FACTOR), variable_hash_m(table->vl, cur->var.name, strlen(cur->var.name)), /* do nothing */);
-		return(node->var.value);
+		var->name = create_string("%s", name);
+		var->bitflags = bitflags;
+		hash_add(table->hash, name, len, var);
+		return(var);
 	}
 	else if (name[len] != '\0') {
-		if (!node->var.type->add)
+		if (!VARIABLE_GET_TYPE(var)->add)
 			return(NULL);
-		return(node->var.type->add(node->var.value, type, &name[len + 1], bitflags, str, va));
+		return(VARIABLE_GET_TYPE(var)->add(var, type, &name[len + 1], bitflags, params, va));
 	}
-	else if ((!type || (node->var.type == type)) && !(node->var.bitflags & VAR_BF_NO_MODIFY)) {
-		node->var.bitflags = bitflags;
-		if (!node->var.type->create)
+	else if ((!type || (OBJECT_S(var)->type == type)) && !(var->bitflags & VAR_BF_NO_MODIFY)) {
+		var->bitflags = bitflags;
+		// TODO should this call a new function in object that "officially" reinitializes the var?
+		// TODO beware here that the init can fail which will destroy the var (CORRECTION: this
+		//	would only happen if you called create_object but since we are calling init directly,
+		//	this wont be the case.  However, the function might still not behave correctly)
+/*
+		if (!var->type->create)
 			return(NULL);
 		node->var.value = node->var.type->create(node->var.value, str, va);
 		return(node->var.value);
+*/
+		return(var);
 	}
 	else
 		return(NULL);
@@ -152,36 +148,26 @@ void *add_variable_real(struct variable_table_s *table, struct type_s *type, cha
  * type of the variable found, then -1 is returned.  If the variable is not found
  * then 1 is returned.  If the variable is removed successfully, then 0 is returned.
  */
-int remove_variable(struct variable_table_s *table, struct type_s *type, char *name)
+int remove_variable(struct variable_table_s *table, struct object_type_s *type, const char *name)
 {
 	int len;
-	struct variable_node_s *node;
+	struct variable_s *var;
 
 	if (!table)
 		table = variable_root;
 	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
 
+	if (!(var = hash_find(table->hash, name, len)))
+		return(-1);
 	if (name[len] != '\0') {
-		hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
-		if (!node || !node->var.type->remove)
+		if (!VARIABLE_GET_TYPE(var)->remove)
 			return(1);
-		return(node->var.type->remove(node->var.value, type, &name[len + 1]));
+		return(VARIABLE_GET_TYPE(var)->remove(var, type, &name[len + 1]));
 	}
 	else {
-		hash_remove_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
-		if (!node)
-			return(-1);
-		if ((node->var.bitflags & VAR_BF_NO_REMOVE) || (type && (node->var.type != type))) {
-			// TODO is this bad to remove the node and then re-add it?
-			hash_add_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len));
+		if ((var->bitflags & VAR_BF_NO_REMOVE) || (type && (OBJECT_S(var)->type != type)))
 			return(1);
-		}
-		else {
-			if (node->var.type->destroy)
-				node->var.type->destroy(node->var.value);
-			memory_free(node);
-			return(0);
-		}
+		return(hash_remove(table->hash, name, len));
 	}
 }
 
@@ -190,27 +176,26 @@ int remove_variable(struct variable_table_s *table, struct type_s *type, char *n
  * the using variable_root.  A pointer to the variable is returned or NULL on
  * error.
  */
-void *find_variable(struct variable_table_s *table, char *name, struct type_s **type_ptr)
+struct variable_s *find_variable(struct variable_table_s *table, const char *name, struct object_type_s *type)
 {
 	int len;
-	struct variable_node_s *node;
+	struct variable_s *var;
 
 	if (!table)
 		table = variable_root;
 	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
 
-	hash_find_node_v(table->vl, vl, node, variable_hash_m(table->vl, name, len), variable_compare_m(name, len));
-	if (!node)
+	if (!(var = hash_find(table->hash, name, len)))
 		return(NULL);
 	else if (name[len] != '\0') {
-		if (!node->var.type->index)
+		if (!VARIABLE_GET_TYPE(var)->index)
 			return(NULL);
-		return(node->var.type->index(node->var.value, &name[len + 1], type_ptr));
+		return(VARIABLE_GET_TYPE(var)->index(var, &name[len + 1], type));
 	}
 	else {
-		if (type_ptr)
-			*type_ptr = node->var.type;
-		return(node->var.value);
+		if (!type || (type == OBJECT_S(var)->type))
+			return(var);
+		return(NULL);
 	}
 }
 
@@ -223,20 +208,21 @@ void *find_variable(struct variable_table_s *table, char *name, struct type_s **
  * is returned by the function, the traversal stops and that value is
  * returned otherwise a 0 is returned if the traversal completes.
  */
-int traverse_variable_table(struct variable_table_s *table, struct type_s *type, type_traverse_func_t func, void *ptr)
+int traverse_variable_table(struct variable_table_s *table, struct object_type_s *type, variable_traverse_func_t func, void *ptr)
 {
-	int i;
 	int ret = 0;
-	struct variable_node_s *cur;
+	struct variable_s *cur;
 
 	if (!table)
 		table = variable_root;
 
-	hash_foreach_v(table->vl, vl, i, cur) {
-		if ((cur->var.type == type) && (ret = func(cur->var.value, cur->var.type, ptr)))
+	hash_traverse_reset(table->hash);
+        while ((cur = hash_traverse_next(table->hash))) {
+		if ((OBJECT_S(cur)->type == type) && (ret = func(cur, ptr)))
 			return(ret);
 	}
 	return(0);
 }
+
 
 

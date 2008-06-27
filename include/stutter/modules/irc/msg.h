@@ -8,6 +8,7 @@
 
 #include <time.h>
 #include <stutter/queue.h>
+#include <stutter/object.h>
 #include <stutter/modules/irc/commands.h>
 
 #define IRC_MAX_MSG		512

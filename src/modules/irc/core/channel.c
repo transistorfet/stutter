@@ -12,7 +12,6 @@
 #include <stutter/macros.h>
 #include <stutter/signal.h>
 #include <stutter/globals.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/irc/user.h>
 #include <stutter/modules/irc/server.h>
 #include <stutter/modules/irc/channel.h>

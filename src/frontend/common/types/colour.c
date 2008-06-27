@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <stutter/type.h>
 #include <stutter/utils.h>
 #include <stutter/string.h>
+#include <stutter/variable.h>
 #include <stutter/frontend/surface.h>
 
 static char *fe_common_colours[] = {

@@ -5,7 +5,6 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_endquery(char *env, char *args)

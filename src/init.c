@@ -4,36 +4,24 @@
  */
 
 #include CONFIG_H
-#include <stutter/key.h>
 #include <stutter/init.h>
-#include <stutter/type.h>
+#include <stutter/object.h>
 #include <stutter/signal.h>
 #include <stutter/variable.h>
 
-
 int init_system(void)
 {
-	init_signal();
-	init_type();
+	init_object();
 	init_variable();
-	init_key();
-
-	add_signal(NULL, "general_error", 0);
-
-	SYSTEM_INIT_JOINPOINT()
-
+	init_signal();
 	return(0);
 }
 
 int release_system(void)
 {
-	SYSTEM_RELEASE_JOINPOINT()
-
-	release_key();
-	release_variable();
-	release_type();
 	release_signal();
-
+	release_variable();
+	release_object();
 	return(0);
 }
 

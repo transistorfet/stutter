@@ -8,21 +8,22 @@
 
 #include <string.h>
 
-#define IO_COND_READ			0x01
-#define IO_COND_WRITE			0x02
-#define IO_COND_ERROR			0x04
+#define IO_COND_READ			0x0001
+#define IO_COND_WRITE			0x0002
+#define IO_COND_ERROR			0x0004
 
 typedef void (*destroy_t)(void *);
 typedef int (*compare_t)(void *, void *);
 typedef int (*traverse_t)(void *, void *);
 typedef int (*callback_t)(void *, void *);
+typedef int (*stringify_t)(void *, char *, int);
 
 struct callback_s {
 	callback_t func;
 	void *ptr;
 };
 
-#define execute_callback_m(callback, arg)	\
+#define EXECUTE_CALLBACK(callback, arg)	\
 	if ((callback).func)			\
 		((callback).func)((callback).ptr, arg)
 
@@ -42,7 +43,7 @@ static inline char *get_property(struct property_s *prop, char *name)
 	return(NULL);
 }
 
-#define declare_unused(arg)	((void) arg)
+#define DECLARE_UNUSED(arg)	((void) arg)
 
 #endif
 

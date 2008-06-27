@@ -4,11 +4,9 @@
  */
 
 #include CONFIG_H
-#include <stutter/type.h>
 #include <stutter/memory.h>
 #include <stutter/macros.h>
-#include <stutter/variable.h>
-#include <stutter/frontend/surface.h>
+#include <stutter/frontend/common/surface.h>
 #include <stutter/frontend/common/colourmap.h>
 
 int colourmap_defaults[FE_COLOURMAP_SIZE] = {
@@ -30,7 +28,7 @@ int colourmap_defaults[FE_COLOURMAP_SIZE] = {
 	0xFFFFFF
 };
 
-struct colourmap_s *colourmap_list = NULL;
+struct fe_colourmap *colourmap_list = NULL;
 
 int init_colourmap(void)
 {
@@ -50,24 +48,24 @@ int release_colourmap(void)
 	return(0);
 }
 
-struct colourmap_s *create_colourmap(int size)
+struct fe_colourmap *create_colourmap(int size)
 {
-	struct colourmap_s *map;
+	struct fe_colourmap *map;
 
-	if (!(map = (struct colourmap_s *) memory_alloc(sizeof(struct colourmap_s) + (sizeof(colour_t) * size))))
+	if (!(map = (struct fe_colourmap *) memory_alloc(sizeof(struct fe_colourmap) + (sizeof(colour_t) * size))))
 		return(NULL);
 	map->size = size;
 	map->map = (colour_t *) offset_after_struct_m(map, 0);
 	return(map);
 }
 
-int destroy_colourmap(struct colourmap_s *map)
+int destroy_colourmap(struct fe_colourmap *map)
 {
 	memory_free(map);
 	return(0);
 }
 
-int colourmap_set_colour(struct colourmap_s *map, char enc, int index, int colour)
+int colourmap_set_colour(struct fe_colourmap *map, char enc, int index, int colour)
 {
 	if (!map)
 		map = colourmap_list;
@@ -93,7 +91,7 @@ int colourmap_set_colour(struct colourmap_s *map, char enc, int index, int colou
 	return(0);
 }
 
-int colourmap_get_colour(struct colourmap_s *map, char enc, int index)
+int colourmap_get_colour(struct fe_colourmap *map, char enc, int index)
 {
 	if (!map)
 		map = colourmap_list;
@@ -123,7 +121,7 @@ int colourmap_get_colour(struct colourmap_s *map, char enc, int index)
 	}
 }
 
-void colourmap_load_defaults(struct colourmap_s *map)
+void colourmap_load_defaults(struct fe_colourmap *map)
 {
 	int i;
 
@@ -138,7 +136,7 @@ void colourmap_load_defaults(struct colourmap_s *map)
 	}
 }
 
-void colourmap_load_zeros(struct colourmap_s *map)
+void colourmap_load_zeros(struct fe_colourmap *map)
 {
 	int i;
 

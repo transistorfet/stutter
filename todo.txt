@@ -1,13 +1,69 @@
 
+	* the object creation system and the variable system don't get along.  You are passing the va_list to
+	  create_object which expects the list itself (...) which is causing all of your problems atm.  You
+	  can either create a new shadow function to call instead from add_variable or you can change how
+	  the variable system initializes objects/variables.  Keep in mind too that there is no established
+	  reinitialization for variables with the new system anyways which sholud be part of the solution
+	* important variable functions: set, stringify, evaulate (should all be able to operate on "subvar"
+	  values.  important variable table functions: add, remove, index
+	* should va_list functions use _real or _va as the mangle
+
+	* how will signals work?  how will they be stored in the variable tables (a seperate signals table?)
+	  how will the frontend know what signals to register to? perhaps a dedicated signals table with
+	  common naming scheme based on function such as output.error, output.status, output.irc.philosophy,
+	  create, create.irc (for notifying about the creation of a signal)
+	* we can't do attrib/style/colour the way we were doing it using the new object system where we
+	  pass the subparts of attrib to the appropriate type handler because those subparts aren't vars
+	* seriously fix up string.c or even better get rid of it (make any function that can take a const
+	  char * instead of a string_t (or at least a const string_t))
+
+	* make sure non-fatal errors don't cause things to completely not work.  For example if the wildcard
+	  thing isn't available, then don't prevent a normal lookup (i think that one is fixed already)
+	* have a 'create' signal that tells the frontend that a new signal/data stream is available (possibly
+	  even emitting this signal from an add_signal type function itself).  The frontend will then
+	  create a new window (according to it's own programming/config)
+	* how do you destroy a window/channel?  An IRC channel can be "disconnected" either by using the
+	  leave/part command or by closing the window so either the irc module or the frontend must be able
+	  to somehow destroy the whole thing (the channel struct and the window)
+	* finish converting names in layout to the fe_ style and possibly rename it to "templates"
+	* change colourmap to use the fe_ style names
+	* make layout use the object system if it's an appropriate fit
+	* decide on what to do about the purge_object signal
+	* change names in frontend format.c (and refactor? should we use a different format like xml?)
+	* make sure to remove all offset_after_struct_m references
+	* convert the init.h macros to use static inlines for the actual code parts
+	* should base.exec command be moved into the frontend?
+	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?
+	* replace while loops with for loops where possible
+	* add a space after ; in for loops
+	* attempt to reduce the number of crazy (stupid) widget control functions
+
+	* what form will the init, add, and remove functions take?
+	* params should be through a very simple single char per param string with "sfopn" string, function,
+	  object, pointer, number
+
+	* old bug: call to irc_format_parse_text with a NULL str from irc_format_msg on a /me message
+
 	* should we move keybindings to the frontend (at least the common frontend)?
-	* should we remove signals/hooks?
 	* make everything stored in a variable be an object with a central object system
 	* make timers more secure through the object system by making them objects themselves or making them
 	  part of the objects they control (same with signals/hooks if we keep them around?)
 	* we could possibly remove the frontend API completely and instead use commands and signals for
 	  everything but that might be a bit too limiting, at least at this point
+	* integrate the sdm interface system into stutter in place of the old desc/net system
 
-	* there is still a bug in timer or something, after a reconnect, the value of cur (linke 141) was
+	* should i change the name mangle from _s to something else for structs?
+	* eliminate the callback struct in globals.h
+	* change index_variable to something else that isn't confusing (conflicts with the index virtfunc)
+	* replace all instances of fe_print with an emit_signal if possible
+	* all signals should identify the module they come from but should it be a seperate param or a
+	  single string param? ("base", "error") vs ("base.error")
+	* add an is_a() check of the type in variable before trying to initialize or create a variable
+	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
+	* finish converting base types timer and string-ref (unless you can merge it into string)
+	* should you remove the _s designator from all modbase structs (the type structs)
+
+	* there is still a bug in timer or something, after a reconnect, the value of cur (line 141) was
 	  invalid, i assume from the timer being destroyed at some point.
 
 	* i don't like the way signals are currently done, it seems too complex.  Or maybe it just needs

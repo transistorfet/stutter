@@ -4,7 +4,6 @@
  */
 
 #include <stutter/string.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 static void *last_window = NULL;

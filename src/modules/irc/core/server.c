@@ -14,7 +14,9 @@
 #include <stutter/linear.h>
 #include <stutter/signal.h>
 #include <stutter/macros.h>
+#include <stutter/object.h>
 #include <stutter/globals.h>
+#include <stutter/variable.h>
 #include <stutter/frontend/net.h>
 #include <stutter/frontend/timer.h>
 #include <stutter/modules/irc/msg.h>
@@ -23,14 +25,9 @@
 
 #define server_is_unbufferable_msg_m(msg)		((msg->cmd == IRC_MSG_NICK) || (msg->cmd == IRC_MSG_USER) || (msg->cmd == IRC_MSG_PASS) || (msg->cmd == IRC_MSG_OPER) || (msg->cmd == IRC_MSG_QUIT) || (msg->cmd == IRC_MSG_SQUIT))
 
-struct irc_server_node {
-	struct irc_server server;
-	linear_node_v(irc_server_node) sl;
-};
-
 static int server_initialized = 0;
 static fe_timer_t irc_ping_watchdog_timer;
-static linear_list_v(irc_server_node) server_list;
+static struct irc_server *server_list = NULL;
 
 static int irc_server_init_connection(struct irc_server *);
 static int irc_server_auto_reconnect(struct irc_server *, fe_timer_t);

@@ -4,7 +4,6 @@
  */
 
 #include <stutter/utils.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_kick(char *env, char *args)

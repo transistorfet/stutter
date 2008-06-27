@@ -3,13 +3,14 @@
 ROOT = ../../..
 
 TARGET = $(ROOT)/bin/stutter
-OBJS =	main.o \
-	core/fe.o \
-	core/net.o \
-	core/desc.o \
-	core/timer.o \
+OBJS =	\
+	main.o \
 	core/execute.o \
+	core/fe.o \
+	core/interface.o \
+	core/tcp.o \
 	core/terminal.o \
+	core/timer.o \
 	$(ROOT)/src/frontend/common/fecommon.a \
 	$(MODULES) \
 	$(ROOT)/src/main.a
@@ -17,6 +18,4 @@ OBJS =	main.o \
 LIBS = -lncurses
 
 include $(ROOT)/rules.mk
-
-core/fe.o: ../../../include/stutter/frontend/common/api.h
 

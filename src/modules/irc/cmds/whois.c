@@ -3,7 +3,6 @@
  * Description:		Whois Command
  */
 
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_whois(char *env, char *args)

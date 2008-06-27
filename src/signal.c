@@ -3,59 +3,42 @@
  * Description:		Signal Manager
  */
 
-
 #include <string.h>
 
 #include CONFIG_H
-#include <stutter/hash.h>
 #include <stutter/signal.h>
 #include <stutter/memory.h>
 #include <stutter/macros.h>
 #include <stutter/globals.h>
-
-#define signal_hash(list, key)			sdbm_hash_icase(key)
-#define signal_compare_node(node, ptr)		(!strcmp_icase(node->name, ptr))
-
-#define object_hash(list, key)			((unsigned int) key)
-#define object_compare_node(node, ptr)		(node->obj == ptr)
-
-struct signal_s {
-	char *name;
-	int bitflags;
-	struct signal_handler_s *handlers;
-	hash_node_v(signal_s) signals;
-};
-
-struct signal_list_s {
-	void *obj;
-	hash_list_v(signal_s) signals;
-	hash_node_v(signal_list_s) objects;
-};
-
-struct object_list_s {
-	hash_list_v(signal_list_s) objects;
-};
+#include <stutter/variable.h>
 
 static int signal_initialized = 0;
-static struct signal_list_s signal_list;
-static struct object_list_s object_list;
+struct variable_table_s *signal_table = NULL;
 
-static inline struct signal_s *create_signal(struct signal_list_s *, char *, int);
-static inline void signal_release_node(struct signal_list_s *, struct signal_s *);
-static inline struct signal_list_s *create_object(void *);
-static inline void object_release_node(struct object_list_s *, struct signal_list_s *);
 static int signal_purge_handlers(struct signal_s *, struct signal_handler_s *);
 
-DEFINE_HASH_TABLE(signal, struct signal_list_s, struct signal_s, signals, name, signal_release_node, signal_hash, signal_compare_node, SIGNAL_LIST_LOAD_FACTOR, SIGNAL_LIST_GROWTH_FACTOR)
-DEFINE_HASH_TABLE(object, struct object_list_s, struct signal_list_s, objects, obj, object_release_node, object_hash, object_compare_node, SIGNAL_OBJECTS_LOAD_FACTOR, SIGNAL_OBJECTS_GROWTH_FACTOR)
+struct variable_type_s signal_type = { {
+	OBJECT_TYPE_S(&variable_table_type),
+	"signal",
+	sizeof(struct signal_s),
+	NULL,
+	(object_init_t) signal_init,
+	(object_release_t) signal_release },
+	(variable_add_t) add_variable_real,
+	(variable_remove_t) remove_variable,
+	(variable_index_t) find_variable,
+	(variable_traverse_t) traverse_variable_table,
+	(variable_stringify_t) NULL,
+	(variable_evaluate_t) NULL
+};
 
 int init_signal(void)
 {
 	if (signal_initialized)
 		return(1);
-	object_init_table(&object_list, SIGNAL_OBJECTS_INIT_SIZE);
-	signal_list.obj = NULL;
-	signal_init_table(&signal_list, SIGNAL_LIST_INIT_SIZE);
+	if (!(signal_table = VARIABLE_TABLE_S(add_variable(NULL, OBJECT_TYPE_S(&variable_table_type), "signals", 0, ""))))
+		return(-1);
+	object_register_type(OBJECT_TYPE_S(&signal_type));
 	signal_initialized = 1;
 	return(0);
 }
@@ -64,88 +47,31 @@ int release_signal(void)
 {
 	if (!signal_initialized)
 		return(1);
-	signal_release_table(&signal_list);
-	object_release_table(&object_list);
+	remove_variable(NULL, NULL, "signals");
+	object_deregister_type(OBJECT_TYPE_S(&signal_type));
 	signal_initialized = 0;
 	return(0);
 }
 
-/**
- * Add a new signal with the given name to the list of signals.
- */
-int add_signal(void *obj, char *name, int bitflags)
+int signal_init(struct signal_s *signal, const char *params, va_list va)
 {
-	struct signal_list_s *list;
-
-	if (!obj)
-		list = &signal_list;
-	else if (!(list = object_find_node(&object_list, obj)) && !(list = create_object(obj)))
-		return(-1);
-
-	if (!create_signal(list, name, bitflags))
+	if (variable_table_init(VARIABLE_TABLE_S(signal), params, va))
 		return(-1);
 	return(0);
 }
 
-/**
- * Remove the signal with the given name and destroy all handlers associated
- * with that signal.  If the signal cannot be found, -1 is returned,
- * otherwise 0 is returned.
- */
-int remove_signal(void *obj, char *name)
+void signal_release(struct signal_s *signal)
 {
-	struct signal_list_s *list;
+	struct signal_handler_s *cur, *tmp;
 
-	if (!obj)
-		list = &signal_list;
-	else if (!name) {
-		object_delete_node(&object_list, obj);
-		return(0);
+	for (cur = signal->handlers; cur; cur = tmp) {
+		tmp = cur->next;
+		// TODO do we need to destroy the handler's pointer?
+		memory_free(cur);
 	}
-	else if ((list = object_find_node(&object_list, obj))) {
-		signal_delete_node(list, name);
-		return(0);
-	}
-	return(0);
+	variable_table_release(VARIABLE_TABLE_S(signal));
 }
 
-/**
- * All of the handlers associated with the signal specified by the given name
- * are called with the object passed as the second argument and the given
- * pointer passed as the third argument.  The number of handlers called is
- * returned or -1 is returned if the signal is not found.
- */
-int emit_signal(void *obj, char *name, void *ptr)
-{
-	int ret;
-	struct signal_s *signal;
-	int calls = 0, purge = 0;
-	struct signal_list_s *list;
-	struct signal_handler_s *cur;
-
-	if (!obj)
-		list = &signal_list;
-	else if (!(list = object_find_node(&object_list, obj)))
-		return(-1);
-
-	if (!(signal = signal_find_node(list, name)))
-		return(-1);
-	cur = signal->handlers;
-	while (cur) {
-		calls++;
-		cur->bitflags |= SIG_HBF_NODE_LOCKED;
-		ret = cur->func(cur->ptr, obj, ptr);
-		cur->bitflags &= ~SIG_HBF_NODE_LOCKED;
-		if (cur->bitflags & SIG_HBF_PURGE)
-			purge = 1;
-		if (ret == SIGNAL_STOP_EMIT)
-			break;
-		cur = cur->next;
-	}
-	if (purge)
-		signal_purge_handlers(signal, NULL);
-	return(calls);
-}
 
 /**
  * Connect a new handler to the signal with the given name so that the given
@@ -154,20 +80,13 @@ int emit_signal(void *obj, char *name, void *ptr)
  * and the signal must already be created using the add_signal function.  If
  * an error occurs, -1 is returned, otherwise 0 is returned. 
  */
-struct signal_handler_s *signal_connect(void *obj, char *name, int priority, signal_t func, void *ptr)
+struct signal_handler_s *signal_connect(struct signal_s *signal, int priority, signal_t func, void *ptr)
 {
-	struct signal_s *signal;
-	struct signal_list_s *list;
 	struct signal_handler_s *handler, *cur, *prev;
 
+	// TODO if you want to allow for inline signal lookup like signal_connect(find_variable(...), ...)
+	//	then you must check for a valid signal pointer
 	if (!func)
-		return(NULL);
-	if (!obj)
-		list = &signal_list;
-	else if (!(list = object_find_node(&object_list, obj)) && !(list = create_object(obj)))
-		return(NULL);
-
-	if (!(signal = signal_find_node(list, name)) && !(signal = create_signal(list, name, 0)))
 		return(NULL);
 	if (!(handler = memory_alloc(sizeof(struct signal_handler_s))))
 		return(NULL);
@@ -175,15 +94,14 @@ struct signal_handler_s *signal_connect(void *obj, char *name, int priority, sig
 	handler->priority = priority;
 	handler->func = func;
 	handler->ptr = ptr;
+	// TODO keep this parent thing? what's it for?
 	handler->parent = signal;
 	handler->next = NULL;
 
 	if (!signal->handlers)
 		signal->handlers = handler;
 	else {
-		prev = NULL;
-		cur = signal->handlers;
-		while (cur) {
+		for (cur = signal->handlers, prev = NULL; cur; prev = cur, cur = cur->next) {
 			if (priority >= cur->priority) {
 				if (prev) {
 					prev->next = handler;
@@ -195,8 +113,6 @@ struct signal_handler_s *signal_connect(void *obj, char *name, int priority, sig
 				}
 				return(handler);
 			}
-			prev = cur;
-			cur = cur->next;
 		}
 		/** The handler wasn't added so it should be added to the end */
 		prev->next = handler;
@@ -210,9 +126,34 @@ struct signal_handler_s *signal_connect(void *obj, char *name, int priority, sig
  */
 int signal_disconnect(struct signal_handler_s *handler)
 {
-	if (!handler)
-		return(0);
 	return(signal_purge_handlers(handler->parent, handler));
+}
+
+/**
+ * All of the handlers associated with the signal specified by the given name
+ * are called with the object passed as the second argument and the given
+ * pointer passed as the third argument.  The number of handlers called is
+ * returned or -1 is returned if the signal is not found.
+ */
+int signal_emit(struct signal_s *signal, void *ptr)
+{
+	int ret;
+	int calls = 0, purge = 0;
+	struct signal_handler_s *cur;
+
+	for (cur = signal->handlers; cur; cur = cur->next) {
+		calls++;
+		cur->bitflags |= SIG_BF_NODE_LOCKED;
+		ret = cur->func(cur->ptr, ptr);
+		cur->bitflags &= ~SIG_BF_NODE_LOCKED;
+		if (cur->bitflags & SIG_BF_PURGE)
+			purge = 1;
+		if (ret == SIGNAL_STOP_EMIT)
+			break;
+	}
+	if (purge)
+		signal_purge_handlers(signal, NULL);
+	return(calls);
 }
 
 /**
@@ -221,85 +162,18 @@ int signal_disconnect(struct signal_handler_s *handler)
  * then any function) and that match the given pointer (or if NULL is given
  * then any pointer).
  */
-struct signal_handler_s *signal_find_handler(void *obj, char *name, signal_t func, void *ptr)
+struct signal_handler_s *signal_find_handler(struct signal_s *signal, signal_t func, void *ptr)
 {
-	struct signal_s *signal;
-	struct signal_list_s *list;
 	struct signal_handler_s *cur;
 
-	if (!obj)
-		list = &signal_list;
-	else if (!(list = object_find_node(&object_list, obj)))
-		return(NULL);
-
-	if (!(signal = signal_find_node(list, name)))
-		return(NULL);
-	cur = signal->handlers;
-	while (cur) {
+	for (cur = signal->handlers; cur; cur = cur->next) {
 		if ((!func || (func == cur->func)) && (!ptr || (ptr == cur->ptr)))
 			return(cur);
-		cur = cur->next;
 	}
 	return(NULL);
 }
 
 /*** Local Functions ***/
-
-/**
- * Create and initialize a signal struct.
- */
-static inline struct signal_s *create_signal(struct signal_list_s *list, char *name, int bitflags)
-{
-	struct signal_s *signal;
-
-	if ((signal = signal_find_node(list, name)))
-		return(signal);
-	if (!(signal = signal_create_node(sizeof(struct signal_s) + strlen(name) + 1)))
-		return(NULL);
-	signal->name = (char *) offset_after_struct_m(signal, 0);
-	strcpy(signal->name, name);
-	signal->bitflags = bitflags;
-	signal->handlers = NULL;
-	signal_add_node(list, signal);
-	return(signal);
-}
-
-/**
- * Destroy all the handlers associated with the given signal node.
- */
-static inline void signal_release_node(struct signal_list_s *list, struct signal_s *signal)
-{
-	struct signal_handler_s *cur, *tmp;
-
-	cur = signal->handlers;
-	while (cur) {
-		tmp = cur->next;
-		memory_free(cur);
-		cur = tmp;
-	}
-}
-
-/**
- * Create a signal table for an object and add it to the object list.
- */
-static inline struct signal_list_s *create_object(void *obj)
-{
-	struct signal_list_s *list;
-
-	if (!(list = signal_create_table(SIGNAL_LIST_INIT_SIZE)))
-		return(NULL);
-	list->obj = obj;
-	object_add_node(&object_list, list);
-	return(list);
-}
-
-/**
- * Destroy all the signal lists associated with the given object.
- */
-static inline void object_release_node(struct object_list_s *obj_list, struct signal_list_s *list)
-{
-	signal_release_table(list);
-}
 
 /**
  * Remove all handlers from the given node that have the purge flag set and the
@@ -310,13 +184,11 @@ static int signal_purge_handlers(struct signal_s *signal, struct signal_handler_
 	int disconnected = 0;
 	struct signal_handler_s *cur, *prev, *tmp;
 
-	prev = NULL;
-	cur = signal->handlers;
-	while (cur) {
-		if ((cur->bitflags & SIG_HBF_PURGE) || (cur == handler)) {
+	for (cur = signal->handlers, prev = NULL; cur; prev = cur, cur = cur->next) {
+		if ((cur->bitflags & SIG_BF_PURGE) || (cur == handler)) {
 			disconnected++;
-			if (cur->bitflags & SIG_HBF_NODE_LOCKED) {
-				cur->bitflags |= SIG_HBF_PURGE;
+			if (cur->bitflags & SIG_BF_NODE_LOCKED) {
+				cur->bitflags |= SIG_BF_PURGE;
 				prev = cur;
 				cur = cur->next;
 			}

@@ -7,79 +7,67 @@
 #include <stdarg.h>
 
 #include CONFIG_H
-#include <stutter/key.h>
 #include <stutter/queue.h>
 #include <stutter/memory.h>
 #include <stutter/macros.h>
 #include <stutter/string.h>
-#include <stutter/frontend/widget.h>
-#include <stutter/frontend/surface.h>
 #include <stutter/frontend/keycodes.h>
-#include "input.h"
-#include "window.h"
+#include <stutter/frontend/common/key.h>
+#include <stutter/frontend/common/widget.h>
+#include <stutter/frontend/common/surface.h>
+#include <stutter/frontend/common/widgets/input.h>
+#include <stutter/frontend/common/widgets/window.h>
 
-struct widget_type_s input_type = {
-	"input:window",
-	0,
-	sizeof(struct input_s),
-	(widget_init_t) input_init,
-	(widget_release_t) input_release,
-	(widget_refresh_t) input_refresh,
-	(widget_print_t) input_print,
-	(widget_clear_t) input_clear,
-	(widget_read_t) input_read,
-	(widget_control_t) input_control
+struct fe_widget_type fe_input_type = { {
+	OBJECT_TYPE_S(&fe_window_type),
+	"fe_input",
+	sizeof(struct fe_input),
+	NULL,
+	(object_init_t) fe_input_init,
+	(object_release_t) fe_input_release },
+	(fe_widget_write_t) fe_input_write,
+	(fe_widget_read_t) fe_input_read,
+	(fe_widget_refresh_t) fe_input_refresh,
+	(fe_widget_clear_t) fe_input_clear,
+	(fe_widget_control_t) fe_input_control
 };
 
-static inline int input_insert_char(struct input_s *, char);
-static inline int input_delete_char(struct input_s *);
-static inline int input_save_buffer(struct input_s *);
-static inline int input_process_char(struct input_s *, int);
+static inline int fe_input_insert_char(struct fe_input *, char);
+static inline int fe_input_delete_char(struct fe_input *);
+static inline int fe_input_save_buffer(struct fe_input *);
+static inline int fe_input_process_char(struct fe_input *, int);
 
-int input_init(struct input_s *input, struct property_s *props)
+int fe_input_init(struct fe_input *input, const char *params, va_list va)
 {
-	char *context;
+	char *context = NULL;
 
-	window_init(WINDOW_S(input), props);
+	if (fe_window_init(FE_WINDOW(input), params, va))
+		return(-1);
 	if (!(input->buffer = (char *) memory_alloc(FE_INPUT_BUFFER_SIZE)))
 		return(-1);
-	context = get_property(props, "context");
+	// TODO add context stuff
+	//context = get_property(props, "context");
 	input->context = create_string("%s", context ? context : "global");
-	input->target = WIDGET_S(input)->parent;
+	input->target = FE_WIDGET(input)->parent;
 	input->i = 0;
 	input->end = 0;
 	input->max = FE_INPUT_BUFFER_SIZE;
 
-	if (!(input->history = create_queue(FE_INPUT_HISTORY_SIZE, NULL))) {
-		memory_free(input->buffer);
+	if (!(input->history = create_queue(FE_INPUT_HISTORY_SIZE, (destroy_t) destroy_string)))
 		return(-1);
-	}
-	WIDGET_S(input)->bitflags |= WBF_NEEDS_REFRESH;
+	FE_WIDGET(input)->bitflags |= WBF_NEEDS_REFRESH;
 	return(0);
 }
 
-int input_release(struct input_s *input)
+void fe_input_release(struct fe_input *input)
 {
-	destroy_queue(input->history);
-	memory_free(input->buffer);
-	window_release(WINDOW_S(input));
-	return(0);
+	if (input->buffer)
+		memory_free(input->buffer);
+	if (input->history)
+		destroy_queue(input->history);
 }
 
-int input_refresh(struct input_s *input)
-{
-	int i;
-
-	input->buffer[input->end] = '\0';
-	surface_clear_m(WINDOW_S(input)->surface, WINDOW_S(input)->x, WINDOW_S(input)->y, WINDOW_S(input)->width, WINDOW_S(input)->height);
-	surface_move_m(WINDOW_S(input)->surface, WINDOW_S(input)->x, WINDOW_S(input)->y);
-	i = input->i - WINDOW_S(input)->width + 1;
-	surface_print_m(WINDOW_S(input)->surface, &input->buffer[(i >= 0) ? i : 0], (input->end >= WINDOW_S(input)->width) ? WINDOW_S(input)->width - 1 : -1);
-	surface_control_m(WINDOW_S(input)->surface, SCC_MOVE_CURSOR, ( (input->i >= WINDOW_S(input)->width) ? WINDOW_S(input)->width - 1 : input->i ), WINDOW_S(input)->y);
-	return(0);
-}
-
-int input_print(struct input_s *input, const char *str, int len)
+int fe_input_write(struct fe_input *input, const char *str, int len)
 {
 	if (len == -1)
 		len = strlen(str);
@@ -90,66 +78,78 @@ int input_print(struct input_s *input, const char *str, int len)
 	return(len);
 }
 
-void input_clear(struct input_s *input)
-{
-	input_save_buffer(input);
-	input->i = 0;
-	input->end = 0;
-}
-
-int input_read(struct input_s *input, char *buffer, int max)
+int fe_input_read(struct fe_input *input, char *buffer, int max)
 {
 	strncpy(buffer, input->buffer, max - 1);
 	buffer[max - 1] = '\0';
 	return(strlen(buffer));
 }
 
-int input_control(struct input_s *input, int cmd, va_list va)
+int fe_input_refresh(struct fe_input *input, struct fe_surface *surface)
+{
+	int i;
+
+	input->buffer[input->end] = '\0';
+	FE_SURFACE_CLEAR(surface, FE_WINDOW(input)->x, FE_WINDOW(input)->y, FE_WINDOW(input)->width, FE_WINDOW(input)->height);
+	FE_SURFACE_MOVE(surface, FE_WINDOW(input)->x, FE_WINDOW(input)->y);
+	i = input->i - FE_WINDOW(input)->width + 1;
+	FE_SURFACE_PRINT(surface, &input->buffer[(i >= 0) ? i : 0], (input->end >= FE_WINDOW(input)->width) ? FE_WINDOW(input)->width - 1 : -1);
+	FE_SURFACE_CONTROL(surface, SCC_MOVE_CURSOR, ( (input->i >= FE_WINDOW(input)->width) ? FE_WINDOW(input)->width - 1 : input->i ), FE_WINDOW(input)->y);
+	return(0);
+}
+
+void fe_input_clear(struct fe_input *input, struct fe_surface *surface)
+{
+	fe_input_save_buffer(input);
+	input->i = 0;
+	input->end = 0;
+}
+
+int fe_input_control(struct fe_input *input, int cmd, va_list va)
 {
 	switch (cmd) {
 		case WCC_SET_FOCUS: {
-			struct widget_s *widget;
+			struct fe_widget *widget;
 
-			widget = va_arg(va, struct widget_s *);
-			if (widget && (WIDGET_S(input) != widget))
+			widget = va_arg(va, struct fe_widget *);
+			if (widget && (FE_WIDGET(input) != widget))
 				return(-1);
-			else if (WIDGET_S(input)->parent) {
-				if (widget_control(WIDGET_S(input)->parent, WCC_SET_FOCUS, input))
+			else if (FE_WIDGET(input)->parent) {
+				if (fe_widget_control(FE_WIDGET(input)->parent, WCC_SET_FOCUS, input))
 					return(-1);
-				select_key_context(input->context);
+				// TODO reinstate this when you fix up keybinding
+				//select_key_context(input->context);
 			}
-			else if (WINDOW_S(input)->surface)
-				surface_control_m(WINDOW_S(input)->surface, SCC_SET_FOCUS, NULL);
 			return(0);
 		}
 		case WCC_GET_FOCUS: {
-			struct widget_s **widget;
+			struct fe_widget **widget;
 
-			widget = va_arg(va, struct widget_s **);
+			widget = va_arg(va, struct fe_widget **);
 			if (widget)
-				*widget = WIDGET_S(input);
+				*widget = FE_WIDGET(input);
 			return(0);
-		}
+	 	}
 		case WCC_GET_TARGET: {
-			struct widget_s **widget;
+			struct fe_widget **widget;
 
 			// TODO should this do anything like ask for the target of the target?
-			widget = va_arg(va, struct widget_s **);
+			widget = va_arg(va, struct fe_widget **);
 			if (widget)
 				*widget = input->target;
 			return(0);
 		}
 		case WCC_SET_TARGET: {
-			input->target = va_arg(va, struct widget_s *);
+			input->target = va_arg(va, struct fe_widget *);
 			return(0);
 		}
 		case WCC_SET_PARENT: {
-			struct widget_s *parent;
+			struct fe_widget *parent;
 
-			parent = va_arg(va, struct widget_s *);
-			WIDGET_S(input)->parent = parent;
+			parent = va_arg(va, struct fe_widget *);
+			FE_WIDGET(input)->parent = parent;
 			input->target = parent;
-			widget_control(WIDGET_S(input), WCC_SET_FOCUS, NULL);
+			fe_widget_control(FE_WIDGET(input), WCC_SET_FOCUS, NULL);
 			return(0);
 		}
 		case WCC_GET_MIN_MAX_SIZE: {
@@ -162,49 +162,45 @@ int input_control(struct input_s *input, int cmd, va_list va)
 			}
 			if (max) {
 				max->width = -1;
-				max->height = (WINDOW_S(input)->height > 0) ? WINDOW_S(input)->height : 1;
+				max->height = (FE_WINDOW(input)->height > 0) ? FE_WINDOW(input)->height : 1;
 			}
 			return(0);
 		}
 		case WCC_SCROLL: {
 			int i, amount;
-			struct queue_node_s *node;
 
 			amount = va_arg(va, int);
 			if (amount >= 0) {
 				for (i = 0;i < amount;i++) {
-					if (!(node = queue_next_node(queue_current_node(input->history))))
-						node = queue_first_node(input->history);
-					queue_set_current_node(input->history, node);
+					if (!(QUEUE_NEXT(input->history)))
+						QUEUE_FIRST(input->history);
 				}
 			}
 			else {
 				amount *= -1;
 				for (i = 0;i < amount;i++) {
-					if (!(node = queue_previous_node(queue_current_node(input->history))))
-						node = queue_last_node(input->history);
-					queue_set_current_node(input->history, node);
+					if (!(QUEUE_PREV(input->history)))
+						QUEUE_LAST(input->history);
 				}
 			}
-			queue_set_current_node(input->history, node);
-			if (node)
-				input_print(input, (char *) node->ptr, -1);
+			if (QUEUE_CURRENT(input->history))
+				fe_input_write(input, (char *) QUEUE_CURRENT(input->history), -1);
 			break;
 		}
 		case WCC_INSERT_CHAR: {
 			int ch;
 			ch = va_arg(va, int);
-			input_insert_char(input, ch);
+			fe_input_insert_char(input, ch);
 			return(0);
 		}
 		case WCC_PROCESS_CHAR: {
 			int ch;
 			ch = va_arg(va, int);
-			input_process_char(input, ch);
+			fe_input_process_char(input, ch);
 			return(0);
 		}
 		default:
-			return(window_control(WINDOW_S(input), cmd, va));
+			return(fe_window_control(FE_WINDOW(input), cmd, va));
 	}
 	return(-1);
 }
@@ -215,7 +211,7 @@ int input_control(struct input_s *input, int cmd, va_list va)
  * Insert the given char into the buffer of the given input structure at
  * the location pointed to by the input's index and update the pointers.
  */ 
-static inline int input_insert_char(struct input_s *input, char ch)
+static inline int fe_input_insert_char(struct fe_input *input, char ch)
 {
 	int i;
 
@@ -232,7 +228,7 @@ static inline int input_insert_char(struct input_s *input, char ch)
 /**
  * Delete the character at the index of the given input structure.
  */
-static inline int input_delete_char(struct input_s *input)
+static inline int fe_input_delete_char(struct fe_input *input)
 {
 	int i;
 
@@ -249,18 +245,15 @@ static inline int input_delete_char(struct input_s *input)
  * Transfer the current input buffer into the history queue list of
  * the given input structure.
  */
-static inline int input_save_buffer(struct input_s *input)
+static inline int fe_input_save_buffer(struct fe_input *input)
 {
-	struct queue_node_s *node;
+	string_t str;
 
 	input->buffer[input->end] = '\0';
-	if ((node = queue_create_node(sizeof(struct queue_node_s) + input->end + 1))) {
-		node->ptr = (void *) offset_after_struct_m(node, 0);
-		strcpy(node->ptr, input->buffer);
-		((char *) node->ptr)[input->end] = '\0';
-		queue_prepend_node(input->history, node);
-	}
-	queue_set_current_node(input->history, NULL);
+	if (!(str = create_string("%s", input->buffer)))
+		return(-1);
+	queue_prepend(input->history, str);
+	QUEUE_SET_CURRENT_ENTRY(input->history, NULL);
 	return(0);
 }
 
@@ -269,27 +262,21 @@ static inline int input_save_buffer(struct input_s *input)
  * behaviour on the given input structure.  If the character is
  * processed then a 0 is returned otherwise a 1 is returned.
  */
-static inline int input_process_char(struct input_s *input, int ch)
+static inline int fe_input_process_char(struct fe_input *input, int ch)
 {
 	switch (ch) {
 		case KC_BACKSPACE: {
-			input_delete_char(input);
+			fe_input_delete_char(input);
 			break;
 		}
 		case KC_UP: {
-			struct queue_node_s *node;
-			if ((node = queue_next_node(queue_current_node(input->history))) || (node = queue_first_node(input->history))) {
-				queue_set_current_node(input->history, node);
-				input_print(input, (char *) node->ptr, -1);
-			}
+			if (QUEUE_NEXT(input->history) || QUEUE_FIRST(input->history))
+				fe_input_write(input, (char *) QUEUE_CURRENT(input->history), -1);
 			break;
 		}
 		case KC_DOWN: {
-			struct queue_node_s *node;
-			if ((node = queue_previous_node(queue_current_node(input->history))) || (node = queue_last_node(input->history))) {
-				queue_set_current_node(input->history, node);
-				input_print(input, (char *) node->ptr, -1);
-			}
+			if (QUEUE_PREV(input->history) || QUEUE_LAST(input->history))
+				fe_input_write(input, (char *) QUEUE_CURRENT(input->history), -1);
 			break;
 		}
 		case KC_RIGHT: {
@@ -305,7 +292,7 @@ static inline int input_process_char(struct input_s *input, int ch)
 		default: {
 			if ((ch < 0x20) || (ch > 0xff))
 				return(1);
-			input_insert_char(input, (char) ch);
+			fe_input_insert_char(input, (char) ch);
 			break;
 		}
 	}

@@ -12,6 +12,7 @@
 #include CONFIG_H
 #include <stutter/utils.h>
 #include <stutter/memory.h>
+#include <stutter/object.h>
 #include <stutter/modules/irc/msg.h>
 
 struct irc_msg_commands {

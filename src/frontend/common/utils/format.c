@@ -4,12 +4,13 @@
  */
 
 #include CONFIG_H
-#include <stutter/type.h>
+#include <stutter/utils.h>
 #include <stutter/memory.h>
 #include <stutter/macros.h>
 #include <stutter/variable.h>
-#include <stutter/frontend/surface.h>
-#include "format.h"
+#include <stutter/frontend/common/types.h>
+#include <stutter/frontend/common/surface.h>
+#include <stutter/frontend/common/format.h>
 
 /**
  * Parse the given string into a string without special attribute characters
@@ -81,8 +82,7 @@ int parse_format_string(struct variable_table_s *theme, const char *str, struct 
 			}
 			case 0x12: {
 				int ni;
-				void *value;
-				struct type_s *type;
+				struct fe_attrib *var;
 				char name[NAME_STRING_SIZE];
 
 				i++;
@@ -90,8 +90,9 @@ int parse_format_string(struct variable_table_s *theme, const char *str, struct 
 					name[ni] = str[i];
 				name[ni] = '\0';
 				i++;
-				if ((value = find_variable(theme, name, &type)) && type && !strcmp(type->name, "attrib:fe")) {
-					format->styles[k].attrib = *((attrib_t *) value);
+				// TODO add type check
+				if ((var = FE_ATTRIB(find_variable(theme, name, NULL)))) {
+					format->styles[k].attrib = var->attrib;
 					format->styles[k].index = j;
 					if (++k >= styles_max)
 						k--;

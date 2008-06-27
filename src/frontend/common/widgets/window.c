@@ -10,85 +10,59 @@
 #include <stutter/utils.h>
 #include <stutter/memory.h>
 #include <stutter/globals.h>
-#include <stutter/frontend/widget.h>
-#include <stutter/frontend/surface.h>
-#include "window.h"
+#include <stutter/frontend/common/widget.h>
+#include <stutter/frontend/common/surface.h>
+#include <stutter/frontend/common/widgets/window.h>
 
-struct widget_type_s window_type = {
-	"window",
-	0,
-	sizeof(struct window_s),
-	(widget_init_t) window_init,
-	(widget_release_t) window_release,
-	(widget_refresh_t) window_refresh,
-	(widget_print_t) window_print,
-	(widget_clear_t) window_clear,
-	(widget_read_t) window_read,
-	(widget_control_t) window_control
+struct fe_widget_type fe_window_type = { {
+	OBJECT_TYPE_S(&fe_widget_type),
+	"fe_window",
+	sizeof(struct fe_window),
+	NULL,
+	(object_init_t) fe_window_init,
+	(object_release_t) NULL },
+	(fe_widget_write_t) fe_window_write,
+	(fe_widget_read_t) fe_window_read,
+	(fe_widget_refresh_t) fe_window_refresh,
+	(fe_widget_clear_t) fe_window_clear,
+	(fe_widget_control_t) fe_window_control
 };
 
-int window_init(struct window_s *window, struct property_s *props)
+int fe_window_init(struct fe_window *window, const char *params, va_list va)
 {
-	int num;
-	char *value;
-
-	window->surface = NULL;
-	if ((value = get_property(props, "width"))) {
-		num = util_atoi(value, 10);
-		window->width = num;
-	}
-	if ((value = get_property(props, "height"))) {
-		num = util_atoi(value, 10);
-		window->height = num;
-	}
+	if (fe_widget_init(FE_WIDGET(window), params, va))
+		return(-1);
 	return(0);
 }
 
-int window_release(struct window_s *window)
+int fe_window_write(struct fe_window *window, const char *str, int len)
 {
 	return(0);
 }
 
-int window_refresh(struct window_s *window)
-{
-	return(0);
-}
-
-int window_print(struct window_s *window, const char *str, int len)
-{
-	return(0);
-}
-
-void window_clear(struct window_s *window)
-{
-	surface_clear_m(window->surface, window->x, window->y, window->width, window->height);
-}
-
-int window_read(struct window_s *window, char *buffer, int max)
+int fe_window_read(struct fe_window *window, char *buffer, int max)
 {
 	return(-1);
 }
 
-int window_control(struct window_s *window, int cmd, va_list va)
+int fe_window_refresh(struct fe_window *window, struct fe_surface *surface)
+{
+	return(0);
+}
+
+void fe_window_clear(struct fe_window *window, struct fe_surface *surface)
+{
+	FE_SURFACE_CLEAR(surface, window->x, window->y, window->width, window->height);
+}
+
+int fe_window_control(struct fe_window *window, int cmd, va_list va)
 {
 	switch (cmd) {
 		case WCC_SET_PARENT: {
-			struct widget_s *parent;
+			struct fe_widget *parent;
 
-			parent = va_arg(va, struct widget_s *);
-			WIDGET_S(window)->parent = parent;
-			return(0);
-		}
-		case WCC_GET_SURFACE: {
-			struct surface_s **surface;
-			surface = va_arg(va, struct surface_s **);
-			*surface = window->surface;
-			return(0);
-		}
-		case WCC_SET_SURFACE: {
-			struct surface_s *surface;
-			surface = va_arg(va, struct surface_s *);
-			window->surface = surface;
+			parent = va_arg(va, struct fe_widget *);
+			FE_WIDGET(window)->parent = parent;
 			return(0);
 		}
 		case WCC_GET_WINDOW: {
@@ -111,20 +85,20 @@ int window_control(struct window_s *window, int cmd, va_list va)
 			window->y = va_arg(va, int);
 			window->width = va_arg(va, int);
 			window->height = va_arg(va, int);
-			WIDGET_S(window)->bitflags |= WBF_NEEDS_REFRESH;
+			FE_WIDGET(window)->bitflags |= WBF_NEEDS_REFRESH;
 			return(0);
 		}
 		case WCC_MODIFY_SIZE: {
 			int width, height;
-			struct widget_s *child;
+			struct fe_widget *child;
 
-			child = va_arg(va, struct widget_s *);
+			child = va_arg(va, struct fe_widget *);
 			width = va_arg(va, int);
 			height = va_arg(va, int);
-			if (!child && !WIDGET_S(window)->parent)
+			if (!child && !FE_WIDGET(window)->parent)
 				return(-1);
 			if (!child)
-				return(widget_control(WIDGET_S(window)->parent, WCC_MODIFY_SIZE, window, width, height));
+				return(fe_widget_control(FE_WIDGET(window)->parent, WCC_MODIFY_SIZE, window, width, height));
 			return(-1);
 		}
 		case WCC_GET_MIN_MAX_SIZE: {

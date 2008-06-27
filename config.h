@@ -7,15 +7,15 @@
 
 /** Modules */
 #include <stutter/modules/base.h>
-#include <stutter/modules/irc.h>
+//#include <stutter/modules/irc.h>
 
 #define INIT_MODULES()	\
 	init_base();	\
-	init_irc();	\
+/*	init_irc(); */	\
 
 #define RELEASE_MODULES()	\
 	release_base();	\
-	release_irc();	\
+/*	release_irc(); */	\
 
 
 /** Configuration Options */
@@ -80,27 +80,24 @@
 /** Definitions */
 #define BASE_COMMAND_PREFIX                      "/"
 #define BASE_ERR_ALIAS_FAILED                    "\022error\022Error creating alias %s"
-#define BASE_ERR_BINDING_FAILED                  "\022error\022Error binding key %s"
 #define BASE_ERR_EVALUATE_FAILED                 "\022error\022Error evaluating variable %s"
-#define BASE_ERR_REDIRECT_FAILED                 "\022error\022Error: Invalid target location %s"
 #define BASE_ERR_REMOVE_FAILED                   "\022error\022Error removing variable %s"
 #define BASE_ERR_SET_FAILED                      "\022error\022Error setting variable %s"
 #define BASE_ERR_STRINGIFY_FAILED                "\022error\022Error stringifying variable %s"
 #define BASE_ERR_TYPE_NOT_FOUND                  "\022error\022Error: %s type not found"
 #define BASE_ERR_UNABLE_TO_OPEN_FILE             "\022error\022Error: Unable to open the file %s"
-#define BASE_ERR_UNBINDING_FAILED                "\022error\022Error unbinding key %s"
 #define BASE_ERR_UNKNOWN_COMMAND                 "\022error\022Error: Unknown Command %s."
 #define BASE_ERR_VARIABLE_NOT_FOUND              "\022error\022Error: %s variable not found"
 #define BASE_FMT_ALIAS                           "Alias: %s <= %s"
-#define BASE_FMT_BIND                            "Key %s bound to %s %s"
-#define BASE_FMT_REDIRECT_CURRENT                "Signal %s is directed to the current window"
-#define BASE_FMT_REDIRECT_DISCONNECTED           "Signal %s has been disconnected"
-#define BASE_FMT_REDIRECT_THIS                   "Signal %s is directed to this window"
 #define BASE_FMT_REMOVE                          "Variable %s removed"
 #define BASE_FMT_SET                             "Variable: %s <= %s"
-#define BASE_FMT_UNBIND                          "Key %s is not longer bound"
 #define BASE_NAMESPACE                           "base"
 #define BASE_NULL_COMMAND                        ""
+#define FE_FMT_BIND                              "Key %s bound to %s %s"
+#define FE_FMT_UNBIND                            "Key %s is not longer bound"
+#define FE_ERR_BINDING_FAILED                    "\022error\022Error binding key %s"
+#define FE_ERR_UNBINDING_FAILED                  "\022error\022Error unbinding key %s"
+#define FE_ERR_UNKNOWN_COMMAND                   "\022error\022Error: Unknown Command %s."
 #define FE_COLOURMAP_SIZE                        32
 #define FE_DEFAULT_STATUSBAR                     "$&fe.statusbar"
 #define FE_FORMAT_MAX_STYLES                     64
@@ -188,6 +185,7 @@
 #define NAME_SEPARATOR                           '.'
 #define NAME_STRING_SIZE                         64
 #define PATH_VARIABLE_NAME                       "path"
+#define DEFAULT_PATH				 ";irc;base"
 #define SIGNAL_LIST_GROWTH_FACTOR                1.75
 #define SIGNAL_LIST_INIT_SIZE                    20
 #define SIGNAL_LIST_LOAD_FACTOR                  0.75
@@ -205,47 +203,15 @@
 #define VARIABLE_LIST_LOAD_FACTOR                0.75
 
 
-#define BASE_COMMAND_RESPONSE_JOINPOINT(...) {	\
-	BASE_OUTPUT_JOINPOINT(__VA_ARGS__);	\
-}
-
-
-#define BASE_ERROR_JOINPOINT(...) {	\
-	ERROR_JOINPOINT("base.error", __VA_ARGS__);	\
-}
-
-
-#define BASE_INIT_JOINPOINT() {	\
-}
-
-
-#define BASE_OUTPUT_JOINPOINT(...) {	\
-	OUTPUT_JOINPOINT("base.output", __VA_ARGS__);	\
-}
-
-
-#define BASE_RELEASE_JOINPOINT() {	\
-}
-
-
-#define ERROR_JOINPOINT(name, ...) {	\
-	PRINT_TO_CURRENT(__VA_ARGS__);	\
-}
-
-
-#define FE_NET_ERROR_JOINPOINT(...) {	\
-	ERROR_JOINPOINT("fe.error", __VA_ARGS__);	\
-}
-
-
+/*
 #define ADD_HANDLERS()	\
-	ADD_HANDLER(NULL, "base.error", 10, base_sig_print, NULL)	\
-	ADD_HANDLER(NULL, "base.exec_output", 10, irc_sig_exec, NULL)	\
-	ADD_HANDLER(NULL, "error_general", 10, base_sig_print, NULL)	\
-	ADD_HANDLER(NULL, "fe.quit", 10, irc_sig_quit, NULL)	\
-	ADD_HANDLER(NULL, "irc.dispatch_ctcp", 10, irc_sig_dispatch_ctcp_msg, NULL)	\
-	ADD_HANDLER(NULL, "irc.dispatch_msg", 10, irc_sig_dispatch_msg, NULL)	\
-
+	ADD_HANDLER("base.error", 10, base_sig_print, NULL)	\
+	ADD_HANDLER("base.exec_output", 10, irc_sig_exec, NULL)	\
+	ADD_HANDLER("error_general", 10, base_sig_print, NULL)	\
+	ADD_HANDLER("fe.quit", 10, irc_sig_quit, NULL)	\
+	ADD_HANDLER("irc.dispatch_ctcp", 10, irc_sig_dispatch_ctcp_msg, NULL)	\
+	ADD_HANDLER("irc.dispatch_msg", 10, irc_sig_dispatch_msg, NULL)	\
+*/
 
 #define ADD_INITS()	\
 	EVALUATE_COMMAND("source ~/.stutterrc")	\
@@ -253,131 +219,7 @@
 	EVALUATE_COMMAND("base.alias getcolour get fe.theme.")	\
 
 
-#define IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_PRINT_TO_CHANNEL(channel, msg, fmt);	\
-}
-
-
-#define IRC_ERROR_JOINPOINT(...) {	\
-	ERROR_JOINPOINT("irc.error", __VA_ARGS__);	\
-}
-
-
-#define IRC_INIT_JOINPOINT() {	\
-}
-
-
-#define IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT(msg, fmt) {	\
-	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt);	\
-}
-
-
-#define IRC_MSG_CTCP_UNKNOWN_OUTPUT_JOINPOINT(msg, fmt) {	\
-	IRC_PRINT_TO_CURRENT(msg, fmt);	\
-}
-
-
-#define IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT(msg, fmt) {	\
-	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt);	\
-}
-
-
-#define IRC_MSG_CURRENT_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_DEFAULT_OUTPUT_JOINPOINT(msg, fmt) {	\
-	IRC_SERVER_OUTPUT_JOINPOINT(msg->server, msg, fmt);	\
-}
-
-
-#define IRC_MSG_INUSE_OUTPUT_JOINPOINT(msg, fmt) {	\
-	IRC_PRINT_TO_CURRENT(msg, fmt);	\
-}
-
-
-#define IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_KICK_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_MODE_OUTPUT_JOINPOINT(channel, msg, fmt)	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-
-
-#define IRC_MSG_NAMES_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_NICK_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_NOTICE_OUTPUT_JOINPOINT(msg, fmt) {	\
-	IRC_PRINT_TO_CURRENT_AND_STATUS(msg, fmt);	\
-}
-
-
-#define IRC_MSG_PART_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_PRIVMSG_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_MSG_TOPIC_OUTPUT_JOINPOINT(channel, msg, fmt) {	\
-	IRC_CHANNEL_OUTPUT_JOINPOINT(channel, msg, fmt);	\
-}
-
-
-#define IRC_OUTPUT_JOINPOINT(...) {	\
-	OUTPUT_JOINPOINT("irc.output", __VA_ARGS__);	\
-}
-
-
-#define IRC_RELEASE_JOINPOINT() {	\
-}
-
-
-#define IRC_SERVER_OUTPUT_JOINPOINT(server, msg, fmt) {	\
-	IRC_PRINT_TO_STATUS(server, msg, fmt);	\
-}
-
-
-#define OUTPUT_JOINPOINT(name, ...) {	\
-	PRINT_TO_CURRENT(__VA_ARGS__);	\
-}
-
-
-#define SYSTEM_INIT_JOINPOINT() {	\
-}
-
-
-#define SYSTEM_RELEASE_JOINPOINT() {	\
-}
-
-
+/*
 #define ADD_TABLES()	\
 	ADD_FIXED_VARIABLE("base", "")	\
 	ADD_FIXED_VARIABLE("fe", "")	\
@@ -386,27 +228,13 @@
 
 
 #define ADD_TYPES()	\
-	ADD_TYPE(irc_load_channel_list)	\
-	ADD_TYPE(irc_load_channel_type)	\
-	ADD_TYPE(fe_common_load_colour)	\
-	ADD_TYPE(base_load_command)	\
-	ADD_TYPE(fe_common_load_command)	\
-	ADD_TYPE(base_load_format)	\
-	ADD_TYPE(irc_load_server_list)	\
-	ADD_TYPE(irc_load_server_type)	\
-	ADD_TYPE(base_load_status)	\
-	ADD_TYPE(base_load_string)	\
-	ADD_TYPE(base_load_string_ref)	\
-	ADD_TYPE(fe_common_load_style)	\
-	ADD_TYPE(base_load_table)	\
-	ADD_TYPE(base_load_time)	\
-	ADD_TYPE(base_load_timer)	\
-	ADD_TYPE(irc_load_user_list)	\
-	ADD_TYPE(irc_load_user_type)	\
-	ADD_TYPE(base_load_wildcard)	\
-	ADD_TYPE(fe_common_load_attrib)	\
-	ADD_TYPE(fe_common_load_hashattrib)	\
-
+	ADD_TYPE(&base_command_type)	\
+	ADD_TYPE(&base_format_type)	\
+	ADD_TYPE(&base_status_type)	\
+	ADD_TYPE(&base_string_type)	\
+	ADD_TYPE(&base_time_type)	\
+	ADD_TYPE(&base_wildcard_type)	\
+*/
 
 /** Key Bindings */
 #define ADD_BINDINGS()	\
@@ -422,6 +250,7 @@
 
 
 /** Variables */
+/*
 #define ADD_VARIABLES()	\
 	DECLARE_TYPE("command",	\
 		ADD_COMMAND_ENV("base.alias", base_cmd_alias, NULL)	\
@@ -509,12 +338,8 @@
 	)	\
 	DECLARE_TYPE("wildcard",	\
 		ADD_VARIABLE("path", "string", ";irc;base")	\
-	)	\
-
-
-/** Emits */
-#include <stutter/advice.h>
-#include <stutter/modules/irc/advice.h>
+	)
+*/	\
 
 
 #endif

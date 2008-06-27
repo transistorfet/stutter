@@ -10,126 +10,93 @@
 #include <stutter/macros.h>
 #include <stutter/memory.h>
 #include <stutter/signal.h>
-#include <stutter/frontend/widget.h>
 #include <stutter/frontend/common/layout.h>
+#include <stutter/frontend/common/widget.h>
 
-#define widget_release_node(list, node)		node->widget.type->release(&node->widget);
-#define widget_hash(list, key)			sdbm_hash_icase(key)
-#define widget_compare_node(node, key)		(!strcmp_icase(node->widget.id, key))
-
-struct widget_node_s {
-	hash_node_v(widget_node_s) wl;
-	struct widget_s widget;
+struct fe_widget_type fe_widget_type = { {
+	NULL,
+	"fe_widget",
+	sizeof(struct fe_widget),
+	NULL,
+	(object_init_t) fe_widget_init,
+	(object_release_t) fe_widget_release },
+	(fe_widget_write_t) NULL,
+	(fe_widget_read_t) NULL,
+	(fe_widget_refresh_t) NULL,
+	(fe_widget_clear_t) NULL,
+	(fe_widget_control_t) NULL
 };
 
-struct widget_list_s {
-	hash_list_v(widget_node_s) wl;
-};
-
-DEFINE_HASH_TABLE(widget, struct widget_list_s, struct widget_node_s, wl, widget.id, widget_release_node, widget_hash, widget_compare_node, FE_WIDGET_LIST_LOAD_FACTOR, FE_WIDGET_LIST_GROWTH_FACTOR)
-
-static int widget_initialized = 0;
-static struct widget_list_s widget_list;
+static struct hash_s *widget_list = NULL;
 
 int init_widget(void)
 {
-	if (widget_initialized)
+	if (widget_list)
 		return(0);
 	if (init_layout())
 		return(-1);
-	widget_init_table(&widget_list, FE_WIDGET_LIST_INIT_SIZE);
-	widget_initialized = 1;
+	if (!(widget_list = create_hash(0, -1, (destroy_t) destroy_object)))
+		return(-1);
 	return(0);
 }
 
 int release_widget(void)
 {
-	if (!widget_initialized)
+	if (!widget_list)
 		return(0);
-	widget_release_table(&widget_list);
+	destroy_hash(widget_list);
+	widget_list = NULL;
 	release_layout();
-	widget_initialized = 0;
 	return(0);
 }
 
-/**
- * Creates a new widget of the given type with the given id and parent passing
- * the given attributes to the widget's creation function.  A pointer to the
- * new widget is returned or NULL is returned on error.
- */
-struct widget_s *create_widget(struct widget_type_s *type, char *id, struct widget_s *parent, struct property_s *props)
+int fe_widget_init(struct fe_widget *widget, const char *params, va_list va)
 {
-	struct widget_node_s *node;
+	const char *id;
 
 	// TODO if id is NULL perhaps you could assign a numeric id instead
-	if (!id)
+	if ((params[0] != 's') || !(id = va_arg(va, const char *)))
 		id = "";
 	// TODO decide what to do about duplicate ids and stuff
 	//if (widget_find_node(&widget_list, id))
 	//	return(NULL);
-	if (!(node = widget_create_node(type->size + (sizeof(struct widget_node_s) - sizeof(struct widget_s)) + strlen(id) + 1)))
-		return(NULL);
-	node->widget.bitflags = 0;
-	node->widget.type = type;
-	node->widget.parent = parent;
-	node->widget.id = (char *) (((size_t) &node->widget) + type->size);
-	strcpy(node->widget.id, id);
-
-	if (type->init(&node->widget, props) < 0) {
-		widget_destroy_node(&widget_list, node);
-		return(NULL);
-	}
-	widget_add_node(&widget_list, node);
-	return(&node->widget);
+	widget->bitflags = 0;
+	widget->parent = NULL;
+	if (!(widget->id = create_string("%s", id)))
+		return(-1);
+	hash_add(widget_list, id, -1, widget);
+	return(0);
 }
 
-/**
- * Destroys the given widget and emits the purge_object signal to allow widget
- * owners a change to clean up.  If the widget cannot be removed, -1 is
- * returned.  Otherwise 0 is returned.
- */
-int destroy_widget(struct widget_s *widget)
+void fe_widget_release(struct fe_widget *widget)
 {
-	struct widget_node_s *node;
-
-	if (!widget)
-		return(-1);
-	emit_signal(widget, "purge_object", NULL);
-	remove_signal(widget, NULL);
-	if (!(node = widget_remove_node(&widget_list, widget->id)))
-		return(-1);
-	// TODO this should really try to find the widget but that first requires the capability in hash.h
-	if (&node->widget != widget) {
-		widget_add_node(&widget_list, node);
-		return(-1);
-	}
-	widget_destroy_node(&widget_list, node);
-	return(0);
+	// TODO should we still have these signals?
+	//emit_signal(widget, "purge_object", NULL);
+	//remove_signal(widget, NULL);
+	hash_remove(widget_list, widget->id, -1);
+	if (widget->id)
+		destroy_string(widget->id);
 }
 
 /**
  * Returns the widget with the given id.
  */
-struct widget_s *find_widget(char *id)
+struct fe_widget *fe_find_widget(const char *id)
 {
-	struct widget_node_s *node;
-
-	if (!(node = widget_find_node(&widget_list, id)))
-		return(NULL);
-	return(&node->widget);
+	return(hash_find(widget_list, id, -1));
 }
 
 /**
  * Calls the widget control function allowing for direct variable arguments
  * instead of passing a va_list.
  */
-int widget_control(struct widget_s *widget, int cmd, ...)
+int fe_widget_control(struct fe_widget *widget, int cmd, ...)
 {
 	int ret;
 	va_list va;
 
 	va_start(va, cmd);
-	ret = widget->type->control(widget, cmd, va);
+	ret = FE_WIDGET_GET_TYPE(widget)->control(widget, cmd, va);
 	va_end(va);
 	return(ret);
 }
@@ -141,19 +108,19 @@ int widget_control(struct widget_s *widget, int cmd, ...)
  * to be registered as a layout type with the type of a widget to be generated
  * used as the associated type pointer.
  */
-struct widget_s *generate_widget(struct widget_type_s *type, struct property_s *props, struct layout_s *children)
+struct fe_widget *fe_widget_generate(struct fe_widget_type *type, struct property_s *props, struct fe_layout *children)
 {
-	struct layout_s *cur;
-	struct widget_s *widget, *child;
+	struct fe_layout *cur;
+	struct fe_widget *widget, *child;
 
-	if (!(widget = create_widget(type, get_property(props, "id"), NULL, props)))
+	if (!(widget = FE_WIDGET(create_object(OBJECT_TYPE_S(type), get_property(props, "id"), NULL, props))))
 		return(NULL);
 	for (cur = children;cur;cur = cur->next) {
 		if (LAYOUT_RETURN_TYPE(cur->type) != LAYOUT_RT_WIDGET)
 			continue;
-		child = layout_call_create_m(cur->type, cur->props, cur->children);
+		child = FE_LAYOUT_CALL_CREATE(cur->type, cur->props, cur->children);
 		if (child)
-			widget_control(widget, WCC_ADD_WIDGET, child);
+			fe_widget_control(widget, WCC_ADD_WIDGET, child);
 	}
 	return(widget);
 }

@@ -7,8 +7,8 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/string.h>
-#include <stutter/frontend.h>
 
 int base_cmd_expand(char *env, char *args)
 {
@@ -24,7 +24,7 @@ int base_cmd_expand(char *env, char *args)
 	cmd = util_get_arg(str, &pos);
 
 	if (util_evaluate_command(cmd, &str[pos])) {
-		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
+		OUTPUT_ERROR(BASE_ERR_UNKNOWN_COMMAND, cmd);
 	}
 	return(0);
 }

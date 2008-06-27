@@ -8,8 +8,8 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/string.h>
-#include <stutter/frontend.h>
 #include <stutter/frontend/timer.h>
 
 static int base_cmd_timer_expired(char *, fe_timer_t *);
@@ -35,7 +35,7 @@ static int base_cmd_timer_expired(char *args, fe_timer_t *timer)
 
 	cmd = util_get_arg(args, &pos);
 	if (util_evaluate_command(cmd, &args[pos])) {
-		BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
+		OUTPUT_ERROR(BASE_ERR_UNKNOWN_COMMAND, cmd);
 	}
 	destroy_string(args);
 	return(0);

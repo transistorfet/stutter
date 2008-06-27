@@ -6,23 +6,22 @@
 #ifndef _STUTTER_INIT_H
 #define _STUTTER_INIT_H
 
-#include <stutter/key.h>
-#include <stutter/type.h>
 #include <stutter/utils.h>
+#include <stutter/object.h>
+#include <stutter/output.h>
 #include <stutter/signal.h>
 #include <stutter/macros.h>
 #include <stutter/variable.h>
+#include <stutter/frontend/common/key.h>
 
 /*** Types ***/
 
-typedef int (*type_init_t)(void);
-
 struct type_prototype_s {
-	type_init_t func;
+	struct object_type_s *type;
 };
 
-#define ADD_TYPE(func)	\
-	{ (type_init_t) func },
+#define ADD_TYPE(type)	\
+	{ OBJECT_TYPE_S(type) },
 
 #define DEFINE_TYPE_LIST(name, list)			\
 	static struct type_prototype_s name[] = {	\
@@ -30,71 +29,71 @@ struct type_prototype_s {
 		{ NULL }				\
 	}
 
-#define ADD_TYPE_LIST(list) {				\
-	int i;						\
-	for (i = 0;list[i].func;i++)			\
-		list[i].func();				\
+static inline void ADD_TYPE_LIST(struct type_prototype_s *list) {
+	int i;
+	for (i = 0;list[i].type;i++)
+		object_register_type(list[i].type);
 }
 
 /*** Signals ***/
 
 struct handler_prototype_s {
-	void *obj;
 	char *name;
 	int priority;
 	signal_t func;
 	void *ptr;
 };
 
-#define ADD_HANDLER(obj, name, priority, func, env)	\
-	{ obj, name, priority, (signal_t) func, env },
+#define ADD_HANDLER(name, priority, func, env)	\
+	{ name, priority, (signal_t) func, env },
 
 #define DEFINE_HANDLER_LIST(name, list)			\
 	static struct handler_prototype_s name[] = {	\
 		list					\
-		{ NULL, NULL, 0, NULL, NULL }		\
+		{ NULL, 0, NULL, NULL }			\
 	}
 
-#define ADD_HANDLER_LIST(list) {			\
-	int i;						\
-	for (i = 0;list[i].name;i++)			\
-		signal_connect(list[i].obj, list[i].name, list[i].priority, (signal_t) list[i].func, list[i].ptr);	\
+static inline void ADD_HANDLER_LIST(struct handler_prototype_s *list) {
+	int i;
+	for (i = 0; list[i].name; i++)
+		signal_named_connect(signal_table, list[i].name, list[i].priority, (signal_t) list[i].func, list[i].ptr);
 }
 
-#define REMOVE_HANDLER_LIST(list) {			\
-	int i;						\
-	for (i = 0;list[i].name;i++)			\
-		signal_disconnect(signal_find_handler(list[i].obj, list[i].name, (signal_t) list[i].func, list[i].ptr));	\
+static inline void REMOVE_HANDLER_LIST(struct handler_prototype_s *list) {
+	int i;
+	for (i = 0; list[i].name; i++)
+		// TODO fix this somehow...
+		;//signal_disconnect(signal_find_handler(SIGNAL_S(find_variable(NULL, list[i].name, NULL)), (signal_t) list[i].func, list[i].ptr));
 }
 
 /*** Keys ***/
 
 struct key_prototype_s {
+	char *context;
 	char *key;
 	char *var;
 	char *params;
 };
 
 #define BIND_KEY(key, var, params)	\
-	{ key, var, params },
+	{ NULL, key, var, params },
 
 #define DEFINE_KEY_LIST(name, list)			\
 	static struct key_prototype_s name[] = {	\
 		list					\
-		{ NULL, NULL, NULL }			\
+		{ NULL, NULL, NULL, NULL }		\
 	}
 
-#define ADD_KEY_LIST(list) {				\
-	int i;						\
-	void *value;					\
-	struct type_s *type;				\
-	int key[SMALL_STRING_SIZE];			\
-	for (i = 0;list[i].key;i++) {			\
-		if ((value = find_variable(NULL, list[i].var, &type))) {	\
-			util_convert_key(list[i].key, key, SMALL_STRING_SIZE);	\
-			bind_key(NULL, key, value, type, list[i].params);	\
-		}					\
-	}						\
+static inline void ADD_KEY_LIST(struct key_prototype_s *list) {
+	int i;
+	struct variable_s *var;
+	int key[SMALL_STRING_SIZE];
+	for (i = 0; list[i].key; i++) {
+		if ((var = find_variable(NULL, list[i].var, NULL))) {
+			util_convert_key(list[i].key, key, SMALL_STRING_SIZE);
+			fe_key_bind(list[i].context, key, var, list[i].params);
+		}
+	}
 }
 
 /*** Variables ***/
@@ -120,10 +119,10 @@ struct variable_prototype_s {
 	{ INIT_ADD_VARIABLE, name, VAR_BF_NO_REMOVE, params, { __VA_ARGS__ } },
 
 #define ADD_COMMAND(name, func)				\
-	ADD_FIXED_VARIABLE(name, "callback,pointer", func, NULL)
+	ADD_FIXED_VARIABLE(name, "fp", func, NULL)
 
 #define ADD_COMMAND_ENV(name, func, env)		\
-	ADD_FIXED_VARIABLE(name, "callback,pointer", func, env)
+	ADD_FIXED_VARIABLE(name, "fp", func, env)
 
 #define DECLARE_TYPE(type, list)			\
 	{ INIT_FIND_TYPE, type, 0, NULL, { NULL } },	\
@@ -135,27 +134,28 @@ struct variable_prototype_s {
 		{ 0, NULL, 0, NULL, { NULL } }		\
 	}
 
-#define ADD_VARIABLE_LIST(table, list) {				\
-	int i;								\
-	struct type_s *type;						\
-									\
-	for (i = 0;list[i].type;i++) {					\
-		switch (list[i].type) {					\
-			case INIT_FIND_TYPE: {				\
-				if (!(type = find_type(list[i].name)) || !type->create) {	\
-					while (list[++i].type != INIT_FIND_TYPE) ;		\
-					i--;				\
-				}					\
-				break;					\
-			}						\
-			case INIT_ADD_VARIABLE: {			\
-				add_variable(table, type, list[i].name, list[i].bitflags, list[i].params, list[i].ptrs[0], list[i].ptrs[1], list[i].ptrs[2], list[i].ptrs[3]);	\
-				break;					\
-			}						\
-			default:					\
-				break;					\
-		}							\
-	}								\
+static inline void ADD_VARIABLE_LIST(struct variable_table_s *table, struct variable_prototype_s *list) {
+	int i;
+	struct object_type_s *type;
+
+	for (i = 0; list[i].type; i++) {
+		switch (list[i].type) {
+			case INIT_FIND_TYPE: {
+				if (!(type = object_find_type(list[i].name, NULL))) {
+					for (i++; list[i].type && list[i].type != INIT_FIND_TYPE; i++)
+						;
+					i--;
+				}
+				break;
+			}
+			case INIT_ADD_VARIABLE: {
+				add_variable(table, type, list[i].name, list[i].bitflags, list[i].params, list[i].ptrs[0], list[i].ptrs[1], list[i].ptrs[2], list[i].ptrs[3]);
+				break;
+			}
+			default:
+				break;
+		}
+	}
 }
 
 /*** Commands ***/
@@ -169,21 +169,20 @@ struct variable_prototype_s {
 		NULL			\
 	}
 
-#define EVALUATE_COMMAND_LIST(list) {					\
-	int i, pos;							\
-	char *str, *cmd;						\
-	char buffer[STRING_SIZE];					\
-	for (i = 0;list[i];i++) {					\
-		strcpy(buffer, list[i]);				\
-		str = buffer;						\
-		if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))	\
-			str = &str[strlen(BASE_COMMAND_PREFIX)];	\
-		pos = 0;						\
-		cmd = util_get_arg(str, &pos);				\
-		if (util_evaluate_command(cmd, &str[pos])) {			\
-			BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)	\
-		}							\
-	}								\
+static inline void EVALUATE_COMMAND_LIST(const char **list) {
+	int i, pos;
+	char *str, *cmd;
+	char buffer[STRING_SIZE];
+	for (i = 0; list[i]; i++) {
+		strcpy(buffer, list[i]);
+		str = buffer;
+		if (!strncmp(str, BASE_COMMAND_PREFIX, strlen(BASE_COMMAND_PREFIX)))
+			str = &str[strlen(BASE_COMMAND_PREFIX)];
+		pos = 0;
+		cmd = util_get_arg(str, &pos);
+		if (util_evaluate_command(cmd, &str[pos]))
+			OUTPUT_ERROR(BASE_ERR_UNKNOWN_COMMAND, cmd);
+	}
 }
 
 #endif

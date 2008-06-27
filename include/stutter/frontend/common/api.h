@@ -13,36 +13,10 @@
 #include <stutter/signal.h>
 #include <stutter/globals.h>
 #include <stutter/frontend/common.h>
-#include <stutter/frontend/widget.h>
-#include <stutter/frontend/surface.h>
+#include <stutter/frontend/common/widget.h>
 #include <stutter/frontend/common/layout.h>
+#include <stutter/frontend/comnon/surface.h>
 
-static inline int init_fe_common_api(void)
-{
-	if (init_widget())
-		return(-1);
-	if (init_surface())
-		return(-1);
-	if (init_layout())
-		return(-1);
-
-	// TODO this should be moved someplace else
-	layout_register_type("window", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &window_type);
-	layout_register_type("text", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &text_type);
-	layout_register_type("frame", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &frame_type);
-	layout_register_type("input", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &input_type);
-	layout_register_type("statusbar", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &statusbar_type);
-	layout_register_type("region", LAYOUT_RT_WIDGET, (layout_create_t) generate_widget, &region_type);
-	return(0);
-}
-
-static inline int release_fe_common_api(void)
-{
-	release_layout();
-	release_surface();
-	release_widget();
-	return(0);
-}
 
 static inline void *fe_common_api_create_widget(char *ns, char *type, char *id, void *parent)
 {

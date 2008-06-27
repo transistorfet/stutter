@@ -5,7 +5,6 @@
 
 #include CONFIG_H
 #include <stutter/string.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 static inline int irc_msg_mode_convert(struct irc_channel *, struct irc_msg *);

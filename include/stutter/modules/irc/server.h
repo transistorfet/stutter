@@ -8,6 +8,8 @@
 
 #include <stutter/queue.h>
 #include <stutter/string.h>
+#include <stutter/object.h>
+#include <stutter/variable.h>
 #include <stutter/frontend/net.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/channel.h>
@@ -17,6 +19,8 @@
 #define IRC_SBF_CONNECTED		0x01
 
 struct irc_server {
+	struct variable_s variable;
+	struct irc_server *next;
 	int bitflags;
 	string_t address;
 	int port;

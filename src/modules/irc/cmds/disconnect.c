@@ -4,7 +4,6 @@
  */
 
 #include CONFIG_H
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_disconnect(char *env, char *args)

@@ -10,19 +10,19 @@
 #include <stutter/memory.h>
 #include <stutter/frontend/timer.h>
 
-struct fe_timer_s {
+struct fe_timer {
 	int bitflags;
 	struct callback_s callback;
 	float interval;
 	time_t start;
-	struct fe_timer_s *prev;
-	struct fe_timer_s *next;
+	struct fe_timer *prev;
+	struct fe_timer *next;
 };
 
-struct fe_timer_s *timer_list = NULL;
+struct fe_timer *timer_list = NULL;
 
-static void fe_timer_insert(struct fe_timer_s *);
-static void fe_timer_remove(struct fe_timer_s *);
+static void fe_timer_insert(struct fe_timer *);
+static void fe_timer_remove(struct fe_timer *);
 
 int init_timer(void)
 {
@@ -31,7 +31,7 @@ int init_timer(void)
 
 int release_timer(void)
 {
-	struct fe_timer_s *cur, *tmp;
+	struct fe_timer *cur, *tmp;
 
 	for (cur = timer_list;cur;) {
 		tmp = cur->next;
@@ -46,9 +46,9 @@ int release_timer(void)
  */
 fe_timer_t fe_timer_create(int bitflags, float interval, callback_t func, void *ptr)
 {
-	struct fe_timer_s *timer;
+	struct fe_timer *timer;
 
-	if (!(timer = (struct fe_timer_s *) memory_alloc(sizeof(struct fe_timer_s))))
+	if (!(timer = (struct fe_timer *) memory_alloc(sizeof(struct fe_timer))))
 		return(NULL);
 	timer->bitflags = bitflags;
 	timer->callback.func = func;
@@ -67,7 +67,7 @@ fe_timer_t fe_timer_create(int bitflags, float interval, callback_t func, void *
  */
 void fe_timer_destroy(fe_timer_t timer)
 {
-	fe_timer_remove((struct fe_timer_s *) timer);
+	fe_timer_remove((struct fe_timer *) timer);
 	memory_free(timer);
 }
 
@@ -77,7 +77,7 @@ void fe_timer_destroy(fe_timer_t timer)
  */
 struct callback_s fe_timer_get_callback(fe_timer_t timer)
 {
-	return(((struct fe_timer_s *) timer)->callback);
+	return(((struct fe_timer *) timer)->callback);
 }
 
 /**
@@ -85,8 +85,8 @@ struct callback_s fe_timer_get_callback(fe_timer_t timer)
  */
 void fe_timer_set_callback(fe_timer_t timer, callback_t func, void *ptr)
 {
-	((struct fe_timer_s *) timer)->callback.func = func;
-	((struct fe_timer_s *) timer)->callback.ptr = ptr;
+	((struct fe_timer *) timer)->callback.func = func;
+	((struct fe_timer *) timer)->callback.ptr = ptr;
 }
 
 
@@ -97,10 +97,10 @@ void fe_timer_set_callback(fe_timer_t timer, callback_t func, void *ptr)
  */
 int fe_timer_reset(fe_timer_t timer)
 {
-	fe_timer_remove((struct fe_timer_s *) timer);
-	((struct fe_timer_s *) timer)->bitflags &= ~FE_TIMER_BF_EXPIRED;
-	((struct fe_timer_s *) timer)->start = time(NULL);
-	fe_timer_insert((struct fe_timer_s *) timer);
+	fe_timer_remove((struct fe_timer *) timer);
+	((struct fe_timer *) timer)->bitflags &= ~FE_TIMER_BF_EXPIRED;
+	((struct fe_timer *) timer)->start = time(NULL);
+	fe_timer_insert((struct fe_timer *) timer);
 	return(0);
 }
 
@@ -110,7 +110,7 @@ int fe_timer_reset(fe_timer_t timer)
  */
 int fe_timer_expire(fe_timer_t timer)
 {
-	((struct fe_timer_s *) timer)->bitflags |= FE_TIMER_BF_EXPIRED;
+	((struct fe_timer *) timer)->bitflags |= FE_TIMER_BF_EXPIRED;
 	return(0);
 }
 
@@ -122,9 +122,9 @@ int fe_timer_expire(fe_timer_t timer)
  */
 int fe_timer_set_interval(fe_timer_t timer, float interval)
 {
-	fe_timer_remove((struct fe_timer_s *) timer);
-	((struct fe_timer_s *) timer)->interval = interval;
-	fe_timer_insert((struct fe_timer_s *) timer);
+	fe_timer_remove((struct fe_timer *) timer);
+	((struct fe_timer *) timer)->interval = interval;
+	fe_timer_insert((struct fe_timer *) timer);
 	return(0);
 }
 
@@ -134,7 +134,7 @@ int fe_timer_set_interval(fe_timer_t timer, float interval)
 int fe_timer_check(void)
 {
 	time_t current_time;
-	struct fe_timer_s *cur;
+	struct fe_timer *cur;
 
 	current_time = time(NULL);
 	for (cur = timer_list;cur;cur = cur->next) {
@@ -142,7 +142,7 @@ int fe_timer_check(void)
 			continue;
 		else if ((current_time - cur->start) >= cur->interval) {
 			cur->bitflags |= FE_TIMER_BF_EXPIRED;
-			execute_callback_m(cur->callback, cur);
+			EXECUTE_CALLBACK(cur->callback, cur);
 			if (cur->bitflags & FE_TIMER_BF_PERIODIC)
 				fe_timer_reset((fe_timer_t) cur);
 		}
@@ -154,10 +154,10 @@ int fe_timer_check(void)
 
 /*** Local Functions ***/
 
-static void fe_timer_insert(struct fe_timer_s *timer)
+static void fe_timer_insert(struct fe_timer *timer)
 {
 	double expiration;
-	struct fe_timer_s *cur, *prev;
+	struct fe_timer *cur, *prev;
 
 	if (!timer_list) {
 		timer_list = timer;
@@ -181,7 +181,7 @@ static void fe_timer_insert(struct fe_timer_s *timer)
 	}
 }
 
-static void fe_timer_remove(struct fe_timer_s *timer)
+static void fe_timer_remove(struct fe_timer *timer)
 {
 	if (timer->prev)
 		timer->prev->next = timer->next;

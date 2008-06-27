@@ -9,94 +9,85 @@
 #include CONFIG_H
 #include <stutter/queue.h>
 #include <stutter/memory.h>
-#include <stutter/frontend/widget.h>
-#include <stutter/frontend/surface.h>
-#include "frame.h"
-#include "container.h"
+#include <stutter/frontend/common/widget.h>
+#include <stutter/frontend/common/surface.h>
+#include <stutter/frontend/common/widgets/frame.h>
+#include <stutter/frontend/common/widgets/container.h>
 
-struct widget_type_s frame_type = {
-	"frame:container:window",
-	WT_FRAME,
-	sizeof(struct frame_s),
-	(widget_init_t) frame_init,
-	(widget_release_t) frame_release,
-	(widget_refresh_t) frame_refresh,
-	(widget_print_t) frame_print,
-	(widget_clear_t) frame_clear,
-	(widget_read_t) frame_read,
-	(widget_control_t) frame_control
+struct fe_widget_type fe_frame_type = { {
+	OBJECT_TYPE_S(&fe_container_type),
+	"fe_frame",
+	sizeof(struct fe_frame),
+	NULL,
+	(object_init_t) fe_frame_init,
+	(object_release_t) fe_frame_release },
+	(fe_widget_write_t) fe_frame_write,
+	(fe_widget_read_t) fe_frame_read,
+	(fe_widget_refresh_t) fe_frame_refresh,
+	(fe_widget_clear_t) fe_frame_clear,
+	(fe_widget_control_t) fe_frame_control
 };
 
-int frame_init(struct frame_s *frame, struct property_s *props)
+int fe_frame_init(struct fe_frame *frame, const char *params, va_list va)
 {
-	container_init(CONTAINER_S(frame), props);
+	if (fe_container_init(FE_CONTAINER(frame), params, va))
+		return(-1);
 	return(0);
 }
 
-int frame_release(struct frame_s *frame)
+void fe_frame_release(struct fe_frame *frame)
 {
-	container_release(CONTAINER_S(frame));
-	return(0);
- }
-
-int frame_refresh(struct frame_s *frame)
-{
-	struct container_node_s *node;
-
-	if ((node = container_widgets_current_node(CONTAINER_S(frame))) && node->widget) {
-		if ((node->widget->bitflags & WBF_NEEDS_REFRESH) || (WIDGET_S(frame)->bitflags & WBF_FORCE_REFRESH)) {
-			widget_refresh_m(node->widget);
-			WIDGET_S(frame)->bitflags &= ~WBF_FORCE_REFRESH;
-		}
-	}
-	else
-		window_clear(WINDOW_S(frame));
-	return(0);
+	fe_container_release(FE_CONTAINER(frame));
 }
 
-int frame_print(struct frame_s *frame, const char *str, int len)
+int fe_frame_write(struct fe_frame *frame, const char *str, int len)
 {
 	return(0);
 }
 
-void frame_clear(struct frame_s *frame)
-{
-//	surface_clear_m(frame->surface, frame->x, frame->y, frame->width, frame->height);
-}
-
-int frame_read(struct frame_s *frame, char *buffer, int max)
+int fe_frame_read(struct fe_frame *frame, char *buffer, int max)
 {
 	return(-1);
 }
 
-int frame_control(struct frame_s *frame, int cmd, va_list va)
+int fe_frame_refresh(struct fe_frame *frame, struct fe_surface *surface)
+{
+	struct fe_widget *widget;
+
+	if ((widget = FE_WIDGET(QUEUE_CURRENT(FE_CONTAINER(frame)->widgets)))) {
+		if ((widget->bitflags & WBF_NEEDS_REFRESH) || (FE_WIDGET(frame)->bitflags & WBF_FORCE_REFRESH)) {
+			FE_WIDGET_REFRESH(widget, surface);
+			FE_WIDGET(frame)->bitflags &= ~WBF_FORCE_REFRESH;
+		}
+	}
+	else
+		fe_window_clear(FE_WINDOW(frame), surface);
+	return(0);
+}
+
+void fe_frame_clear(struct fe_frame *frame, struct fe_surface *surface)
+{
+//	FE_SURFACE_CLEAR(surface, FE_WINDOW(frame)->x, FE_WINDOW(frame)->y, FE_WINDOW(frame)->width, FE_WINDOW(frame)->height);
+}
+
+int fe_frame_control(struct fe_frame *frame, int cmd, va_list va)
 {
 	switch (cmd) {
-		case WCC_SET_SURFACE: {
-			struct surface_s *surface;
-			struct container_node_s *cur;
-
-			surface = va_arg(va, struct surface_s *);
-			WINDOW_S(frame)->surface = surface;
-			container_widgets_foreach(CONTAINER_S(frame), cur) {
-				widget_control(cur->widget, WCC_SET_SURFACE, surface);
-			}
-			// TODO should this also cause a resize of everything?  at least if we are the root
-			return(0);
-		}
 		case WCC_SET_WINDOW: {
-			struct container_node_s *cur;
+			struct queue_entry_s *entry;
 
-			window_control(WINDOW_S(frame), cmd, va);
-			container_widgets_foreach(CONTAINER_S(frame), cur) {
-				widget_control(cur->widget, WCC_SET_WINDOW, WINDOW_S(frame)->x, WINDOW_S(frame)->y, WINDOW_S(frame)->width, WINDOW_S(frame)->height);
+			fe_window_control(FE_WINDOW(frame), cmd, va);
+			entry = QUEUE_CURRENT_ENTRY(FE_CONTAINER(frame)->widgets);
+			QUEUE_FOREACH(FE_CONTAINER(frame)->widgets) {
+				fe_widget_control(FE_WIDGET(QUEUE_CURRENT(FE_CONTAINER(frame)->widgets)), WCC_SET_WINDOW, FE_WINDOW(frame)->x, FE_WINDOW(frame)->y, FE_WINDOW(frame)->width, FE_WINDOW(frame)->height);
 			}
+			QUEUE_SET_CURRENT_ENTRY(FE_CONTAINER(frame)->widgets, entry);
 			return(0);
 		}
 		case WCC_GET_MIN_MAX_SIZE: {
 			widget_size_t *min, *max;
+			struct queue_entry_s *entry;
 			widget_size_t ch_min, ch_max;
-			struct container_node_s *cur;
 
 			min = va_arg(va, widget_size_t *);
 			max = va_arg(va, widget_size_t *);
@@ -108,8 +99,9 @@ int frame_control(struct frame_s *frame, int cmd, va_list va)
 				max->width = -1;
 				max->height = -1;
 			}
-			container_widgets_foreach(CONTAINER_S(frame), cur) {
-				if (!widget_control(cur->widget, WCC_GET_MIN_MAX_SIZE, &ch_min, &ch_max)) {
+			entry = QUEUE_CURRENT_ENTRY(FE_CONTAINER(frame)->widgets);
+			QUEUE_FOREACH(FE_CONTAINER(frame)->widgets) {
+				if (!fe_widget_control(FE_WIDGET(QUEUE_CURRENT(FE_CONTAINER(frame)->widgets)), WCC_GET_MIN_MAX_SIZE, &ch_min, &ch_max)) {
 					if (min) {
 						if (ch_min.width > min->width)
 							min->width = ch_min.width;
@@ -124,20 +116,21 @@ int frame_control(struct frame_s *frame, int cmd, va_list va)
 					}
 				}
 			}
+			QUEUE_SET_CURRENT_ENTRY(FE_CONTAINER(frame)->widgets, entry);
 			return(0);
 		}
 		case WCC_ADD_WIDGET:
 		case WCC_INSERT_WIDGET: {
-			struct widget_s *widget;
+			struct fe_widget *widget;
 
-			if (container_control(CONTAINER_S(frame), cmd, va))
+			if (fe_container_control(FE_CONTAINER(frame), cmd, va))
 				return(-1);
-			widget = va_arg(va, struct widget_s *);
-			widget_control(widget, WCC_SET_WINDOW, WINDOW_S(frame)->x, WINDOW_S(frame)->y, WINDOW_S(frame)->width, WINDOW_S(frame)->height);
+			widget = va_arg(va, struct fe_widget *);
+			fe_widget_control(widget, WCC_SET_WINDOW, FE_WINDOW(frame)->x, FE_WINDOW(frame)->y, FE_WINDOW(frame)->width, FE_WINDOW(frame)->height);
 			return(0);
 		}
 		default:
-			return(container_control(CONTAINER_S(frame), cmd, va));
+			return(fe_container_control(FE_CONTAINER(frame), cmd, va));
 	}
 	return(-1);
 }

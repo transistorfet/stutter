@@ -10,63 +10,31 @@
 #include <stutter/macros.h>
 #include <stutter/memory.h>
 #include <stutter/globals.h>
-#include <stutter/frontend/widget.h>
+#include <stutter/frontend/common/widget.h>
 #include <stutter/frontend/common/layout.h>
 
-/** Layout Types List */
-
-#define layout_type_release_node(list, node)		/* nothing to release */
-#define layout_type_hash(list, key)			sdbm_hash_icase(key)
-#define layout_type_compare_node(node, key)		(!strcmp_icase(node->type.name, key))
-
-#define layout_release_node(list, node)			destroy_layout(node->layout)
-#define layout_hash(list, key)				sdbm_hash_icase(key)
-#define layout_compare_node(node, key)			(!strcmp_icase(node->name, key))
-
-struct layout_type_node_s {
-	struct layout_type_s type;
-	hash_node_v(layout_type_node_s) types;
-};
-
-struct layout_type_list_s {
-	hash_list_v(layout_type_node_s) types;
-};
-
-struct layout_node_s {
-	char *module;
-	char *name;
-	struct layout_s *layout;
-	hash_node_v(layout_node_s) layouts;
-};
-
-struct layout_list_s {
-	hash_list_v(layout_node_s) layouts;
-};
-
-static int layout_initialized = 0;
-static struct layout_list_s layouts;
-static struct layout_type_list_s layout_types;
-
-DEFINE_HASH_TABLE(layout_type, struct layout_type_list_s, struct layout_type_node_s, types, type.name, layout_type_release_node, layout_type_hash, layout_type_compare_node, FE_LAYOUT_TYPES_LOAD_FACTOR, FE_LAYOUT_TYPES_GROWTH_FACTOR)
-DEFINE_HASH_TABLE(layout, struct layout_list_s, struct layout_node_s, layouts, name, layout_release_node, layout_hash, layout_compare_node, FE_LAYOUTS_LOAD_FACTOR, FE_LAYOUTS_GROWTH_FACTOR)
+static struct hash_s *layouts = NULL;
+static struct hash_s *layout_types = NULL;
 
 int init_layout(void)
 {
-	if (layout_initialized)
+	if (layouts)
 		return(0);
-	layout_type_init_table(&layout_types, FE_LAYOUT_TYPES_INIT_SIZE);
-	layout_init_table(&layouts, FE_LAYOUTS_INIT_SIZE);
-	layout_initialized = 1;
+	if (!(layouts = create_hash(0, -1, (destroy_t) destroy_layout)))
+		return(-1);
+	// TODO THESE ARE VERY WRONG! you have no destroy function thus memory leak
+	if (!(layout_types = create_hash(0, -1, NULL)))
+		return(-1);
 	return(0);
 }
 
 int release_layout(void)
 {
-	if (!layout_initialized)
+	if (!layouts)
 		return(0);
-	layout_release_table(&layouts);
-	layout_type_release_table(&layout_types);
-	layout_initialized = 0;
+	destroy_hash(layouts);
+	destroy_hash(layout_types);
+	layouts = NULL;
 	return(0);
 }
 
@@ -76,18 +44,16 @@ int release_layout(void)
  * generation type, and ptr.  If the type is successfully created then 0 is
  * returned, otherwise -1 is returned.
  */
-int layout_register_type(char *name, int bitflags, layout_create_t func, void *ptr)
+int layout_register_type(char *name, int bitflags, fe_layout_create_t func, void *ptr)
 {
-	struct layout_type_node_s *node;
+	struct fe_layout_type *type;
 
-	if (!(node = layout_type_create_node(sizeof(struct layout_type_node_s) + strlen(name) + 1)))
+	if (!(type = (struct fe_layout_type *) memory_alloc(sizeof(struct fe_layout_type))))
 		return(-1);
-	node->type.name = (char *) offset_after_struct_m(node, 0);
-	strcpy(node->type.name, name);
-	node->type.bitflags = bitflags;
-	node->type.func = func;
-	node->type.ptr = ptr;
-	layout_type_add_node(&layout_types, node);
+	type->bitflags = bitflags;
+	type->func = func;
+	type->ptr = ptr;
+	hash_add(layout_types, name, -1, type);
 	return(0);
 }
 
@@ -97,20 +63,16 @@ int layout_register_type(char *name, int bitflags, layout_create_t func, void *p
  */
 int layout_unregister_type(char *name)
 {
-	return(layout_type_delete_node(&layout_types, name));
+	return(hash_remove(layout_types, name, -1));
 }
 
 /**
  * Returns a pointer to the layout type of the given name or NULL if the
  * type is not found.
  */
-struct layout_type_s *layout_find_type(char *name)
+struct fe_layout_type *layout_find_type(char *name)
 {
-	struct layout_type_node_s *node;
-
-	if (!(node = layout_type_find_node(&layout_types, name)))
-		return(NULL);
-	return(&node->type);
+	return(hash_find(layout_types, name, -1));
 }
 
 
@@ -122,14 +84,14 @@ struct layout_type_s *layout_find_type(char *name)
  * and is the deallocation of it is the responsability of the caller until that
  * responsability is given up).
  */
-struct layout_s *make_layout(char *type_name, struct property_s *props, struct layout_s *children, struct layout_s *next)
+struct fe_layout *make_layout(char *type_name, struct property_s *props, struct fe_layout *children, struct fe_layout *next)
 {
-	struct layout_s *layout;
-	struct layout_type_s *type;
+	struct fe_layout *layout;
+	struct fe_layout_type *type;
 
 	if (!(type = layout_find_type(type_name)))
 		return(NULL);
-	if (!(layout = (struct layout_s *) memory_alloc(sizeof(struct layout_s))))
+	if (!(layout = (struct fe_layout *) memory_alloc(sizeof(struct fe_layout))))
 		return(NULL);
 	layout->type = type;
 	layout->props = props;
@@ -141,7 +103,7 @@ struct layout_s *make_layout(char *type_name, struct property_s *props, struct l
 /**
  * Destroys the given layout.
  */
-void destroy_layout(struct layout_s *layout)
+void destroy_layout(struct fe_layout *layout)
 {
 	if (layout->props)
 		destroy_layout_property(layout->props);
@@ -189,23 +151,10 @@ void destroy_layout_property(struct property_s *props)
  * name.  The layout and all of the layouts and properties it links to become
  * the responsability of the layout manager including their deallocation.
  */
-int add_layout(char *module, char *name, struct layout_s *layout)
+int add_layout(const char *module, const char *name, struct fe_layout *layout)
 {
-	struct layout_node_s *node;
-
-	if (!name || !layout)
-		return(-1);
-	if (!module)
-		module = "";
-	if (!(node = layout_create_node(sizeof(struct layout_node_s) + strlen(module) + strlen(name) + 2)))
-		return(-1);
-	node->module = (char *) offset_after_struct_m(node, 0);
-	strcpy(node->module, module);
-	node->name = (char *) offset_after_struct_m(node, strlen(module) + 1);
-	strcpy(node->name, name);
-	node->layout = layout;
-	layout_add_node(&layouts, node);
-	return(0);
+	// TODO we are ignoring module name here
+	return(hash_add(layouts, name, -1, layout));
 }
 
 /**
@@ -213,22 +162,20 @@ int add_layout(char *module, char *name, struct layout_s *layout)
  * all associated memory.  If the layout is not found then -1 is returned,
  * otherwise 0 is returned.
  */
-int remove_layout(char *module, char *name)
+int remove_layout(const char *module, const char *name)
 {
-	return(layout_delete_node(&layouts, name));
+	// TODO we are ignoring module name here
+	return(hash_remove(layouts, name, -1));
 }
 
 /**
  * Returns the pointer to the layout with the given module and name or NULL
  * if the layout is not found.
  */
-struct layout_s *find_layout(char *module, char *name)
+struct fe_layout *find_layout(const char *module, const char *name)
 {
-	struct layout_node_s *node;
-
-	if (!(node = layout_find_node(&layouts, name)))
-		return(NULL);
-	return(node->layout);
+	// TODO we are ignoring module name here
+	return(hash_find(layouts, name, -1));
 }
 
 
@@ -238,11 +185,11 @@ struct layout_s *find_layout(char *module, char *name)
  * not match the return type of the layout then NULL is returned, otherwise a
  * pointer to the object is returned.
  */
-void *layout_generate_object(char *module, char *name, int return_type, char *id)
+void *layout_generate_object(const char *module, const char *name, int return_type, const char *id)
 {
 	void *obj;
 	struct property_s prop;
-	struct layout_s *layout;
+	struct fe_layout *layout;
 
 	if (!(layout = find_layout(module, name)))
 		return(NULL);
@@ -251,7 +198,7 @@ void *layout_generate_object(char *module, char *name, int return_type, char *id
 	prop.name = "id";
 	prop.value = id;
 	prop.next = layout->props;
-	obj = layout_call_create_m(layout->type, &prop, layout->children);
+	obj = FE_LAYOUT_CALL_CREATE(layout->type, &prop, layout->children);
 	return(obj);
 }
 

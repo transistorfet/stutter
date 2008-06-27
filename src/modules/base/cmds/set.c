@@ -7,12 +7,12 @@
 #include <string.h>
 
 #include CONFIG_H
-#include <stutter/type.h>
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/macros.h>
 #include <stutter/string.h>
+#include <stutter/object.h>
 #include <stutter/variable.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_set(char *env, char *args)
@@ -20,7 +20,7 @@ int base_cmd_set(char *env, char *args)
 	char *name;
 	int pos = 0;
 	char *type_name = NULL;
-	struct type_s *type = NULL;
+	struct object_type_s *type;
 
 	TRIM_WHITESPACE(args);
 	if (*args == '-') {
@@ -29,15 +29,15 @@ int base_cmd_set(char *env, char *args)
 	}
 	name = util_get_arg(&args[pos], &pos);
 
-	if (type_name && (!(type = find_type(type_name)) || !type->create)) {
-		BASE_ERROR_JOINPOINT(BASE_ERR_TYPE_NOT_FOUND, type_name)
+	if (type_name && (!(type = object_find_type(type_name, NULL)))) {
+		OUTPUT_ERROR(BASE_ERR_TYPE_NOT_FOUND, type_name);
 		return(-1);
 	}
-	else if (!(add_variable(NULL, type, name, 0, "string", &args[pos]))) {
-		BASE_ERROR_JOINPOINT(BASE_ERR_SET_FAILED, name)
+	else if (!(add_variable(NULL, type, name, 0, "s", &args[pos]))) {
+		OUTPUT_ERROR(BASE_ERR_SET_FAILED, name);
 		return(-1);
 	}
-	BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_SET, name, &args[pos])
+	OUTPUT_STATUS(BASE_FMT_SET, name, &args[pos]);
 	return(0);
 }
 

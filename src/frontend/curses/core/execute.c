@@ -4,7 +4,6 @@
  * Description:		Program Execution Manager
  */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
@@ -13,45 +12,49 @@
 #include <sys/wait.h>
 
 #include <stutter/memory.h>
-#include "desc.h"
+#include <stutter/frontend/curses/execute.h>
+#include <stutter/frontend/curses/interface.h>
 
 #define EXECUTE_MAX_PARAMS		64
 
-typedef struct fe_descriptor_s *fe_execute_t;
+struct fe_interface_type fe_execute_type = { {
+	NULL,
+	"execute",
+	sizeof(struct fe_interface),
+	NULL,
+	(object_init_t) fe_execute_init,
+	(object_release_t) fe_execute_release },
+	(fe_int_read_t) fe_execute_read,
+	(fe_int_write_t) fe_execute_write
+};
 
-static struct fe_descriptor_list_s *exec_list;
-
-static void fe_exec_free_handle(struct fe_descriptor_s *);
-static void fe_exec_sig_child(int);
-static int fe_exec_parse_args(char *, char **, int);
+static void fe_execute_sig_child(int);
+static int fe_execute_parse_args(char *, char **, int);
 
 int init_execute(void)
 {
-	if (exec_list)
-		return(0);
-	if (!(exec_list = fe_desc_create_list((destroy_t) fe_exec_free_handle)))
-		return(-1);
-	signal(SIGCHLD, fe_exec_sig_child);
+	signal(SIGCHLD, fe_execute_sig_child);
 	return(0);
 }
 
 int release_execute(void)
 {
-	if (!exec_list)
-		return(0);
-	fe_desc_destroy_list(exec_list);
 	return(0);
 }
 
-/**
- * Execute the given command and return a reference to the running program.
- */
-fe_execute_t fe_execute_open(char *cmd, int bitflags)
+int fe_execute_init(struct fe_interface *inter, const char *params, va_list va)
 {
-	struct fe_descriptor_s *desc;
+	char *cmd;
+	int bitflags;
 	char *argv[EXECUTE_MAX_PARAMS];
 	int pid, read_pipe[2], write_pipe[2], error_pipe[2];
 
+	if (fe_interface_init(inter, "", va) < 0)
+		return(-1);
+	if (params[0] != 's' && (params[1] != 'n' || params[1] != '\0'))
+		return(-1);
+	cmd = va_arg(va, char *);
+	bitflags = va_arg(va, int);
 	if (pipe(read_pipe) || pipe(write_pipe) || pipe(error_pipe)) {
 		/** An error occurred when creating the pipes so close any that
 		    where successfully opened and return */
@@ -67,7 +70,7 @@ fe_execute_t fe_execute_open(char *cmd, int bitflags)
 			close(error_pipe[0]);
 			close(error_pipe[1]);
 		}
-		return(NULL);
+		return(-1);
 	}
 
 	if ((pid = fork()) == -1) {
@@ -78,7 +81,7 @@ fe_execute_t fe_execute_open(char *cmd, int bitflags)
 		close(write_pipe[1]);
 		close(error_pipe[0]);
 		close(error_pipe[1]);
-		return(NULL);
+		return(-1);
 	}
 	else if (pid == 0) {
 		/** Set the stdio descriptors to be the appropriate pipes
@@ -93,97 +96,69 @@ fe_execute_t fe_execute_open(char *cmd, int bitflags)
 		close(write_pipe[1]);
 		close(error_pipe[0]);
 		close(error_pipe[1]);
-		fe_desc_close_all();
+		release_interface();
 
-		fe_exec_parse_args(cmd, argv, EXECUTE_MAX_PARAMS);
+		fe_execute_parse_args(cmd, argv, EXECUTE_MAX_PARAMS);
 		execvp(argv[0], argv);
-		/** If exec() returns then an error occured */
+		/** If exec() returns then an error occured.  This will be sent
+		    to the parent process through the file descriptor we set up */
 		printf("Error occured while executing command\n");
 		exit(-1);
 	}
 	else {
-		if (!(desc = fe_desc_create(exec_list, 0)))
-			return(NULL);
 		close(read_pipe[1]);
 		close(write_pipe[0]);
 		close(error_pipe[1]);
-		desc->read = read_pipe[0];
-		desc->write = write_pipe[1];
-		desc->error = error_pipe[0];
-		return(desc);
+		inter->read = read_pipe[0];
+		inter->write = write_pipe[1];
+		inter->error = error_pipe[0];
+		return(0);
 	}
 }
 
-/**
- * Close the given program reference.
- */
-void fe_execute_close(fe_execute_t desc)
+void fe_execute_release(struct fe_interface *inter)
 {
-	if (!desc)
-		return;
-	fe_desc_destroy(exec_list, desc);
+	fe_interface_release(inter);
 }
 
-
-/**
- * Returns the callback for the given process.
- */
-struct callback_s fe_execute_get_callback(fe_execute_t exec)
+int fe_execute_read(struct fe_interface *inter, char *buffer, int size)
 {
-	return(fe_desc_get_callback(exec));
+	int i, j;
+	fd_set rd;
+	struct timeval timeout = { 0, 0 };
+
+	if (i < size) {
+		FD_ZERO(&rd);
+		FD_SET(inter->read, &rd);
+		if (select(inter->read + 1, &rd, NULL, NULL, &timeout)
+		    && ((j = read(inter->read, &buffer[i], size - i)) > 0))
+			i += j;
+		if (j <= 0)
+			return(-1);
+	}
+	return(i);
 }
 
-/**
- * Sets the callback for the given process to be executed under the given
- * conditions.
- */
-void fe_execute_set_callback(fe_execute_t exec, int condition, callback_t func, void *ptr)
+int fe_execute_write(struct fe_interface *inter, const char *data, int len)
 {
-	return(fe_desc_set_callback(exec, condition, func, ptr));
+	int sent, count = 0;
+
+	if (len < 0)
+		len = strlen(data);
+	do {
+		if ((sent = write(inter->write, (void *) data, len)) < 0)
+			return(-1);
+		else if (!sent)
+			return(0);
+		count += sent;
+	} while (count < len);
+	return(count);
 }
 
-
-/**
- * Send the string of length len to the given process and
- * return the number of bytes written or -1 on error.
- */
-int fe_execute_send(fe_execute_t desc, char *buffer, int len)
-{
-	return(fe_desc_write(desc, buffer, len));
-}
-
-/**
- * Receive the given number of bytes, store them in the given buffer
- * and return the number of bytes read or -1 on error or disconnect.
- */ 
-int fe_execute_receive(fe_execute_t desc, char *buffer, int len)
-{
-	return(fe_desc_read(desc, buffer, len));
-}
-
-/**
- * Receive a string from the descriptor up to a maximum of
- * len-1 (a null char is appended) and return the number of bytes
- * read or -1 on error or disconnect.
- */ 
-int fe_execute_receive_str(fe_execute_t desc, char *buffer, int len, char ch)
-{
-	return(fe_desc_read_str(desc, buffer, len, ch));
-}
 
 /*** Local Functions ***/
 
-static void fe_exec_free_handle(struct fe_descriptor_s *desc)
-{
-	if (desc->read != -1)
-		close(desc->read);
-	if (desc->write != -1)
-		close(desc->write);
-	if (desc->error != -1)
-		close(desc->error);
-}
-
-static void fe_exec_sig_child(int sig)
+static void fe_execute_sig_child(int sig)
 {
 	int status;
 
@@ -191,7 +166,7 @@ static void fe_exec_sig_child(int sig)
 	wait(&status);
 }
 
-static int fe_exec_parse_args(char *cmd, char **argv, int max_args)
+static int fe_execute_parse_args(char *cmd, char **argv, int max_args)
 {
 	int i, j;
 

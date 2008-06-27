@@ -6,27 +6,35 @@
 #ifndef _STUTTER_FRONTEND_COMMON_H
 #define _STUTTER_FRONTEND_COMMON_H
 
-#include <stutter/type.h>
+#include <stutter/frontend/common/types.h>
+#include <stutter/frontend/common/widget.h>
+
+int init_common_frontend(void);
+int release_common_frontend(void);
 
 /* Commands */
+int fe_common_cmd_bind(char *, char *);
+int fe_common_cmd_clear(char *, char *);
+int fe_common_cmd_clearline(char *, char *);
+int fe_common_cmd_close(char *, char *);
+int fe_common_cmd_context(char *, char *);
+int fe_common_cmd_echo(char *, char *);
 int fe_common_cmd_insert(char *, char *);
 int fe_common_cmd_next(char *, char *);
+int fe_common_cmd_parse(char *, char *);
 int fe_common_cmd_previous(char *, char *);
-
-/* Types */
-struct type_s *fe_common_load_attrib(void);
-struct type_s *fe_common_load_colour(void);
-struct type_s *fe_common_load_command(void);
-struct type_s *fe_common_load_hashattrib(void);
-struct type_s *fe_common_load_style(void);
+int fe_common_cmd_scroll(char *, char *);
+int fe_common_cmd_select(char *, char *);
+int fe_common_cmd_unbind(char *, char *);
+int fe_common_cmd_window(char *, char *);
 
 /* Widgets */
-extern struct widget_type_s text_type;
-extern struct widget_type_s frame_type;
-extern struct widget_type_s input_type;
-extern struct widget_type_s window_type;
-extern struct widget_type_s region_type;
-extern struct widget_type_s statusbar_type;
+extern struct fe_widget_type fe_text_type;
+extern struct fe_widget_type fe_frame_type;
+extern struct fe_widget_type fe_input_type;
+extern struct fe_widget_type fe_window_type;
+extern struct fe_widget_type fe_region_type;
+extern struct fe_widget_type fe_statusbar_type;
 
 #endif
 

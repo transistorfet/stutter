@@ -7,7 +7,6 @@
 #include <stutter/utils.h>
 #include <stutter/macros.h>
 #include <stutter/signal.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 #include <stutter/frontend/execute.h>
 
@@ -48,7 +47,8 @@ static int base_cmd_exec_display(void *window, fe_execute_t exec)
 		if (window)
 			fe_print(window, buffer);
 		else
-			emit_signal(NULL, "base.exec_output", buffer);
+			// TODO how the hell do you actually do signals with putting them in the var tables
+			;//emit_signal(NULL, "base.exec_output", buffer);
 	}
 	return(0);
 }

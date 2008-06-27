@@ -4,12 +4,14 @@ ROOT = ..
 
 LIB_TARGET = main.a
 OBJS =	init.o \
-	key.o \
-	type.o \
-	utils.o \
+	hash.o \
 	signal.o \
-	variable.o \
-	string.o
+	string.o \
+	object.o \
+	queue.o \
+	utils.o \
+	variable.o
+
 
 include $(ROOT)/rules.mk
 

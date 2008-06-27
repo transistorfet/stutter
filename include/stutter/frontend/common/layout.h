@@ -14,42 +14,41 @@
 
 #define LAYOUT_RETURN_TYPE(type)	( (type)->bitflags )
 
-struct layout_s;
+struct fe_layout;
 
-typedef void *(*layout_create_t)(void *, struct property_s *, struct layout_s *);
+typedef void *(*fe_layout_create_t)(void *, struct property_s *, struct fe_layout *);
 
-struct layout_type_s {
-	char *name;
+struct fe_layout_type {
 	int bitflags;
-	layout_create_t func;
+	fe_layout_create_t func;
 	void *ptr;
 };
 
-struct layout_s {
-	struct layout_type_s *type;
+struct fe_layout {
+	struct fe_layout_type *type;
 	struct property_s *props;
-	struct layout_s *children;
-	struct layout_s *next;
+	struct fe_layout *children;
+	struct fe_layout *next;
 };
 
-#define layout_call_create_m(type, props, children)	\
+#define FE_LAYOUT_CALL_CREATE(type, props, children)	\
 	type->func(type->ptr, props, children)
 
 int init_layout(void);
 int release_layout(void);
 
-int layout_register_type(char *, int, layout_create_t, void *);
+int layout_register_type(char *, int, fe_layout_create_t, void *);
 int layout_unregister_type(char *);
-struct layout_type_s *layout_find_type(char *);
+struct fe_layout_type *layout_find_type(char *);
 
-struct layout_s *make_layout(char *, struct property_s *, struct layout_s *, struct layout_s *);
-void destroy_layout(struct layout_s *);
+struct fe_layout *make_layout(char *, struct property_s *, struct fe_layout *, struct fe_layout *);
+void destroy_layout(struct fe_layout *);
 struct property_s *make_layout_property(char *, char *, struct property_s *);
 void destroy_layout_property(struct property_s *);
 
-int add_layout(char *, char *, struct layout_s *layout);
+int add_layout(char *, char *, struct fe_layout *layout);
 int remove_layout(char *, char *);
-struct layout_s *find_layout(char *, char *);
+struct fe_layout *find_layout(char *, char *);
 
 void *layout_generate_object(char *, char *, int, char *);
 

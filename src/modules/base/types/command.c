@@ -6,59 +6,51 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <stutter/type.h>
 #include <stutter/memory.h>
 #include <stutter/globals.h>
+#include <stutter/object.h>
 #include <stutter/variable.h>
+#include <stutter/modules/base.h>
 
-static void *base_command_create(void *, char *, va_list);
-static int base_command_evaluate(void *, void *);
-static void base_command_destroy(void *);
+struct variable_type_s base_command_type = { {
+	OBJECT_TYPE_S(&variable_type),
+	"command",
+	sizeof(struct base_command_s),
+	NULL,
+	(object_init_t) base_command_init,
+	(object_release_t) base_command_release },
+	(variable_add_t) NULL,
+	(variable_remove_t) NULL,
+	(variable_index_t) NULL,
+	(variable_traverse_t) NULL,
+	(variable_stringify_t) NULL,
+	(variable_evaluate_t) base_command_evaluate
+};
 
-struct type_s *base_load_command(void)
+int base_command_init(struct base_command_s *var, const char *params, va_list va)
 {
-	return(add_type(
-		"command",
-		0,
-		(type_create_t) base_command_create,
-		(type_destroy_t) base_command_destroy,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		(type_evaluate_t) base_command_evaluate
-	));
+// TODO should you have a bitflag or something for whether or not you should free (and how) the ptr?
+//	if (var->ptr)
+//		destroy_object(var->ptr);
+	if (params[0] != 'f')
+		return(-1);
+	// TODO the param checking isn't complete here
+	var->func = va_arg(va, callback_t);
+	var->ptr = va_arg(va, void *);
+	return(0);
 }
 
-static void *base_command_create(void *value, char *params, va_list va)
+void base_command_release(struct base_command_s *var)
 {
-	struct callback_s *callback;
-
-	if (value)
-		base_command_destroy(value);
-
-	if (strncmp(params, "callback,", 9) || strchr(&params[9], ','))
-		return(NULL);
-	if (!(callback = (struct callback_s *) memory_alloc(sizeof(struct callback_s))))
-		return(NULL);
-	callback->func = va_arg(va, callback_t);
-	callback->ptr = va_arg(va, void *);
-	va_end(va);
-	return((void *) callback);
+	// TODO free object?
+	variable_release(VARIABLE_S(var));
 }
 
-static int base_command_evaluate(void *value, void *ptr)
+int base_command_evaluate(struct base_command_s *var, void *ptr)
 {
-	struct callback_s *callback;
-
-	if ((callback = value))
-		execute_callback_m(*callback, ptr);
+	if (var->func)
+		(var->func)(var->ptr, ptr);
+	// TODO this is here for some reason but we should find out why and try to get rid of it
 	return(-1);
-}
-
-static void base_command_destroy(void *value)
-{
-	memory_free(value);
 }
 

@@ -6,51 +6,46 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <stutter/type.h>
-#include <stutter/memory.h>
+#include <stutter/object.h>
 #include <stutter/variable.h>
+#include <stutter/modules/base.h>
 
-static void *base_wildcard_index(char *, char *, struct type_s **);
+struct variable_type_s base_wildcard_type = { {
+	OBJECT_TYPE_S(&base_string_type),
+	"wildcard",
+	sizeof(struct base_string_s),
+	NULL,
+	(object_init_t) base_string_init,
+	(object_release_t) base_string_release },
+	(variable_add_t) NULL,
+	(variable_remove_t) NULL,
+	(variable_index_t) base_wildcard_index,
+	(variable_traverse_t) NULL,
+	(variable_stringify_t) base_string_stringify,
+	(variable_evaluate_t) NULL
+};
 
-struct type_s *base_load_wildcard(void)
+struct variable_s *base_wildcard_index(struct base_string_s *var, const char *name, struct object_type_s *type)
 {
-	return(add_type(
-		"wildcard",
-		0,
-		(type_create_t) type_recreate_string,
-		(type_destroy_t) destroy_string,
-		NULL,
-		NULL,
-		(type_index_t) base_wildcard_index,
-		NULL,
-		(type_stringify_t) copy_string,
-		NULL
-	));
-}
-
-static void *base_wildcard_index(char *wildcard, char *name, struct type_s **type_ptr)
-{
-	int i = 0;
-	void *value;
+	int i;
 	char ch, *str;
+	struct variable_s *ret;
 
-	if (!wildcard)
-		return(NULL);
-	str = wildcard;
-	do {
-		if ((wildcard[i] == ';') || (wildcard[i] == '\0')) {
-			ch = wildcard[i];
-			wildcard[i] = '\0';
-			if (((*str == '\0') && (value = find_variable(NULL, name, type_ptr))) || (value = index_variable(NULL, str, name, type_ptr))) {
-				wildcard[i] = ch;
-				return(value);
+	for (i = 0, str = var->str; var->str[i++] != '\0'; i++) {
+		if ((var->str[i] == ';') || (var->str[i] == '\0')) {
+			ch = var->str[i];
+			var->str[i] = '\0';
+			if (((*str == '\0') && (ret = find_variable(NULL, name, type)))
+			    || (ret = index_variable(NULL, str, name, type))) {
+				var->str[i] = ch;
+				return(ret);
 			}
 			if (ch != '\0') {
-				wildcard[i] = ch;
-				str = &wildcard[i + 1];
+				var->str[i] = ch;
+				str = &var->str[i + 1];
 			}
 		}
-	} while (wildcard[i++] != '\0');
+	}
 	return(NULL);
 }
 

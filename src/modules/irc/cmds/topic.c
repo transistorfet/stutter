@@ -5,7 +5,6 @@
 
 #include <stutter/utils.h>
 #include <stutter/macros.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_topic(char *env, char *args)

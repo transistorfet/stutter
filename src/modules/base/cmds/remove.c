@@ -7,11 +7,10 @@
 #include <string.h>
 
 #include CONFIG_H
-#include <stutter/type.h>
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/string.h>
 #include <stutter/variable.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/base.h>
 
 int base_cmd_remove(char *env, char *args)
@@ -20,10 +19,10 @@ int base_cmd_remove(char *env, char *args)
 
 	name = util_get_arg(args, NULL);
 	if ((*name == '\0') || remove_variable(NULL, NULL, name)) {
-		BASE_ERROR_JOINPOINT(BASE_ERR_REMOVE_FAILED, name)
+		OUTPUT_ERROR(BASE_ERR_REMOVE_FAILED, name);
 		return(-1);
 	}
-	BASE_COMMAND_RESPONSE_JOINPOINT(BASE_FMT_REMOVE, name)
+	OUTPUT_STATUS(BASE_FMT_REMOVE, name);
 	return(0);
 }
 

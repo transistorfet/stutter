@@ -3,7 +3,6 @@
  * Description:		Whowas Command
  */
 
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 int irc_cmd_whowas(char *env, char *args)

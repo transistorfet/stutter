@@ -6,7 +6,6 @@
 #include CONFIG_H
 #include <stutter/utils.h>
 #include <stutter/macros.h>
-#include <stutter/frontend.h>
 #include <stutter/modules/irc.h>
 
 /**

@@ -3,17 +3,17 @@
  * Description:		Next Window Command
  */
 
-#include <stutter/frontend.h>
-#include <stutter/frontend/widget.h>
+#include <stutter/frontend/frontend.h>
+#include <stutter/frontend/common/widget.h>
 
 int fe_common_cmd_next(char *env, char *args)
 {
-	struct widget_s *target, *widget;
+	struct fe_widget *target, *widget;
 
-	if (!(target = (struct widget_s *) fe_get_target(NULL, "frame")))
+	if (!(target = (struct fe_widget *) fe_get_target(NULL, "frame")))
 		return(-1);
-	if (widget_control(target, WCC_NEXT_WIDGET, &widget) || !widget)
-		widget_control(target, WCC_FIRST_WIDGET, NULL);
+	if (fe_widget_control(target, WCC_NEXT_WIDGET, &widget) || !widget)
+		fe_widget_control(target, WCC_FIRST_WIDGET, NULL);
 	return(0);
 }
 

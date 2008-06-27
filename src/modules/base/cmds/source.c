@@ -9,9 +9,9 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/macros.h>
 #include <stutter/string.h>
-#include <stutter/frontend.h>
 
 int base_cmd_source(char *env, char *args)
 {
@@ -28,7 +28,7 @@ int base_cmd_source(char *env, char *args)
 	}
 
 	if (!(fptr = fopen(str, "r"))) {
-		BASE_ERROR_JOINPOINT(BASE_ERR_UNABLE_TO_OPEN_FILE, cmd)
+		OUTPUT_ERROR(BASE_ERR_UNABLE_TO_OPEN_FILE, cmd);
 		return(-1);
 	}
 
@@ -42,7 +42,7 @@ int base_cmd_source(char *env, char *args)
 				str = &str[strlen(BASE_COMMAND_PREFIX)];
 			cmd = util_get_arg(str, &pos);
 			if (util_evaluate_command(cmd, &str[pos])) {
-				BASE_ERROR_JOINPOINT(BASE_ERR_UNKNOWN_COMMAND, cmd)
+				OUTPUT_ERROR(BASE_ERR_UNKNOWN_COMMAND, cmd);
 			}
 		}
 	}
