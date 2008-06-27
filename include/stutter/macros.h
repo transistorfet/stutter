@@ -9,13 +9,6 @@
 #include <string.h>
 
 /**
- * Calculates the address of an offset after a struct for when struct
- * data is allocated along with the struct.
- */
-#define offset_after_struct_m(ptr, offset)	\
-	(((size_t) (ptr)) + sizeof(*(ptr)) + (offset))
-
-/**
  * Trim any whitespaces at the start of str by making str to point to the
  * first non-whitespace character in the string.  A whitespace character
  * is a space, tab, line feed, or carriage return.

@@ -55,7 +55,7 @@ struct fe_colourmap *create_colourmap(int size)
 	if (!(map = (struct fe_colourmap *) memory_alloc(sizeof(struct fe_colourmap) + (sizeof(colour_t) * size))))
 		return(NULL);
 	map->size = size;
-	map->map = (colour_t *) offset_after_struct_m(map, 0);
+	map->map = (colour_t *)(map + 1);
 	return(map);
 }
 

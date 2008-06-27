@@ -30,7 +30,6 @@
 	* make layout use the object system if it's an appropriate fit
 	* decide on what to do about the purge_object signal
 	* change names in frontend format.c (and refactor? should we use a different format like xml?)
-	* make sure to remove all offset_after_struct_m references
 	* convert the init.h macros to use static inlines for the actual code parts
 	* should base.exec command be moved into the frontend?
 	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?

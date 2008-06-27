@@ -104,7 +104,7 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct obje
 	if (!table)
 		table = variable_root;
 
-	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) {
+	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++) {
 		if (!IS_VARIABLE_CHAR(name[len]))
 			return(NULL);
 	}
@@ -155,7 +155,7 @@ int remove_variable(struct variable_table_s *table, struct object_type_s *type, 
 
 	if (!table)
 		table = variable_root;
-	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
+	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++) ;
 
 	if (!(var = hash_find(table->hash, name, len)))
 		return(-1);
@@ -183,7 +183,7 @@ struct variable_s *find_variable(struct variable_table_s *table, const char *nam
 
 	if (!table)
 		table = variable_root;
-	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) ;
+	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++) ;
 
 	if (!(var = hash_find(table->hash, name, len)))
 		return(NULL);

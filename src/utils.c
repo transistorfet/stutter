@@ -35,7 +35,7 @@ int util_atoi(const char *str, int radix)
 		i++;
 	}
 
-	for (;str[i] != '\0';i++) {
+	for (; str[i] != '\0'; i++) {
 		ret *= radix;
 		if (str[i] >= 0x30 && str[i] <= 0x39)
 			ret += (str[i] - 0x30);
@@ -95,7 +95,7 @@ int util_encode_bytes(unsigned char *data, int size, char *buffer, int max)
 
 	if (size * 2 > max)
 		return(-1);
-	for (i = 0, j = 0;i < size;i++, j++) {
+	for (i = 0, j = 0; i < size; i++, j++) {
 		buffer[j] = ((data[i] & 0xf0) >> 4) + 0x30;
 		buffer[++j] = (data[i] & 0x0f) + 0x30;
 	}
@@ -113,7 +113,7 @@ int util_decode_bytes(const char *str, unsigned char *data, int max)
 {
 	int i, j;
 
-	for (i = 0, j = 0;(str[i] != '\0') && (j < max);i += 2, j++)
+	for (i = 0, j = 0; (str[i] != '\0') && (j < max); i += 2, j++)
 		data[j] = ((str[i] - 0x30) << 4) + (str[i + 1] - 0x30);
 	return(i);
 }
@@ -180,7 +180,7 @@ int util_convert_key(const unsigned char *str, int *key, int max)
 	unsigned char buffer[SMALL_STRING_SIZE];
 
 	max--;
-	for (i = 0;(str[i] != '\0') && (j < max);) {
+	for (i = 0; (str[i] != '\0') && (j < max);) {
 		if (str[i] == '$') {
 			k = util_expand_variable(&str[i], buffer, SMALL_STRING_SIZE, &i);
 			j += util_convert_key(buffer, &key[j], k);
@@ -192,7 +192,7 @@ int util_convert_key(const unsigned char *str, int *key, int max)
 		}
 		else if (!strncmp_icase(&str[i], "u+", 2)) {
 			i += 2;
-			for (k = 0;(k < SMALL_STRING_SIZE) && (str[i] != '\0');k++, i++) {
+			for (k = 0; (k < SMALL_STRING_SIZE) && (str[i] != '\0'); k++, i++) {
 				if (((str[i] >= 0x30) && (str[i] <= 0x39)) || ((str[i] >= 0x41) && (str[i] <= 0x46)) || ((str[i] >= 0x61) && (str[i] <= 0x66)))
 					buffer[k] = str[i];
 				else
@@ -232,7 +232,7 @@ int util_expand_str(const char *fmt, char *buffer, int max)
 	int j = 0;
 
 	max--;
-	for (i = 0;(fmt[i] != '\0') && (j < max);i++) {
+	for (i = 0; (fmt[i] != '\0') && (j < max); i++) {
 		if (fmt[i] == '\\') {
 			if (fmt[++i] == '\0')
 				break;
@@ -282,7 +282,7 @@ int util_expand_variable(const char *str, char *buffer, int max, int *str_count)
 		delim = ' ';
 
 	name = buffer;
-	for (k = 0;(str[i] != '\0') && (str[i] != delim) && IS_VARIABLE_CHAR(str[i]) && (k < max - 1);k++, i++)
+	for (k = 0; (str[i] != '\0') && (str[i] != delim) && IS_VARIABLE_CHAR(str[i]) && (k < max - 1); k++, i++)
 		buffer[k] = str[i];
 	buffer[k] = '\0';
 	if (stringify_variable(NULL, name, value, STRING_SIZE) >= 0) {
@@ -350,7 +350,7 @@ char *util_get_arg(char *buffer, int *str_count)
 	char ch = ' ';
 
 	/* Remove leading whitespace */
-	for (;buffer[i] == ' ';i++) ;
+	for (; buffer[i] == ' '; i++) ;
 
 	/* Check if we should parse a quoted argument */
 	if (buffer[i] == '\"') {
@@ -360,11 +360,11 @@ char *util_get_arg(char *buffer, int *str_count)
 
 	/* Save the position of the start of the argument */
 	j = i;
-	for (;(buffer[i] != '\0') && (buffer[i] != ch);i++) ;
+	for (; (buffer[i] != '\0') && (buffer[i] != ch); i++) ;
 
 	if (buffer[i] != '\0') {
 		buffer[i++] = '\0';
-		for (;buffer[i] == ' ';i++) ;
+		for (; buffer[i] == ' '; i++) ;
 	}
 	if (str_count)
 		*str_count += i;
