@@ -17,7 +17,6 @@
 #include <stutter/frontend/common/key.h>
 #include <stutter/frontend/common/widget.h>
 #include <stutter/frontend/common/surface.h>
-#include <stutter/frontend/common/layout.h>
 #include <stutter/frontend/common/colourmap.h>
 #include <stutter/frontend/curses/interface.h>
 #include <stutter/frontend/curses/terminal.h>
@@ -57,7 +56,6 @@ int init_terminal(void)
 		return(0);
 	if (init_colourmap())
 		return(-1);
-	layout_register_type("terminal", LAYOUT_RT_SURFACE, (fe_layout_create_t) fe_surface_generate, &fe_terminal_type);
 
 	/** Create an interface that calls us on a keyboard event */
 	if (!(stdin_inter = FE_INTERFACE(create_object(OBJECT_TYPE_S(&fe_interface_type), ""))))
@@ -95,10 +93,8 @@ int release_terminal(void)
 	if (!terminal_initialized)
 		return(0);
 	// TODO you don't destroy the terminal list here (but beware of the gremlin)
-	layout_unregister_type("terminal");
 	destroy_object(OBJECT_S(stdin_inter));
 	endwin();
-	release_layout();
 	release_colourmap();
 	terminal_initialized = 0;
 	return(0);

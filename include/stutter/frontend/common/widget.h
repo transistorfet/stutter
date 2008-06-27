@@ -11,7 +11,6 @@
 
 #include <stutter/object.h>
 #include <stutter/globals.h>
-#include <stutter/frontend/common/layout.h>
 #include <stutter/frontend/common/surface.h>
 
 #define WT_DRAWING		0x0004
@@ -112,7 +111,6 @@ void fe_widget_release(struct fe_widget *);
 
 struct fe_widget *fe_find_widget(const char *);
 int fe_widget_control(struct fe_widget *, int, ...);
-struct fe_widget *fe_widget_generate(struct fe_widget_type *, struct property_s *, struct fe_layout *);
 
 #endif
 

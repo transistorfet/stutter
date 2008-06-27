@@ -13,8 +13,8 @@
 #include <stutter/globals.h>
 #include <stutter/variable.h>
 #include <stutter/frontend/common.h>
-#include <stutter/frontend/common/layout.h>
 #include <stutter/frontend/common/widget.h>
+#include <stutter/frontend/common/surface.h>
 
 DEFINE_TYPE_LIST(types_list,
 	// TODO add types
@@ -58,16 +58,6 @@ int init_common_frontend(void)
 		return(-1);
 	if (init_surface())
 		return(-1);
-	if (init_layout())
-		return(-1);
-
-	// TODO this should be moved someplace else
-	layout_register_type("window", LAYOUT_RT_WIDGET, (fe_layout_create_t) fe_widget_generate, &fe_window_type);
-	layout_register_type("text", LAYOUT_RT_WIDGET, (fe_layout_create_t) fe_widget_generate, &fe_text_type);
-	layout_register_type("frame", LAYOUT_RT_WIDGET, (fe_layout_create_t) fe_widget_generate, &fe_frame_type);
-	layout_register_type("input", LAYOUT_RT_WIDGET, (fe_layout_create_t) fe_widget_generate, &fe_input_type);
-	layout_register_type("statusbar", LAYOUT_RT_WIDGET, (fe_layout_create_t) fe_widget_generate, &fe_statusbar_type);
-	layout_register_type("region", LAYOUT_RT_WIDGET, (fe_layout_create_t) fe_widget_generate, &fe_region_type);
 
 	ADD_TYPE_LIST(types_list);
 	ADD_VARIABLE_LIST(NULL, variables_list);
@@ -76,7 +66,6 @@ int init_common_frontend(void)
 
 int release_common_frontend(void)
 {
-	release_layout();
 	release_surface();
 	release_widget();
 	release_key();

@@ -9,7 +9,6 @@
 #include <stutter/macros.h>
 #include <stutter/memory.h>
 #include <stutter/signal.h>
-#include <stutter/frontend/common/layout.h>
 #include <stutter/frontend/common/surface.h>
 
 static int surface_initialized = 0;
@@ -33,8 +32,6 @@ int init_surface(void)
 {
 	if (surface_initialized)
 		return(0);
-	if (init_layout())
-		return(-1);
 	surface_initialized = 1;
 	return(0);
 }
@@ -49,7 +46,6 @@ int release_surface(void)
 		tmp = cur->next;
 		destroy_object(OBJECT_S(cur));
 	}
-	release_layout();
 	surface_initialized = 0;
 	return(0);
 }
@@ -114,29 +110,5 @@ void fe_surface_set_current(struct fe_surface *surface)
 {
 	current_surface = surface;
 }
-
-/**
- * Create a surface through the layout generation interface.
- */
-struct fe_surface *fe_surface_generate(struct fe_surface_type *type, struct property_s *props, struct fe_layout *children)
-{
-	struct fe_layout *cur;
-	struct fe_widget *widget;
-	struct fe_surface *surface;
-
-	// TODO check the properties for a width and height
-	if (!(surface = FE_SURFACE(create_object(OBJECT_TYPE_S(type), ""))))
-		return(NULL);
-
-	for (cur = children; cur; cur = cur->next) {
-		if (LAYOUT_RETURN_TYPE(cur->type) == LAYOUT_RT_WIDGET) {
-			widget = FE_LAYOUT_CALL_CREATE(cur->type, cur->props, cur->children);
-			FE_SURFACE_CONTROL(surface, SCC_SET_ROOT, widget, NULL);
-			return(surface);
-		}
-	}
-	return(surface);
-}
-
 
 

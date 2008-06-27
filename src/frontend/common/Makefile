@@ -11,7 +11,6 @@ OBJS =	init.o \
 	cmds/previous.o \
 	core/colourmap.o \
 	core/key.o \
-	core/layout.o \
 	core/surface.o \
 	core/widget.o \
 	utils/format.o \

@@ -23,7 +23,6 @@
 #include <stutter/frontend/common/widgets/page.h>
 
 static int handle_quit(char *, void *, char *);
-static int add_builtin_layouts(void);
 
 DEFINE_TYPE_LIST(types_list,
 	//ADD_TYPE()
@@ -130,7 +129,6 @@ int init_curses(void)
 		return(-1);
 	if (init_terminal())
 		return(-1);
-	add_builtin_layouts();
 
 	ADD_KEY_LIST(keys_list);
 
@@ -183,20 +181,6 @@ static int handle_quit(char *env, void *obj, char *args)
 {
 	exit_flag = 0;
 	return(SIGNAL_STOP_EMIT);
-}
-
-// TODO this is here until you can decide on how layouts will be created
-static int add_builtin_layouts(void)
-{
-	struct fe_layout *layout;
-
-	layout = make_layout("frame", make_layout_property("id", "frame", NULL), NULL, NULL);
-	layout->next = make_layout("statusbar", make_layout_property("id", "statusbar", make_layout_property("text", FE_DEFAULT_STATUSBAR, NULL)), NULL, NULL);
-	layout->next->next = make_layout("input", make_layout_property("id", "input", NULL), NULL, NULL);
-
-	add_layout("", "root", make_layout("terminal", NULL, make_layout("region", make_layout_property("id", "region", make_layout_property("width", "80", make_layout_property("height", "25", NULL))), layout, NULL), NULL));
-	add_layout("", "text", make_layout("text", NULL, NULL, NULL));
-	return(0);
 }
 
 

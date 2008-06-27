@@ -7,7 +7,6 @@
 #define _STUTTER_FRONTEND_COMMON_SURFACE_H
 
 #include <stutter/object.h>
-#include <stutter/frontend/common/layout.h>
 
 #define SA_NORMAL		0x00
 #define SA_BOLD			0x01
@@ -120,8 +119,6 @@ void fe_surface_refresh(struct fe_surface *);
 
 struct fe_surface *fe_surface_get_current(void);
 void fe_surface_set_current(struct fe_surface *);
-
-struct fe_surface *fe_surface_generate(struct fe_surface_type *, struct property_s *, struct fe_layout *);
 
 /*** Miscellaneous Macros and Inline Functions ***/
 
