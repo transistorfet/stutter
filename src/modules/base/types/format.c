@@ -13,7 +13,7 @@
 struct variable_type_s base_format_type = { {
 	OBJECT_TYPE_S(&base_string_type),
 	"format",
-	sizeof(struct base_string_s),
+	sizeof(struct base_string),
 	NULL,
 	(object_init_t) base_string_init,
 	(object_release_t) base_string_release },
@@ -25,7 +25,7 @@ struct variable_type_s base_format_type = { {
 	(variable_evaluate_t) NULL
 };
 
-int base_format_stringify(struct base_string_s *var, char *buffer, int max)
+int base_format_stringify(struct base_string *var, char *buffer, int max)
 {
 	return(util_expand_str(var->str, buffer, max));
 }

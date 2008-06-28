@@ -15,7 +15,7 @@
 struct variable_type_s base_command_type = { {
 	OBJECT_TYPE_S(&variable_type),
 	"command",
-	sizeof(struct base_command_s),
+	sizeof(struct base_command),
 	NULL,
 	(object_init_t) base_command_init,
 	(object_release_t) base_command_release },
@@ -27,7 +27,7 @@ struct variable_type_s base_command_type = { {
 	(variable_evaluate_t) base_command_evaluate
 };
 
-int base_command_init(struct base_command_s *var, const char *params, va_list va)
+int base_command_init(struct base_command *var, const char *params, va_list va)
 {
 // TODO should you have a bitflag or something for whether or not you should free (and how) the ptr?
 //	if (var->ptr)
@@ -40,13 +40,13 @@ int base_command_init(struct base_command_s *var, const char *params, va_list va
 	return(0);
 }
 
-void base_command_release(struct base_command_s *var)
+void base_command_release(struct base_command *var)
 {
 	// TODO free object?
 	variable_release(VARIABLE_S(var));
 }
 
-int base_command_evaluate(struct base_command_s *var, void *ptr)
+int base_command_evaluate(struct base_command *var, void *ptr)
 {
 	if (var->func)
 		(var->func)(var->ptr, ptr);

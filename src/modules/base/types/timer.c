@@ -15,14 +15,14 @@
 
 #define BT_MAX_NUMBER		64
 
-struct base_timer_s {
+struct base_timer {
 	fe_timer_t timer;
 	char *str;
 };
 
 static void *base_timer_create(void *, char *, va_list);
 static void base_timer_destroy(void *);
-static int base_timer_expired(struct base_timer_s *, fe_timer_t *);
+static int base_timer_expired(struct base_timer *, fe_timer_t *);
 
 struct type_s *base_load_timer(void)
 {
@@ -44,7 +44,7 @@ static void *base_timer_create(void *value, char *params, va_list va)
 {
 	char *str;
 	int i, secs;
-	struct base_timer_s *bt;
+	struct base_timer *bt;
 	char number[BT_MAX_NUMBER];
 
 	if (value)
@@ -62,7 +62,7 @@ static void *base_timer_create(void *value, char *params, va_list va)
 	secs = util_atoi(number, 10);
 	va_end(va);
 
-	if (!(bt = (struct base_timer_s *) memory_alloc(sizeof(struct base_timer_s) + strlen(str) + 1)))
+	if (!(bt = (struct base_timer *) memory_alloc(sizeof(struct base_timer) + strlen(str) + 1)))
 		return(NULL);
 	if (!(bt->timer = fe_timer_create(FE_TIMER_BF_PERIODIC, secs, (callback_t) base_timer_expired, bt))) {
 		memory_free(bt);
@@ -75,12 +75,12 @@ static void *base_timer_create(void *value, char *params, va_list va)
 
 static void base_timer_destroy(void *value)
 {
-	fe_timer_destroy(((struct base_timer_s *) value)->timer);
+	fe_timer_destroy(((struct base_timer *) value)->timer);
 	memory_free(value);
 }
 
 
-static int base_timer_expired(struct base_timer_s *bt, fe_timer_t *timer)
+static int base_timer_expired(struct base_timer *bt, fe_timer_t *timer)
 {
 	char *cmd;
 	int pos = 0;

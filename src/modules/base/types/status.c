@@ -15,7 +15,7 @@
 struct variable_type_s base_status_type = { {
 	OBJECT_TYPE_S(&variable_type),
 	"status",
-	sizeof(struct base_status_s),
+	sizeof(struct base_status),
 	NULL,
 	(object_init_t) base_status_init,
 	(object_release_t) base_status_release },
@@ -27,7 +27,7 @@ struct variable_type_s base_status_type = { {
 	(variable_evaluate_t) NULL
 };
 
-int base_status_init(struct base_status_s *var, const char *params, va_list va)
+int base_status_init(struct base_status *var, const char *params, va_list va)
 {
 	if (params[0] != 'f')
 		return(-1);
@@ -37,12 +37,12 @@ int base_status_init(struct base_status_s *var, const char *params, va_list va)
 	return(0);
 }
 
-void base_status_release(struct base_status_s *var)
+void base_status_release(struct base_status *var)
 {
 	// TODO free the ptr?
 }
 
-int base_status_stringify(struct base_status_s *var, char *buffer, int max)
+int base_status_stringify(struct base_status *var, char *buffer, int max)
 {
 	return(var->func(var->ptr, buffer, max));
 }

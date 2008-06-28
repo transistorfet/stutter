@@ -33,19 +33,16 @@
 
 	* what form will the init, add, and remove functions take?
 	* params should be through a very simple single char per param string with "sfopn" string, function,
-	  object, pointer, number
+	  object, pointer, number (should you have a different one for float vs int)?
 
 	* old bug: call to irc_format_parse_text with a NULL str from irc_format_msg on a /me message
 
-	* should we move keybindings to the frontend (at least the common frontend)?
-	* make everything stored in a variable be an object with a central object system
 	* make timers more secure through the object system by making them objects themselves or making them
 	  part of the objects they control (same with signals/hooks if we keep them around?)
-	* we could possibly remove the frontend API completely and instead use commands and signals for
-	  everything but that might be a bit too limiting, at least at this point
-	* integrate the sdm interface system into stutter in place of the old desc/net system
+	* should you be able to directly access the interface object functions instead of using intermediate
+	  functions?
 
-	* should i change the name mangle from _s to something else for structs?
+	* should you change the name mangle from _s to something else for structs?
 	* eliminate the callback struct in globals.h
 	* change index_variable to something else that isn't confusing (conflicts with the index virtfunc)
 	* replace all instances of fe_print with an emit_signal if possible
@@ -54,7 +51,6 @@
 	* add an is_a() check of the type in variable before trying to initialize or create a variable
 	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
 	* finish converting base types timer and string-ref (unless you can merge it into string)
-	* should you remove the _s designator from all modbase structs (the type structs)
 
 	* there is still a bug in timer or something, after a reconnect, the value of cur (line 141) was
 	  invalid, i assume from the timer being destroyed at some point.

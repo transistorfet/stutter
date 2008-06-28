@@ -13,7 +13,7 @@
 struct variable_type_s base_wildcard_type = { {
 	OBJECT_TYPE_S(&base_string_type),
 	"wildcard",
-	sizeof(struct base_string_s),
+	sizeof(struct base_string),
 	NULL,
 	(object_init_t) base_string_init,
 	(object_release_t) base_string_release },
@@ -25,7 +25,7 @@ struct variable_type_s base_wildcard_type = { {
 	(variable_evaluate_t) NULL
 };
 
-struct variable_s *base_wildcard_index(struct base_string_s *var, const char *name, struct object_type_s *type)
+struct variable_s *base_wildcard_index(struct base_string *var, const char *name, struct object_type_s *type)
 {
 	int i;
 	char ch, *str;
