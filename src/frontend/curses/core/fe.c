@@ -41,12 +41,12 @@ int release_frontend(void)
 	return(0);
 }
 
-struct fe_widget *fe_get_focus(char *type)
+struct fe_widget *fe_get_focus(const char *type)
 {
 	return(FE_WIDGET(FE_PAGE(FE_SURFACE(root_terminal)->root)->input));
 }
 
-struct fe_widget *fe_get_target(struct fe_widget *widget, char *type)
+struct fe_widget *fe_get_target(struct fe_widget *widget, const char *type)
 {
 	struct fe_widget *target;
 
@@ -167,7 +167,7 @@ void fe_execute_set_callback(fe_execute_t inter, int condition, callback_t func,
  * Send the string of length len to the given process and
  * return the number of bytes written or -1 on error.
  */
-int fe_execute_send(fe_execute_t inter, char *buffer, int len)
+int fe_execute_send(fe_execute_t inter, const char *buffer, int len)
 {
 	return(-1);
 }

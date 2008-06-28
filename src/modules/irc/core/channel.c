@@ -60,7 +60,7 @@ void irc_destroy_channel_list(struct irc_channel_list *list)
  * given server to the given list.  A pointer to the channel struct is
  * return or NULL on failure.
  */
-struct irc_channel *irc_add_channel(struct irc_channel_list *list, char *name, void *window, struct irc_server *server)
+struct irc_channel *irc_add_channel(struct irc_channel_list *list, const char *name, void *window, struct irc_server *server)
 {
 	struct irc_channel_node *node;
 
@@ -90,7 +90,7 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, char *name, v
  * Remove the channel with the given name from the given list.  If the
  * channel is not found then 1 is returned otherwise 0.
  */
-int irc_remove_channel(struct irc_channel_list *list, char *name)
+int irc_remove_channel(struct irc_channel_list *list, const char *name)
 {
 	struct irc_channel_node *node;
 
@@ -106,7 +106,7 @@ int irc_remove_channel(struct irc_channel_list *list, char *name)
  * Find the channel with the given name in the given list and return
  * a pointer to the channel struct or NULL if not found.  
  */
-struct irc_channel *irc_find_channel(struct irc_channel_list *list, char *name)
+struct irc_channel *irc_find_channel(struct irc_channel_list *list, const char *name)
 {
 	struct irc_channel_node *node;
 

@@ -37,7 +37,7 @@ struct irc_msg {
 	struct irc_msg_ctcp *ctcps;
 };
 
-struct irc_msg *irc_create_msg(int, char *, char *, int, int, ...);
+struct irc_msg *irc_create_msg(int, const char *, const char *, int, int, ...);
 struct irc_msg *irc_duplicate_msg(struct irc_msg *);
 int irc_destroy_msg(struct irc_msg *);
 struct irc_msg *irc_unmarshal_msg(char *);

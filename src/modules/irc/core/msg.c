@@ -62,7 +62,7 @@ static struct irc_msg_commands msg_commands[] = {
 	{ NULL, 0 }
 };
 
-static struct irc_msg *msg_create(int, int, char *, char *, int, char **, int, struct irc_msg_ctcp *);
+static struct irc_msg *msg_create(int, int, const char *, const char *, int, const char **, int, struct irc_msg_ctcp *);
 static int msg_parse_ctcps(char *, char *, int, struct irc_msg_ctcp *, int);
 
 inline static struct irc_msg_commands *msg_get_command(int);
@@ -73,7 +73,7 @@ inline static char *msg_uppercase(char *);
  * Allocate and initialize an irc_msg structure using the values
  * given.  All strings are copied to newly allocated memory.
  */
-struct irc_msg *irc_create_msg(int cmd, char *nick, char *host, int num_params, int num_ctcps, ...)
+struct irc_msg *irc_create_msg(int cmd, const char *nick, const char *host, int num_params, int num_ctcps, ...)
 {
 	int j;
 	va_list va;
@@ -306,7 +306,7 @@ short irc_command_number(char *str)
 /**
  * Create a new message based on the given values.
  */
-static struct irc_msg *msg_create(int bitflags, int cmd, char *nick, char *host, int num_params, char **params, int num_ctcps, struct irc_msg_ctcp *ctcps)
+static struct irc_msg *msg_create(int bitflags, int cmd, const char *nick, const char *host, int num_params, const char **params, int num_ctcps, struct irc_msg_ctcp *ctcps)
 {
 	char *buffer;
 	int i = 0, j, size;

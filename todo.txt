@@ -1,4 +1,36 @@
 
+	* should va_list functions use _real or _va as the mangle
+	* convert macros to the all caps scheme!
+	* remove all uses of the linear list
+	* seriously fix up string.c or even better get rid of it 
+	* change names in frontend format.c (and refactor? should we use a different format like xml?)
+	* should base.exec command be moved into the frontend?
+	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?
+	* replace while loops with for loops where possible
+	* should you change the name mangle from _s to something else for structs?
+	* eliminate the callback struct in globals.h
+	* replace all instances of fe_print with an emit_signal if possible
+	* add an is_a() check of the type in variable before trying to initialize or create a variable
+	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
+	* finish converting base types timer and string-ref (unless you can merge it into string)
+	* Remove all joinpoints
+	* convert all error reporting in tcp.c to emit signals
+	* convert all joinpoint error printing to emit signals instead
+
+	* make sure non-fatal errors don't cause things to completely not work.  For example if the wildcard
+	  thing isn't available, then don't prevent a normal lookup (i think that one is fixed already)
+	* attempt to reduce the number of crazy (stupid) widget control functions
+	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
+	  so we could do the same thing as with MODIFY_SIZE
+	* make timers more secure through the object system by making them objects themselves or making them
+	  part of the objects they control (same with signals/hooks if we keep them around?)
+	* there is still a bug in timer or something, after a reconnect, the value of cur (line 141) was
+	  invalid, i assume from the timer being destroyed at some point.
+	* fix certain commands such as bind and perhaps context and many others to check for proper
+	  parameters instead of attempting to evaluate the command anyways
+
+
+
 	* the object creation system and the variable system don't get along.  You are passing the va_list to
 	  create_object which expects the list itself (...) which is causing all of your problems atm.  You
 	  can either create a new shadow function to call instead from add_variable or you can change how
@@ -6,7 +38,8 @@
 	  reinitialization for variables with the new system anyways which sholud be part of the solution
 	* important variable functions: set, stringify, evaulate (should all be able to operate on "subvar"
 	  values.  important variable table functions: add, remove, index
-	* should va_list functions use _real or _va as the mangle
+	* what form will the init, add, and remove functions take?
+	* change index_variable to something else that isn't confusing (conflicts with the index virtfunc)
 
 	* how will signals work?  how will they be stored in the variable tables (a seperate signals table?)
 	  how will the frontend know what signals to register to? perhaps a dedicated signals table with
@@ -17,54 +50,23 @@
 	  create a new window (according to it's own programming/config)
 	* we can't do attrib/style/colour the way we were doing it using the new object system where we
 	  pass the subparts of attrib to the appropriate type handler because those subparts aren't vars
-	* seriously fix up string.c or even better get rid of it 
+	* params should be through a very simple single char per param string with "sfopn" string, function,
+	  object, pointer, number (should you have a different one for float vs int)?
+	* all signals should identify the module they come from but should it be a seperate param or a
+	  single string param? ("base", "error") vs ("base.error")
 
-	* make sure non-fatal errors don't cause things to completely not work.  For example if the wildcard
-	  thing isn't available, then don't prevent a normal lookup (i think that one is fixed already)
 	* how do you destroy a window/channel?  An IRC channel can be "disconnected" either by using the
 	  leave/part command or by closing the window so either the irc module or the frontend must be able
 	  to somehow destroy the whole thing (the channel struct and the window)
-	* change names in frontend format.c (and refactor? should we use a different format like xml?)
 	* decide on what to do about the purge_object signal
-	* should base.exec command be moved into the frontend?
-	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?
-	* replace while loops with for loops where possible
-	* attempt to reduce the number of crazy (stupid) widget control functions
-
-	* what form will the init, add, and remove functions take?
-	* params should be through a very simple single char per param string with "sfopn" string, function,
-	  object, pointer, number (should you have a different one for float vs int)?
-
-	* old bug: call to irc_format_parse_text with a NULL str from irc_format_msg on a /me message
-
-	* make timers more secure through the object system by making them objects themselves or making them
-	  part of the objects they control (same with signals/hooks if we keep them around?)
 	* should you be able to directly access the interface object functions instead of using intermediate
 	  functions?
 
-	* should you change the name mangle from _s to something else for structs?
-	* eliminate the callback struct in globals.h
-	* change index_variable to something else that isn't confusing (conflicts with the index virtfunc)
-	* replace all instances of fe_print with an emit_signal if possible
-	* all signals should identify the module they come from but should it be a seperate param or a
-	  single string param? ("base", "error") vs ("base.error")
-	* add an is_a() check of the type in variable before trying to initialize or create a variable
-	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
-	* finish converting base types timer and string-ref (unless you can merge it into string)
-	* Remove all joinpoints
-	* convert all error reporting in tcp.c to emit signals
-	* convert all joinpoint error printing to emit signals instead
 	* convert as many compile-time options to using simple defines instead of complex config mechanisms
 	* add as many simple compile-time options as possible (ie. ENABLE_NICKCOLOURS, etc)
 	* add a mechanism so that objects (pointers stored in callbacks (command, keybinding, etc)) can be
 	  freed without conflict.  A possability is doing refcounting builtin to object.c.  You may also need
 	  to use a bitflag if non-object pointers are to be accepted.
-
-	* there is still a bug in timer or something, after a reconnect, the value of cur (line 141) was
-	  invalid, i assume from the timer being destroyed at some point.
-
-	* fix certain commands such as bind and perhaps context and many others to check for proper
-	  parameters instead of attempting to evaluate the command anyways
 
 	* make it so that you can use stutter as a platform for writing command line utilies/servers so that
 	  if you compile stutter a certain way, you can make a simple network server using a few config
@@ -110,24 +112,8 @@ Structural Issues:
 	* can you make a special frontend/module pair such that the stutter core can be a daemon process and
 	  you connect through a socket/dbus/something with a frontend version.  You then can use the frontend
 	  locally or remotely to control the core where all the functionality is.
-	* you could make the list a void * and type pair which means it can be tied to the variable tree but
-	  it doesn't have to be.  The list widget would then want to do a traverse and stringify for each entry
-	  which hopefully would do what is wanted.  Or should there be perhaps a more advanced list widget
-	  that can collect bits of information into entries (ie. for an irc list of nicks in a channel, it
-	  gets the list.name entry for the name and the list.is_op entry to decide if it should display a gold
-	  star icon next to the entry) (either way it is an entirely frontend based system that uses a
-	  list in the variable system with only the possibly of an unattached list needing direct input from
-	  outside of the frontend).
-	* how can you control a list widget such as a users list where names are added and deleted?  It could
-	  be an variable (either assigned as a name that is looked up or as just a value and type (which means
-	  it doesn't have to acutally be added to the variable list)) and then the traverse function is used
-	  to get each item in the list and stringify is done on it.
-	* should windows be able to have 2 or more names ("#philosophy", "1", "otherside/#philosophy") or
-	  should it be able to have only one name and a number which can be easily changed so that windows
-	  can be accessed by number and the order can be switched. (or both?)  Could we have all the names
-	  in one string like "otherside/#philosophy,#philosophy".  It probably is possible to do this using
-	  multiple entries for the same node in the table and using strstr or something to compare the names
-	  after the hash number has been found.
+	* make a list widget that can display stuff like a list of users in a channel.  How will it get the
+	  data?  It could use inheritence from a generic list object type or something perhaps.
 	* how will multiple terminals work in curses?  how will input work with multiple terminal?
 
 	* should there be 2 region widgets (one handling horizontal and one vertical organization) or should
@@ -135,18 +121,12 @@ Structural Issues:
 	* should you add a bunch of variables to the frontends which return common environment variables
 	  and values such as the homedir and the current user's username?  should there also be a way to
 	  access environment variables through a function and how would that be supported?
-	* should the parameters to fe_resize be absolute sizes or differences in size?
-	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
-	  so we could do the same thing as with MODIFY_SIZE
-	* should there be a function in the fe that returns the id of a widget given a pointer to it?  Should
-	  there be a way to change the id?  properties (such as title)?
 
 	* how will you deal with adding a new widget?  There should be a way to specify (perhaps in the layout
 	  if possible) where the new widget should be put (such as in a particularily named frame).  Then the
 	  content portion does not need to know where the widget goes.  It could perhaps be a property in the
 	  root widget's definition or perhaps a "special" layout type that instead of generating a widget,
 	  creates a widget defined as a child and then adds it via the method specified in its properties
-	* should all widgets inherit from a widget superclass?
 	* should we disallow widgets to have the same id?  should we allow multiple ids and always add a
 	  unique numbered id?  (this could cause a problem with the widget remove which at the moment uses
 	  the id to find the widget).
@@ -155,12 +135,7 @@ Structural Issues:
 	  in the properties for the widget
 	* perhaps you can add a sorta WCC_SET_INVISIBLE/WCC_SET_VISIBLE and have them set bitflags so that
 	  it is easy to know if a widget is visible or not (and then you can do scrollbar things as well)
-	* how will you initialize the target widget of input and how will you change/set the target widget?
 
-	* region rejects widgets being added before we've resized it but that is causing some troubles with
-	  initialization (you have to make region a non-zero size before adding widget).  Should region
-	  instead allow widgets to be added when they don't fit or should you just size region before the
-	  terminal resizes it properly?
  	* should a WCC_SET_SURFACE also cause a resize of everything in region?  at least if it is the root
 	  or is it the job of the code that sets the surface to also do a resize?
 	* how is the win32 config defs going to work?
@@ -212,17 +187,9 @@ General:
 
 	* in types/command.c, evaluate function always returns -1 but i don't know why.  Is it a hack?
 	* get doxygen working
-	* work on API documentation
 
     Refactoring:
 
-	* convert macros to the all caps scheme!
-	* go through and make use of const where possible in parameters
-	* consider converting bitflags to bitfield structs unioned with the bitflags (so that it's still
-	  easy to copy them).
-	* consider converting code to use constants and enums for some of the things that aren't configs
-	* convert some of the modules that use linear lists to use the static inlines version of it instead
-	* possibly change the naming scheme for types
 
     Config System:
 
@@ -323,6 +290,7 @@ General:
 	* make everything unicode/UTF-8 capable
 
 Features:
+
 	* logging plugin
 	* winamp control and display plugin
 	* ability to reorder windows
@@ -339,6 +307,7 @@ Features:
 	  RSS, etc) (google desktop)
 
 Website:
+
 	* add documentation to the website
 	* add screenshots to your own website page
 	* maybe make it look a bit more pretty?

@@ -304,29 +304,12 @@ int util_expand_variable(const char *str, char *buffer, int max, int *str_count)
 }
 
 /**
- * Format a string given the sprintf-style format string and optional arguments
- * and emit that string to the given signal.
- */
-int util_emit_str(void *obj, char *name, char *fmt, ...)
-{
-	va_list va;
-	char buffer[STRING_SIZE];
-
-	va_start(va, fmt);
-	if (vsnprintf(buffer, STRING_SIZE, fmt, va) < 0)
-		return(-1);
-	// TODO decide on how to do signals
-	//return(emit_signal(obj, name, buffer));
-	return(-1);
-}
-
-/**
  * Execute the given command (without the command prefix) by looking up the
  * first space-delimited word as a variable and calling the evalute function
  * of that variable passing it the rest of the command string.  If an error
  * occurs then -1 is returned otherwise 0 is returned.
  */
-int util_evaluate_command(char *cmd, char *args)
+int util_evaluate_command(const char *cmd, char *args)
 {
 	struct variable_s *var;
 

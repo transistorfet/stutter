@@ -54,7 +54,7 @@ void irc_destroy_user_list(struct irc_user_list *list)
  * users list.  A pointer to the new user struct is returned or NULL
  * is returned on failure.
  */
-struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitflags)
+struct irc_user *irc_add_user(struct irc_user_list *list, const char *nick, int bitflags)
 {
 	struct irc_user_node *node;
 
@@ -70,7 +70,7 @@ struct irc_user *irc_add_user(struct irc_user_list *list, char *nick, int bitfla
  * Remove the user entry with the given nick from the given list
  * and return 0 or else return 1 if the user was not found.
  */
-int irc_remove_user(struct irc_user_list *list, char *nick)
+int irc_remove_user(struct irc_user_list *list, const char *nick)
 {
 	struct irc_user_node *node;
 
@@ -89,7 +89,7 @@ int irc_remove_user(struct irc_user_list *list, char *nick)
  * Find the given user name in the given user list and return a pointer
  * to it or return NULL if it is not found.
  */
-struct irc_user *irc_find_user(struct irc_user_list *list, char *nick)
+struct irc_user *irc_find_user(struct irc_user_list *list, const char *nick)
 {
 	struct irc_user_node *node;
 
@@ -105,7 +105,7 @@ struct irc_user *irc_find_user(struct irc_user_list *list, char *nick)
  * Change the nick for the user entry in the given list and return 0 or
  * return 1 if the user was not found.
  */
-int irc_change_user_nick(struct irc_user_list *list, char *oldnick, char *newnick)
+int irc_change_user_nick(struct irc_user_list *list, const char *oldnick, const char *newnick)
 {
 	struct irc_user_node *node;
 

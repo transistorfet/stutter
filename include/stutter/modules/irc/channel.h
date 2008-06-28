@@ -34,9 +34,9 @@ struct irc_channel_list;
 
 struct irc_channel_list *irc_create_channel_list(void);
 void irc_destroy_channel_list(struct irc_channel_list *);
-struct irc_channel *irc_add_channel(struct irc_channel_list *, char *, void *, struct irc_server *);
-int irc_remove_channel(struct irc_channel_list *, char *);
-struct irc_channel *irc_find_channel(struct irc_channel_list *, char *);
+struct irc_channel *irc_add_channel(struct irc_channel_list *, const char *, void *, struct irc_server *);
+int irc_remove_channel(struct irc_channel_list *, const char *);
+struct irc_channel *irc_find_channel(struct irc_channel_list *, const char *);
 struct irc_channel *irc_channel_find_window(struct irc_channel_list *, void *);
 int irc_traverse_channel_list(struct irc_channel_list *, traverse_t, void *);
 

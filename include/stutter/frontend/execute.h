@@ -18,7 +18,7 @@ void fe_execute_close(fe_execute_t exec);
 struct callback_s fe_execute_get_callback(fe_execute_t exec);
 void fe_execute_set_callback(fe_execute_t exec, int condition, callback_t func, void *ptr);
 
-int fe_execute_send(fe_execute_t exec, char *buffer, int len);
+int fe_execute_send(fe_execute_t exec, const char *buffer, int len);
 int fe_execute_receive(fe_execute_t exec, char *buffer, int len);
 int fe_execute_receive_str(fe_execute_t exec, char *buffer, int len, char ch);
 

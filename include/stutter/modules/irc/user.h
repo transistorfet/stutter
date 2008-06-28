@@ -27,10 +27,10 @@ struct irc_user_list;
 
 struct irc_user_list *irc_create_user_list(void);
 void irc_destroy_user_list(struct irc_user_list *);
-struct irc_user *irc_add_user(struct irc_user_list *, char *, int);
-int irc_remove_user(struct irc_user_list *, char *);
-struct irc_user *irc_find_user(struct irc_user_list *, char *);
-int irc_change_user_nick(struct irc_user_list *, char *, char *);
+struct irc_user *irc_add_user(struct irc_user_list *, const char *, int);
+int irc_remove_user(struct irc_user_list *, const char *);
+struct irc_user *irc_find_user(struct irc_user_list *, const char *);
+int irc_change_user_nick(struct irc_user_list *, const char *, const char *);
 int irc_traverse_user_list(struct irc_user_list *, traverse_t, void *);
 
 struct irc_user *irc_user_get_first(struct irc_user_list *);

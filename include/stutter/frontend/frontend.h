@@ -8,8 +8,8 @@
 
 #include <stutter/frontend/common/widget.h>
 
-struct fe_widget *fe_get_focus(char *type);
-struct fe_widget *fe_get_target(struct fe_widget *widget, char *type);
+struct fe_widget *fe_get_focus(const char *type);
+struct fe_widget *fe_get_target(struct fe_widget *widget, const char *type);
 
 /*
 void *fe_create_widget(char *ns, char *type, char *id, void *parent);

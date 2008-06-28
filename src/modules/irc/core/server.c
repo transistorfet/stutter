@@ -69,7 +69,7 @@ int release_irc_server(void)
 /**
  * Create a new server structure.
  */
-struct irc_server *irc_create_server(char *nick, void *window)
+struct irc_server *irc_create_server(const char *nick, void *window)
 {
 	struct irc_server *server;
 
@@ -118,7 +118,7 @@ int irc_destroy_server(struct irc_server *server)
 /*
  * Connect the given server structure to the address:port given.
  */
-int irc_server_connect(struct irc_server *server, char *address, int port)
+int irc_server_connect(struct irc_server *server, const char *address, int port)
 {
 	if (server->address)
 		destroy_string(server->address);
@@ -181,7 +181,7 @@ int irc_server_disconnect(struct irc_server *server)
  * Return the server struct for the given address or return NULL
  * if not connected to that address.
  */
-struct irc_server *irc_find_server(char *address)
+struct irc_server *irc_find_server(const char *address)
 {
 	struct irc_server *cur;
 
@@ -309,7 +309,7 @@ int irc_broadcast_msg(struct irc_msg *msg)
  * channel already exits, the join command will still be sent but a new
  * channel structure will not be created.
  */
-int irc_join_channel(struct irc_server *server, char *name)
+int irc_join_channel(struct irc_server *server, const char *name)
 {
 	struct irc_msg *msg;
 
@@ -325,7 +325,7 @@ int irc_join_channel(struct irc_server *server, char *name)
  * that structure.  A -1 is returned if the message cannot be created or a
  * 0 otherwise.
  */
-int irc_leave_channel(struct irc_server *server, char *name)
+int irc_leave_channel(struct irc_server *server, const char *name)
 {
 	struct irc_msg *msg;
 
@@ -339,7 +339,7 @@ int irc_leave_channel(struct irc_server *server, char *name)
  * Change the nick in the given server to the given nick and return 0
  * on success or -1 on failure.
  */
-int irc_change_nick(struct irc_server *server, char *nick)
+int irc_change_nick(struct irc_server *server, const char *nick)
 {
 	struct irc_msg *msg;
 
@@ -360,7 +360,7 @@ int irc_change_nick(struct irc_server *server, char *nick)
  * Send the given string to the given channel or nick on the given
  * server and return -1 if the send fail and 0 on success.
  */
-int irc_private_msg(struct irc_server *server, char *name, char *text)
+int irc_private_msg(struct irc_server *server, const char *name, const char *text)
 {
 	char ch;
 	int i = 0, j = 0;
@@ -389,7 +389,7 @@ int irc_private_msg(struct irc_server *server, char *name, char *text)
  * server as a notice message and return -1 if the send fail and 0 on
  * success.
  */
-int irc_notice(struct irc_server *server, char *name, char *text)
+int irc_notice(struct irc_server *server, const char *name, const char *text)
 {
 	char ch;
 	int i = 0, j = 0;
@@ -417,7 +417,7 @@ int irc_notice(struct irc_server *server, char *name, char *text)
  * channel or nick on the given server and return -1 if the send fail and
  * 0 on success.
  */
-int irc_ctcp_msg(struct irc_server *server, char *cmd, char *name, char *text)
+int irc_ctcp_msg(struct irc_server *server, const char *cmd, const char *name, const char *text)
 {
 	struct irc_msg *msg;
 
@@ -432,7 +432,7 @@ int irc_ctcp_msg(struct irc_server *server, char *cmd, char *name, char *text)
  * channel or nick on the given server and return -1 if the send fail and
  * 0 on success.
  */
-int irc_ctcp_reply(struct irc_server *server, char *cmd, char *name, char *text)
+int irc_ctcp_reply(struct irc_server *server, const char *cmd, const char *name, const char *text)
 {
 	struct irc_msg *msg;
 

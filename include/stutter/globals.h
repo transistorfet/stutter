@@ -33,7 +33,7 @@ struct property_s {
 	struct property_s *next;
 };
 
-static inline char *get_property(struct property_s *prop, char *name)
+static inline char *get_property(struct property_s *prop, const char *name)
 {
 	while (prop) {
 		if (!strcmp(prop->name, name))
