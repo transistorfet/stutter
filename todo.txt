@@ -51,37 +51,20 @@
 	* add an is_a() check of the type in variable before trying to initialize or create a variable
 	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
 	* finish converting base types timer and string-ref (unless you can merge it into string)
+	* Remove all joinpoints
+	* convert all error reporting in tcp.c to emit signals
+	* convert all joinpoint error printing to emit signals instead
+	* convert as many compile-time options to using simple defines instead of complex config mechanisms
+	* add as many simple compile-time options as possible (ie. ENABLE_NICKCOLOURS, etc)
+	* add a mechanism so that objects (pointers stored in callbacks (command, keybinding, etc)) can be
+	  freed without conflict.  A possability is doing refcounting builtin to object.c.  You may also need
+	  to use a bitflag if non-object pointers are to be accepted.
 
 	* there is still a bug in timer or something, after a reconnect, the value of cur (line 141) was
 	  invalid, i assume from the timer being destroyed at some point.
 
-	* i don't like the way signals are currently done, it seems too complex.  Or maybe it just needs
-	  better safety and stability
-	* maybe we can change the names/perspective of signals to "hooks"?
-	* joinpoints are ugly and complex. can we fix this?
-	* i don't like the way the irc msg dispatch works currently
-	* i don't like the lack of isolation between the frontend and the rest of the system.  Can we
-	  modify it so that all callbacks use the signals/hooks system (semitransparently perhaps, this might
-	  require improvements in the signals/hooks functions).  It should be a simple matter to completely
-	  detatch the frontend from the core although this might still require a basic frontend to convert
-	  all calls between the 2 seperate processes into a datastream.
-
-
-   ****** CHANGE THE WAY YOU DO POINTER ARITHMETIC! apparently i just need to do (ptr + 1) so long as ptr is
-	  cast to the type i want to add
-
-	* When a list is created, an offset is associated with it such that all items passed to the list
-	  adjust for the offset
-	* comparison/hash functions are defined in the module that includes the list header (?)
-
 	* fix certain commands such as bind and perhaps context and many others to check for proper
 	  parameters instead of attempting to evaluate the command anyways
-	* if you make advice macros be inline functions instead, you have issue with the now missing semicolon
-	  (but you can add a semicolon to the register joinpoint specifier)
-
-	* move over to git
-	* should, given git's submodule system, stutter's directory structure be changed so that modules can
-	  be stored in git as submodules?
 
 	* make it so that you can use stutter as a platform for writing command line utilies/servers so that
 	  if you compile stutter a certain way, you can make a simple network server using a few config
@@ -90,29 +73,12 @@
 
 Structural Issues:
 
-	* where should errors generally be printed from even using joinpoints?  Is it ok to have the net
-	  code printing errors (in the case of the retries there isn't *that* much choice but perhaps there
-	  is).  Would it be better for the command that attempts to connect to report the failure to connect
-	  or should net_connect do that before it returns NULL?  (For example, the net.c's failed to connect
-	  message is always printed before the unable to reconnect message when stutter is disconnected from
-	  irc.)
-	* can we use macros to implement the ability to set at compile time which parameters are compiled
-	  in and which are modifiable variables?  how will we handle this for all the things in config.h
-	* should you make a seperate include/ dir for each module/frontend?
-	* can/should we make complex and/or expensive operations compile-time options (at least as long
-	  as the operation can be disabled without causing trouble)? (like vim does with its FEAT_...)
-	* should you move the commmon/utils headers to the include/ dir?
 	* can you add special comments that a perl script can use to create at least part of the defaults.cfg
 	  file?  Is this even a good idea?
-
 	* you could have special variable tables like irc.on_msg where you add variables that are commands
 	  and when a message comes in, it traverses all the variables in the table and evaluates them with
 	  a particular formulation of parameters.  So you'd "/alias irc.on_msg.respond irc.say hey man"
 	  to have it send "hey man" whenever you get a message.
-	* make dispatch into a whole bunch of joinpoints? (what dispatch am i talking about?)  Oh i think
-	  this is related to the evaluating of commands based on signals (make irc dispatch into joinpoints
-	  with the default joinpoint being the message handler
-
 	* where should the xml parser go?  in the frontend or the core?
 
     Core:
@@ -121,7 +87,6 @@ Structural Issues:
 	  an irc context an irc:userlist context (for doing stuff inside of a userlist widget)? Could this
 	  even be implemented without a structural change, just using context names with funny characters?
 	  (If a key is not found in userlist:irc then it checks irc and then global).
-	* can anything be done about the sorta messiness of the joinpoints?
 	* should all instances of stringify that are accessable to the user do an index (path lookup) so
 	  that all variables can be accessed indirectly and not just commands? (eg /get current_nick will
 	  stringify "irc.current_nick")
@@ -130,24 +95,9 @@ Structural Issues:
 	  of a format type.  For stringify it could be a string that specifies the format.  It could be
 	  used by things like the nicks list for a channel where colour formatting can be added to the string
 	  or you can choose to have the @ and + added as well
-	* how do we handle the case where a pointer is stored with a callback and then the callback is
-	  destroyed?  The pointer must also be destroyed at that point.  Even if it is stored in a list
-	  it will never be needed again so even if we can access it, we have no way to know that we can
-	  get rid of it.  This also applies to a second parameter supply to bind_key.  How will we destroy
-	  it when a key binding is lost?  (Can typed values be used here?) (a function in signals to delete
-	  all signal handlers with a reference to a particular pointer?  will this possibly delete things
-	  that its not suppose to since the pointer is not necessarily an address?).  Another possibility is
-	  sending an optional destroy function that can is called when a type is destroyed.  For things
-	  where the pointer may be used multiple times but still needs to be destroyed, a simple refcount
-	  can be used in the pointer and the destroy func.
-	* should we make net and exec be able to have a different callback for each different condition?
+	* should we make interfaces be able to have a different callback for each different condition?
 	  (read/write/error/etc).
-	* would it be totally bad to accept the parameters to emit as a va_list and store them in an array
-	  of pointers that is passed to the handlers along with the size of the array?  Would this make
-	  things too specific to a particular signal that is handled?  Is that a bad thing?
-	* make bind key do the variable lookup itself but if you do, should you allow a path index lookup
-	  or force all lookups to be absolute.  If you do that, you can still do path lookups by having
-	  the /bind command use path.<name> for the command name (at least if no . is found).
+	* should signals be able to have multipled args passed to emit (using a va_list emit function)
 
     IRC Module:
 

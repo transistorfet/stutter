@@ -47,56 +47,6 @@ string_t create_empty_string(unsigned int size)
 }
 
 /**
- * A wrapper function for recreate_string_real.
- */
-string_t recreate_string(string_t str, const char *fmt, ...)
-{
-	va_list va;
-
-	va_start(va, fmt);
-	return(recreate_string_real(str, fmt, va));
-}
-
-/**
- * Recreate a string using the given format and arguments destroying the
- * old string if necessary.  A pointer to the new string is returned.
- */
-string_t recreate_string_real(string_t str, const char *fmt, va_list va)
-{
-	char buffer[STRING_MAX_SIZE];
-
-	vsnprintf(buffer, STRING_MAX_SIZE, fmt, va);
-	va_end(va);
-	if (!(str = memory_realloc(str, strlen(buffer) + 1)))
-		return(NULL);
-	strcpy(str, buffer);
-	return(str);
-}
-
-/**
- * Recreate the given string using the format string and arguments stored
- * in the va_list with a type create parameters check.
- */
-string_t type_recreate_string(string_t str, const char *params, va_list va)
-{
-	char *fmt;
-	char buffer[STRING_MAX_SIZE];
-
-	if (!strcmp(params, "string"))
-		fmt = "%s";
-	else if (!strcmp(params, "string,..."))
-		fmt = va_arg(va, char *);
-	else
-		return(NULL);
-	vsnprintf(buffer, STRING_MAX_SIZE, fmt, va);
-	va_end(va);
-	if (!(str = memory_realloc(str, strlen(buffer) + 1)))
-		return(NULL);
-	strcpy(str, buffer);
-	return(str);
-}
-
-/**
  * Free the memory used by the given string.
  */
 void destroy_string(string_t str)
