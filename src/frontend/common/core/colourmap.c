@@ -3,9 +3,13 @@
  * Description:		Colour Map Manager
  */
 
+#include <stdarg.h>
+
 #include CONFIG_H
+#include <stutter/object.h>
 #include <stutter/memory.h>
 #include <stutter/macros.h>
+#include <stutter/variable.h>
 #include <stutter/frontend/common/surface.h>
 #include <stutter/frontend/common/colourmap.h>
 
@@ -28,15 +32,30 @@ int colourmap_defaults[FE_COLOURMAP_SIZE] = {
 	0xFFFFFF
 };
 
+struct variable_type_s fe_colourmap_type = { {
+	OBJECT_TYPE_S(&variable_type),
+	"fe_colourmap",
+	sizeof(struct fe_colourmap),
+	NULL,
+	(object_init_t) fe_colourmap_init,
+	(object_release_t) fe_colourmap_release },
+	(variable_add_t) NULL,
+	(variable_remove_t) NULL,
+	(variable_index_t) NULL,
+	(variable_traverse_t) NULL,
+	(variable_stringify_t) NULL,
+	(variable_evaluate_t) NULL
+};
+
 struct fe_colourmap *colourmap_list = NULL;
 
 int init_colourmap(void)
 {
 	if (colourmap_list)
 		return(0);
-	if (!(colourmap_list = create_colourmap(FE_COLOURMAP_SIZE)))
+	if (!(colourmap_list = FE_COLOURMAP(create_object(OBJECT_TYPE_S(&fe_colourmap_type), "n", FE_COLOURMAP_SIZE))))
 		return(-1);
-	colourmap_load_defaults(colourmap_list);
+	fe_colourmap_load_defaults(colourmap_list);
 	return(0);
 }
 
@@ -44,28 +63,28 @@ int release_colourmap(void)
 {
 	if (!colourmap_list)
 		return(0);
-	destroy_colourmap(colourmap_list);
+	destroy_object(OBJECT_S(colourmap_list));
 	return(0);
 }
 
-struct fe_colourmap *create_colourmap(int size)
+int fe_colourmap_init(struct fe_colourmap *map, const char *params, va_list va)
 {
-	struct fe_colourmap *map;
+	int size = FE_COLOURMAP_SIZE;
 
-	if (!(map = (struct fe_colourmap *) memory_alloc(sizeof(struct fe_colourmap) + (sizeof(colour_t) * size))))
-		return(NULL);
+	if (params[0] == 'n')
+		size = va_arg(va, int);
+	if (!(map->map = (colour_t *) memory_alloc(sizeof(colour_t) * size)))
+		return(-1);
 	map->size = size;
-	map->map = (colour_t *)(map + 1);
-	return(map);
-}
-
-int destroy_colourmap(struct fe_colourmap *map)
-{
-	memory_free(map);
 	return(0);
 }
 
-int colourmap_set_colour(struct fe_colourmap *map, char enc, int index, int colour)
+void fe_colourmap_release(struct fe_colourmap *map)
+{
+	memory_free(map->map);
+}
+
+int fe_colourmap_set_colour(struct fe_colourmap *map, char enc, int index, int colour)
 {
 	if (!map)
 		map = colourmap_list;
@@ -91,7 +110,7 @@ int colourmap_set_colour(struct fe_colourmap *map, char enc, int index, int colo
 	return(0);
 }
 
-int colourmap_get_colour(struct fe_colourmap *map, char enc, int index)
+int fe_colourmap_get_colour(struct fe_colourmap *map, char enc, int index)
 {
 	if (!map)
 		map = colourmap_list;
@@ -121,7 +140,7 @@ int colourmap_get_colour(struct fe_colourmap *map, char enc, int index)
 	}
 }
 
-void colourmap_load_defaults(struct fe_colourmap *map)
+void fe_colourmap_load_defaults(struct fe_colourmap *map)
 {
 	int i;
 
@@ -136,7 +155,7 @@ void colourmap_load_defaults(struct fe_colourmap *map)
 	}
 }
 
-void colourmap_load_zeros(struct fe_colourmap *map)
+void fe_colourmap_load_zeros(struct fe_colourmap *map)
 {
 	int i;
 

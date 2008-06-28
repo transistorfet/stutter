@@ -24,7 +24,6 @@
 	* how do you destroy a window/channel?  An IRC channel can be "disconnected" either by using the
 	  leave/part command or by closing the window so either the irc module or the frontend must be able
 	  to somehow destroy the whole thing (the channel struct and the window)
-	* change colourmap to use the fe_ style names
 	* change names in frontend format.c (and refactor? should we use a different format like xml?)
 	* decide on what to do about the purge_object signal
 	* should base.exec command be moved into the frontend?

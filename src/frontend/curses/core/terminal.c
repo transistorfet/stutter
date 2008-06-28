@@ -334,7 +334,7 @@ static inline int fe_terminal_convert_colour(colour_t colour)
 	int index = 0;
 
 	if (colour.enc == SC_ENC_MAPPING)
-		colour.colour = colourmap_get_colour(NULL, SC_ENC_RGBA, colour.colour);
+		colour.colour = fe_colourmap_get_colour(NULL, SC_ENC_RGBA, colour.colour);
 	else if (colour.enc != SC_ENC_RGBA)
 		return(0);
 
