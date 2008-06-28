@@ -14,6 +14,7 @@
 #define FE_COLOURMAP(ptr)			( (struct fe_colourmap *) (ptr) )
 
 struct fe_colourmap {
+	struct variable_s variable;
 	int size;
 	colour_t *map;
 };

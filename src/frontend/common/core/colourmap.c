@@ -64,6 +64,7 @@ int release_colourmap(void)
 	if (!colourmap_list)
 		return(0);
 	destroy_object(OBJECT_S(colourmap_list));
+	colourmap_list = NULL;
 	return(0);
 }
 
