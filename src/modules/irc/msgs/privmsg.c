@@ -7,7 +7,7 @@
 
 #include CONFIG_H
 #include <stutter/macros.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 /**
  * Prints private message to channel.

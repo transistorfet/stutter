@@ -14,8 +14,8 @@
 #include <stutter/object.h>
 #include <stutter/globals.h>
 #include <stutter/variable.h>
-#include <stutter/frontend/common.h>
 #include <stutter/frontend/frontend.h>
+#include <stutter/frontend/common/common.h>
 #include <stutter/frontend/common/widget.h>
 #include <stutter/frontend/common/surface.h>
 #include <stutter/frontend/curses/terminal.h>

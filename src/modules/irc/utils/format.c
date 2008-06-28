@@ -11,9 +11,9 @@
 #include <stutter/utils.h>
 #include <stutter/string.h>
 #include <stutter/macros.h>
-#include <stutter/modules/irc.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/irc/irc.h>
 #include <stutter/frontend/surface.h>
+#include <stutter/modules/base/base.h>
 
 #define msg_copy_str_m(buffer, str, count, max)				\
 	if (str) {							\

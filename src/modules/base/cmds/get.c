@@ -12,7 +12,7 @@
 #include <stutter/string.h>
 #include <stutter/object.h>
 #include <stutter/variable.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 int base_cmd_get(char *env, char *args)
 {

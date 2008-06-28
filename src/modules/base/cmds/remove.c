@@ -11,7 +11,7 @@
 #include <stutter/output.h>
 #include <stutter/string.h>
 #include <stutter/variable.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 int base_cmd_remove(char *env, char *args)
 {

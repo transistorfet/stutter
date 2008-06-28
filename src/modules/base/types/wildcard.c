@@ -8,7 +8,7 @@
 
 #include <stutter/object.h>
 #include <stutter/variable.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 struct variable_type_s base_wildcard_type = { {
 	OBJECT_TYPE_S(&base_string_type),

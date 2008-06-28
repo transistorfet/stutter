@@ -7,7 +7,7 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 int irc_cmd_server(char *env, char *args)
 {

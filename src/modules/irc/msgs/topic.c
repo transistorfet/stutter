@@ -5,7 +5,7 @@
 
 #include CONFIG_H
 #include <stutter/string.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 /**
  * Update the channel topic and print message to channel.

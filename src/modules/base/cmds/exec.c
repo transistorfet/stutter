@@ -7,8 +7,8 @@
 #include <stutter/utils.h>
 #include <stutter/macros.h>
 #include <stutter/signal.h>
-#include <stutter/modules/base.h>
 #include <stutter/frontend/execute.h>
+#include <stutter/modules/base/base.h>
 
 static int base_cmd_exec_display(void *, fe_execute_t);
 

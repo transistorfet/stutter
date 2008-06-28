@@ -9,7 +9,7 @@
 
 #include CONFIG_H
 #include <stutter/type.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 static struct type_s *string_ref_type;
 

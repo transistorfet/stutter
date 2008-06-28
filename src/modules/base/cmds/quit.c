@@ -4,7 +4,7 @@
  */
 
 #include <stutter/signal.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 int base_cmd_quit(char *env, char *args)
 {

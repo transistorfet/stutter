@@ -12,7 +12,7 @@
 #include <stutter/object.h>
 #include <stutter/globals.h>
 #include <stutter/variable.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 DEFINE_TYPE_LIST(types_list,
 	ADD_TYPE(&base_command_type)

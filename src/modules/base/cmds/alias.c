@@ -8,7 +8,7 @@
 #include <stutter/object.h>
 #include <stutter/output.h>
 #include <stutter/variable.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 int base_cmd_alias(char *env, char *args)
 {

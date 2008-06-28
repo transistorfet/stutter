@@ -3,7 +3,7 @@
  * Description:		Sends the output of the exec command to the current channel
  */
 
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 int irc_sig_exec(void *ptr, void *index, char *args)
 {

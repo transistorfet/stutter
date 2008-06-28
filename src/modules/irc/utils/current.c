@@ -4,7 +4,7 @@
  */
 
 #include <stutter/string.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 static void *last_window = NULL;
 static struct irc_channel *last_channel = NULL;

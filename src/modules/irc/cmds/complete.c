@@ -5,7 +5,7 @@
 
 #include CONFIG_H
 #include <stutter/macros.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 struct irc_complete_info_s {
 	int find_next : 1;

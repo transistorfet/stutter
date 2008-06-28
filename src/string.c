@@ -17,7 +17,7 @@
  * character expansion (using the given arguments) and return
  * it or NULL on error.
  */
-string_t create_string(char *fmt, ...)
+string_t create_string(const char *fmt, ...)
 {
 	va_list va;
 	string_t str;
@@ -49,7 +49,7 @@ string_t create_empty_string(unsigned int size)
 /**
  * A wrapper function for recreate_string_real.
  */
-string_t recreate_string(string_t str, char *fmt, ...)
+string_t recreate_string(string_t str, const char *fmt, ...)
 {
 	va_list va;
 
@@ -61,7 +61,7 @@ string_t recreate_string(string_t str, char *fmt, ...)
  * Recreate a string using the given format and arguments destroying the
  * old string if necessary.  A pointer to the new string is returned.
  */
-string_t recreate_string_real(string_t str, char *fmt, va_list va)
+string_t recreate_string_real(string_t str, const char *fmt, va_list va)
 {
 	char buffer[STRING_MAX_SIZE];
 
@@ -77,7 +77,7 @@ string_t recreate_string_real(string_t str, char *fmt, va_list va)
  * Recreate the given string using the format string and arguments stored
  * in the va_list with a type create parameters check.
  */
-string_t type_recreate_string(string_t str, char *params, va_list va)
+string_t type_recreate_string(string_t str, const char *params, va_list va)
 {
 	char *fmt;
 	char buffer[STRING_MAX_SIZE];
@@ -108,7 +108,7 @@ void destroy_string(string_t str)
 /**
  * Allocate a string and copy the given string to it.
  */
-string_t duplicate_string(string_t str)
+string_t duplicate_string(const string_t str)
 {
 	string_t dup;
 
@@ -123,7 +123,7 @@ string_t duplicate_string(string_t str)
  * maximum number of characters - 1 (for terminator).  The
  * number of characters copied is returned or -1 on error.
  */
-int copy_string(string_t str, char *buffer, int max)
+int copy_string(const string_t str, char *buffer, int max)
 {
 	if (!str)
 		return(-1);

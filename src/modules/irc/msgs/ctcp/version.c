@@ -8,7 +8,7 @@
 #include CONFIG_H
 #include <stutter/macros.h>
 #include <stutter/variable.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 int irc_msg_ctcp_version(char *env, struct irc_msg *msg)
 {

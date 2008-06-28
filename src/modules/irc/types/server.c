@@ -13,7 +13,7 @@
 #include <stutter/macros.h>
 #include <stutter/string.h>
 #include <stutter/memory.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 static struct type_s *channel_type;
 static struct type_s *string_ref_type;

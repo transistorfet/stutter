@@ -12,8 +12,8 @@
 #include <stutter/string.h>
 #include <stutter/globals.h>
 #include <stutter/variable.h>
-#include <stutter/modules/irc.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/irc/irc.h>
+#include <stutter/modules/base/base.h>
 
 DEFINE_TYPE_LIST(types_list,
 	//ADD_TYPE(&base_command_type)
@@ -59,11 +59,9 @@ DEFINE_VARIABLE_LIST(variables_list,
 
 int init_irc(void)
 {
-	add_signal(NULL, "irc.error", 0);
 	init_irc_server();
-
-	IRC_INIT_JOINPOINT()
-
+	ADD_TYPE_LIST(types_list);
+	ADD_VARIABLE_LIST(NULL, variables_list);
 	return(0);
 }
 
@@ -71,16 +69,12 @@ int release_irc(void)
 {
 	struct type_s *type;
 
-	IRC_RELEASE_JOINPOINT()
-
 	/** Remove the whole variable table */
 	if ((type = find_type("table"))) {
 		add_variable(NULL, type, "irc", 0, "");
 		remove_variable(NULL, type, "irc");
 	}
-
 	release_irc_server();
-	remove_signal(NULL, "irc.error");
 	return(0);
 }
 

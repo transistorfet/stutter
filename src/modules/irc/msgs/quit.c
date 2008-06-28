@@ -4,7 +4,7 @@
  */
 
 #include CONFIG_H
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 static int irc_msg_quit_traverse(struct irc_channel *, struct irc_msg *);
 

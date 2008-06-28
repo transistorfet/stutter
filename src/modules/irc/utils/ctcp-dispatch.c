@@ -7,7 +7,7 @@
 
 #include CONFIG_H
 #include <stutter/macros.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 int irc_dispatch_ctcp_msg(struct irc_msg *msg)
 {

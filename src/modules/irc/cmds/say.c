@@ -3,7 +3,7 @@
  * Description:		Say Message Command
  */
 
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 int irc_cmd_say(char *env, char *args)
 {

@@ -10,7 +10,7 @@
 #include <stutter/globals.h>
 #include <stutter/object.h>
 #include <stutter/variable.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 struct variable_type_s base_command_type = { {
 	OBJECT_TYPE_S(&variable_type),

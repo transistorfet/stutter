@@ -10,7 +10,7 @@
 #include <stutter/memory.h>
 #include <stutter/string.h>
 #include <stutter/object.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 struct variable_type_s base_status_type = { {
 	OBJECT_TYPE_S(&variable_type),

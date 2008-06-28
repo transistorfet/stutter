@@ -6,10 +6,10 @@
 #include CONFIG_H
 #include <stutter/debug.h>
 #include <stutter/frontend/net.h>
-#include <stutter/frontend/common.h>
 #include <stutter/frontend/execute.h>
 #include <stutter/frontend/frontend.h>
 #include <stutter/frontend/curses/tcp.h>
+#include <stutter/frontend/common/common.h>
 #include <stutter/frontend/common/widget.h>
 #include <stutter/frontend/common/surface.h>
 #include <stutter/frontend/curses/terminal.h>
@@ -43,14 +43,14 @@ int release_frontend(void)
 
 struct fe_widget *fe_get_focus(char *type)
 {
-	return(FE_PAGE(FE_SURFACE(root_terminal)->root)->input);
+	return(FE_WIDGET(FE_PAGE(FE_SURFACE(root_terminal)->root)->input));
 }
 
 struct fe_widget *fe_get_target(struct fe_widget *widget, char *type)
 {
 	struct fe_widget *target;
 
-	if (fe_widget_control(FE_PAGE(FE_SURFACE(root_terminal)->root)->frame, WCC_CURRENT_WIDGET, &target))
+	if (fe_widget_control(FE_WIDGET(FE_PAGE(FE_SURFACE(root_terminal)->root)->frame), WCC_CURRENT_WIDGET, &target))
 		return(NULL);
 	return(target);
 }
@@ -169,7 +169,7 @@ void fe_execute_set_callback(fe_execute_t inter, int condition, callback_t func,
  */
 int fe_execute_send(fe_execute_t inter, char *buffer, int len)
 {
-
+	return(-1);
 }
 
 /**
@@ -178,7 +178,7 @@ int fe_execute_send(fe_execute_t inter, char *buffer, int len)
  */ 
 int fe_execute_receive(fe_execute_t inter, char *buffer, int len)
 {
-
+	return(-1);
 }
 
 

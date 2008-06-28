@@ -8,7 +8,7 @@
 
 #include <stutter/type.h>
 #include <stutter/string.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 static void *base_string_ref_create(char **, char *, va_list);
 static int base_string_ref_stringify(char **, char *, int);

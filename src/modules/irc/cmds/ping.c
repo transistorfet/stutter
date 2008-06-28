@@ -9,7 +9,7 @@
 #include CONFIG_H
 #include <stutter/utils.h>
 #include <stutter/string.h>
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 int irc_cmd_ping(char *env, char *args)
 {

@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include CONFIG_H
-#include <stutter/modules/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 int irc_dispatch_msg(struct irc_msg *msg)
 {

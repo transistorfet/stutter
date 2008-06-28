@@ -7,7 +7,7 @@
 
 #include <stutter/string.h>
 #include <stutter/variable.h>
-#include <stutter/modules/base.h>
+#include <stutter/modules/base/base.h>
 
 struct variable_type_s base_string_type = { {
 	OBJECT_TYPE_S(&variable_type),

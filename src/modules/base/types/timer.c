@@ -10,8 +10,8 @@
 #include <stutter/utils.h>
 #include <stutter/macros.h>
 #include <stutter/memory.h>
-#include <stutter/modules/base.h>
 #include <stutter/frontend/timer.h>
+#include <stutter/modules/base/base.h>
 
 #define BT_MAX_NUMBER		64
 

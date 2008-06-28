@@ -6,8 +6,8 @@
 #define _CONFIG_H
 
 /** Modules */
-#include <stutter/modules/base.h>
-//#include <stutter/modules/irc.h>
+#include <stutter/modules/base/base.h>
+//#include <stutter/modules/irc/irc.h>
 
 #define INIT_MODULES()	\
 	init_base();	\
