@@ -88,7 +88,7 @@ static void *fe_common_hashattrib_index(void *value, char *name, struct type_s *
 {
 	int i, hash;
 
-	for (i = 0, hash = 0;name[i] != '\0';i++)
+	for (i = 0, hash = 0; name[i] != '\0'; i++)
 		hash += name[i];
 
 	if (type_ptr)

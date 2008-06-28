@@ -60,7 +60,7 @@ void destroy_hash(struct hash_s *env)
 	unsigned int i;
 	struct hash_entry_s *cur, *next;
 
-	for (i = 0;i < env->size;i++) {
+	for (i = 0; i < env->size; i++) {
 		cur = env->table[i];
 		while (cur) {
 			next = cur->next;
@@ -235,7 +235,7 @@ static inline int hash_entries_rehash(struct hash_s *env, int newsize)
 	memset(newtable, '\0', newsize * sizeof(struct hash_entry_s *));
 	oldsize = env->size;
 	env->size = newsize;
-	for (i = 0;i < oldsize;i++) {
+	for (i = 0; i < oldsize; i++) {
 		cur = env->table[i];
 		while (cur) {
 			next = cur->next;
@@ -255,7 +255,7 @@ static inline unsigned int hash_func(const char *str, int len)
 	int i;
 	unsigned int hash = 0;
 
-	for (i = 0;i < len && str[i] != '\0';i++)
+	for (i = 0; i < len && str[i] != '\0'; i++)
 		hash = LOWERCASE(str[i]) + (hash << 6) + (hash << 16) - hash;
 	return(hash);
 }

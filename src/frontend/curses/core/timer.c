@@ -33,7 +33,7 @@ int release_timer(void)
 {
 	struct fe_timer *cur, *tmp;
 
-	for (cur = timer_list;cur;) {
+	for (cur = timer_list; cur; ) {
 		tmp = cur->next;
 		memory_free(cur);
 		cur = tmp;
@@ -137,7 +137,7 @@ int fe_timer_check(void)
 	struct fe_timer *cur;
 
 	current_time = time(NULL);
-	for (cur = timer_list;cur;cur = cur->next) {
+	for (cur = timer_list; cur; cur = cur->next) {
 		if (cur->bitflags & FE_TIMER_BF_EXPIRED)
 			continue;
 		else if ((current_time - cur->start) >= cur->interval) {
@@ -166,7 +166,7 @@ static void fe_timer_insert(struct fe_timer *timer)
 	}
 	else {
 		expiration = timer->start + timer->interval;
-		for (prev = NULL, cur = timer_list;cur;prev = cur, cur = cur->next) {
+		for (prev = NULL, cur = timer_list; cur; prev = cur, cur = cur->next) {
 			if (expiration <= (cur->start + cur->interval))
 				break;
 		}

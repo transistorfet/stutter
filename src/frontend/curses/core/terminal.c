@@ -67,8 +67,8 @@ int init_terminal(void)
 	initscr();
 	if (has_colors()) {
 		start_color();
-		for (i = 0;i < 8;i++) {
-			for (j = 0;j < 8;j++) {
+		for (i = 0; i < 8; i++) {
+			for (j = 0; j < 8; j++) {
 				init_pair(i * 8 + j, j, i);
 			}
 		}
@@ -147,7 +147,7 @@ int fe_terminal_print(struct fe_terminal *terminal, const char *str, int length)
 	fe_terminal_set_attribs(terminal, terminal->attrib);
 	if (length == -1)
 		length = strlen(str);
-	for (i = 0;(str[i] != '\0') && (i < length);i++)
+	for (i = 0; (str[i] != '\0') && (i < length); i++)
 		addch(str[i]);
 	FE_SURFACE(terminal)->x += (length % FE_SURFACE(terminal)->width);
 	FE_SURFACE(terminal)->y += (length / FE_SURFACE(terminal)->width);
@@ -166,7 +166,7 @@ void fe_terminal_clear(struct fe_terminal *terminal, short x, short y, short wid
 	if (!height)
 		height = FE_SURFACE(terminal)->height - y;
 
-	for (i = 0;i < height;i++) {
+	for (i = 0; i < height; i++) {
 		move(y, x);
 		hline(' ', width);
 		y++;

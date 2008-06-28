@@ -172,7 +172,7 @@ static int fe_execute_parse_args(char *cmd, char **argv, int max_args)
 
 	// TODO parse cmd.  should cmd be const?
 	argv[0] = cmd;
-	for (i = 0, j = 1;cmd[i] != '\0';i++) {
+	for (i = 0, j = 1; cmd[i] != '\0'; i++) {
 		if (cmd[i] == ' ') {
 			cmd[i++] = '\0';
 			while ((cmd[i] != '\0') && (cmd[i] == ' '))

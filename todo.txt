@@ -12,29 +12,24 @@
 	  how will the frontend know what signals to register to? perhaps a dedicated signals table with
 	  common naming scheme based on function such as output.error, output.status, output.irc.philosophy,
 	  create, create.irc (for notifying about the creation of a signal)
-	* we can't do attrib/style/colour the way we were doing it using the new object system where we
-	  pass the subparts of attrib to the appropriate type handler because those subparts aren't vars
-	* seriously fix up string.c or even better get rid of it (make any function that can take a const
-	  char * instead of a string_t (or at least a const string_t))
-
-	* make sure non-fatal errors don't cause things to completely not work.  For example if the wildcard
-	  thing isn't available, then don't prevent a normal lookup (i think that one is fixed already)
 	* have a 'create' signal that tells the frontend that a new signal/data stream is available (possibly
 	  even emitting this signal from an add_signal type function itself).  The frontend will then
 	  create a new window (according to it's own programming/config)
+	* we can't do attrib/style/colour the way we were doing it using the new object system where we
+	  pass the subparts of attrib to the appropriate type handler because those subparts aren't vars
+	* seriously fix up string.c or even better get rid of it 
+
+	* make sure non-fatal errors don't cause things to completely not work.  For example if the wildcard
+	  thing isn't available, then don't prevent a normal lookup (i think that one is fixed already)
 	* how do you destroy a window/channel?  An IRC channel can be "disconnected" either by using the
 	  leave/part command or by closing the window so either the irc module or the frontend must be able
 	  to somehow destroy the whole thing (the channel struct and the window)
-	* finish converting names in layout to the fe_ style and possibly rename it to "templates"
 	* change colourmap to use the fe_ style names
-	* make layout use the object system if it's an appropriate fit
-	* decide on what to do about the purge_object signal
 	* change names in frontend format.c (and refactor? should we use a different format like xml?)
-	* convert the init.h macros to use static inlines for the actual code parts
+	* decide on what to do about the purge_object signal
 	* should base.exec command be moved into the frontend?
 	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?
 	* replace while loops with for loops where possible
-	* add a space after ; in for loops
 	* attempt to reduce the number of crazy (stupid) widget control functions
 
 	* what form will the init, add, and remove functions take?

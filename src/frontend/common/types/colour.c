@@ -83,7 +83,7 @@ static void *fe_common_colour_create(colour_t *value, char *params, va_list va)
 			else if (!strcmp(str, "current"))
 				value->colour = SC_MAP_CURRENT_COLOUR;
 			else {
-				for (i = 0;i < 16;i++) {
+				for (i = 0; i < 16; i++) {
 					if (!strcmp(str, fe_common_colours[i])) {
 						value->colour = i;
 						break;

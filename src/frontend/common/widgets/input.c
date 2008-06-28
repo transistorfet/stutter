@@ -171,14 +171,14 @@ int fe_input_control(struct fe_input *input, int cmd, va_list va)
 
 			amount = va_arg(va, int);
 			if (amount >= 0) {
-				for (i = 0;i < amount;i++) {
+				for (i = 0; i < amount; i++) {
 					if (!(QUEUE_NEXT(input->history)))
 						QUEUE_FIRST(input->history);
 				}
 			}
 			else {
 				amount *= -1;
-				for (i = 0;i < amount;i++) {
+				for (i = 0; i < amount; i++) {
 					if (!(QUEUE_PREV(input->history)))
 						QUEUE_LAST(input->history);
 				}
@@ -217,7 +217,7 @@ static inline int fe_input_insert_char(struct fe_input *input, char ch)
 
 	if (input->end >= input->max)
 		return(-1);
-	for (i = input->end;i >= input->i;i--)
+	for (i = input->end; i >= input->i; i--)
 		input->buffer[i + 1] = input->buffer[i];
 	input->buffer[input->i] = ch;
 	input->i++;
@@ -234,7 +234,7 @@ static inline int fe_input_delete_char(struct fe_input *input)
 
 	if (input->i <= 0)
 		return(-1);
-	for (i = input->i;i < input->end;i++)
+	for (i = input->i; i < input->end; i++)
 		input->buffer[i - 1] = input->buffer[i];
 	input->i--;
 	input->end--;

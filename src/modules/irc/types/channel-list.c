@@ -51,7 +51,7 @@ static void *irc_channel_list_index(struct irc_channel_list *value, char *name, 
 	struct irc_channel *channel;
 	char buffer[NAME_STRING_SIZE];
 
-	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++)
+	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++)
 		buffer[len] = name[len];
 	buffer[len] = '\0';
 

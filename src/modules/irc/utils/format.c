@@ -42,7 +42,7 @@ int irc_format_msg(struct irc_msg *msg, char *fmt, char *buffer, int max)
 	max--;
 	channel = irc_current_channel();
 	server = channel ? channel->server : NULL;
-	for (i = 0;(fmt[i] != '\0') && (j < max);i++) {
+	for (i = 0; (fmt[i] != '\0') && (j < max); i++) {
 		if (fmt[i] == '%') {
 			switch (fmt[++i]) {
 				case '@':

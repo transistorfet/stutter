@@ -125,12 +125,12 @@ void colourmap_load_defaults(struct fe_colourmap *map)
 {
 	int i;
 
-	for (i = 0;(i < map->size) && (i < FE_COLOURMAP_SIZE);i++) {
+	for (i = 0; (i < map->size) && (i < FE_COLOURMAP_SIZE); i++) {
 		map->map[i].enc = SC_ENC_RGBA;
 		map->map[i].colour = colourmap_defaults[i];
 	}
 
-	for (;i < map->size;i++) {
+	for (; i < map->size; i++) {
 		map->map[i].enc = SC_ENC_RGBA;
 		map->map[i].colour = 0x00000000;
 	}
@@ -140,7 +140,7 @@ void colourmap_load_zeros(struct fe_colourmap *map)
 {
 	int i;
 
-	for (i = 0;i < map->size;i++) {
+	for (i = 0; i < map->size; i++) {
 		map->map[i].enc = SC_ENC_RGBA;
 		map->map[i].colour = 0x00000000;
 	}

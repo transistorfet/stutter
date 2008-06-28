@@ -51,7 +51,7 @@ static void *irc_server_list_index(void *value, char *name, struct type_s **type
 	char buffer[NAME_STRING_SIZE];
 
 	// TODO do something about the server name (can you have a network name instead of just address?
-	for (len = 0;(name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) {
+	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++) {
 		if (name[len] == '_')
 			buffer[len] = '.';
 		else

@@ -53,7 +53,7 @@ int copy_format_string(struct format_string_s *src, struct format_string_s *dest
 	strncpy(dest->str, src->str, buffer_max - 1);
 	dest->str[buffer_max - 1] = '\0';
 	dest->num_styles = src->num_styles;
-	for (i = 0;(i < styles_max) && (i < src->num_styles);i++)
+	for (i = 0; (i < styles_max) && (i < src->num_styles); i++)
 		dest->styles[i] = src->styles[i];
 	return(0);
 }
@@ -86,7 +86,7 @@ int parse_format_string(struct variable_table_s *theme, const char *str, struct 
 				char name[NAME_STRING_SIZE];
 
 				i++;
-				for (ni = 0;(ni < NAME_STRING_SIZE) && (str[i] != 0x12);i++, ni++)
+				for (ni = 0; (ni < NAME_STRING_SIZE) && (str[i] != 0x12); i++, ni++)
 					name[ni] = str[i];
 				name[ni] = '\0';
 				i++;

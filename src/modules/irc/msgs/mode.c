@@ -28,12 +28,12 @@ static inline int irc_msg_mode_convert(struct irc_channel *channel, struct irc_m
 	int i, j, cur, method;
 	struct irc_user *user;
 
-	for (i = 1;i < msg->num_params;i++) {
+	for (i = 1; i < msg->num_params; i++) {
 		cur = i;
 		if ((msg->params[i][0] != '+') && (msg->params[i][0] != '-'))
 			continue;
 		method = (msg->params[i][0] == '+') ? 1 : 0;
-		for (j = 1;msg->params[i][j] != '\0';j++) {
+		for (j = 1; msg->params[i][j] != '\0'; j++) {
 			switch (msg->params[i][j]) {
 				case 'o': {
 					if ((user = irc_find_user(channel->users, msg->params[++cur]))) {

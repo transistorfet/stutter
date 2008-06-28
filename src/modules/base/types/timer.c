@@ -53,7 +53,7 @@ static void *base_timer_create(void *value, char *params, va_list va)
 	if (strcmp(params, "string"))
 		return(NULL);
 	str = va_arg(va, char *);
-	for (i = 0;(str[i] != ' ') && (i < BT_MAX_NUMBER);i++)
+	for (i = 0; (str[i] != ' ') && (i < BT_MAX_NUMBER); i++)
 		number[i] = str[i];
 	if (i >= BT_MAX_NUMBER)
 		return(NULL);

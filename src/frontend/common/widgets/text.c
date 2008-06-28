@@ -102,7 +102,7 @@ int fe_text_refresh(struct fe_text *text, struct fe_surface *surface)
 
 	if (!(str = (string_t) QUEUE_FIRST(text->log)))
 		return(0);
-	for (j = 0;j < text->cur_line;j++) {
+	for (j = 0; j < text->cur_line; j++) {
 		if (!(str = (string_t) QUEUE_NEXT(text->log)))
 			return(0);
 	}
@@ -113,7 +113,7 @@ int fe_text_refresh(struct fe_text *text, struct fe_surface *surface)
 		format.styles = styles;
 		if (parse_format_string(fe_theme, str, &format, LARGE_STRING_SIZE, FE_FORMAT_MAX_STYLES))
 			continue;
-		for (i = j = 0;j < TEXT_MAX_WRAP;j++) {
+		for (i = j = 0; j < TEXT_MAX_WRAP; j++) {
 			indices[j] = fe_text_wrap_string(&format.str[i], limit);
 			if (indices[j] == -1)
 				break;
@@ -125,11 +125,11 @@ int fe_text_refresh(struct fe_text *text, struct fe_surface *surface)
 
 		line -= max;
 		FE_SURFACE_CONTROL(surface, SCC_GET_ATTRIB, &attrib);
-		for (i = j = 0;(j < max) && (line + j < 0);j++)
+		for (i = j = 0; (j < max) && (line + j < 0); j++)
 			i += indices[j];
-		for (k = 0;(k < format.num_styles) && (format.styles[k].index < i);k++)
+		for (k = 0; (k < format.num_styles) && (format.styles[k].index < i); k++)
 			FE_SURFACE_CONTROL(surface, SCC_SET_ATTRIB, &format.styles[k].attrib);
-		for (;j < max;j++) {
+		for (; j < max; j++) {
 			FE_SURFACE_MOVE(surface, pos.x, pos.y + line + j);
 			if (j)
 				FE_SURFACE_PRINT(surface, FE_TEXT_WRAP_STRING, -1);
@@ -137,7 +137,7 @@ int fe_text_refresh(struct fe_text *text, struct fe_surface *surface)
 				limit = format.length;
 			else
 				limit = indices[j] + i;
-			for (;(k < format.num_styles) && (format.styles[k].index < limit);k++) {
+			for (; (k < format.num_styles) && (format.styles[k].index < limit); k++) {
 				FE_SURFACE_PRINT(surface, &format.str[i], format.styles[k].index - i);
 				FE_SURFACE_CONTROL(surface, SCC_SET_ATTRIB, &format.styles[k].attrib);
 				i = format.styles[k].index;

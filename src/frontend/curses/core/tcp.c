@@ -127,7 +127,7 @@ int fe_tcp_receive(struct fe_tcp *inter, char *buffer, int size)
 		return(-1);
 	FE_INTERFACE_SET_NOT_READY_READ(inter);
 
-	for (i = 0;i < size;i++) {
+	for (i = 0; i < size; i++) {
 		if (inter->read_pos >= inter->read_length)
 			break;
 		buffer[i] = inter->read_buffer[inter->read_pos++];
@@ -256,9 +256,9 @@ static int fe_tcp_init_connect(struct fe_tcp *inter, const char *server, int por
 	saddr.sin_port = htons(port);
 
 	if ((FE_INTERFACE(inter)->read = socket(PF_INET, SOCK_STREAM, 0)) >= 0) {
-		for (j = 0;host->h_addr_list[j];j++) {
+		for (j = 0; host->h_addr_list[j]; j++) {
 			saddr.sin_addr = *((struct in_addr *) host->h_addr_list[j]);
-			for (i = 0;i < TCP_CONNECT_ATTEMPTS;i++) {
+			for (i = 0; i < TCP_CONNECT_ATTEMPTS; i++) {
 				if (connect(FE_INTERFACE(inter)->read, (struct sockaddr *) &saddr, sizeof(struct sockaddr_in)) >= 0)
 					return(0);
 			}

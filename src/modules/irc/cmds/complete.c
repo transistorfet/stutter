@@ -39,7 +39,7 @@ int irc_cmd_complete(char *env, char *args)
 			info.find_next = 1;
 			info.size -= (info.str[info.size - 2] == ':') ? 2 : 1;
 		}
-		for (i = info.size - 1;i >= 0;i--) {
+		for (i = info.size - 1; i >= 0; i--) {
 			if (buffer[i] == ' ') {
 				info.str = &buffer[i + 1];
 				info.no_colon = 1;

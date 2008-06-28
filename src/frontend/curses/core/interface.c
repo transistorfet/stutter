@@ -55,7 +55,7 @@ void release_interface(void)
 	int i;
 
 	object_deregister_type(OBJECT_TYPE_S(&fe_interface_type));
-	for (i = 0;i < interface_list.size;i++) {
+	for (i = 0; i < interface_list.size; i++) {
 		if (interface_list.table[i])
 			destroy_object(OBJECT_S(interface_list.table[i]));
 	}
@@ -81,7 +81,7 @@ int fe_interface_init(struct fe_interface *inter, const char *params, va_list va
 		interface_list.size = newsize;
 	}
 	interface_list.table[interface_list.next_space] = inter;
-	for (;interface_list.next_space < interface_list.size;interface_list.next_space++) {
+	for (; interface_list.next_space < interface_list.size; interface_list.next_space++) {
 		if (!interface_list.table[interface_list.next_space])
 			break;
 	}
@@ -92,7 +92,7 @@ void fe_interface_release(struct fe_interface *inter)
 {
 	int i;
 
-	for (i = 0;i < interface_list.size;i++) {
+	for (i = 0; i < interface_list.size; i++) {
 		if (interface_list.table[i] == inter) {
 			interface_list.table[i] = NULL;
 			if (i < interface_list.next_space)
@@ -144,7 +144,7 @@ int fe_interface_select(float t)
 	/** Check the buffer of each connection to see if any data is waiting
 	    and return when each connection gets a chance to read data so that
 	    we can check other events and remain responsive */
-	for (i = 0;i < interface_list.size;i++) {
+	for (i = 0; i < interface_list.size; i++) {
 		if (!interface_list.table[i])
 			continue;
 		if ((interface_list.table[i]->condition & IO_COND_READ)
@@ -178,7 +178,7 @@ int fe_interface_select(float t)
 	FD_ZERO(&wr);
 	FD_ZERO(&err);
 	max = 0;
-	for (i = 0;i < interface_list.size;i++) {
+	for (i = 0; i < interface_list.size; i++) {
 		if (!interface_list.table[i])
 			continue;
 		if (interface_list.table[i]->read != -1) {
@@ -203,7 +203,7 @@ int fe_interface_select(float t)
 		return(-1);
 	}
 
-	for (i = 0;i < interface_list.size;i++) {
+	for (i = 0; i < interface_list.size; i++) {
 		/** We check that the interface is not NULL before each condition in case the previous
 		    callback destroyed the interface */
 		if (!interface_list.table[i])

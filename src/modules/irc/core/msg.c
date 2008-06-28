@@ -85,7 +85,7 @@ struct irc_msg *irc_create_msg(int cmd, char *nick, char *host, int num_params, 
 		return(NULL);
 
 	va_start(va, num_ctcps);
-	for (j = 0;j < num_params;j++)
+	for (j = 0; j < num_params; j++)
 		params[j] = va_arg(va, char *);
 	if ((info = msg_get_command(cmd))) {
 		if (num_params < info->min_params) {
@@ -97,7 +97,7 @@ struct irc_msg *irc_create_msg(int cmd, char *nick, char *host, int num_params, 
 			return(NULL);
 		}
 	}
-	for (j = 0;j < num_ctcps;j++) {
+	for (j = 0; j < num_ctcps; j++) {
 		ctcps[j].tag = va_arg(va, char *);
 		ctcps[j].args = va_arg(va, char *);
 	}
@@ -173,7 +173,7 @@ struct irc_msg *irc_unmarshal_msg(char *str)
 
 	/* Parse the parameters */
 	params[num_params] = &str[i];
-	for (;((str[i] != '\r') && (str[i] != '\n') && (str[i] != '\0'));i++) {
+	for (; ((str[i] != '\r') && (str[i] != '\n') && (str[i] != '\0')); i++) {
 		if (str[i] == ':') {
 			bitflags = 1;
 			params[num_params] = &str[++i];
@@ -233,7 +233,7 @@ int irc_marshal_msg(struct irc_msg *msg, char *buffer, int size)
 	else
 		i += msg_ctoa(msg->cmd, &buffer[i]);
 
-	for (j = 0;j < msg->num_params;j++) {
+	for (j = 0; j < msg->num_params; j++) {
 		buffer[i++] = ' ';
 		if (i >= size)
 			return(0);
@@ -247,7 +247,7 @@ int irc_marshal_msg(struct irc_msg *msg, char *buffer, int size)
 			strncpy(&buffer[i], msg->params[j], size - i);
 		i += strlen(msg->params[j]);
 	}
-	for (j = 0;j < msg->num_ctcps;j++) {
+	for (j = 0; j < msg->num_ctcps; j++) {
 		buffer[i++] = 0x01;
 		strncpy(&buffer[i], msg->ctcps[j].tag, size - i);
 		i += strlen(msg->ctcps[j].tag);
@@ -315,9 +315,9 @@ static struct irc_msg *msg_create(int bitflags, int cmd, char *nick, char *host,
 
 	nick_len = nick ? strlen(nick) + 1 : 0;
 	host_len = host ? strlen(host) + 1 : 0;
-	for (j = 0;j < num_params;j++)
+	for (j = 0; j < num_params; j++)
 		param_len += strlen(params[j]) + 1;
-	for (j = 0;j < num_ctcps;j++)
+	for (j = 0; j < num_ctcps; j++)
 		ctcp_len += strlen(ctcps[j].tag) + 1 + (ctcps[j].args ? (strlen(ctcps[j].args) + 1) : 0);
 	size = sizeof(struct irc_msg) + (sizeof(char *) * num_params) + (sizeof(struct irc_msg_ctcp) * num_ctcps) + nick_len + host_len + param_len + ctcp_len;
 
@@ -345,7 +345,7 @@ static struct irc_msg *msg_create(int bitflags, int cmd, char *nick, char *host,
 		strcpy(msg->host, host);
 	}
 	if (num_params) {
-		for (j = 0;j < num_params;j++) {
+		for (j = 0; j < num_params; j++) {
 			msg->params[j] = &buffer[i];
 			i += strlen(params[j]) + 1;
 			strcpy(msg->params[j], params[j]);
@@ -354,7 +354,7 @@ static struct irc_msg *msg_create(int bitflags, int cmd, char *nick, char *host,
 			msg->text = msg->params[num_params - 1];
 	}
 	if (num_ctcps) {
-		for (j = 0;j < num_ctcps;j++) {
+		for (j = 0; j < num_ctcps; j++) {
 			msg->ctcps[j].tag = &buffer[i];
 			i += strlen(ctcps[j].tag) + 1;
 			strcpy(msg->ctcps[j].tag, ctcps[j].tag);
@@ -378,12 +378,12 @@ static int msg_parse_ctcps(char *str, char *buffer, int max_buffer, struct irc_m
 {
 	int i, j = 0, k = 0;
 
-	for (i = 0;str[i] != '\0';i++) {
+	for (i = 0; str[i] != '\0'; i++) {
 		if (str[i] == 0x01) {
 			if (k >= max_ctcps)
 				return(k);
 			ctcps[k].tag = &str[++i];
-			for (;(str[i] != '\0') && (str[i] != ' ') && (str[i] != 0x01);i++) ;
+			for (; (str[i] != '\0') && (str[i] != ' ') && (str[i] != 0x01); i++) ;
 			if (str[i] == 0x01) {
 				str[i] = '\0';
 				ctcps[k].args = NULL;
@@ -391,7 +391,7 @@ static int msg_parse_ctcps(char *str, char *buffer, int max_buffer, struct irc_m
 			else {
 				str[i] = '\0';
 				ctcps[k].args = &str[++i];
-				for (;(str[i] != '\0') && (str[i] != 0x01);i++) ;
+				for (; (str[i] != '\0') && (str[i] != 0x01); i++) ;
 				str[i++] = '\0';
 			}
 			k++;
@@ -414,7 +414,7 @@ inline static struct irc_msg_commands *msg_get_command(int cmd)
 {
 	int i;
 
-	for (i = 0;msg_commands[i].name;i++) {
+	for (i = 0; msg_commands[i].name; i++) {
 		if (msg_commands[i].cmd == cmd)
 			return(&msg_commands[i]);
 	}
@@ -432,7 +432,7 @@ inline static int msg_ctoa(int num, char *str)
 	if (!str)
 		return(0);
 
-	for (i = 0;i < 3;i++) {
+	for (i = 0; i < 3; i++) {
 		str[i] = (num / mul) + 0x30;
 		num -= (num / mul) * mul;
 		mul /= 10;
@@ -450,7 +450,7 @@ inline static char *msg_uppercase(char *str)
 {
 	int i;
 
-	for (i = 0;str[i] != '\0';i++) {
+	for (i = 0; str[i] != '\0'; i++) {
 		if ((str[i] >= 0x61) && (str[i] <= 0x7a))
 			str[i] = str[i] - 0x20;
 	}

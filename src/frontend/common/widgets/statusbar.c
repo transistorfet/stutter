@@ -82,7 +82,7 @@ int fe_statusbar_refresh(struct fe_statusbar *statusbar, struct fe_surface *surf
 	format.styles = styles;
 	if ((util_expand_str(statusbar->text, buffer, STRING_SIZE) >= 0) && !(parse_format_string(fe_theme, buffer, &format, STRING_SIZE, FE_FORMAT_MAX_STYLES))) {
 		FE_SURFACE_MOVE(surface, statusbar->window.x, statusbar->window.y);
-		for (i = 0, k = 0;k < format.num_styles;k++) {
+		for (i = 0, k = 0; k < format.num_styles; k++) {
 			if (format.styles[k].index >= statusbar->window.width)
 				break;
 			FE_SURFACE_PRINT(surface, &format.str[i], format.styles[k].index - i);
@@ -91,7 +91,7 @@ int fe_statusbar_refresh(struct fe_statusbar *statusbar, struct fe_surface *surf
 		}
 		FE_SURFACE_PRINT(surface, &format.str[i], ((format.length >= statusbar->window.width) ? statusbar->window.width : format.length ) - i);
 		if (format.length < statusbar->window.width) {
-			for (i = 0;(i < (statusbar->window.width - format.length)) && (i < STRING_SIZE);i++)
+			for (i = 0; (i < (statusbar->window.width - format.length)) && (i < STRING_SIZE); i++)
 				buffer[i] = ' ';
 			FE_SURFACE_PRINT(surface, buffer, i);
 		}
