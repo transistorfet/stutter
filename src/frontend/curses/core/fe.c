@@ -48,8 +48,11 @@ struct fe_widget *fe_get_focus(char *type)
 
 struct fe_widget *fe_get_target(struct fe_widget *widget, char *type)
 {
-	//return(FE_PAGE(FE_SURFACE(root_terminal)->root)->frame);
-	return(NULL);
+	struct fe_widget *target;
+
+	if (fe_widget_control(FE_PAGE(FE_SURFACE(root_terminal)->root)->frame, WCC_CURRENT_WIDGET, &target))
+		return(NULL);
+	return(target);
 }
 
 

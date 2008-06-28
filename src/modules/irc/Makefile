@@ -46,11 +46,11 @@ OBJS =	init.o \
 	msgs/ctcp/ping.o \
 	msgs/ctcp/version.o \
 	msgs/ctcp/unknown.o \
-	sigs/dispatch.o \
 	sigs/ctcp-disp.o \
 	sigs/exec.o \
 	sigs/quit.o \
 	utils/current.o \
+	utils/dispatch.o \
 	utils/format.o
 
 # TODO finish converting these

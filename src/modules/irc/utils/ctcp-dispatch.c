@@ -1,5 +1,5 @@
 /*
- * Module Name:		ctcpdispatch.c
+ * Module Name:		ctcp-dispatch.c
  * Description:		IRC CTCP Message Receiver/Dispatcher
  */
 
@@ -9,7 +9,7 @@
 #include <stutter/macros.h>
 #include <stutter/modules/irc.h>
 
-int irc_sig_dispatch_ctcp_msg(char *env, void *index, struct irc_msg *msg)
+int irc_dispatch_ctcp_msg(struct irc_msg *msg)
 {
 	if (!strcmp_icase(msg->ctcps[0].tag, "ACTION"))
 		return(irc_msg_ctcp_action(env, msg));

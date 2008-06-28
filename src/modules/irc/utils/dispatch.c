@@ -8,7 +8,7 @@
 #include CONFIG_H
 #include <stutter/modules/irc.h>
 
-int irc_sig_dispatch_msg(char *env, int cmd, struct irc_msg *msg)
+int irc_dispatch_msg(struct irc_msg *msg)
 {
 	switch (msg->cmd) {
 		case 001:

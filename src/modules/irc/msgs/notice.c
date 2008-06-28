@@ -13,7 +13,7 @@
 int irc_msg_notice(char *env, struct irc_msg *msg)
 {
 	if (msg->num_ctcps)
-		emit_signal(NULL, "irc.dispatch_ctcp", msg);
+		irc_dispatch_ctcp_msg(msg);
 	else {
 		IRC_MSG_NOTICE_OUTPUT_JOINPOINT(msg, msg->nick ? IRC_FMT_NOTICE : IRC_FMT_NOTICE_SELF)
 	}

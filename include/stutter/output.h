@@ -12,12 +12,18 @@
 #include <stutter/signal.h>
 
 static inline int OUTPUT_ERROR(const char *fmt, ...) {
-	// (snprintf(buffer, STRING_SIZE, fmt, va) >= 0)
+	char buffer[LARGE_STRING_SIZE];
+
+	if (snprintf(buffer, LARGE_STRING_SIZE, fmt, va) >= 0)
+		signal_named_emit(signal_table, "output.error", buffer);
 	return(0);
 }
 
 static inline int OUTPUT_STATUS(const char *fmt, ...) {
-	// (snprintf(buffer, STRING_SIZE, fmt, va) >= 0)
+	char buffer[LARGE_STRING_SIZE];
+
+	if (snprintf(buffer, LARGE_STRING_SIZE, fmt, va) >= 0)
+		signal_named_emit(signal_table, "output.status", buffer);
 	return(0);
 }
 

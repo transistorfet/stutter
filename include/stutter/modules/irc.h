@@ -59,8 +59,6 @@ int irc_msg_ctcp_version(char *, struct irc_msg *);
 //int irc_msg_ctcp_unknown(char *, void *, struct irc_msg *);
 
 /* Signal Handlers */
-int irc_sig_dispatch_msg(char *, int, struct irc_msg *);
-int irc_sig_dispatch_ctcp_msg(char *, void *, struct irc_msg *);
 int irc_sig_exec(void *, void *, char *);
 int irc_sig_quit(void *, void *, char *);
 
@@ -73,6 +71,8 @@ struct type_s *irc_load_user_list(void);
 struct type_s *irc_load_user_type(void);
 
 /* Utils */
+int irc_dispatch_msg(struct irc_msg *);
+int irc_dispatch_ctcp_msg(struct irc_msg *);
 int irc_format_msg(struct irc_msg *, char *, char *, int);
 
 struct irc_server *irc_current_server(void);
