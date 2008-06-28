@@ -31,7 +31,7 @@ struct variable_s *base_wildcard_index(struct base_string *var, const char *name
 	char ch, *str;
 	struct variable_s *ret;
 
-	for (i = 0, str = var->str; var->str[i++] != '\0'; i++) {
+	for (i = 0, str = var->str; ; i++) {
 		if ((var->str[i] == ';') || (var->str[i] == '\0')) {
 			ch = var->str[i];
 			var->str[i] = '\0';
@@ -44,6 +44,8 @@ struct variable_s *base_wildcard_index(struct base_string *var, const char *name
 				var->str[i] = ch;
 				str = &var->str[i + 1];
 			}
+			if (var->str[i] == '\0')
+				break;
 		}
 	}
 	return(NULL);
