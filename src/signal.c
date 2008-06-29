@@ -66,7 +66,7 @@ void signal_release(struct signal_s *signal)
 
 	for (cur = signal->handlers; cur; cur = tmp) {
 		tmp = cur->next;
-		// TODO do we need to destroy the handler's pointer?
+		// TODO do we need to destroy the ptr we were given?
 		memory_free(cur);
 	}
 	variable_table_release(VARIABLE_TABLE_S(signal));
@@ -94,7 +94,6 @@ struct signal_handler_s *signal_connect(struct signal_s *signal, int priority, s
 	handler->priority = priority;
 	handler->func = func;
 	handler->ptr = ptr;
-	// TODO keep this parent thing? what's it for?
 	handler->parent = signal;
 	handler->next = NULL;
 

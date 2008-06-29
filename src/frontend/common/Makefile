@@ -3,8 +3,7 @@
 ROOT = ../../..
 
 LIB_TARGET = fecommon.a
-OBJS =	init.o \
-	cmds/bind.o \
+OBJS =	cmds/bind.o \
 	cmds/clear.o \
 	cmds/clearline.o \
 	cmds/close.o \

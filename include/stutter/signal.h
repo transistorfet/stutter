@@ -26,7 +26,6 @@ struct signal_handler_s {
 	signal_t func;
 	// TODO what will this actually be?  will we assist in managing it (destroy if an object, etc)?
 	void *ptr;
-	// TODO do we need this?
 	struct signal_s *parent;
 	struct signal_handler_s *next;
 };

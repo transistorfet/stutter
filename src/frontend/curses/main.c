@@ -136,7 +136,11 @@ int init_curses(void)
 	ADD_VARIABLE_LIST(NULL, variables_list);
 
 	fe_theme = (struct variable_table_s *) find_variable(NULL, "fe.theme", NULL);
-	if (init_common_frontend())
+	if (init_key())
+		return(-1);
+	if (init_widget())
+		return(-1);
+	if (init_surface())
 		return(-1);
 	if (init_terminal())
 		return(-1);
@@ -154,7 +158,9 @@ int release_curses(void)
 
 	release_frontend();
 	release_terminal();
-	release_common_frontend();
+	release_surface();
+	release_widget();
+	release_key();
 	release_execute();
 	release_timer();
 	release_interface();

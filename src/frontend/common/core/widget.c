@@ -54,7 +54,7 @@ int fe_widget_init(struct fe_widget *widget, const char *params, va_list va)
 	if ((params[0] != 's') || !(id = va_arg(va, const char *)))
 		id = "";
 	// TODO decide what to do about duplicate ids and stuff
-	//if (widget_find_node(&widget_list, id))
+	//if (hash_find_entry(widget_list, id))
 	//	return(NULL);
 	widget->bitflags = 0;
 	widget->parent = NULL;
