@@ -9,13 +9,13 @@
 int fe_common_cmd_select(char *env, char *args)
 {
 	char *id;
-	void *window;
+	struct fe_widget *parent, *child;
 
 	id = util_get_arg(args, NULL);
-	if (!(window = fe_find_widget(id)))
+	if (!(child = fe_find_widget(id)))
 		return(-1);
-	if (!fe_show_widget(window))
-		return(-1);
+	for (parent = child->parent; parent; child = parent, parent = parent->parent)
+		fe_widget_control(parent, WCC_SHOW_WIDGET, child);
 	return(0);
 }
 

@@ -3,20 +3,20 @@
  * Description:		Scroll Current Window Command
  */
 
-#include <stdlib.h>
-
 #include <stutter/utils.h>
+#include <stutter/memory.h>
 #include <stutter/frontend/frontend.h>
+#include <stutter/frontend/common/widget.h>
 
 int fe_common_cmd_scroll(char *env, char *args)
 {
 	char *num;
-	void *window;
+	struct fe_widget *widget;
 
-	if (!(window = fe_get_target(NULL, "text")))
+	if (!(widget = fe_get_target(NULL, "text")))
 		return(-1);
 	num = util_get_arg(args, NULL);
-	fe_scroll(window, atoi(num));
+	fe_widget_control(widget, WCC_SCROLL, atoi(num));
 	return(0);
 }
 

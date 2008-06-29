@@ -22,11 +22,11 @@ DEFINE_TYPE_LIST(types_list,
 );
 
 DEFINE_VARIABLE_LIST(variables_list,
+/*
 	DECLARE_TYPE("command",
 		ADD_COMMAND_ENV("fe.echo", fe_common_cmd_echo, NULL)
 		ADD_COMMAND_ENV("fe.parse", fe_common_cmd_parse, NULL)
 	)
-/*
 	DECLARE_TYPE("table",
 		ADD_FIXED_VARIABLE("fe", "")
 		ADD_FIXED_VARIABLE("fe.theme", "")

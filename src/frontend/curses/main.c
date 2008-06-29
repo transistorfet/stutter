@@ -57,11 +57,22 @@ DEFINE_VARIABLE_LIST(variables_list,
 	DECLARE_TYPE("hashattrib:fe",
 		ADD_FIXED_VARIABLE("fe.theme.nicktable", "")
 	)
-	//DECLARE_TYPE("command",
-		//ADD_FIXED_VARIABLE("fe.insert", "fp", fe_cmd_insert, NULL)
-		//ADD_FIXED_VARIABLE("fe.next", "fp", fe_cmd_next, NULL)
-		//ADD_FIXED_VARIABLE("fe.previous", "fp", fe_cmd_previous, NULL)
-	//)
+	DECLARE_TYPE("command",
+		ADD_FIXED_VARIABLE("fe.bind", "fp", fe_common_cmd_bind, NULL)
+		ADD_FIXED_VARIABLE("fe.clear", "fp", fe_common_cmd_clear, NULL)
+		ADD_FIXED_VARIABLE("fe.clearline", "fp", fe_common_cmd_clearline, NULL)
+		ADD_FIXED_VARIABLE("fe.close", "fp", fe_common_cmd_close, NULL)
+		ADD_FIXED_VARIABLE("fe.context", "fp", fe_common_cmd_context, NULL)
+		ADD_FIXED_VARIABLE("fe.echo", "fp", fe_common_cmd_echo, NULL)
+		ADD_FIXED_VARIABLE("fe.insert", "fp", fe_common_cmd_insert, NULL)
+		ADD_FIXED_VARIABLE("fe.next", "fp", fe_common_cmd_next, NULL)
+		ADD_FIXED_VARIABLE("fe.parse", "fp", fe_common_cmd_parse, NULL)
+		ADD_FIXED_VARIABLE("fe.previous", "fp", fe_common_cmd_previous, NULL)
+		ADD_FIXED_VARIABLE("fe.scroll", "fp", fe_common_cmd_scroll, NULL)
+		ADD_FIXED_VARIABLE("fe.select", "fp", fe_common_cmd_select, NULL)
+		ADD_FIXED_VARIABLE("fe.unbind", "fp", fe_common_cmd_unbind, NULL)
+		ADD_FIXED_VARIABLE("fe.window", "fp", fe_common_cmd_window, NULL)
+	)
 	DECLARE_TYPE("attrib:fe",
 		ADD_VARIABLE("fe.theme.bracket", "s", ",,bold")
 		ADD_VARIABLE("fe.theme.channel", "s", "default")

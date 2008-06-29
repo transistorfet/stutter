@@ -1,34 +1,40 @@
 
-	* should va_list functions use _real or _va as the mangle
-	* convert macros to the all caps scheme!
-	* remove all uses of the linear list
-	* seriously fix up string.c or even better get rid of it 
+	* should the common frontend *not* have it's own init since not all features might be usable with
+	  a given frontend?
+	* should you move the quit command to the common frontend?
+
 	* change names in frontend format.c (and refactor? should we use a different format like xml?)
-	* should base.exec command be moved into the frontend?
 	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?
-	* replace while loops with for loops where possible
-	* should you change the name mangle from _s to something else for structs?
-	* eliminate the callback struct in globals.h
 	* replace all instances of fe_print with an emit_signal if possible
-	* add an is_a() check of the type in variable before trying to initialize or create a variable
-	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
-	* finish converting base types timer and string-ref (unless you can merge it into string)
 	* Remove all joinpoints
 	* convert all error reporting in tcp.c to emit signals
 	* convert all joinpoint error printing to emit signals instead
+	* fix up config system
+	* fix config defines for common error messages like VARIABLE_NOT_FOUND (it's BASE specific atm)
 
-	* make sure non-fatal errors don't cause things to completely not work.  For example if the wildcard
-	  thing isn't available, then don't prevent a normal lookup (i think that one is fixed already)
-	* attempt to reduce the number of crazy (stupid) widget control functions
-	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
-	  so we could do the same thing as with MODIFY_SIZE
+	* add an is_a() check of the type in variable before trying to initialize or create a variable
+	* should va_list functions use _real or _va as the mangle
+	* convert macros to the all caps scheme!
+	* replace while loops with for loops where possible
+	* remove all uses of the linear list
+	* seriously fix up string.c or even better get rid of it 
+	* should base.exec command be moved into the frontend?
+	* should you change the name mangle from _s to something else for structs?
+	* eliminate the callback struct in globals.h
+	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
+	* finish converting base types timer and string-ref (unless you can merge it into string)
+
 	* make timers more secure through the object system by making them objects themselves or making them
 	  part of the objects they control (same with signals/hooks if we keep them around?)
 	* there is still a bug in timer or something, after a reconnect, the value of cur (line 141) was
 	  invalid, i assume from the timer being destroyed at some point.
 	* fix certain commands such as bind and perhaps context and many others to check for proper
 	  parameters instead of attempting to evaluate the command anyways
-
+	* make sure non-fatal errors don't cause things to completely not work.  For example if the wildcard
+	  thing isn't available, then don't prevent a normal lookup (i think that one is fixed already)
+	* attempt to reduce the number of crazy (stupid) widget control functions
+	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
+	  so we could do the same thing as with MODIFY_SIZE
 
 
 	* the object creation system and the variable system don't get along.  You are passing the va_list to

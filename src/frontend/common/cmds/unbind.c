@@ -8,6 +8,7 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/macros.h>
 #include <stutter/string.h>
 #include <stutter/variable.h>
@@ -26,10 +27,10 @@ int fe_common_cmd_unbind(char *env, char *args)
 	}
 
 	if ((util_convert_key(&args[pos], buffer, SMALL_STRING_SIZE) < 0) || fe_key_unbind(context, buffer)) {
-		OUTPUT_ERROR(BASE_ERR_UNBINDING_FAILED, &args[pos]);
+		OUTPUT_ERROR(FE_ERR_UNBINDING_FAILED, &args[pos]);
 		return(-1);
 	}
-	OUTPUT_STATUS(BASE_FMT_UNBIND, &args[pos])
+	OUTPUT_STATUS(FE_FMT_UNBIND, &args[pos]);
 	return(0);
 }
 
