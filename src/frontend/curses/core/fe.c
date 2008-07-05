@@ -29,6 +29,8 @@ int init_frontend(void)
 	if (!(root = FE_WIDGET(create_object(OBJECT_TYPE_S(&fe_page_type), "s", "page"))))
 		return(-1);
 	fe_terminal_control(root_terminal, SCC_SET_ROOT, root, NULL);
+	// TODO temporary: create a window that can display text
+	fe_create_widget("text", "status");
 	return(0);
 }
 
@@ -39,6 +41,16 @@ int release_frontend(void)
 	destroy_object(OBJECT_S(root_terminal));
 	root_terminal = NULL;
 	return(0);
+}
+
+struct fe_widget *fe_create_widget(const char *type, const char *id)
+{
+	struct fe_widget *widget;
+
+	if (!(widget = FE_WIDGET(create_object(OBJECT_TYPE_S(&fe_text_type), "s", id))))
+		return(NULL);
+	fe_widget_control(FE_WIDGET(FE_PAGE(FE_SURFACE(root_terminal)->root)->frame), WCC_ADD_WIDGET, widget);
+	return(widget);
 }
 
 struct fe_widget *fe_get_focus(const char *type)

@@ -100,10 +100,12 @@ int fe_text_refresh(struct fe_text *text, struct fe_surface *surface)
 	FE_SURFACE_CLEAR(surface, pos.x, pos.y, size.width, size.height);
 	FE_SURFACE_MOVE(surface, pos.x, pos.y + line);
 
-	if (!(str = (string_t) QUEUE_FIRST(text->log)))
+	QUEUE_FIRST_ENTRY(text->log);
+	if (!(str = (string_t) QUEUE_CURRENT(text->log)))
 		return(0);
 	for (j = 0; j < text->cur_line; j++) {
-		if (!(str = (string_t) QUEUE_NEXT(text->log)))
+		QUEUE_NEXT_ENTRY(text->log);
+		if (!(str = (string_t) QUEUE_CURRENT(text->log)))
 			return(0);
 	}
 
@@ -146,7 +148,8 @@ int fe_text_refresh(struct fe_text *text, struct fe_surface *surface)
 			i = limit;
 		}
 		FE_SURFACE_CONTROL(surface, SCC_SET_ATTRIB, &attrib);
-		if (!(str = (string_t) QUEUE_NEXT(text->log)))
+		QUEUE_NEXT_ENTRY(text->log);
+		if (!(str = (string_t) QUEUE_CURRENT(text->log)))
 			break;
 	}
 	return(0);

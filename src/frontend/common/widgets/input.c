@@ -172,15 +172,15 @@ int fe_input_control(struct fe_input *input, int cmd, va_list va)
 			amount = va_arg(va, int);
 			if (amount >= 0) {
 				for (i = 0; i < amount; i++) {
-					if (!(QUEUE_NEXT(input->history)))
-						QUEUE_FIRST(input->history);
+					if (!(QUEUE_NEXT_ENTRY(input->history)))
+						QUEUE_FIRST_ENTRY(input->history);
 				}
 			}
 			else {
 				amount *= -1;
 				for (i = 0; i < amount; i++) {
-					if (!(QUEUE_PREV(input->history)))
-						QUEUE_LAST(input->history);
+					if (!(QUEUE_PREV_ENTRY(input->history)))
+						QUEUE_LAST_ENTRY(input->history);
 				}
 			}
 			if (QUEUE_CURRENT(input->history))
@@ -270,12 +270,12 @@ static inline int fe_input_process_char(struct fe_input *input, int ch)
 			break;
 		}
 		case KC_UP: {
-			if (QUEUE_NEXT(input->history) || QUEUE_FIRST(input->history))
+			if (QUEUE_NEXT_ENTRY(input->history) || QUEUE_FIRST_ENTRY(input->history))
 				fe_input_write(input, (char *) QUEUE_CURRENT(input->history), -1);
 			break;
 		}
 		case KC_DOWN: {
-			if (QUEUE_PREV(input->history) || QUEUE_LAST(input->history))
+			if (QUEUE_PREV_ENTRY(input->history) || QUEUE_LAST_ENTRY(input->history))
 				fe_input_write(input, (char *) QUEUE_CURRENT(input->history), -1);
 			break;
 		}

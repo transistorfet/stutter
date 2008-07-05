@@ -97,7 +97,8 @@ int fe_container_control(struct fe_container *container, int cmd, va_list va)
 		case WCC_GET_FOCUS: {
 			struct fe_widget *widget;
 
-			if (!(widget = FE_WIDGET(QUEUE_CURRENT(container->widgets))) && !(widget = FE_WIDGET(QUEUE_FIRST(container->widgets))))
+			if (!(widget = FE_WIDGET(QUEUE_CURRENT(container->widgets)))
+			    && QUEUE_FIRST_ENTRY(container->widgets) && !(widget = FE_WIDGET(QUEUE_CURRENT(container->widgets))))
 				return(-1);
 			return(FE_WIDGET_CONTROL(widget, WCC_GET_FOCUS, va));
 		}
@@ -149,8 +150,10 @@ int fe_container_control(struct fe_container *container, int cmd, va_list va)
 			widget = va_arg(va, struct fe_widget **);
 			if (!widget)
 				return(-1);
-			if (!(*widget = FE_WIDGET(QUEUE_CURRENT(container->widgets))))
-				*widget = FE_WIDGET(QUEUE_FIRST(container->widgets));
+			if (!(*widget = FE_WIDGET(QUEUE_CURRENT(container->widgets)))) {
+				QUEUE_FIRST_ENTRY(container->widgets);
+				*widget = FE_WIDGET(QUEUE_CURRENT(container->widgets));
+			}
 			return(0);
 		}
 		case WCC_SELECT_WIDGET: {
@@ -178,7 +181,8 @@ int fe_container_control(struct fe_container *container, int cmd, va_list va)
 			widget = va_arg(va, struct fe_widget **);
 			if (!widget)
 				return(-1);
-			*widget = FE_WIDGET(QUEUE_NEXT(container->widgets));
+			QUEUE_NEXT_ENTRY(container->widgets);
+			*widget = FE_WIDGET(QUEUE_CURRENT(container->widgets));
 			FE_WIDGET(container)->bitflags |= WBF_FORCE_REFRESH;
 			return(0);
 		}
@@ -188,7 +192,8 @@ int fe_container_control(struct fe_container *container, int cmd, va_list va)
 			widget = va_arg(va, struct fe_widget **);
 			if (!widget)
 				return(-1);
-			*widget = FE_WIDGET(QUEUE_PREV(container->widgets));
+			QUEUE_PREV_ENTRY(container->widgets);
+			*widget = FE_WIDGET(QUEUE_CURRENT(container->widgets));
 			FE_WIDGET(container)->bitflags |= WBF_FORCE_REFRESH;
 			return(0);
 		}
@@ -198,7 +203,8 @@ int fe_container_control(struct fe_container *container, int cmd, va_list va)
 			widget = va_arg(va, struct fe_widget **);
 			if (!widget)
 				return(-1);
-			*widget = FE_WIDGET(QUEUE_FIRST(container->widgets));
+			QUEUE_FIRST_ENTRY(container->widgets);
+			*widget = FE_WIDGET(QUEUE_CURRENT(container->widgets));
 			FE_WIDGET(container)->bitflags |= WBF_FORCE_REFRESH;
 			return(0);
 		}
@@ -208,7 +214,8 @@ int fe_container_control(struct fe_container *container, int cmd, va_list va)
 			widget = va_arg(va, struct fe_widget **);
 			if (!widget)
 				return(-1);
-			*widget = FE_WIDGET(QUEUE_FIRST(container->widgets));
+			QUEUE_LAST_ENTRY(container->widgets);
+			*widget = FE_WIDGET(QUEUE_CURRENT(container->widgets));
 			FE_WIDGET(container)->bitflags |= WBF_FORCE_REFRESH;
 			return(0);
 		}

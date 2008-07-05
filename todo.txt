@@ -1,4 +1,11 @@
 
+    CRITICAL:
+	* finalize the variable system function pointers
+	* finalize the signal callback prototype
+	* fix frontend variable types for colour handling
+	* make the frontend connect to and print the output signals (figure out how it will work)
+
+
 	* should the common frontend *not* have it's own init since not all features might be usable with
 	  a given frontend?
 	* should you move the quit command to the common frontend?

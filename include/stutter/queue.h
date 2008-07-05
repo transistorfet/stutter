@@ -36,17 +36,24 @@ void *queue_remove(struct queue_s *);
 void queue_delete(struct queue_s *);
 void queue_clear(struct queue_s *);
 
-#define QUEUE_FIRST(queue)	\
+#define QUEUE_CURRENT_ENTRY(queue)	\
+	( (queue)->current )
+
+#define QUEUE_SET_CURRENT_ENTRY(queue, entry)	\
+	( (queue)->current = (entry) )
+
+#define QUEUE_FIRST_ENTRY(queue)	\
 	( (queue)->current = (queue)->head )
 
-#define QUEUE_LAST(queue)	\
+#define QUEUE_LAST_ENTRY(queue)		\
 	( (queue)->current = (queue)->tail )
 
-#define QUEUE_NEXT(queue)	\
+#define QUEUE_NEXT_ENTRY(queue)		\
 	( (queue)->current = ( (queue)->current ? (queue)->current->next : NULL ) )
 
-#define QUEUE_PREV(queue)	\
+#define QUEUE_PREV_ENTRY(queue)		\
 	( (queue)->current = ( (queue)->current ? (queue)->current->prev : NULL ) )
+
 
 #define QUEUE_CURRENT(queue)	\
 	( (queue)->current ? (queue)->current->data : NULL )
@@ -58,16 +65,10 @@ void queue_clear(struct queue_s *);
 	( (queue)->size )
 
 #define QUEUE_FOREACH(queue)	\
-	for (QUEUE_FIRST(queue); QUEUE_CURRENT(queue); QUEUE_NEXT(queue))
+	for (QUEUE_FIRST_ENTRY(queue); QUEUE_CURRENT_ENTRY(queue); QUEUE_NEXT_ENTRY(queue))
 
 #define QUEUE_FOREACH_REVERSE(queue)	\
-	for (QUEUE_LAST(queue); QUEUE_CURRENT(queue); QUEUE_PREV(queue))
-
-#define QUEUE_CURRENT_ENTRY(queue)	\
-	( (queue)->current )
-
-#define QUEUE_SET_CURRENT_ENTRY(queue, entry)	\
-	( (queue)->current = (entry) )
+	for (QUEUE_LAST_ENTRY(queue); QUEUE_CURRENT_ENTRY(queue); QUEUE_PREV_ENTRY(queue))
 
 #endif
 

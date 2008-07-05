@@ -9,11 +9,11 @@
 
 int fe_common_cmd_echo(char *env, char *args)
 {
-	struct fe_widget *window;
+	struct fe_widget *widget;
 
-	if (!(window = fe_get_target(NULL, "text")))
+	if (!(widget = fe_get_target(NULL, "text")))
 		return(-1);
-	FE_WIDGET_WRITE(window, args, -1);
+	FE_WIDGET_WRITE(widget, args, -1);
 	return(0);
 }
 
