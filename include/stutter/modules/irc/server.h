@@ -29,21 +29,23 @@ struct irc_server {
 	time_t last_ping;
 	int attempts;
 	string_t nick;
-	queue_list_v(irc_msg) send_queue;
+	struct queue_s *send_queue;
 	struct irc_channel *status;
 	struct irc_channel_list *channels;
 };
 
+extern struct variable_type_s irc_server_type;
+
 int init_irc_server(void);
 int release_irc_server(void);
 
-struct irc_server *irc_create_server(const char *, void *);
-int irc_destroy_server(struct irc_server *);
+int irc_server_init(struct irc_server *, const char *, va_list);
+void irc_server_release(struct irc_server *);
+
 int irc_server_connect(struct irc_server *, const char *, int);
 int irc_server_reconnect(struct irc_server *);
 int irc_server_disconnect(struct irc_server *);
 struct irc_server *irc_find_server(const char *);
-struct irc_channel *irc_server_find_window(void *);
 
 int irc_send_msg(struct irc_server *, struct irc_msg *);
 struct irc_msg *irc_receive_msg(struct irc_server *);

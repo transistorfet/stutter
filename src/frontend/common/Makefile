@@ -21,6 +21,9 @@ OBJS =	cmds/bind.o \
 	core/key.o \
 	core/surface.o \
 	core/widget.o \
+	sigs/create.o \
+	sigs/destroy.o \
+	sigs/print.o \
 	utils/format.o \
 	widgets/container.o \
 	widgets/frame.o \

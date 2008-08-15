@@ -23,7 +23,7 @@
 #include <stutter/modules/irc/server.h>
 #include <stutter/modules/irc/channel.h>
 
-#define server_is_unbufferable_msg_m(msg)		((msg->cmd == IRC_MSG_NICK) || (msg->cmd == IRC_MSG_USER) || (msg->cmd == IRC_MSG_PASS) || (msg->cmd == IRC_MSG_OPER) || (msg->cmd == IRC_MSG_QUIT) || (msg->cmd == IRC_MSG_SQUIT))
+#define SERVER_IS_UNBUFFERABLE_MSG(msg)		((msg->cmd == IRC_MSG_NICK) || (msg->cmd == IRC_MSG_USER) || (msg->cmd == IRC_MSG_PASS) || (msg->cmd == IRC_MSG_OPER) || (msg->cmd == IRC_MSG_QUIT) || (msg->cmd == IRC_MSG_SQUIT))
 
 static int server_initialized = 0;
 static fe_timer_t irc_ping_watchdog_timer;
@@ -35,6 +35,21 @@ static int irc_server_receive(struct irc_server *, fe_network_t, fe_network_t);
 static int irc_server_rejoin_channel(struct irc_channel *, struct irc_server *);
 static int irc_server_flush_send_queue(struct irc_server *);
 static int irc_server_ping_watchdog(void *, fe_timer_t);
+
+struct variable_type_s irc_server_type = { {
+	OBJECT_TYPE_S(&variable_type),
+	"irc_server",
+	sizeof(struct irc_server),
+	NULL,
+	(object_init_t) irc_server_init,
+	(object_release_t) irc_server_release },
+	(variable_add_t) NULL,
+	(variable_remove_t) NULL,
+	(variable_index_t) NULL,
+	(variable_traverse_t) NULL,
+	(variable_stringify_t) NULL,
+	(variable_evaluate_t) NULL
+};
 
 int init_irc_server(void)
 {
@@ -53,46 +68,29 @@ int release_irc_server(void)
 		fe_timer_destroy(irc_ping_watchdog_timer);
 	for (cur = server_list; cur; cur = tmp) {
 		tmp = cur->next;
-		irc_server_disconnect(cur);
-		if (cur->channels)
-			irc_destroy_channel_list(cur->channels);
-		if (cur->address)
-			destroy_string(cur->address);
-		if (cur->nick)
-			destroy_string(cur->nick);
-		memory_free(cur);
+		destroy_object(OBJECT_S(cur));
 	}
 	server_initialized = 0;
 	return(0);
 }
 
-/**
- * Create a new server structure.
- */
-struct irc_server *irc_create_server(const char *nick, void *window)
+
+int irc_server_init(struct irc_server *server, const char *params, va_list va)
 {
-	struct irc_server *server;
-
-	if (!(server = (struct irc_server *) memory_alloc(sizeof(struct irc_server))))
-		return(NULL);
-	memset(server, '\0', sizeof(struct irc_server));
-
 	server->address = NULL;
 	server->port = 0;
-	server->nick = create_string(nick);
-	queue_init_v(server->send_queue, 0);
-
+	// TODO get argument from params
+	//server->nick = create_string(nick);
+	if (!(server->send_queue = create_queue(0, (destroy_t) irc_destroy_msg)))
+		return(-1);
 	server->channels = irc_create_channel_list();
 	server->status = irc_add_channel(server->channels, IRC_SERVER_STATUS_CHANNEL, window, server);
 	server->next = server_list;
 	server_list = server;
-	return(server);
+	return(0);
 }
 
-/**
- * Disconnect and destroy the server structure given.
- */
-int irc_destroy_server(struct irc_server *server)
+void irc_server_release(struct irc_server *server)
 {
 	struct irc_server *cur, *prev;
 
@@ -107,13 +105,20 @@ int irc_destroy_server(struct irc_server *server)
 	}
 	irc_server_disconnect(server);
 	irc_destroy_channel_list(server->channels);
+	if (server->send_queue)
+		destroy_queue(server->send_queue);
 	if (server->address)
 		destroy_string(server->address);
 	if (server->nick)
 		destroy_string(server->nick);
-	memory_free(server);
-	return(0);
 }
+
+
+
+
+
+
+
 
 /*
  * Connect the given server structure to the address:port given.
@@ -142,14 +147,12 @@ int irc_server_reconnect(struct irc_server *server)
 	if (server->net)
 		irc_server_disconnect(server);
 	server->bitflags &= ~IRC_SBF_CONNECTED;
-	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
-		irc_destroy_msg(cur);
-	}
-	queue_release_v(server->send_queue);
+	if (server->send_queue)
+		queue_clear(server->send_queue);
 
 	server->attempts++;
 	if (irc_server_init_connection(server)) {
-		IRC_ERROR_JOINPOINT(IRC_ERR_RECONNECT_ERROR, server->address)
+		OUTPUT_ERROR(IRC_ERR_RECONNECT_ERROR, server->address)
 		irc_server_disconnect(server);
 		return(-1);
 	}
@@ -170,10 +173,8 @@ int irc_server_disconnect(struct irc_server *server)
 		server->net = NULL;
 	}
 	server->bitflags &= ~IRC_SBF_CONNECTED;
-	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
-		irc_destroy_msg(cur);
-	}
-	queue_release_v(server->send_queue);
+	if (server->send_queue)
+		queue_clear(server->send_queue);
 	return(0);
 }
 
@@ -192,22 +193,6 @@ struct irc_server *irc_find_server(const char *address)
 	return(NULL);
 }
 
-/**
- * Return the channel that has the given window handle out of all the channels
- * on all the servers.  If no channel is associated with the given window
- * then NULL is returned.
- */
-struct irc_channel *irc_server_find_window(void *window)
-{
-	struct irc_server *cur;
-	struct irc_channel *channel;
-
-	for (cur = server_list; cur; cur = cur->next) {
-		if ((channel = irc_channel_find_window(cur->channels, window)))
-			return(channel);
-	}
-	return(NULL);
-}
 
 /**
  * Send the given irc message to the given server and return 0 (or -1 on
@@ -219,9 +204,8 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 	int size, ret;
 	char buffer[IRC_MAX_MSG];
 
-	if (!(server->bitflags & IRC_SBF_CONNECTED) && !server_is_unbufferable_msg_m(msg)) {
-		queue_append_node_v(server->send_queue, queue, msg);
-	}
+	if (!(server->bitflags & IRC_SBF_CONNECTED) && !SERVER_IS_UNBUFFERABLE_MSG(msg))
+		queue_append(server->send_queue, msg);
 	else {
 		if (server && server->net && msg && (size = irc_marshal_msg(msg, buffer, IRC_MAX_MSG)))
 			ret = fe_net_send(server->net, buffer, size);

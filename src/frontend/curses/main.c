@@ -30,6 +30,8 @@ DEFINE_TYPE_LIST(types_list,
 
 DEFINE_HANDLER_LIST(handlers_list,
 	ADD_HANDLER("fe.quit", 0, handle_quit, NULL)
+	ADD_HANDLER("output.error", 10, fe_common_sig_print, NULL)
+	ADD_HANDLER("output.status", 10, fe_common_sig_print, NULL)
 );
 
 DEFINE_KEY_LIST(keys_list,

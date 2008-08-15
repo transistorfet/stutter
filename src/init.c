@@ -14,6 +14,14 @@ int init_system(void)
 	init_object();
 	init_variable();
 	init_signal();
+
+	add_signal(signal_table, "create");
+	add_signal(signal_table, "create.output");
+	add_signal(signal_table, "destroy");
+	add_signal(signal_table, "destroy.output");
+	add_signal(signal_table, "output");
+	add_signal(signal_table, "output.status");
+	add_signal(signal_table, "output.error");
 	return(0);
 }
 

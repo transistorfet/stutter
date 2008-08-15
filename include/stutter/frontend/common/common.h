@@ -28,6 +28,11 @@ int fe_common_cmd_select(char *, char *);
 int fe_common_cmd_unbind(char *, char *);
 int fe_common_cmd_window(char *, char *);
 
+/* Signal Handlers */
+int fe_common_sig_create(void *, const char *);
+int fe_common_sig_destroy(void *, const char *);
+int fe_common_sig_print(struct fe_widget *, const char *);
+
 /* Widgets */
 extern struct fe_widget_type fe_text_type;
 extern struct fe_widget_type fe_frame_type;

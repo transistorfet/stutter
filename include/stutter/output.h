@@ -17,7 +17,7 @@ static inline int OUTPUT_ERROR(const char *fmt, ...) {
 	char buffer[LARGE_STRING_SIZE];
 
 	va_start(va, fmt);
-	if (snprintf(buffer, LARGE_STRING_SIZE, fmt, va) >= 0)
+	if (vsnprintf(buffer, LARGE_STRING_SIZE, fmt, va) >= 0)
 		signal_named_emit(signal_table, "output.error", buffer);
 	va_end(va);
 	return(0);
@@ -28,7 +28,7 @@ static inline int OUTPUT_STATUS(const char *fmt, ...) {
 	char buffer[LARGE_STRING_SIZE];
 
 	va_start(va, fmt);
-	if (snprintf(buffer, LARGE_STRING_SIZE, fmt, va) >= 0)
+	if (vsnprintf(buffer, LARGE_STRING_SIZE, fmt, va) >= 0)
 		signal_named_emit(signal_table, "output.status", buffer);
 	va_end(va);
 	return(0);

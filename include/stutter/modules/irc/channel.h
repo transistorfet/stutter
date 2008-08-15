@@ -21,16 +21,18 @@
 struct irc_server;
 
 struct irc_channel {
+	struct irc_channel *next;
 	int bitflags;
 	char *name;
 	string_t topic;
 	
-	void *window;
 	struct irc_user_list *users;
 	struct irc_server *server;
 };
 
 struct irc_channel_list;
+
+extern struct variable_type_s irc_channel_type;
 
 struct irc_channel_list *irc_create_channel_list(void);
 void irc_destroy_channel_list(struct irc_channel_list *);

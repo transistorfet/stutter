@@ -7,7 +7,6 @@
 #define _STUTTER_MODULES_IRC_MSG_H
 
 #include <time.h>
-#include <stutter/queue.h>
 #include <stutter/object.h>
 #include <stutter/modules/irc/commands.h>
 
@@ -26,7 +25,6 @@ struct irc_msg {
 	int size;
 	time_t time;
 	struct irc_server *server;
-	queue_node_v(irc_msg) queue;
 	int cmd;
 	char *nick;
 	char *host;

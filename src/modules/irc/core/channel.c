@@ -7,7 +7,6 @@
 #include <string.h>
 
 #include <stutter/memory.h>
-#include <stutter/linear.h>
 #include <stutter/string.h>
 #include <stutter/macros.h>
 #include <stutter/signal.h>
@@ -16,18 +15,23 @@
 #include <stutter/modules/irc/server.h>
 #include <stutter/modules/irc/channel.h>
 
-struct irc_channel_node {
-	struct irc_channel channel;
-	struct signal_handler_s *handler;
-	linear_node_v(irc_channel_node) cl;
-};
-
-struct irc_channel_list {
-	linear_list_v(irc_channel_node) cl;
-};
-
 static int irc_handle_purge_window(struct irc_channel *, void *);
 static inline void irc_destroy_channel_node(struct irc_channel_node *);
+
+struct variable_type_s irc_channel_type = { {
+	OBJECT_TYPE_S(&variable_type),
+	"irc_channel",
+	sizeof(struct irc_channel),
+	NULL,
+	(object_init_t) irc_channel_init,
+	(object_release_t) irc_channel_release },
+	(variable_add_t) NULL,
+	(variable_remove_t) NULL,
+	(variable_index_t) NULL,
+	(variable_traverse_t) NULL,
+	(variable_stringify_t) NULL,
+	(variable_evaluate_t) NULL
+};
 
 /**
  * Create a new list of channels.
@@ -55,6 +59,31 @@ void irc_destroy_channel_list(struct irc_channel_list *list)
 	memory_free(list);
 }
 
+
+
+int irc_channel_init(struct irc_channel *channel, const char *params, va_list va)
+{
+	// TODO this isn't finish
+	// TODO should we pass the server pointer and the channel name during init?
+	if (!(channel->users = irc_create_user_list()))
+		return(-1);
+
+	#ifdef IRC_CHANNEL_BITFLAGS
+	channel->bitflags = IRC_CHANNEL_BITFLAGS;
+	#endif
+	channel->server = server;
+	return(0);
+}
+
+void irc_channel_release(struct irc_channel *channel)
+{
+
+
+}
+
+
+
+
 /**
  * Add a channel with the give name, window handle, and belonging to the
  * given server to the given list.  A pointer to the channel struct is
@@ -62,28 +91,28 @@ void irc_destroy_channel_list(struct irc_channel_list *list)
  */
 struct irc_channel *irc_add_channel(struct irc_channel_list *list, const char *name, void *window, struct irc_server *server)
 {
-	struct irc_channel_node *node;
+	struct irc_channel *channel;
 
-	if (!(node = (struct irc_channel_node *) memory_alloc(sizeof(struct irc_channel_node) + strlen(name) + 1)))
+	if (!(channel = (struct irc_channel *) memory_alloc(sizeof(struct irc_channel) + strlen(name) + 1)))
 		return(NULL);
-	memset(node, '\0', sizeof(struct irc_channel_node));
+	memset(node, '\0', sizeof(struct irc_channel));
 
-	if (!(node->channel.users = irc_create_user_list())) {
+	if (!(channel->users = irc_create_user_list())) {
 		memory_free(node);
 		return(NULL);
 	}
 
-	node->channel.name = (char *) offset_after_struct_m(node, 0);
-	strcpy(node->channel.name, name);
+	channel->name = (char *) offset_after_struct_m(node, 0);
+	strcpy(channel->name, name);
 
 	#ifdef IRC_CHANNEL_BITFLAGS
-	node->channel.bitflags = IRC_CHANNEL_BITFLAGS;
+	channel->bitflags = IRC_CHANNEL_BITFLAGS;
 	#endif
-	node->channel.window = window;
-	node->channel.server = server;
+	channel->window = window;
+	channel->server = server;
 	linear_add_node_v(list->cl, cl, node);
 	node->handler = signal_connect(window, "purge_object", 10, (signal_t) irc_handle_purge_window, &node->channel);
-	return(&node->channel);
+	return(channel);
 }
 
 /**

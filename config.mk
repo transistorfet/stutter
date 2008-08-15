@@ -1,7 +1,7 @@
 
 FRONTEND = curses
 MODULES = $(ROOT)/src/modules/base/modbase.a \
-	#  $(ROOT)/src/modules/irc/modirc.a
+	  $(ROOT)/src/modules/irc/modirc.a
 
 CONFIG_H = ../config.h
 ARFLAGS = rc

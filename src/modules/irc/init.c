@@ -7,9 +7,9 @@
 
 #include CONFIG_H
 #include <stutter/init.h>
-#include <stutter/type.h>
 #include <stutter/signal.h>
 #include <stutter/string.h>
+#include <stutter/object.h>
 #include <stutter/globals.h>
 #include <stutter/variable.h>
 #include <stutter/modules/irc/irc.h>
@@ -22,7 +22,7 @@ DEFINE_TYPE_LIST(types_list,
 
 DEFINE_VARIABLE_LIST(variables_list,
 	DECLARE_TYPE("table",
-		ADD_TABLES()
+		ADD_FIXED_VARIABLE("irc", "")
 	)
 	DECLARE_TYPE("command",
 		ADD_COMMAND_ENV("irc.activate", base_cmd_evaluate, "irc.say")
@@ -49,10 +49,13 @@ DEFINE_VARIABLE_LIST(variables_list,
 		ADD_COMMAND_ENV("irc.whois", irc_cmd_whois, NULL)
 		ADD_COMMAND_ENV("irc.whowas", irc_cmd_whowas, NULL)
 	)
+/*
+	// TODO do you have a status type? should you keep these function names?
 	DECLARE_TYPE("status",
-		ADD_VARIABLE("irc.current_channel", "stringify,pointer", irc_stringify_channel, NULL)
-		ADD_VARIABLE("irc.current_nick", "stringify,pointer", irc_stringify_nick, NULL)
+		ADD_VARIABLE("irc.current_channel", "f", irc_stringify_channel, NULL)
+		ADD_VARIABLE("irc.current_nick", "f", irc_stringify_nick, NULL)
 	)
+*/
 );
 
 
@@ -67,10 +70,10 @@ int init_irc(void)
 
 int release_irc(void)
 {
-	struct type_s *type;
+	struct object_type_s *type;
 
 	/** Remove the whole variable table */
-	if ((type = find_type("table"))) {
+	if ((type = object_find_type("table", NULL))) {
 		add_variable(NULL, type, "irc", 0, "");
 		remove_variable(NULL, type, "irc");
 	}

@@ -8,13 +8,11 @@
 #include <stutter/macros.h>
 #include <stutter/modules/irc/irc.h>
 
-/**
- * Update the user information and print message to channel.
- */
 int irc_msg_join(char *env, struct irc_msg *msg)
 {
-	void *window = NULL, *frame;
 	struct irc_channel *channel;
+
+	// TODO emit a create output signal
 
 	if (!strcmp_icase(msg->server->nick, msg->nick)) {
 		if ((channel = irc_find_channel(msg->server->channels, msg->params[0])))
@@ -35,7 +33,6 @@ int irc_msg_join(char *env, struct irc_msg *msg)
 		return(-1);
 
 	irc_add_user(channel->users, msg->nick, 0);
-
 	IRC_MSG_JOIN_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_JOIN)
 	return(0);
 }
