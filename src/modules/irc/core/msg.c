@@ -13,6 +13,7 @@
 #include <stutter/utils.h>
 #include <stutter/memory.h>
 #include <stutter/object.h>
+#include <stutter/output.h>
 #include <stutter/modules/irc/msg.h>
 
 struct irc_msg_commands {
@@ -69,6 +70,31 @@ inline static struct irc_msg_commands *msg_get_command(int);
 inline static int msg_ctoa(int, char *);
 inline static char *msg_uppercase(char *);
 
+void irc_msg_release(struct irc_msg *msg)
+{
+	int i;
+
+	if (msg->nick)
+		destroy_string(msg->nick);
+	if (msg->host)
+		destroy_string(msg->host);
+	// TODO should text always be a pointer to a string in params[] instead of an independant string?
+	if (msg->text)
+		destroy_string(msg->text);
+
+	for (i = 0; i < msg->num_params; i++) {
+		if (msg->params[i])
+			destroy_string(msg->params[i]);
+	}
+
+	for (i = 0; i < msg->num_ctcps; i++) {
+		if (msg->ctcps[i].tag)
+			destroy_string(msg->ctcps[i].tag);
+		if (msg->ctcps[i].args)
+			destroy_string(msg->ctcps[i].args);
+	}
+}
+
 /**
  * Allocate and initialize an irc_msg structure using the values
  * given.  All strings are copied to newly allocated memory.
@@ -89,11 +115,11 @@ struct irc_msg *irc_create_msg(int cmd, const char *nick, const char *host, int 
 		params[j] = va_arg(va, char *);
 	if ((info = msg_get_command(cmd))) {
 		if (num_params < info->min_params) {
-			IRC_ERROR_JOINPOINT(IRC_ERR_MSG_NOT_ENOUGH_PARAMS, info->name)
+			OUTPUT_ERROR(IRC_ERR_MSG_NOT_ENOUGH_PARAMS, info->name);
 			return(NULL);
 		}
 		else if (info->max_params && (num_params > info->max_params)) {
-			IRC_ERROR_JOINPOINT(IRC_ERR_MSG_TOO_MANY_PARAMS, info->name)
+			OUTPUT_ERROR(IRC_ERR_MSG_TOO_MANY_PARAMS, info->name);
 			return(NULL);
 		}
 	}
@@ -116,15 +142,6 @@ struct irc_msg *irc_duplicate_msg(struct irc_msg *msg)
 		return(NULL);
 	dup->time = msg->time;
 	return(dup);
-}
-
-/**
- * Free the resources used by the given msg.
- */
-int irc_destroy_msg(struct irc_msg *msg)
-{
-	memory_free(msg);
-	return(0);
 }
 
 /**

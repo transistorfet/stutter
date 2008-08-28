@@ -1,4 +1,7 @@
 
+	* make irc_create_msg take the size of the text string as an arg so that you don't have to manipulate
+	  a const string text in irc_private_msg() when you try to break up big msgs into legal IRC msg sizes
+
     CRITICAL:
 	* finalize the variable system function pointers
 	* finalize the signal callback prototype
@@ -20,6 +23,10 @@
 	* convert all joinpoint error printing to emit signals instead
 	* fix up config system
 	* fix config defines for common error messages like VARIABLE_NOT_FOUND (it's BASE specific atm)
+
+	* fix/reimplement the tab complete functionality in IRC (it currently accesses the input buffer which
+	  is not really possibly anymore)  Perhaps the buffer can be accessible and modifiable as a variable
+	  in the variable system
 
 	* add an is_a() check of the type in variable before trying to initialize or create a variable
 	* should va_list functions use _real or _va as the mangle
@@ -44,6 +51,9 @@
 	* attempt to reduce the number of crazy (stupid) widget control functions
 	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
 	  so we could do the same thing as with MODIFY_SIZE
+
+	* can we merge the list functionality of channel and user into a superclass that is a linked-list
+	  node inheriting from variable and then channel and user structs extend the list node?
 
 
 	* the object creation system and the variable system don't get along.  You are passing the va_list to

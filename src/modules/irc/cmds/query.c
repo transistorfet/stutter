@@ -7,6 +7,7 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/modules/irc/irc.h>
 
 int irc_cmd_query(char *env, char *args)
@@ -22,16 +23,16 @@ int irc_cmd_query(char *env, char *args)
 	if (name[0] == '#' || name[0] == '&' || name[0] == '+' || name[0] == '!')
 		return(-1);
 
-	if ((channel = irc_find_channel(server->channels, name)))
+	if ((channel = irc_find_channel(&server->channels, name)))
 		fe_show_widget(channel->window);
 	else if ((frame = fe_get_target(NULL, "frame"))
 	    && (window = fe_create_widget("irc", "text", name, frame))
-	    && (channel = irc_add_channel(server->channels, name, window, server)))
+	    && (channel = irc_add_channel(&server->channels, name, window, server)))
 		fe_show_widget(window);
 	else {
 		if (!channel && window)
 			fe_destroy_widget(window);
-		IRC_ERROR_JOINPOINT(IRC_ERR_QUERY_ERROR, name)
+		OUTPUT_ERROR(IRC_ERR_QUERY_ERROR, name);
 		return(-1);
 	}
 	return(0);

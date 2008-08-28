@@ -21,6 +21,7 @@ int irc_cmd_ctcp(char *env, char *args)
 	if ((*nick == '\0') || (*cmd == '\0'))
 		return(-1);
 	UPPERCASE(cmd);
+	// TODO i don't like the name of this function
 	irc_ctcp_msg(server, cmd, nick, &args[pos]);
 	return(0);
 }

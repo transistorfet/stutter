@@ -18,6 +18,8 @@
 
 #define IRC_SBF_CONNECTED		0x01
 
+#define IRC_SERVER(ptr)			( (struct irc_server *) (ptr) )
+
 struct irc_server {
 	struct variable_s variable;
 	struct irc_server *next;
@@ -31,7 +33,7 @@ struct irc_server {
 	string_t nick;
 	struct queue_s *send_queue;
 	struct irc_channel *status;
-	struct irc_channel_list *channels;
+	struct irc_channel_list channels;
 };
 
 extern struct variable_type_s irc_server_type;

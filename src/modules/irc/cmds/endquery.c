@@ -18,7 +18,7 @@ int irc_cmd_endquery(char *env, char *args)
 
 	name = util_get_arg(args, NULL);
 	if (*name != '\0') {
-		if (!(channel = irc_find_channel(server->channels, name)))
+		if (!(channel = irc_find_channel(&server->channels, name)))
 			return(-1);
 	}
 	else if (!(channel = irc_current_channel()))
@@ -26,7 +26,7 @@ int irc_cmd_endquery(char *env, char *args)
 
 	if ((channel->name[0] == '#') || (channel->name[0] == '&') || (channel->name[0] == '+') || (channel->name[0] == '!'))
 		return(-1);
-	irc_remove_channel(server->channels, channel->name);
+	irc_remove_channel(&server->channels, channel->name);
 	return(0);
 }
 

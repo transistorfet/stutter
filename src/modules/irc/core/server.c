@@ -15,10 +15,12 @@
 #include <stutter/signal.h>
 #include <stutter/macros.h>
 #include <stutter/object.h>
+#include <stutter/output.h>
 #include <stutter/globals.h>
 #include <stutter/variable.h>
 #include <stutter/frontend/net.h>
 #include <stutter/frontend/timer.h>
+#include <stutter/modules/irc/irc.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/server.h>
 #include <stutter/modules/irc/channel.h>
@@ -32,7 +34,7 @@ static struct irc_server *server_list = NULL;
 static int irc_server_init_connection(struct irc_server *);
 static int irc_server_auto_reconnect(struct irc_server *, fe_timer_t);
 static int irc_server_receive(struct irc_server *, fe_network_t, fe_network_t);
-static int irc_server_rejoin_channel(struct irc_channel *, struct irc_server *);
+static int irc_server_rejoin_channels(struct irc_server *);
 static int irc_server_flush_send_queue(struct irc_server *);
 static int irc_server_ping_watchdog(void *, fe_timer_t);
 
@@ -48,14 +50,14 @@ struct variable_type_s irc_server_type = { {
 	(variable_index_t) NULL,
 	(variable_traverse_t) NULL,
 	(variable_stringify_t) NULL,
-	(variable_evaluate_t) NULL
+	(variable_evaluate_t) base_command_evaluate
 };
 
 int init_irc_server(void)
 {
 	if (server_initialized)
 		return(0);
-	irc_ping_watchdog_timer = fe_timer_create(FE_TIMER_BF_PERIODIC, 60, irc_server_ping_watchdog, NULL);
+	irc_ping_watchdog_timer = fe_timer_create(FE_TIMER_BF_PERIODIC, 60, (callback_t) irc_server_ping_watchdog, NULL);
 	server_initialized = 1;
 	return(0);
 }
@@ -83,8 +85,7 @@ int irc_server_init(struct irc_server *server, const char *params, va_list va)
 	//server->nick = create_string(nick);
 	if (!(server->send_queue = create_queue(0, (destroy_t) irc_destroy_msg)))
 		return(-1);
-	server->channels = irc_create_channel_list();
-	server->status = irc_add_channel(server->channels, IRC_SERVER_STATUS_CHANNEL, window, server);
+	server->status = irc_add_channel(&server->channels, IRC_SERVER_STATUS_CHANNEL, server);
 	server->next = server_list;
 	server_list = server;
 	return(0);
@@ -104,7 +105,7 @@ void irc_server_release(struct irc_server *server)
 		}
 	}
 	irc_server_disconnect(server);
-	irc_destroy_channel_list(server->channels);
+	irc_destroy_channel_list(&server->channels);
 	if (server->send_queue)
 		destroy_queue(server->send_queue);
 	if (server->address)
@@ -142,8 +143,6 @@ int irc_server_connect(struct irc_server *server, const char *address, int port)
  */
 int irc_server_reconnect(struct irc_server *server)
 {
-	struct irc_msg *cur, *tmp;
-
 	if (server->net)
 		irc_server_disconnect(server);
 	server->bitflags &= ~IRC_SBF_CONNECTED;
@@ -152,12 +151,12 @@ int irc_server_reconnect(struct irc_server *server)
 
 	server->attempts++;
 	if (irc_server_init_connection(server)) {
-		OUTPUT_ERROR(IRC_ERR_RECONNECT_ERROR, server->address)
+		OUTPUT_ERROR(IRC_ERR_RECONNECT_ERROR, server->address);
 		irc_server_disconnect(server);
 		return(-1);
 	}
 	server->attempts = 0;
-	irc_traverse_channel_list(server->channels, (traverse_t) irc_server_rejoin_channel, server);
+	irc_server_rejoin_channels(server);
 	return(0);
 }
 
@@ -166,8 +165,6 @@ int irc_server_reconnect(struct irc_server *server)
  */
 int irc_server_disconnect(struct irc_server *server)
 {
-	struct irc_msg *cur, *tmp;
-
 	if (server->net) {
 		fe_net_disconnect(server->net);
 		server->net = NULL;
@@ -234,13 +231,12 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 
 	while (1) {
 		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
-			IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, server->address)
+			OUTPUT_ERROR(IRC_ERR_SERVER_DISCONNECTED, server->address);
 			if (IRC_RECONNECT_RETRIES && (server->attempts > IRC_RECONNECT_RETRIES))
 				return(NULL);
 			irc_server_disconnect(server);
-			if (fe_timer_create(FE_TIMER_BF_PERIODIC, IRC_RETRY_DELAY, (callback_t) irc_server_auto_reconnect, server)) {
-				IRC_OUTPUT_JOINPOINT(IRC_OUT_ATTEMPTING_RECONNECT, IRC_RETRY_DELAY)
-			}
+			if (fe_timer_create(FE_TIMER_BF_PERIODIC, IRC_RETRY_DELAY, (callback_t) irc_server_auto_reconnect, server))
+				OUTPUT_STATUS(IRC_OUT_ATTEMPTING_RECONNECT, IRC_RETRY_DELAY);
 			return(NULL);
 		}
 		else if (size == 0)
@@ -353,6 +349,14 @@ int irc_private_msg(struct irc_server *server, const char *name, const char *tex
 
 	name_len = strlen(name);
 	text_len = strlen(text);
+
+	// TODO fix this so that you don't modify the const char text string
+	if (!(msg = irc_create_msg(IRC_MSG_PRIVMSG, NULL, NULL, 2, 0, name, text)))
+		return(-1);
+	msg->server = server;
+	if ((ret = irc_send_msg(server, msg) < 0))
+		return(ret);
+/*
 	do {
 		i = j;
 		j = ((j + 488 - name_len) < text_len) ? (j + 488 - name_len) : text_len;
@@ -365,6 +369,7 @@ int irc_private_msg(struct irc_server *server, const char *name, const char *tex
 		if ((ret = irc_send_msg(server, msg) < 0))
 			return(ret);
 	} while (j < text_len);
+*/
 	return(0);
 }
 
@@ -490,10 +495,15 @@ static int irc_server_receive(struct irc_server *server, fe_network_t desc, fe_n
 /**
  * Join all the channels after reconnecting to the server.
  */
-static int irc_server_rejoin_channel(struct irc_channel *channel, struct irc_server *server)
+static int irc_server_rejoin_channels(struct irc_server *server)
 {
-	if (strcmp_icase(channel->name, IRC_SERVER_STATUS_CHANNEL))
-		return(irc_join_channel(server, channel->name));
+	struct irc_channel *cur;
+
+	for (cur = server->channels.head; cur; cur = cur->next) {
+		/** Reconnect to all channels except the status virtual channel */
+		if (strcmp_icase(cur->name, IRC_SERVER_STATUS_CHANNEL))
+			return(irc_join_channel(server, cur->name));
+	}
 	return(0);
 }
 
@@ -502,12 +512,9 @@ static int irc_server_rejoin_channel(struct irc_channel *channel, struct irc_ser
  */
 static int irc_server_flush_send_queue(struct irc_server *server)
 {
-	struct irc_msg *cur, *tmp;
-
-	queue_foreach_safe_v(server->send_queue, queue, cur, tmp) {
-		irc_send_msg(server, cur);
-	}
-	queue_release_v(server->send_queue);
+	QUEUE_FOREACH(server->send_queue)
+		irc_send_msg(server, QUEUE_CURRENT(server->send_queue));
+	queue_clear(server->send_queue);
 	return(0);
 }
 
@@ -525,7 +532,7 @@ static int irc_server_ping_watchdog(void *ptr, fe_timer_t timer)
 	for (cur = server_list; cur; cur = cur->next) {
 		if ((current_time - cur->last_ping) >= IRC_PING_WATCHDOG_TIMEOUT) {
 			if (cur->bitflags & IRC_SBF_CONNECTED) {
-				IRC_ERROR_JOINPOINT(IRC_ERR_SERVER_DISCONNECTED, cur->address)
+				OUTPUT_ERROR(IRC_ERR_SERVER_DISCONNECTED, cur->address);
 			}
 			if (!IRC_RECONNECT_RETRIES || (cur->attempts <= IRC_RECONNECT_RETRIES))
 				irc_server_reconnect(cur);

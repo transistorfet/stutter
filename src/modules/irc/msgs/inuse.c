@@ -4,6 +4,7 @@
  */
 
 #include CONFIG_H
+#include <stutter/output.h>
 #include <stutter/modules/irc/irc.h>
 
 int irc_msg_inuse(char *env, struct irc_msg *msg)

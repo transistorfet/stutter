@@ -4,6 +4,7 @@
  */
 
 #include CONFIG_H
+#include <stutter/output.h>
 #include <stutter/modules/irc/irc.h>
 
 int irc_cmd_disconnect(char *env, char *args)
@@ -17,7 +18,7 @@ int irc_cmd_disconnect(char *env, char *args)
 		return(-1);
 	irc_send_msg(server, msg);
 	irc_server_disconnect(server);
-	IRC_OUTPUT_JOINPOINT(IRC_SERVER_DISCONNECTED, server->address)
+	OUTPUT_STATUS(IRC_SERVER_DISCONNECTED, server->address);
 	return(0);
 }
 

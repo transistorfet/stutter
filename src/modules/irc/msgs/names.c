@@ -5,6 +5,7 @@
 
 #include CONFIG_H
 #include <stutter/utils.h>
+#include <stutter/output.h>
 #include <stutter/modules/irc/irc.h>
 
 /**

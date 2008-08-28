@@ -15,7 +15,7 @@ int irc_cmd_join(char *env, char *args)
 	name = util_get_arg(args, NULL);
 	if ((*name == '\0') || !(server = irc_current_server()))
 		return(-1);
-	if ((channel = irc_find_channel(server->channels, name)))
+	if ((channel = irc_find_channel(&server->channels, name)))
 		fe_show_widget(channel->window);
 	else
 		irc_join_channel(server, name);

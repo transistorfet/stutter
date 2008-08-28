@@ -20,6 +20,8 @@ static int irc_cmd_complete_traverse(struct irc_user *, struct irc_complete_info
 
 int irc_cmd_complete(char *env, char *args)
 {
+	// TODO fix this
+/*
 	int i;
 	void *input;
 	char buffer[STRING_SIZE];
@@ -53,6 +55,7 @@ int irc_cmd_complete(char *env, char *args)
 	irc_traverse_user_list(channel->users, (traverse_t) irc_cmd_complete_traverse, &info);
 	fe_print(input, buffer);
 	return(0);
+*/
 }
 
 static int irc_cmd_complete_traverse(struct irc_user *user, struct irc_complete_info_s *info)
