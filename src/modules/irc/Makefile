@@ -4,7 +4,6 @@ ROOT = ../../..
 
 LIB_TARGET = modirc.a
 OBJS =	init.o \
-	cmds/complete.o \
 	cmds/ctcp.o \
 	cmds/disconnect.o \
 	cmds/endquery.o \
@@ -54,6 +53,7 @@ OBJS =	init.o \
 	utils/format.o
 
 # TODO finish converting these
+#	cmds/complete.o \
 #	types/channel.o \
 #	types/channel-list.o \
 #	types/server.o \
