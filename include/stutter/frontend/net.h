@@ -20,7 +20,7 @@ void fe_net_set_callback(fe_network_t net, int condition, callback_t func, void 
 
 int fe_net_send(fe_network_t net, const char *buffer, int len);
 int fe_net_receive(fe_network_t net, char *buffer, int len);
-int fe_net_receive_str(fe_network_t net, char *buffer, int len, char ch);
+int fe_net_receive_text(fe_network_t net, char *buffer, int size, char delim);
 
 #endif
 

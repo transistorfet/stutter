@@ -12,7 +12,6 @@
 int irc_cmd_server(char *env, char *args)
 {
 	int portnum, pos = 0;
-	void *window, *frame;
 	struct irc_server *server;
 	char *address, *port, *nick;
 
@@ -26,17 +25,18 @@ int irc_cmd_server(char *env, char *args)
 		nick = IRC_DEFAULT_NICK;
 
 	if ((server = irc_find_server(address)))
-		fe_show_widget(server->status->window);
-	else if ((frame = fe_get_target(NULL, "frame")) && (window = fe_create_widget("irc", "text", address, frame))) {
-		if (!(server = irc_create_server(nick, window))) {
-			fe_destroy_widget(window);
+		;
+		// TODO how do you do this functionality?
+		//fe_show_widget(server->status->window);
+	else {
+		if (!(server = IRC_SERVER(create_object(OBJECT_TYPE_S(&irc_server_type), "s", nick))))
 			return(-1);
-		}
 		else if (irc_server_connect(server, address, portnum)) {
-			irc_destroy_server(server);
+			destroy_object(OBJECT_S(server));
 			return(-1);
 		}
-		fe_show_widget(window);
+		// TODO howe do you do this?
+		//fe_show_widget(window);
 	}
 	return(0);
 }

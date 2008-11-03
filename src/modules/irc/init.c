@@ -26,7 +26,6 @@ DEFINE_VARIABLE_LIST(variables_list,
 	)
 	DECLARE_TYPE("command",
 		ADD_COMMAND_ENV("irc.activate", base_cmd_evaluate, "irc.say")
-		ADD_COMMAND_ENV("irc.complete", irc_cmd_complete, NULL)
 		ADD_COMMAND_ENV("irc.ctcp", irc_cmd_ctcp, NULL)
 		ADD_COMMAND_ENV("irc.disconnect", irc_cmd_disconnect, NULL)
 		ADD_COMMAND_ENV("irc.endquery", irc_cmd_endquery, NULL)
@@ -49,6 +48,8 @@ DEFINE_VARIABLE_LIST(variables_list,
 		ADD_COMMAND_ENV("irc.whois", irc_cmd_whois, NULL)
 		ADD_COMMAND_ENV("irc.whowas", irc_cmd_whowas, NULL)
 	)
+		//ADD_COMMAND_ENV("irc.complete", irc_cmd_complete, NULL)
+
 /*
 	// TODO do you have a status type? should you keep these function names?
 	DECLARE_TYPE("status",

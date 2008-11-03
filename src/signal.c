@@ -3,6 +3,7 @@
  * Description:		Signal Manager
  */
 
+#include <stdarg.h>
 #include <string.h>
 
 #include CONFIG_H
@@ -24,10 +25,10 @@ struct variable_type_s signal_type = { {
 	NULL,
 	(object_init_t) signal_init,
 	(object_release_t) signal_release },
-	(variable_add_t) add_variable_real,
-	(variable_remove_t) remove_variable,
-	(variable_index_t) find_variable,
-	(variable_traverse_t) traverse_variable_table,
+	(variable_add_t) variable_table_add,
+	(variable_remove_t) variable_table_remove,
+	(variable_index_t) variable_table_index,
+	(variable_traverse_t) variable_table_traverse,
 	(variable_stringify_t) NULL,
 	(variable_evaluate_t) NULL
 };
@@ -57,6 +58,8 @@ int signal_init(struct signal_s *signal, const char *params, va_list va)
 {
 	if (variable_table_init(VARIABLE_TABLE_S(signal), params, va))
 		return(-1);
+	// TODO get the parent as a parameter??  What is parent gonig to represent?
+	//signal->parent = ???;
 	return(0);
 }
 
@@ -80,7 +83,7 @@ void signal_release(struct signal_s *signal)
  * and the signal must already be created using the add_signal function.  If
  * an error occurs, -1 is returned, otherwise 0 is returned. 
  */
-struct signal_handler_s *signal_connect(struct signal_s *signal, int priority, signal_t func, void *ptr)
+struct signal_handler_s *signal_connect(struct signal_s *signal, int priority, signal_func_t func, void *ptr)
 {
 	struct signal_handler_s *handler, *cur, *prev;
 
@@ -94,7 +97,7 @@ struct signal_handler_s *signal_connect(struct signal_s *signal, int priority, s
 	handler->priority = priority;
 	handler->func = func;
 	handler->ptr = ptr;
-	handler->parent = signal;
+	handler->signal = signal;
 	handler->next = NULL;
 
 	if (!signal->handlers)
@@ -125,7 +128,18 @@ struct signal_handler_s *signal_connect(struct signal_s *signal, int priority, s
  */
 int signal_disconnect(struct signal_handler_s *handler)
 {
-	return(signal_purge_handlers(handler->parent, handler));
+	return(signal_purge_handlers(handler->signal, handler));
+}
+
+/**
+ * Wrapper function for signal_emit_real.
+ */
+int signal_emit(struct signal_s *signal, ...)
+{
+	va_list va;
+
+	va_start(va, signal);
+	return(signal_emit_real(signal, va));
 }
 
 /**
@@ -134,7 +148,7 @@ int signal_disconnect(struct signal_handler_s *handler)
  * pointer passed as the third argument.  The number of handlers called is
  * returned or -1 is returned if the signal is not found.
  */
-int signal_emit(struct signal_s *signal, void *ptr)
+int signal_emit_real(struct signal_s *signal, va_list va)
 {
 	int ret;
 	int calls = 0, purge = 0;
@@ -143,7 +157,8 @@ int signal_emit(struct signal_s *signal, void *ptr)
 	for (cur = signal->handlers; cur; cur = cur->next) {
 		calls++;
 		cur->bitflags |= SIG_BF_NODE_LOCKED;
-		ret = cur->func(cur->ptr, ptr);
+		// TODO modify the parameters
+		ret = cur->func(cur->ptr, signal, va);
 		cur->bitflags &= ~SIG_BF_NODE_LOCKED;
 		if (cur->bitflags & SIG_BF_PURGE)
 			purge = 1;
@@ -161,7 +176,7 @@ int signal_emit(struct signal_s *signal, void *ptr)
  * then any function) and that match the given pointer (or if NULL is given
  * then any pointer).
  */
-struct signal_handler_s *signal_find_handler(struct signal_s *signal, signal_t func, void *ptr)
+struct signal_handler_s *signal_find_handler(struct signal_s *signal, signal_func_t func, void *ptr)
 {
 	struct signal_handler_s *cur;
 

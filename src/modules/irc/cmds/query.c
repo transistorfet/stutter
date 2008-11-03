@@ -23,6 +23,7 @@ int irc_cmd_query(char *env, char *args)
 		return(-1);
 
 	if ((channel = irc_find_channel(&server->channels, name)))
+		;
 		// TODO how will you do this?
 		//fe_show_widget(channel->window);
 	//else if ((frame = fe_get_target(NULL, "frame"))

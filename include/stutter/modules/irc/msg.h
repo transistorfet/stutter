@@ -17,18 +17,21 @@
 
 struct irc_server;
 
+#define IRC_MSG(ptr)			( (struct irc_msg *) (ptr) )
+
 struct irc_msg_ctcp {
 	string_t tag;
 	string_t args;
 };
 
 struct irc_msg {
+	struct object_s object;
 	time_t time;
 	struct irc_server *server;
 	int cmd;
 	string_t nick;
 	string_t host;
-	string_t text;
+	char *text;
 
 	int num_params;
 	string_t params[IRC_MAX_PARAMS];
@@ -36,6 +39,8 @@ struct irc_msg {
 	int num_ctcps;
 	struct irc_msg_ctcp ctcps[IRC_MAX_CTCPS];
 };
+
+extern struct object_type_s irc_msg_type;
 
 void irc_msg_release(struct irc_msg *);
 

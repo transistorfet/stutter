@@ -16,6 +16,7 @@
 
 #define OBJECT_S(ptr)			( (struct object_s *) (ptr) )
 #define OBJECT_TYPE_S(ptr)		( (struct object_type_s *) (ptr) )
+#define OBJECT_GET_TYPE(ptr)		( OBJECT_TYPE_S(OBJECT_S(ptr)->type) )
 
 struct object_s;
 struct object_type_s;

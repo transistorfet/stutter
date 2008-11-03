@@ -11,6 +11,8 @@
 
 int irc_dispatch_ctcp_msg(struct irc_msg *msg)
 {
+	char *env = "";
+
 	if (!strcmp_icase(msg->ctcps[0].tag, "ACTION"))
 		return(irc_msg_ctcp_action(env, msg));
 	else if (!strcmp_icase(msg->ctcps[0].tag, "PING"))

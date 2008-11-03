@@ -142,7 +142,9 @@ int fe_page_control(struct fe_page *page, int cmd, va_list va)
 			return(0);
 		}
 		case WCC_SHOW_WIDGET: {
-			return(0);
+			/** The only widget that might be hidden within a page we assume is in the frame
+			    (statusbar and input are always shown), so we just pass the call along there. */
+			return(FE_WIDGET_CONTROL(page->frame, WCC_SHOW_WIDGET, va));
 		}
 		case WCC_SET_FOCUS: {
 			//return(FE_WIDGET_CONTROL(page->input, WCC_SET_FOCUS, va));

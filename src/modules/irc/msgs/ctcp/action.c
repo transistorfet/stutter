@@ -7,7 +7,7 @@
 
 #include CONFIG_H
 #include <stutter/macros.h>
-#include <stutter/output.h>
+#include <stutter/signal.h>
 #include <stutter/modules/irc/irc.h>
 
 /**
@@ -17,16 +17,18 @@ int irc_msg_ctcp_action(char *env, struct irc_msg *msg)
 {
 	char *fmt;
 	struct irc_channel *channel;
+	char buffer[LARGE_STRING_SIZE];
 
-	if (!(channel = irc_find_channel(msg->server->channels, msg->params[0]))) {
-		if ((msg->params[0][0] == '#') || (msg->params[0][0] == '&') || (msg->params[0][0] == '+')
-		    || (msg->params[0][0] == '!') || !(channel = irc_current_channel()))
-			return(0);
+	if (!(channel = irc_find_channel(&msg->server->channels, msg->params[0]))) {
+		// TODO this will cause private actions to be printed to status but this should really
+		//	be sent to some kind of signal that will be printed to the current window
+		channel = msg->server->status;
 		fmt = msg->nick ? IRC_FMT_PRIVATE_ACTION : IRC_FMT_PRIVATE_ACTION_SELF;
 	}
 	else
 		fmt = msg->nick ? IRC_FMT_PUBLIC_ACTION : IRC_FMT_PUBLIC_ACTION_SELF;
-	IRC_MSG_CTCP_ACTION_OUTPUT_JOINPOINT(channel, msg, fmt)
+	if (irc_format_msg(msg, fmt, buffer, LARGE_STRING_SIZE) >= 0)
+		signal_emit(channel->signal, buffer);
 	return(0);
 }
 

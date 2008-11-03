@@ -40,12 +40,12 @@ static inline void ADD_TYPE_LIST(struct type_prototype_s *list) {
 struct handler_prototype_s {
 	char *name;
 	int priority;
-	signal_t func;
+	signal_func_t func;
 	void *ptr;
 };
 
 #define ADD_HANDLER(name, priority, func, env)	\
-	{ name, priority, (signal_t) func, env },
+	{ name, priority, (signal_func_t) func, env },
 
 #define DEFINE_HANDLER_LIST(name, list)			\
 	static struct handler_prototype_s name[] = {	\
@@ -56,14 +56,14 @@ struct handler_prototype_s {
 static inline void ADD_HANDLER_LIST(struct handler_prototype_s *list) {
 	int i;
 	for (i = 0; list[i].name; i++)
-		signal_named_connect(signal_table, list[i].name, list[i].priority, (signal_t) list[i].func, list[i].ptr);
+		signal_named_connect(VARIABLE_S(signal_table), list[i].name, list[i].priority, (signal_func_t) list[i].func, list[i].ptr);
 }
 
 static inline void REMOVE_HANDLER_LIST(struct handler_prototype_s *list) {
 	int i;
 	for (i = 0; list[i].name; i++)
 		// TODO fix this somehow...
-		;//signal_disconnect(signal_find_handler(SIGNAL_S(find_variable(NULL, list[i].name, NULL)), (signal_t) list[i].func, list[i].ptr));
+		;//signal_disconnect(signal_find_handler(SIGNAL_S(find_variable(NULL, list[i].name, NULL)), (signal_func_t) list[i].func, list[i].ptr));
 }
 
 /*** Keys ***/
@@ -149,7 +149,7 @@ static inline void ADD_VARIABLE_LIST(struct variable_table_s *table, struct vari
 				break;
 			}
 			case INIT_ADD_VARIABLE: {
-				add_variable(table, type, list[i].name, list[i].bitflags, list[i].params, list[i].ptrs[0], list[i].ptrs[1], list[i].ptrs[2], list[i].ptrs[3]);
+				add_variable(VARIABLE_S(table), type, list[i].name, list[i].bitflags, list[i].params, list[i].ptrs[0], list[i].ptrs[1], list[i].ptrs[2], list[i].ptrs[3]);
 				break;
 			}
 			default:

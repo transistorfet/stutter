@@ -28,15 +28,15 @@ struct variable_type_s variable_table_type = { {
 	NULL,
 	(object_init_t) variable_table_init,
 	(object_release_t) variable_table_release },
-	(variable_add_t) add_variable_real,
-	(variable_remove_t) remove_variable,
-	(variable_index_t) find_variable,
-	(variable_traverse_t) traverse_variable_table,
+	(variable_add_t) variable_table_add,
+	(variable_remove_t) variable_table_remove,
+	(variable_index_t) variable_table_index,
+	(variable_traverse_t) variable_table_traverse,
 	(variable_stringify_t) NULL,
 	(variable_evaluate_t) NULL
 };
 
-static struct variable_table_s *variable_root;
+struct variable_table_s *variable_root;
 
 int init_variable(void)
 {
@@ -73,17 +73,6 @@ void variable_table_release(struct variable_table_s *table)
 }
 
 /**
- * This is a wrapper for add_variable_real.
- */
-struct variable_s *add_variable(struct variable_table_s *table, struct object_type_s *type, const char *name, int bitflags, const char *params, ...)
-{
-	va_list va;
-
-	va_start(va, params);
-	return(add_variable_real(table, type, name, bitflags, params, va));
-}
-
-/**
  * Add a new variable with the given name, type and bitflags to the given table
  * or if NULL is given as the table, variable_root is used.  The variable is
  * initialized with a value created using the type's create function and the
@@ -96,26 +85,24 @@ struct variable_s *add_variable(struct variable_table_s *table, struct object_ty
  * invalid, or the function fails, NULL is returned.  Otherwise the pointer to the
  * variable is returned.
  */
-struct variable_s *add_variable_real(struct variable_table_s *table, struct object_type_s *type, const char *name, int bitflags, const char *params, va_list va)
+struct variable_s *variable_table_add(struct variable_table_s *table, struct object_type_s *type, const char *name, int bitflags, const char *params, va_list va)
 {
 	int len;
 	struct variable_s *var;
 
-	if (!table)
-		table = variable_root;
-
-	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++) {
+	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR);len++) {
 		if (!IS_VARIABLE_CHAR(name[len]))
 			return(NULL);
 	}
 
+	// TODO recognize the replace_object flag
 	if (!(var = hash_find(table->hash, name, len))) {
 		if ((name[len] != '\0') || !type)
 			return(NULL);
 		if (!(var = (struct variable_s *) create_object_real(type, params, va)))
 			return(NULL);
 		var->name = create_string("%s", name);
-		var->bitflags = bitflags;
+		var->bitflags = bitflags & VAR_BF_SAVE_MASK;
 		hash_add(table->hash, name, len, var);
 		return(var);
 	}
@@ -130,12 +117,8 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct obje
 		// TODO beware here that the init can fail which will destroy the var (CORRECTION: this
 		//	would only happen if you called create_object but since we are calling init directly,
 		//	this wont be the case.  However, the function might still not behave correctly)
-/*
-		if (!var->type->create)
+		if (!OBJECT_GET_TYPE(var)->init || OBJECT_GET_TYPE(var)->init(OBJECT_S(var), params, va))
 			return(NULL);
-		node->var.value = node->var.type->create(node->var.value, str, va);
-		return(node->var.value);
-*/
 		return(var);
 	}
 	else
@@ -148,13 +131,11 @@ struct variable_s *add_variable_real(struct variable_table_s *table, struct obje
  * type of the variable found, then -1 is returned.  If the variable is not found
  * then 1 is returned.  If the variable is removed successfully, then 0 is returned.
  */
-int remove_variable(struct variable_table_s *table, struct object_type_s *type, const char *name)
+int variable_table_remove(struct variable_table_s *table, struct object_type_s *type, const char *name)
 {
 	int len;
 	struct variable_s *var;
 
-	if (!table)
-		table = variable_root;
 	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++) ;
 
 	if (!(var = hash_find(table->hash, name, len)))
@@ -176,13 +157,11 @@ int remove_variable(struct variable_table_s *table, struct object_type_s *type, 
  * the using variable_root.  A pointer to the variable is returned or NULL on
  * error.
  */
-struct variable_s *find_variable(struct variable_table_s *table, const char *name, struct object_type_s *type)
+struct variable_s *variable_table_index(struct variable_table_s *table, const char *name, struct object_type_s *type)
 {
 	int len;
 	struct variable_s *var;
 
-	if (!table)
-		table = variable_root;
 	for (len = 0; (name[len] != '\0') && (name[len] != NAME_SEPARATOR); len++) ;
 
 	if (!(var = hash_find(table->hash, name, len)))
@@ -208,13 +187,10 @@ struct variable_s *find_variable(struct variable_table_s *table, const char *nam
  * is returned by the function, the traversal stops and that value is
  * returned otherwise a 0 is returned if the traversal completes.
  */
-int traverse_variable_table(struct variable_table_s *table, struct object_type_s *type, variable_traverse_func_t func, void *ptr)
+int variable_table_traverse(struct variable_table_s *table, struct object_type_s *type, variable_traverse_func_t func, void *ptr)
 {
 	int ret = 0;
 	struct variable_s *cur;
-
-	if (!table)
-		table = variable_root;
 
 	hash_traverse_reset(table->hash);
         while ((cur = hash_traverse_next(table->hash))) {
@@ -224,5 +200,18 @@ int traverse_variable_table(struct variable_table_s *table, struct object_type_s
 	return(0);
 }
 
+/*** Static Functions ***/
+
+struct variable_s *add_variable(struct variable_s *var, struct object_type_s *type, const char *name, int bitflags, const char *params, ...)
+{
+	va_list va;
+
+	va_start(va, params);
+	if (!var)
+		var = VARIABLE_S(variable_root);
+	if (!VARIABLE_GET_TYPE(var)->add)
+		return(NULL);
+	return(VARIABLE_GET_TYPE(var)->add(var, type, name, bitflags, params, va));
+}
 
 

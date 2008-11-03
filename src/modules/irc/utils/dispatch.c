@@ -10,6 +10,8 @@
 
 int irc_dispatch_msg(struct irc_msg *msg)
 {
+	char *env = "";
+
 	switch (msg->cmd) {
 		case 001:
 			/** Some servers have a limit to the nick length so
@@ -34,27 +36,27 @@ int irc_dispatch_msg(struct irc_msg *msg)
 		case IRC_RPL_ENDOFMOTD:
 			return(irc_msg_default(IRC_FMT_STATUS, msg));
 		case IRC_RPL_WHOISUSER:
-			return(irc_msg_current(IRC_FMT_WHOISUSER, msg));
+			return(irc_msg_default(IRC_FMT_WHOISUSER, msg));
 		case IRC_RPL_WHOISSERVER:
-			return(irc_msg_current(IRC_FMT_WHOISSERVER, msg));
+			return(irc_msg_default(IRC_FMT_WHOISSERVER, msg));
 		case IRC_RPL_WHOISOPERATOR:
-			return(irc_msg_current(IRC_FMT_WHOISOPERATOR, msg));
+			return(irc_msg_default(IRC_FMT_WHOISOPERATOR, msg));
 		case IRC_RPL_WHOISIDLE:
-			return(irc_msg_current(IRC_FMT_WHOISIDLE, msg));
+			return(irc_msg_default(IRC_FMT_WHOISIDLE, msg));
 		case IRC_RPL_WHOISCHANNELS:
-			return(irc_msg_current(IRC_FMT_WHOISCHANNELS, msg));
+			return(irc_msg_default(IRC_FMT_WHOISCHANNELS, msg));
 		case IRC_RPL_WHOISSPECIAL:
-			return(irc_msg_current(IRC_FMT_WHOISSPECIAL, msg));
+			return(irc_msg_default(IRC_FMT_WHOISSPECIAL, msg));
 		case IRC_RPL_ENDOFWHOIS:
 			return(0);
 		case IRC_RPL_WHOWASUSER:
-			return(irc_msg_current(IRC_FMT_WHOWASUSER, msg));
+			return(irc_msg_default(IRC_FMT_WHOWASUSER, msg));
 		case IRC_RPL_ENDOFWHOWAS:
 			return(0);
 		case IRC_RPL_ENDOFNAMES:
 			return(0);
 		case IRC_ERR_NOSUCHNICK:
-			return(irc_msg_current(IRC_FMT_NOSUCHNICK, msg));
+			return(irc_msg_default(IRC_FMT_NOSUCHNICK, msg));
 		case IRC_ERR_NICKNAMEINUSE:
 			return(irc_msg_inuse(env, msg));
 		case IRC_MSG_MODE:

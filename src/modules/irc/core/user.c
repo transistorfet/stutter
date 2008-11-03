@@ -6,7 +6,6 @@
 #include <string.h>
 
 #include <stutter/memory.h>
-#include <stutter/linear.h>
 #include <stutter/string.h>
 #include <stutter/macros.h>
 #include <stutter/object.h>

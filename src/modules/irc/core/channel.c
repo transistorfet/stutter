@@ -44,10 +44,13 @@ void irc_destroy_channel_list(struct irc_channel_list *list)
 
 void irc_channel_release(struct irc_channel *channel)
 {
+	signal_named_emit(VARIABLE_S(signal_table), "output.destroy", channel->name);
 	if (channel->name)
 		destroy_string(channel->name);
 	if (channel->topic)
 		destroy_string(channel->topic);
+	if (channel->signal)
+		destroy_object(OBJECT_S(channel->signal));
 	irc_destroy_user_list(&channel->users);
 }
 
@@ -57,7 +60,8 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, const char *n
 
 	if (!(channel = (struct irc_channel *) create_object(OBJECT_TYPE_S(&irc_channel_type), "")))
 		return(NULL);
-	if (!(channel->name = create_string("%s", name))) {
+	if (!(channel->name = create_string("%s", name))
+	    || !(channel->signal = SIGNAL_S(create_object(OBJECT_TYPE_S(&signal_type), "")))) {
 		destroy_object(OBJECT_S(channel));
 		return(NULL);
 	}
@@ -69,6 +73,7 @@ struct irc_channel *irc_add_channel(struct irc_channel_list *list, const char *n
 
 	channel->next = list->head;
 	list->head = channel;
+	signal_named_emit(VARIABLE_S(signal_table), "output.create", channel->name);
 	return(channel);
 }
 

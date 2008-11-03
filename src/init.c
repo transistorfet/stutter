@@ -15,13 +15,11 @@ int init_system(void)
 	init_variable();
 	init_signal();
 
-	add_signal(signal_table, "create");
-	add_signal(signal_table, "create.output");
-	add_signal(signal_table, "destroy");
-	add_signal(signal_table, "destroy.output");
-	add_signal(signal_table, "output");
-	add_signal(signal_table, "output.status");
-	add_signal(signal_table, "output.error");
+	add_signal(VARIABLE_S(signal_table), "output");
+	add_signal(VARIABLE_S(signal_table), "output.create");
+	add_signal(VARIABLE_S(signal_table), "output.destroy");
+	add_signal(VARIABLE_S(signal_table), "output.status");
+	add_signal(VARIABLE_S(signal_table), "output.error");
 	return(0);
 }
 

@@ -1,44 +1,99 @@
 
-	* make irc_create_msg take the size of the text string as an arg so that you don't have to manipulate
-	  a const string text in irc_private_msg() when you try to break up big msgs into legal IRC msg sizes
+	* replace all calls to irc_current_*
+	* uncomment and test code in server to break long lines into multiple msgs (used to cause segfault)
+	* add reference counting
+	* make seperate signals for seperate kinds of data for the irc module (irc server msgs in particular)
+	* convert macros to the all caps scheme!
+	* fill in TODOs
 
-    CRITICAL:
-	* finalize the variable system function pointers
-	* finalize the signal callback prototype
+	* how will you discover the current server and channel based on information that can be obtained
+	  from the frontend through the variable system.  Possibly some information could be stored in the
+	  current window, accessable as "fe.current.name" for example.
+
+	* send the signal_s during the output.create signal emit as a parameter
+	* make a more unique name when emitting output.create rather than just the channel name (url perhaps?)
+	* remove/disable the find_widget code in the create signal handler since our names are not yet unique
+	  and we don't use that signal to "show_widget"s anyways
+	* window activity will be held using the old status-style variable type with a stringifying function
+	  that checks all windows in the frame for a "NEEDS_REFRESH" bit and returns a string describing
+	  which windows need refreshing
+	* it must be possible to find out the module name of the current (target) window so that a command
+	  can be looked up first in that module's commands.  When you execute a command infront of an irc
+	  window, you want it to be treated as an irc command, without having to specify that at all.
+	  Possibly, this functionality could be implemented as a special variable and added to the "path" list.
+
+    Variables:
+
+	* implement the check of bitflags in variable_table_add
+	* we could make the current variable types more like independant objects, possibly even putting them
+	  all in the core/ directory rather than the types/ directory.  Right now, all objects that inherit
+	  from the variable_s class will implement the variable type functions internally as it should be.
+	  All variables would then be created like objects.  When you have a direct pointer to a value that
+	  is not itself an object (like a string or number) but want it accessable as a variable, you can
+	  create a variable object that takes a pointer to it and manages it like a variable (a generic
+	  reference type object).  The thing not handled here is the situation where you only need an object
+	  temporarily or something (where you want to make a value accessible but that value is in a struct
+	  that is itself added to the variable system (eg. attributes)).
+	* should evaluate and stringifiy be made recursive like the others?
+
+	* what form will the init, add, and remove functions take?
+	* change index_variable() to something else that isn't confusing (conflicts with the index virtfunc)
+
+    Signals:
+
+	* implement/use the signal type field to make it easy to indentify certain signals
+	* perhaps instead of the signals system as it is, each "signal" could be a channel/data source which
+	  a callback can be registered for like currently and instead of receiving whatever it receives now,
+	  it can receive "events" (doesn't necessarily have to be an allocated object).  An event could be
+	  a create event, a print/output event, or a "show/target" event (this is the reason we are
+	  conisdering this, so that you can send a signal to make a channel current).  (I don't like using
+	  this for show_widget already but I like the idea otherwise (just a seperation of a signal and
+	  what is sent to that signal)).
+	* you can have special signals like "purge" or something that you can be sent to any handler which
+	  will recognize it as the signal handler being destroyed and therefore must release any resources
+	* make/rename signals to events (a signal would be a channel or something with event listeners
+	  registering for callbacks and events would be sent to channels are received by event listeners).
+	* make commands at least optionally tied into the signals/event system so that a signal/event can
+	  be sent which causes a command to execute (or tie the signal system into the variable system)
+	* generally make the whole system revolvable around systems that can be easily translated to an
+	  OSC-like protocol so that it's as if everything happens by OSC-like msgs and anything can easily
+	  tie into that system either directly or through a socket
+	* you need a way of basically sending an OSC message when a variable changes, particularily the
+	  statusbar variable, whether this is done using signals or some more specialized way.  At the very
+	  least you can register for a timer to tell you to re-read the variable
+	* should you/could you have some general/generic timers that emit signals, a couple common timings
+	  like 10s, 1min, 5min?
+	* implement the calling of the parent of a signal (pass signal to parent, or to children, etc)
+
+    TODO:
+
 	* fix frontend variable types for colour handling
-
+	* change names in frontend format.c (and refactor? should we use a different format like xml?)
+	* convert all error reporting in tcp.c to emit signals
+	* move the fe_net_receive_text function to tcp.c
+	* eliminate the callback struct in globals.h
+	* finish converting base types timer and string-ref (unless you can merge it into string)
 
 	* make sure that reconnects don't cause a change of the current window and don't fill a channel
 	  with funny messages from the other server such as notices and stuff
-
-	* should the common frontend *not* have it's own init since not all features might be usable with
-	  a given frontend?
-	* should you move the quit command to the common frontend?
-
-	* change names in frontend format.c (and refactor? should we use a different format like xml?)
-	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?
-	* replace all instances of fe_print with an emit_signal if possible
-	* Remove all joinpoints
-	* convert all error reporting in tcp.c to emit signals
-	* convert all joinpoint error printing to emit signals instead
-	* fix up config system
-	* fix config defines for common error messages like VARIABLE_NOT_FOUND (it's BASE specific atm)
-
 	* fix/reimplement the tab complete functionality in IRC (it currently accesses the input buffer which
 	  is not really possibly anymore)  Perhaps the buffer can be accessible and modifiable as a variable
 	  in the variable system
 
-	* add an is_a() check of the type in variable before trying to initialize or create a variable
 	* should va_list functions use _real or _va as the mangle
-	* convert macros to the all caps scheme!
+	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
 	* replace while loops with for loops where possible
-	* remove all uses of the linear list
+	* should the common frontend *not* have it's own init since not all features might be usable with
+	  a given frontend?
+	* should you move the quit command to the common frontend?
+	* should you replace type lookups such as in alias.c to directly referencing the type struct pointer?
+	* fix up config system
+	* fix config defines for common error messages like VARIABLE_NOT_FOUND (it's BASE specific atm)
+
+	* add an is_a() check of the type in variable before trying to initialize or create a variable
 	* seriously fix up string.c or even better get rid of it 
 	* should base.exec command be moved into the frontend?
 	* should you change the name mangle from _s to something else for structs?
-	* eliminate the callback struct in globals.h
-	* move the key macros from init.h into something frontend-specific like frontend/common/init.h
-	* finish converting base types timer and string-ref (unless you can merge it into string)
 
 	* make timers more secure through the object system by making them objects themselves or making them
 	  part of the objects they control (same with signals/hooks if we keep them around?)
@@ -52,38 +107,17 @@
 	* what will happen to MODIFY_POSITION?  I can't see this being needed much but i guess it could be
 	  so we could do the same thing as with MODIFY_SIZE
 
-	* can we merge the list functionality of channel and user into a superclass that is a linked-list
-	  node inheriting from variable and then channel and user structs extend the list node?
-
-
-	* the object creation system and the variable system don't get along.  You are passing the va_list to
-	  create_object which expects the list itself (...) which is causing all of your problems atm.  You
-	  can either create a new shadow function to call instead from add_variable or you can change how
-	  the variable system initializes objects/variables.  Keep in mind too that there is no established
-	  reinitialization for variables with the new system anyways which sholud be part of the solution
-	* important variable functions: set, stringify, evaulate (should all be able to operate on "subvar"
-	  values.  important variable table functions: add, remove, index
-	* what form will the init, add, and remove functions take?
-	* change index_variable to something else that isn't confusing (conflicts with the index virtfunc)
-
-	* how will signals work?  how will they be stored in the variable tables (a seperate signals table?)
-	  how will the frontend know what signals to register to? perhaps a dedicated signals table with
-	  common naming scheme based on function such as output.error, output.status, output.irc.philosophy,
-	  create, create.irc (for notifying about the creation of a signal)
-	* have a 'create' signal that tells the frontend that a new signal/data stream is available (possibly
-	  even emitting this signal from an add_signal type function itself).  The frontend will then
-	  create a new window (according to it's own programming/config)
 	* we can't do attrib/style/colour the way we were doing it using the new object system where we
 	  pass the subparts of attrib to the appropriate type handler because those subparts aren't vars
 	* params should be through a very simple single char per param string with "sfopn" string, function,
 	  object, pointer, number (should you have a different one for float vs int)?
-	* all signals should identify the module they come from but should it be a seperate param or a
-	  single string param? ("base", "error") vs ("base.error")
 
 	* how do you destroy a window/channel?  An IRC channel can be "disconnected" either by using the
 	  leave/part command or by closing the window so either the irc module or the frontend must be able
-	  to somehow destroy the whole thing (the channel struct and the window)
-	* decide on what to do about the purge_object signal
+	  to somehow destroy the whole thing (the channel struct and the window).  Currently, the
+	  output.destroy signal is emitted when a channel is destroyed which causes the window to be closed
+	  but there is no method yet of closing the window and having the channel destroyed.  Perhaps the
+	  same signal can be used and emitted by the window.
 	* should you be able to directly access the interface object functions instead of using intermediate
 	  functions?
 
@@ -96,10 +130,34 @@
 	* make it so that you can use stutter as a platform for writing command line utilies/servers so that
 	  if you compile stutter a certain way, you can make a simple network server using a few config
 	  options such as one to control a media player through exec and it's command line utilities. (ie.
-	  sits on the network as a server and exec's commands as requests come in)
+	  sits on the network as a server and exec's commands as requests come in).  This idea is identical
+	  to the idea of an OSC routing node ala the plc project.
+
+
+    Environments:
+
+	* OK, we are going to handle "context" by using the variable system one way or another.  Most likely,
+	  eventually, we will have an environment subclass of variable_table which act like lisp environments.
+	  Each "connection" would have it's own environment.  Managing which environment is current is
+	  done somehow in the frontend or where ever connections are managed.  This may be accessed as a
+	  global variable or passed to each appropriate function call as another arg but either way will be
+	  implemented later.  For now, it will be assumed that there will be only one global table, one
+	  frontend, one "connection", possible accessed through an "env" subspace or maybe just "fe".
+	* "context" must be accessable to commands, signal handlers, timer handlers, etc.  It could possibly
+	  be stored with each socket such that each socket (whether an OSC socket or not) could have it's
+	  own "context", including the keyboard/stdin socket.  If passed as an argument, it would be passed
+	  to all functions starting with the socket read/write callback.
+	* use environments like variable scope
+
+	* have some kind of OSC structure thingy that manages an OSC connection and has the socket and
+	  "context" thingy to it.
+	* try to make the OSC stuff an indpendant module not directly linked to the frontend (it might be
+	  possible).
 
 Structural Issues:
 
+	* make it so that you can somehow send signals through an OSC-like protocol such that another program
+	  can be the frontend for stutter such as having a python/perl script for each window
 	* can you add special comments that a perl script can use to create at least part of the defaults.cfg
 	  file?  Is this even a good idea?
 	* you could have special variable tables like irc.on_msg where you add variables that are commands

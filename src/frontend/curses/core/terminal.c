@@ -10,7 +10,6 @@
 
 #include CONFIG_H
 #include <stutter/memory.h>
-#include <stutter/linear.h>
 #include <stutter/globals.h>
 #include <stutter/variable.h>
 #include <stutter/frontend/keycodes.h>

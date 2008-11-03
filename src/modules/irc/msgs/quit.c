@@ -4,30 +4,23 @@
  */
 
 #include CONFIG_H
-#include <stutter/output.h>
+#include <stutter/signal.h>
 #include <stutter/modules/irc/irc.h>
-
-static int irc_msg_quit_traverse(struct irc_channel *, struct irc_msg *);
 
 /**
  * Reports the user quit in the status window and the current channel.
  */
 int irc_msg_quit(char *env, struct irc_msg *msg)
 {
+	struct irc_channel *cur;
+	char buffer[LARGE_STRING_SIZE];
+
 	if (!msg->nick)
 		return(-1);
-	irc_traverse_channel_list(msg->server->channels, (traverse_t) irc_msg_quit_traverse, msg);
-	return(0);
-}
-
-/**
- * Remove the user according to the given quit message in the given channel.
- * This function is called from inside irc_traverse_channel_list.
- */
-static int irc_msg_quit_traverse(struct irc_channel *channel, struct irc_msg *msg)
-{
-	if (!irc_remove_user(channel->users, msg->nick) || (channel == msg->server->status)) {
-		IRC_MSG_QUIT_OUTPUT_JOINPOINT(channel, msg, IRC_FMT_QUIT)
+	for (cur = msg->server->channels.head; cur; cur = cur->next) {
+		if ((!irc_remove_user(&cur->users, msg->nick) || (cur == msg->server->status))
+		    && irc_format_msg(msg, IRC_FMT_QUIT, buffer, LARGE_STRING_SIZE) >= 0)
+			signal_emit(cur->signal, buffer);
 	}
 	return(0);
 }

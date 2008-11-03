@@ -91,7 +91,7 @@ int parse_format_string(struct variable_table_s *theme, const char *str, struct 
 				name[ni] = '\0';
 				i++;
 				// TODO add type check
-				if ((var = FE_ATTRIB(find_variable(theme, name, NULL)))) {
+				if ((var = FE_ATTRIB(find_variable(VARIABLE_S(theme), name, NULL)))) {
 					format->styles[k].attrib = var->attrib;
 					format->styles[k].index = j;
 					if (++k >= styles_max)

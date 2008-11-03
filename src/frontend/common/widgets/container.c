@@ -68,17 +68,19 @@ int fe_container_control(struct fe_container *container, int cmd, va_list va)
 {
 	switch (cmd) {
 		case WCC_SHOW_WIDGET: {
-/*
 			struct fe_widget *widget;
-			struct fe_container_node *node;
+			struct queue_entry_s *entry;
 
 			widget = va_arg(va, struct fe_widget *);
-			if (!(node = container_widgets_find_node(container, widget)))
-				return(-1);
-			container_widgets_set_current_node(container, node);
-			FE_WIDGET(container)->bitflags |= WBF_FORCE_REFRESH;
-*/
-			return(0);
+			entry = QUEUE_CURRENT_ENTRY(container->widgets);
+			QUEUE_FOREACH(container->widgets) {
+				if (QUEUE_CURRENT(container->widgets) == widget) {
+					FE_WIDGET(container)->bitflags |= WBF_FORCE_REFRESH;
+					return(0);
+				}
+			}
+			QUEUE_SET_CURRENT_ENTRY(container->widgets, entry);
+			return(-1);
 		}
 		case WCC_SET_FOCUS: {
 /*

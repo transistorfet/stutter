@@ -3,7 +3,6 @@
  * Description:		Server Interface Manager
  */
 
-
 #include <string.h>
 #include <stdlib.h>
 
@@ -11,7 +10,6 @@
 #include <stutter/queue.h>
 #include <stutter/string.h>
 #include <stutter/memory.h>
-#include <stutter/linear.h>
 #include <stutter/signal.h>
 #include <stutter/macros.h>
 #include <stutter/object.h>
@@ -79,11 +77,14 @@ int release_irc_server(void)
 
 int irc_server_init(struct irc_server *server, const char *params, va_list va)
 {
+	char *nick = NULL;
+
 	server->address = NULL;
 	server->port = 0;
-	// TODO get argument from params
-	//server->nick = create_string(nick);
-	if (!(server->send_queue = create_queue(0, (destroy_t) irc_destroy_msg)))
+	if (!strcmp(params, "s"))
+		nick = va_arg(va, char *);
+	server->nick = duplicate_string(nick ? nick : IRC_DEFAULT_NICK);
+	if (!(server->send_queue = create_queue(0, (destroy_t) destroy_object)))
 		return(-1);
 	server->status = irc_add_channel(&server->channels, IRC_SERVER_STATUS_CHANNEL, server);
 	server->next = server_list;
@@ -208,7 +209,7 @@ int irc_send_msg(struct irc_server *server, struct irc_msg *msg)
 			ret = fe_net_send(server->net, buffer, size);
 		if ((msg->cmd == IRC_MSG_PRIVMSG) || (msg->cmd == IRC_MSG_NOTICE))
 			irc_dispatch_msg(msg);
-		irc_destroy_msg(msg);
+		destroy_object(OBJECT_S(msg));
 		server->last_ping = time(NULL);
 		if (ret != size)
 			return(-1);
@@ -230,7 +231,7 @@ struct irc_msg *irc_receive_msg(struct irc_server *server)
 		return(NULL);
 
 	while (1) {
-		if ((size = fe_net_receive_str(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
+		if ((size = fe_net_receive_text(server->net, buffer, IRC_MAX_MSG + 1, '\n')) < 0) {
 			OUTPUT_ERROR(IRC_ERR_SERVER_DISCONNECTED, server->address);
 			if (IRC_RECONNECT_RETRIES && (server->attempts > IRC_RECONNECT_RETRIES))
 				return(NULL);
@@ -276,7 +277,7 @@ int irc_broadcast_msg(struct irc_msg *msg)
 			ret = irc_send_msg(cur, new_msg);
 		cur->last_ping = time(NULL);
 	}
-	irc_destroy_msg(msg);
+	destroy_object(OBJECT_S(msg));
 	return(ret);
 }
 
@@ -387,6 +388,14 @@ int irc_notice(struct irc_server *server, const char *name, const char *text)
 
 	name_len = strlen(name);
 	text_len = strlen(text);
+
+	// TODO fix this so that you don't modify the const char text string
+	if (!(msg = irc_create_msg(IRC_MSG_NOTICE, NULL, NULL, 2, 0, name, &text[i])))
+		return(-1);
+	msg->server = server;
+	if ((ret = irc_send_msg(server, msg) < 0))
+		return(ret);
+/*
 	do {
 		i = j;
 		j = ((j + 488 - name_len) < text_len) ? (j + 488 - name_len) : text_len;
@@ -398,6 +407,7 @@ int irc_notice(struct irc_server *server, const char *name, const char *text)
 		if ((ret = irc_send_msg(server, msg)))
 			return(ret);
 	} while (j < text_len);
+*/
 	return(0);
 }
 
@@ -485,7 +495,7 @@ static int irc_server_receive(struct irc_server *server, fe_network_t desc, fe_n
 
 	if ((msg = irc_receive_msg(server))) {
 		irc_dispatch_msg(msg);
-		irc_destroy_msg(msg);
+		destroy_object(OBJECT_S(msg));
 	}
 	if (server->bitflags & IRC_SBF_CONNECTED)
 		irc_server_flush_send_queue(server);

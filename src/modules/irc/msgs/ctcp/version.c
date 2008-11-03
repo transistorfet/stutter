@@ -7,14 +7,14 @@
 
 #include CONFIG_H
 #include <stutter/macros.h>
-#include <stutter/output.h>
+#include <stutter/signal.h>
 #include <stutter/variable.h>
 #include <stutter/modules/irc/irc.h>
 
 int irc_msg_ctcp_version(char *env, struct irc_msg *msg)
 {
 	char *fmt;
-	char buffer[STRING_SIZE];
+	char buffer[LARGE_STRING_SIZE];
 
 	if (!msg->nick)
 		return(0);
@@ -27,7 +27,9 @@ int irc_msg_ctcp_version(char *env, struct irc_msg *msg)
 		fmt = IRC_FMT_CTCP_VERSION_REPLY;
 	else
 		return(0);
-	IRC_MSG_CTCP_VERSION_OUTPUT_JOINPOINT(msg, fmt)
+	// TODO fix this to print to the current channel or status or something
+	//if (irc_format_msg(msg, fmt, buffer, LARGE_STRING_SIZE) >= 0)
+	//	signal_emit(channel->signal, buffer);
 	return(0);
 }
 

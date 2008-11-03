@@ -6,6 +6,7 @@
 #ifndef _STUTTER_FRONTEND_COMMON_H
 #define _STUTTER_FRONTEND_COMMON_H
 
+#include <stutter/signal.h>
 #include <stutter/frontend/common/types.h>
 #include <stutter/frontend/common/widget.h>
 
@@ -29,9 +30,9 @@ int fe_common_cmd_unbind(char *, char *);
 int fe_common_cmd_window(char *, char *);
 
 /* Signal Handlers */
-int fe_common_sig_create(void *, const char *);
-int fe_common_sig_destroy(void *, const char *);
-int fe_common_sig_print(struct fe_widget *, const char *);
+int fe_common_sig_create(void *, struct signal_s *, va_list);
+int fe_common_sig_destroy(void *, struct signal_s *, va_list);
+int fe_common_sig_print(struct fe_widget *, va_list);
 
 /* Widgets */
 extern struct fe_widget_type fe_text_type;

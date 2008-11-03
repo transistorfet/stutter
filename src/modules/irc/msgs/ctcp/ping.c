@@ -9,13 +9,14 @@
 
 #include CONFIG_H
 #include <stutter/macros.h>
-#include <stutter/output.h>
+#include <stutter/signal.h>
 #include <stutter/modules/irc/irc.h>
 
 int irc_msg_ctcp_ping(char *env, struct irc_msg *msg)
 {
 	char number[20];
 	char *fmt, *tmp = NULL;
+	char buffer[LARGE_STRING_SIZE];
 
 	if (!msg->nick)
 		return(0);
@@ -31,7 +32,9 @@ int irc_msg_ctcp_ping(char *env, struct irc_msg *msg)
 	}
 	else
 		return(0);
-	IRC_MSG_CTCP_PING_OUTPUT_JOINPOINT(msg, fmt)
+	// TODO fix this to send to an appropriate signal
+	if (irc_format_msg(msg, fmt, buffer, LARGE_STRING_SIZE) >= 0)
+		signal_emit(msg->server->status->signal, buffer);
 	if (tmp)
 		msg->ctcps[0].args = tmp;
 	return(0);

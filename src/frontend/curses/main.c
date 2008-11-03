@@ -22,7 +22,7 @@
 #include <stutter/frontend/curses/interface.h>
 #include <stutter/frontend/common/widgets/page.h>
 
-static int handle_quit(char *, void *, char *);
+static int handle_quit(char *, struct signal_s *, va_list);
 
 DEFINE_TYPE_LIST(types_list,
 	//ADD_TYPE()
@@ -30,6 +30,8 @@ DEFINE_TYPE_LIST(types_list,
 
 DEFINE_HANDLER_LIST(handlers_list,
 	ADD_HANDLER("fe.quit", 0, handle_quit, NULL)
+	ADD_HANDLER("output.create", 10, fe_common_sig_create, NULL)
+	ADD_HANDLER("output.destroy", 10, fe_common_sig_destroy, NULL)
 	ADD_HANDLER("output.error", 10, fe_common_sig_print, NULL)
 	ADD_HANDLER("output.status", 10, fe_common_sig_print, NULL)
 );
@@ -121,8 +123,8 @@ int init_curses(void)
 	if (init_system())
 		return(-1);
 
-	add_signal(signal_table, "fe");
-	add_signal(signal_table, "fe.quit");
+	add_signal(VARIABLE_S(signal_table), "fe");
+	add_signal(VARIABLE_S(signal_table), "fe.quit");
 	ADD_TYPE_LIST(types_list);
 
 	if (init_interface())
@@ -196,8 +198,12 @@ int main(int argc, char **argv)
 	return(0);
 }
 
-static int handle_quit(char *env, void *obj, char *args)
+static int handle_quit(char *env, struct signal_s *signal, va_list va)
 {
+	const char *text;
+
+	text = va_arg(va, const char *);
+	// TODO check that this is really a quit signal
 	exit_flag = 0;
 	return(SIGNAL_STOP_EMIT);
 }

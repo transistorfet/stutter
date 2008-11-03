@@ -28,7 +28,6 @@ OBJS =	init.o \
 	core/user.o \
 	core/channel.o \
 	core/server.o \
-	msgs/current.o \
 	msgs/default.o \
 	msgs/inuse.o \
 	msgs/join.o \
@@ -45,9 +44,9 @@ OBJS =	init.o \
 	msgs/ctcp/ping.o \
 	msgs/ctcp/version.o \
 	msgs/ctcp/unknown.o \
-	sigs/ctcp-disp.o \
 	sigs/exec.o \
 	sigs/quit.o \
+	utils/ctcp-dispatch.o \
 	utils/current.o \
 	utils/dispatch.o \
 	utils/format.o

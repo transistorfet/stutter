@@ -6,6 +6,8 @@
 #ifndef _STUTTER_SIGNAL_H
 #define _STUTTER_SIGNAL_H
 
+#include <stdarg.h>
+
 #include <stutter/string.h>
 #include <stutter/globals.h>
 #include <stutter/variable.h>
@@ -15,23 +17,27 @@
 #define SIG_BF_NODE_LOCKED		0x0001
 #define SIG_BF_PURGE			0x0002
 
+struct signal_s;
+
 #define SIGNAL_S(ptr)			( (struct signal_s *) (ptr) )
 
-// TODO what should the actual parameters be to this function?
-typedef int (*signal_t)(void *, void *);
+typedef int (*signal_func_t)(void *, struct signal_s *, va_list);
 
 struct signal_handler_s {
 	int bitflags;
 	int priority;
-	signal_t func;
-	// TODO what will this actually be?  will we assist in managing it (destroy if an object, etc)?
+	signal_func_t func;
 	void *ptr;
-	struct signal_s *parent;
+	struct signal_s *signal;
 	struct signal_handler_s *next;
 };
 
+// TODO organize the type values somehow
+
 struct signal_s {
 	struct variable_table_s variable_table;
+	int type;
+	struct signal_s *parent;
 	struct signal_handler_s *handlers;
 };
 
@@ -44,16 +50,17 @@ int release_signal(void);
 int signal_init(struct signal_s *, const char *, va_list);
 void signal_release(struct signal_s *);
 
-struct signal_handler_s *signal_connect(struct signal_s *, int, signal_t, void *);
+struct signal_handler_s *signal_connect(struct signal_s *, int, signal_func_t, void *);
 int signal_disconnect(struct signal_handler_s *);
-int signal_emit(struct signal_s *, void *);
-struct signal_handler_s *signal_find_handler(struct signal_s *, signal_t, void *);
+int signal_emit(struct signal_s *, ...);
+int signal_emit_real(struct signal_s *, va_list);
+struct signal_handler_s *signal_find_handler(struct signal_s *, signal_func_t, void *);
 
-static inline struct signal_s *add_signal(struct variable_table_s *table, const char *name) {
+static inline struct signal_s *add_signal(struct variable_s *table, const char *name) {
 	return(SIGNAL_S(add_variable(table, OBJECT_TYPE_S(&signal_type), name, 0, "")));
 }
 
-static inline struct signal_handler_s *signal_named_connect(struct variable_table_s *table, const char *name, int priority, signal_t func, void *ptr) {
+static inline struct signal_handler_s *signal_named_connect(struct variable_s *table, const char *name, int priority, signal_func_t func, void *ptr) {
 	struct signal_s *signal;
 
 	if (!(signal = SIGNAL_S(find_variable(table, name, OBJECT_TYPE_S(&signal_type)))))
@@ -61,7 +68,7 @@ static inline struct signal_handler_s *signal_named_connect(struct variable_tabl
 	return(signal_connect(signal, priority, func, ptr));
 }
 
-static inline int signal_named_emit(struct variable_table_s *table, const char *name, void *arg) {
+static inline int signal_named_emit(struct variable_s *table, const char *name, void *arg) {
 	struct signal_s *signal;
 
 	if (!(signal = SIGNAL_S(find_variable(table, name, OBJECT_TYPE_S(&signal_type)))))

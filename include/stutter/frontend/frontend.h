@@ -13,6 +13,8 @@ struct fe_widget *fe_create_widget(const char *type, const char *id);
 struct fe_widget *fe_get_focus(const char *type);
 struct fe_widget *fe_get_target(struct fe_widget *widget, const char *type);
 
+int fe_show_widget(void *widget);
+
 /*
 void *fe_create_widget(char *ns, char *type, char *id, void *parent);
 int fe_destroy_widget(void *widget);

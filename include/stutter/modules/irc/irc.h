@@ -7,6 +7,7 @@
 #define _STUTTER_MODULES_IRC_H
 
 #include <stutter/string.h>
+#include <stutter/signal.h>
 #include <stutter/modules/irc/msg.h>
 #include <stutter/modules/irc/user.h>
 #include <stutter/modules/irc/server.h>
@@ -59,8 +60,8 @@ int irc_msg_ctcp_version(char *, struct irc_msg *);
 //int irc_msg_ctcp_unknown(char *, void *, struct irc_msg *);
 
 /* Signal Handlers */
-int irc_sig_exec(void *, void *, char *);
-int irc_sig_quit(void *, void *, char *);
+int irc_sig_exec(void *, struct signal_s *, va_list);
+int irc_sig_quit(void *, struct signal_s *, va_list);
 
 /* Types */
 struct type_s *irc_load_channel_list(void);

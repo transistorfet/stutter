@@ -7,15 +7,15 @@
 
 /** Modules */
 #include <stutter/modules/base/base.h>
-//#include <stutter/modules/irc/irc.h>
+#include <stutter/modules/irc/irc.h>
 
 #define INIT_MODULES()	\
 	init_base();	\
-/*	init_irc(); */	\
+	init_irc();	\
 
 #define RELEASE_MODULES()	\
 	release_base();	\
-/*	release_irc(); */	\
+	release_irc();	\
 
 
 /** Configuration Options */
@@ -170,7 +170,7 @@
 #define IRC_MAX_STRING                           512
 #define IRC_OUT_ATTEMPTING_RECONNECT             "\022status\022Attempting to reconnect in %d seconds"
 #define IRC_PING_WATCHDOG_TIMEOUT                300
-#define IRC_QUIT_MSG                             "The Pooper Scooper Of Life!"
+#define IRC_QUIT_MSG                             "W-W-What are y-y-you l-l-looking at?"
 #define IRC_RECONNECT_RETRIES                    0
 #define IRC_RETRY_DELAY                          60
 #define IRC_SERVER_DISCONNECTED                  "\022status\022Disconnected from %s"

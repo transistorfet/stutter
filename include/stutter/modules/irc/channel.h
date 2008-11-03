@@ -7,6 +7,7 @@
 #define _STUTTER_MODULES_IRC_CHANNEL_H
 
 #include <stutter/string.h>
+#include <stutter/signal.h>
 #include <stutter/variable.h>
 #include <stutter/modules/irc/user.h>
 
@@ -29,6 +30,7 @@ struct irc_channel {
 	int bitflags;
 	string_t name;
 	string_t topic;
+	struct signal_s *signal;
 	struct irc_server *server;
 	struct irc_user_list users;
 };
