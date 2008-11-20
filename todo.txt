@@ -22,9 +22,20 @@
 	  window, you want it to be treated as an irc command, without having to specify that at all.
 	  Possibly, this functionality could be implemented as a special variable and added to the "path" list.
 
+	* make it so that a channel/signal is capable of being connected to a widget such that the channel
+	  can send OSC messages to the widget and possibly get replies to queries.  This would be used to
+	  solve the context problem (what the current irc server is).  This would also make it possible
+	  to make complex frontend objects and controls and such.  You could easily have a list widget that
+	  is controlled through OSC messages from a backend list controller.
+	* make sure to thuroughly prototype this OSC idea so that you know exactly how it *should* work and
+	  be implemented before you actually kill the current code (not even branching, just do the code clean
+	  and fresh like as the C implementation of OCK.
+
     Variables:
 
-	* implement the check of bitflags in variable_table_add
+	* implement the check of bitflags in variable_table_add for the method to add (create, add object)
+	* should evaluate and stringifiy be made recursive like the others?
+	* change index_variable() to something else that isn't confusing (conflicts with the index virtfunc)
 	* we could make the current variable types more like independant objects, possibly even putting them
 	  all in the core/ directory rather than the types/ directory.  Right now, all objects that inherit
 	  from the variable_s class will implement the variable type functions internally as it should be.
@@ -34,14 +45,10 @@
 	  reference type object).  The thing not handled here is the situation where you only need an object
 	  temporarily or something (where you want to make a value accessible but that value is in a struct
 	  that is itself added to the variable system (eg. attributes)).
-	* should evaluate and stringifiy be made recursive like the others?
-
-	* what form will the init, add, and remove functions take?
-	* change index_variable() to something else that isn't confusing (conflicts with the index virtfunc)
 
     Signals:
 
-	* implement/use the signal type field to make it easy to indentify certain signals
+	* implement/use the signal type field to make it easy to identify certain signals
 	* perhaps instead of the signals system as it is, each "signal" could be a channel/data source which
 	  a callback can be registered for like currently and instead of receiving whatever it receives now,
 	  it can receive "events" (doesn't necessarily have to be an allocated object).  An event could be
