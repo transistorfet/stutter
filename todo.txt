@@ -1,4 +1,30 @@
 
+	* there is a major bug on 64bit systems with the redefined va_list type such that doing va_arg on
+	  the "same" va_list when you expect the result to be the same will no longer be the same.  This is
+	  the case in frame_control when called from fe_common_api_create_widget where you pass the va list
+	  to a function which takes the widget off it, does stuff, and returns, and then the calling function
+	  *also* tries to take the widget off of va_list.
+
+
+	* it should be made possible to have a generic list of some kind with generic objects in that list
+	  which the frontend can interact with in a generic kind of way.  A widget could be given a pointer
+	  to a list of IRC users that it can use *directly* to make an interactable list.  A widget could
+	  be given a list of servers that can be paged through, or a list of channels.  Perhaps the backlog
+	  for each channel could be instead stored in the IRC object itself if needed.
+
+	* *perhaps* you could make the system completely usable through OSC such that the frontend could
+	  be completely a seperate process on another computer
+
+	* covnert signals to events with an "event" being the actual emit part, a "dispatcher" or something
+	  like that being the thing that sends the event to the places it needs to go and a "handler" being
+	  the function that does stuff in response to the event
+	* an event dispatcher is a special variable "containing" other event dispatchers and any event
+	  handler function references.  Dispatches can "inherit" from others and all events are sent to the
+	  parent event of those children (propicated upwards).  An event is always fully specified, the same
+	  event struct/object is given to each handler, even for parent events.
+	* you knida need some form of "inode" linking to solve the problem of duplicate pointers and stuff
+	  (ref counting?)
+
 	* replace all calls to irc_current_*
 	* uncomment and test code in server to break long lines into multiple msgs (used to cause segfault)
 	* add reference counting
